@@ -339,7 +339,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v2.0'; // v2.0: nombre «Amable Sleep» (Amable delante, como toda la familia: Amable Life, Amable PC, Amable Vision); app Android 1.8
+const VERSION = 'v2.1'; // v2.1: sonidos para dormir en estéreo, 44 kHz y filtrados (blanco suave, marrón sin retumbe, lluvia sin chasquidos, olas más reales)
+// v2.0: // v2.0: nombre «Amable Sleep» (Amable delante, como toda la familia: Amable Life, Amable PC, Amable Vision); app Android 1.8
 // v1.9: RonquiNo pasa a llamarse Sleep Amable (nueva dirección /Sleep-Amable/, app Android 1.7)
 // v1.8: // v1.8: el APK se descarga desde la propia web (desde GitHub la descarga se quedaba trabada) + aviso «Instala la app» en Android
 // v1.7: nueva musiquita de bienvenida (caja de música)
@@ -884,39 +885,70 @@ addEventListener('resize', () => { if (!$('night').hidden) drawTimeline(timeline
 const SOUNDS = [
   {id:'marron', e:'🟤', n:'Marrón', d:'el mejor para ronquidos'},
   {id:'rosa', e:'🌸', n:'Rosa', d:'suave y equilibrado'},
-  {id:'blanco', e:'⚪', n:'Blanco', d:'el clásico, más agudo'},
+  {id:'blanco', e:'⚪', n:'Blanco suave', d:'como el de YouTube'},
   {id:'lluvia', e:'🌧️', n:'Lluvia', d:'lluvia constante'},
   {id:'olas', e:'🌊', n:'Olas', d:'mar en calma'}
 ];
-const NSR = 22050, NLEN = NSR * 60, NFADE = NSR * 2;
+const NSR = 44100, NLEN = NSR * 60, NFADE = NSR * 3;
+// Sonido estéreo (cada oído recibe un ruido distinto: suena amplio y no «dentro de la cabeza»),
+// filtrado para quitar lo chillón y el retumbe, y en bucle de 60 s sin cortes.
 function makeNoise(id) {
-  const L = NLEN + NFADE, a = new Float32Array(L);
-  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0;
-  const pink = w => { // filtro de Paul Kellet
-    b0 = .99886*b0 + w*.0555179; b1 = .99332*b1 + w*.0750759; b2 = .969*b2 + w*.153852; b3 = .8665*b3 + w*.3104856;
-    b4 = .55*b4 + w*.5329522; b5 = -.7616*b5 - w*.016898; const o = b0+b1+b2+b3+b4+b5+b6 + w*.5362; b6 = w*.115926; return o * .11;
-  };
-  for (let i = 0; i < L; i++) {
-    const w = Math.random() * 2 - 1;
-    if (id === 'blanco') a[i] = w * .3;
-    else if (id === 'rosa') a[i] = pink(w);
-    else { br = (br + .02 * w) / 1.02; a[i] = br * 3.5; }
-    if (id === 'lluvia') a[i] = pink(w) * .7 + a[i] * .5;
+  const L = NLEN + NFADE, k = f => 1 - Math.exp(-2 * Math.PI * f / NSR);
+  // Olas: la misma ola llega a los dos oídos, con un pelín de retraso en el derecho
+  const env = new Float32Array(NLEN);
+  if (id === 'olas') {
+    let t = 0;
+    while (t < 58) {
+      const rise = 2.5 + Math.random() * 1.5, fall = 4 + Math.random() * 3, amp = .55 + Math.random() * .45, start = Math.floor(t * NSR);
+      for (let s = 0; s < (rise + fall) * NSR; s++) {
+        const tt = s / NSR, v = tt < rise ? Math.pow(Math.sin(Math.PI / 2 * tt / rise), 2) : Math.exp(-(tt - rise) / (fall / 3));
+        const idx = (start + s) % NLEN; env[idx] = Math.max(env[idx], v * amp);
+      }
+      t += 8 + Math.random() * 4;
+    }
   }
-  if (id === 'lluvia') for (let k = 0; k < 60 * 40; k++) { // gotas
-    const p = Math.floor(Math.random() * (L - 400)), amp = .05 + Math.random() * .15;
-    for (let j = 0; j < 300; j++) a[p + j] += (Math.random() * 2 - 1) * amp * Math.exp(-j / 40);
-  }
-  const out = new Float32Array(NLEN); // el final se funde con el principio: el bucle no se nota
-  for (let i = 0; i < NLEN; i++) out[i] = i < NFADE ? a[i] * (i / NFADE) + a[NLEN + i] * (1 - i / NFADE) : a[i];
-  if (id === 'olas') for (let i = 0; i < NLEN; i++) out[i] *= .25 + .75 * Math.pow(.5 - .5 * Math.cos(2 * Math.PI * i / NSR / 10), 1.6);
-  let pk = 0; for (const v of out) pk = Math.max(pk, Math.abs(v));
-  const buf = new ArrayBuffer(44 + NLEN * 2), v = new DataView(buf);
+  const lpF = {blanco: 6500, rosa: 11000, marron: 1500, lluvia: 8000}[id];
+  const hpF = id === 'lluvia' ? 300 : 30;
+  const chans = [0, 1].map(c => {
+    const a = new Float32Array(L);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0, hp = 0, l1 = 0, l2 = 0, fl = 1;
+    const pink = w => { // filtro de Paul Kellet
+      b0 = .99886*b0 + w*.0555179; b1 = .99332*b1 + w*.0750759; b2 = .969*b2 + w*.153852; b3 = .8665*b3 + w*.3104856;
+      b4 = .55*b4 + w*.5329522; b5 = -.7616*b5 - w*.016898; const o = b0+b1+b2+b3+b4+b5+b6 + w*.5362; b6 = w*.115926; return o * .11;
+    };
+    const kHP = k(hpF), kFl = k(.3), lag = c ? Math.floor(NSR * .12) : 0;
+    let kLP = lpF ? k(lpF) : 0;
+    for (let i = 0; i < L; i++) {
+      const w = Math.random() * 2 - 1;
+      let x;
+      if (id === 'blanco') x = w * .5;
+      else if (id === 'rosa' || id === 'lluvia') x = pink(w);
+      else if (id === 'olas') { br = (br + .02 * w) / 1.02; x = br * 3 + pink(w) * .6; }
+      else { br = (br + .02 * w) / 1.02; x = br * 3.5; }
+      hp += kHP * (x - hp); x -= hp;                       // fuera el retumbe
+      let e = 1;
+      if (id === 'olas') { e = env[(i + NLEN - lag) % NLEN]; kLP = k(220 + 2600 * e); }
+      l1 += kLP * (x - l1); l2 += kLP * (l1 - l2);           // fuera lo chillón (2 polos)
+      if (id === 'lluvia') { fl += kFl * ((.85 + Math.random() * .3) - fl); }  // la lluvia «respira» un poco
+      a[i] = l2 * (id === 'olas' ? .12 + .88 * e : 1) * (id === 'lluvia' ? fl : 1);
+    }
+    const out = new Float32Array(NLEN); // el final se funde con el principio: el bucle no se nota
+    for (let i = 0; i < NLEN; i++) out[i] = i < NFADE ? a[i] * Math.sqrt(i / NFADE) + a[NLEN + i] * Math.sqrt(1 - i / NFADE) : a[i];
+    return out;
+  });
+  // Mismo volumen para todos los sonidos (por energía), sin pasarse de pico
+  let pk = 0, ss = 0;
+  for (const ch of chans) for (const v of ch) { pk = Math.max(pk, Math.abs(v)); ss += v * v; }
+  const rms = Math.sqrt(ss / (2 * NLEN)), g = Math.min(.95 / pk, .2 / rms);
+  const buf = new ArrayBuffer(44 + NLEN * 4), v = new DataView(buf);
   const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  wr(0,'RIFF'); v.setUint32(4,36+NLEN*2,true); wr(8,'WAVE'); wr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true);
-  v.setUint16(22,1,true); v.setUint32(24,NSR,true); v.setUint32(28,NSR*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
-  wr(36,'data'); v.setUint32(40,NLEN*2,true);
-  for (let i = 0; i < NLEN; i++) v.setInt16(44 + i * 2, out[i] / pk * .9 * 0x7fff, true);
+  wr(0,'RIFF'); v.setUint32(4,36+NLEN*4,true); wr(8,'WAVE'); wr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true);
+  v.setUint16(22,2,true); v.setUint32(24,NSR,true); v.setUint32(28,NSR*4,true); v.setUint16(32,4,true); v.setUint16(34,16,true);
+  wr(36,'data'); v.setUint32(40,NLEN*4,true);
+  for (let i = 0, o = 44; i < NLEN; i++, o += 4) {
+    v.setInt16(o, Math.max(-1, Math.min(1, chans[0][i] * g)) * 0x7fff, true);
+    v.setInt16(o + 2, Math.max(-1, Math.min(1, chans[1][i] * g)) * 0x7fff, true);
+  }
   return URL.createObjectURL(new Blob([buf], {type: 'audio/wav'}));
 }
 const noise = {au: new Audio(), id: null, urls: {}, vol: 40, fadeT: null, endT: null, endAt: 0};
