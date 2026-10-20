@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1020">
+<title>Escucha Nocturna</title>
+<style>
+:root{
+  --bg:#0B1020; --card:#141B2E; --card2:#1B2440; --line:#26304D;
+  --text:#E2E8F0; --muted:#94A3B8; --dim:#64748B;
+  --snore:#A78BFA; --voice:#FBBF24; --other:#64748B; --ok:#4ADE80; --bad:#F87171;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
+header .moon{font-size:30px}
+header h1{font-size:22px;margin:0;font-weight:700}
+header .ver{margin-left:auto;font-size:12px;color:var(--dim)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.ia{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
+.dot.ok{background:var(--ok)} .dot.wait{background:var(--voice);animation:pulse 1s infinite alternate} .dot.bad{background:var(--bad)}
+@keyframes pulse{to{opacity:.3}}
+.big{display:block;width:100%;padding:20px;border:0;border-radius:18px;background:linear-gradient(135deg,#6D5BD0,#4338CA);font-size:20px;font-weight:700;box-shadow:0 8px 24px #4338ca55}
+.btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card2);font-size:15px}
+.btn.wide{display:block;width:100%;margin-top:10px}
+.btn.danger{color:var(--bad)}
+.tips{font-size:14px;color:var(--muted);margin:12px 0 0;padding-left:18px}
+.tips li{margin:3px 0}
+h2{font-size:17px;margin:22px 0 10px}
+.night{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.night .when{font-weight:600}
+.night .sub{font-size:13px;color:var(--muted)}
+.night .counts{margin-left:auto;text-align:right;font-size:14px;white-space:nowrap}
+.empty{color:var(--dim);font-size:14px;text-align:center;padding:18px}
+details.cfg summary{cursor:pointer;color:var(--muted);font-size:15px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:15px}
+.row small{display:block;color:var(--dim);font-size:12px}
+select,input[type=number]{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 9px;font:inherit}
+input[type=checkbox]{width:20px;height:20px;accent-color:#6D5BD0}
+/* Escuchando */
+#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .8s}
+#listen.on{display:flex}
+#listen .inner{transition:opacity 1.2s}
+#listen.dim .inner{opacity:.07}
+.clock{font-size:64px;font-weight:200;letter-spacing:2px;color:#CBD5E1}
+.elapsed{color:var(--dim);margin-bottom:26px}
+.counters{display:flex;gap:26px;justify-content:center;font-size:20px;margin-bottom:24px}
+.counters b{display:block;font-size:34px;font-weight:600}
+.c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
+.meter{width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
+.meter i{display:block;height:100%;width:0;background:#475569;transition:width .2s}
+.meter i.hot{background:var(--snore)}
+.state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
+.last{font-size:14px;color:var(--muted);min-height:20px;margin-bottom:28px}
+#stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
+.warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
+/* Noche */
+.back{background:none;border:0;color:var(--muted);padding:6px 0;margin-bottom:6px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tile{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
+.tile b{display:block;font-size:24px}
+.tile span{font-size:12px;color:var(--muted)}
+.tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
+canvas{width:100%;height:110px;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
+.chip.on{background:#312E81;border-color:#4338CA}
+.ev{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.ev.ronquido{border-left-color:var(--snore)} .ev.voz{border-left-color:var(--voice)}
+.ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ev .t{font-weight:600;font-variant-numeric:tabular-nums}
+.tag{font-size:13px;padding:3px 9px;border-radius:10px;border:0;background:var(--card2)}
+.tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.otro{color:var(--muted)}
+.ev .meta{font-size:12px;color:var(--dim)}
+.ev .acts{margin-left:auto;display:flex;gap:6px}
+.ev .acts button,.ev .acts a{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 9px;font-size:14px;color:var(--text);text-decoration:none}
+.ev audio{width:100%;margin-top:8px;height:36px}
+.prog{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:10px}
+.prog i{display:block;height:100%;width:0;background:#6D5BD0}
+.note{font-size:12px;color:var(--dim);margin-top:8px}
+/* Sellos (copiado de PC & Body-mind / Grow Panel): «by Práctica Integral» y «with Grow Panel» */
+.sellos{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:26px}
+.pi-seal,.gp-seal{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.3px;
+  color:#94A3B8;border:1px solid #334155;border-radius:999px;padding:6px 12px;text-decoration:none;line-height:16px;white-space:nowrap;transition:color .2s,border-color .2s}
+.pi-seal::before{content:"";width:7px;height:7px;border-radius:50%;background:#4ADE80}
+.gp-seal svg{width:14px;height:14px;flex:none}
+.pi-seal:hover{border-color:#4ADE80} .gp-seal:hover{border-color:#8b5cf6}
+.pi-seal:hover,.gp-seal:hover{color:#F8FAFC}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- INICIO -->
+<section id="home">
+  <header><span class="moon">🌙</span><h1>Escucha Nocturna</h1><span class="ver" id="ver"></span></header>
+
+  <div class="card">
+    <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
+  </div>
+
+  <button class="big" id="startBtn">🌙 Empezar a escuchar</button>
+  <ul class="tips">
+    <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
+    <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
+    <li>Solo se graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
+    <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
+  </ul>
+
+  <button class="btn wide" id="fileBtn">📂 Analizar una grabación (máx. ~1 hora)</button>
+  <input type="file" id="fileIn" accept="audio/*,video/*" hidden>
+  <div class="card" id="fileCard" hidden>
+    <div id="fileTxt">Analizando…</div>
+    <div class="prog"><i id="fileProg"></i></div>
+  </div>
+
+  <h2>Noches</h2>
+  <div id="nights"></div>
+
+  <details class="cfg card">
+    <summary>⚙️ Ajustes</summary>
+    <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
+      <select id="sens"><option value="6">Alta</option><option value="10">Media</option><option value="15">Baja</option></select></div>
+    <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
+      <input type="checkbox" id="keepOther"></div>
+    <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias</small></label>
+      <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
+  </details>
+
+  <div class="sellos">
+    <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
+    <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
+  </div>
+</section>
+
+<!-- NOCHE -->
+<section id="night" hidden>
+  <button class="back" id="backBtn">← Volver</button>
+  <h1 id="nTitle" style="font-size:21px;margin:0"></h1>
+  <div id="nSub" style="color:var(--muted);font-size:14px"></div>
+  <div class="tiles">
+    <div class="tile s"><b id="tSnore">0</b><span>ronquidos</span></div>
+    <div class="tile s"><b id="tSnoreMin">0</b><span>min roncando</span></div>
+    <div class="tile v"><b id="tVoice">0</b><span>voces</span></div>
+  </div>
+  <div class="card">
+    <canvas id="tl"></canvas>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span></div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="evList"></div>
+  <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla.</p>
+  <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
+</section>
+
+</div>
+
+<!-- ESCUCHANDO -->
+<div id="listen">
+  <div class="inner">
+    <div class="clock" id="clock">--:--</div>
+    <div class="elapsed" id="elapsed">Escuchando</div>
+    <div class="counters">
+      <div class="c-snore"><b id="cSnore">0</b>😴 ronquidos</div>
+      <div class="c-voice"><b id="cVoice">0</b>🗣️ voces</div>
+    </div>
+    <div class="meter"><i id="lvl"></i></div>
+    <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
+    <div class="last" id="lastEv"></div>
+    <button id="stopBtn">☀️ Terminar la noche</button>
+    <div class="warn" id="lwarn" hidden></div>
+  </div>
+</div>
+
+<script type="module">
+const VERSION = 'v1.1'; // v1.1: sello «by Práctica Integral» + «with Grow Panel»; publicada en GitHub Pages
+const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-audio@0.10.14';
+const MODEL = 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite';
+const SR = 16000;          // todo se analiza y guarda a 16 kHz
+const BLK = 4000;          // bloques de 0,25 s
+const PRE = 8;             // 2 s de audio antes del sonido
+const QUIET = 24;          // 6 s de silencio cierran la grabación
+
+const $ = id => document.getElementById(id);
+$('ver').textContent = VERSION;
+
+// ---------- Ajustes ----------
+const cfg = {sens:10, keepOther:false, maxSec:60};
+try { Object.assign(cfg, JSON.parse(localStorage.getItem('en-cfg') || '{}')); } catch {}
+$('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec;
+for (const id of ['sens','keepOther','maxSec']) $(id).onchange = () => {
+  cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value;
+  try { localStorage.setItem('en-cfg', JSON.stringify(cfg)); } catch {}
+};
+
+// ---------- Base de datos (IndexedDB) ----------
+const DB = {
+  db: null,
+  open() { return new Promise((res, rej) => {
+    const r = indexedDB.open('escucha-nocturna', 1);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      d.createObjectStore('noches', {keyPath:'id'});
+      d.createObjectStore('eventos', {keyPath:'id', autoIncrement:true}).createIndex('noche', 'noche');
+    };
+    r.onsuccess = () => { this.db = r.result; res(); };
+    r.onerror = () => rej(r.error);
+  }); },
+  tx(store, mode, fn) { return new Promise((res, rej) => {
+    const t = this.db.transaction(store, mode); let out;
+    const r = fn(t.objectStore(store));
+    if (r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
+  }); },
+  put(s, o) { return this.tx(s, 'readwrite', st => st.put(o)); },
+  get(s, k) { return this.tx(s, 'readonly', st => st.get(k)); },
+  all(s) { return this.tx(s, 'readonly', st => st.getAll()); },
+  byNight(id) { return this.tx('eventos', 'readonly', st => st.index('noche').getAll(id)); },
+  async delNight(id) {
+    const evs = await this.byNight(id);
+    await this.tx('eventos', 'readwrite', st => { evs.forEach(e => st.delete(e.id)); });
+    await this.tx('noches', 'readwrite', st => st.delete(id));
+  }
+};
+
+// ---------- Detector de IA (YAMNet: reconoce «Snoring», «Speech» y 500 sonidos más) ----------
+const SNORE = new Set(['Snoring', 'Snort']);
+const VOICE = new Set(['Speech','Conversation','Narration, monologue','Babbling','Whispering','Male speech, man speaking','Female speech, woman speaking','Child speech, kid speaking','Shout','Laughter']);
+const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathing:'respiración',Gasp:'jadeo',Sniff:'sorbido',
+  Dog:'perro',Bark:'ladrido',Cat:'gato',Meow:'maullido',Music:'música',Television:'tele',Vehicle:'vehículo',Car:'coche',
+  Door:'puerta',Knock:'golpe',Rain:'lluvia',Wind:'viento',Silence:'silencio',Alarm:'alarma','Mechanical fan':'ventilador',
+  'Air conditioning':'aire acondicionado',Clock:'reloj',Tick:'tictac',Footsteps:'pasos',Animal:'animal',Bird:'pájaro',
+  Inside:'ruido de casa','Inside, small room':'ruido de habitación','White noise':'ruido blanco',Hiccup:'hipo',
+  Snoring:'ronquido',Snort:'resoplido',Speech:'voz',Whispering:'susurro'};
+const es = n => ES[n] || (n ? n.toLowerCase() : 'sonido');
+
+const IA = {
+  clf: null,
+  async load() {
+    try {
+      const m = await import(MP + '/audio_bundle.mjs');
+      const files = await m.FilesetResolver.forAudioTasks(MP + '/wasm');
+      this.clf = await m.AudioClassifier.createFromOptions(files, {baseOptions:{modelAssetPath:MODEL}, maxResults:-1});
+      setIA('ok', 'Detector de ronquidos con IA listo');
+    } catch (e) {
+      console.warn('IA no disponible', e);
+      setIA('bad', 'Sin conexión: usaré el detector básico (menos preciso)');
+    }
+  },
+  // Devuelve la probabilidad de ronquido y de voz de un trozo de audio
+  scores(f) {
+    if (this.clf) {
+      let sn = 0, vo = 0, top = null, topS = 0;
+      for (const r of this.clf.classify(f, SR)) for (const c of r.classifications[0].categories) {
+        const n = c.categoryName, s = c.score;
+        if (SNORE.has(n)) sn = Math.max(sn, s);
+        else if (VOICE.has(n)) vo = Math.max(vo, s);
+        else if (n !== 'Silence' && s > topS) { topS = s; top = n; }
+      }
+      return {sn, vo, top, topS, est:false};
+    }
+    // Básico: los ronquidos son graves (mucha energía < 400 Hz) y la voz cruza más veces el cero
+    let y = 0, lo = 0, tot = 0, zc = 0;
+    for (let i = 0; i < f.length; i++) {
+      y += 0.145 * (f[i] - y); lo += y*y; tot += f[i]*f[i];
+      if (i && (f[i] >= 0) !== (f[i-1] >= 0)) zc++;
+    }
+    const ratio = lo / (tot + 1e-12), zcr = zc / f.length * SR;
+    return {sn: ratio > 0.6 && zcr < 1500 ? ratio : 0, vo: ratio <= 0.6 && zcr > 300 && zcr < 4000 ? 0.5 : 0, top:null, topS:0, est:true};
+  }
+};
+function setIA(state, txt) {
+  $('iaDot').className = 'dot ' + state; $('iaTxt').textContent = txt;
+}
+
+// ---------- Utilidades de audio ----------
+function concat(blocks) {
+  const out = new Float32Array(blocks.length * BLK);
+  blocks.forEach((b, i) => out.set(b, i * BLK));
+  return out;
+}
+class Resampler { // a 16 kHz, promediando (filtro sencillo anti-aliasing)
+  constructor(inRate) { this.r = inRate / SR; this.pos = 0; this.acc = 0; this.n = 0; }
+  process(x) {
+    const out = [];
+    for (let i = 0; i < x.length; i++) {
+      this.acc += x[i]; this.n++; this.pos += 1;
+      if (this.pos >= this.r) { out.push(this.acc / this.n); this.pos -= this.r; this.acc = 0; this.n = 0; }
+    }
+    return Float32Array.from(out);
+  }
+}
+function wavBlob(f) { // WAV 16 bits mono, con volumen subido para oír bien los sonidos suaves
+  let peak = 0; for (const v of f) peak = Math.max(peak, Math.abs(v));
+  const g = peak > 0 ? Math.min(8, 0.9 / peak) : 1;
+  const buf = new ArrayBuffer(44 + f.length * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4, 36 + f.length*2, true); w(8,'WAVE'); w(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,SR,true);
+  v.setUint32(28,SR*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,f.length*2,true);
+  for (let i = 0; i < f.length; i++) { const s = Math.max(-1, Math.min(1, f[i]*g)); v.setInt16(44 + i*2, s < 0 ? s*0x8000 : s*0x7fff, true); }
+  return new Blob([buf], {type:'audio/wav'});
+}
+
+// ---------- Detector de sonidos ----------
+// Mide el volumen cada 0,25 s, aprende el ruido de fondo y, cuando algo suena por encima,
+// graba (con 2 s previos) hasta 6 s de silencio. Mientras, la IA clasifica cada segundo.
+class Detector {
+  constructor(o) {
+    Object.assign(this, o);
+    this.floor = null; this.samples = 0; this.blk = new Float32Array(BLK); this.bi = 0;
+    this.pre = []; this.ev = null; this.minAcc = 0; this.minN = 0; this.level = 0;
+  }
+  push(x) {
+    for (let i = 0; i < x.length; i++) {
+      this.blk[this.bi++] = x[i];
+      if (this.bi === BLK) { this.onBlock(this.blk); this.blk = new Float32Array(BLK); this.bi = 0; }
+    }
+  }
+  onBlock(b) {
+    const t0 = this.samples / SR; this.samples += BLK;
+    let s = 0; for (const v of b) s += v*v;
+    const db = 10 * Math.log10(s / BLK + 1e-12);
+    this.minAcc += db; if (++this.minN === 240) { this.onMinute(this.minAcc / 240); this.minAcc = 0; this.minN = 0; }
+    if (this.floor === null) this.floor = db;
+    const thr = this.floor + this.sens, loud = db > thr && db > -75;
+    this.level = Math.max(0, Math.min(1, (db - this.floor) / (this.sens * 2)));
+    if (!this.ev) {
+      this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
+      this.pre.push(b); if (this.pre.length > PRE) this.pre.shift();
+      if (loud && this.samples > SR * 3) {
+        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], tops: {}, peak: db, est: false};
+        this.pre = [];
+        this.onStart?.();
+      }
+    } else {
+      const e = this.ev;
+      e.blocks.push(b); e.pend.push(b); e.peak = Math.max(e.peak, db);
+      if (db > this.floor + this.sens * 0.6) { e.quiet = 0; if (loud) e.loud++; } else e.quiet++;
+      while (e.pend.length >= 4) this.classify(e.pend.splice(0, 4));
+      if (e.quiet >= QUIET) { e.blocks.length -= QUIET - 4; this.finish(); }
+      else if (e.blocks.length * BLK / SR >= this.maxSec) this.finish();
+    }
+  }
+  classify(blocks) {
+    const e = this.ev, r = IA.scores(concat(blocks));
+    e.sn.push(r.sn); e.vo.push(r.vo); e.est = e.est || r.est;
+    if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
+  }
+  finish() {
+    const e = this.ev; this.ev = null;
+    if (e.pend.length >= 2) { this.ev = e; this.classify(e.pend); this.ev = null; }
+    if (e.loud < 2 || !e.sn.length) return; // un golpe suelto: se ignora
+    const max = a => Math.max(...a), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const snMax = max(e.sn), voMax = max(e.vo);
+    let tipo = 'otro';
+    if (snMax >= 0.25 && avg(e.sn) >= avg(e.vo) * 0.8) tipo = 'ronquido';
+    else if (voMax >= 0.3) tipo = 'voz';
+    else if (snMax >= 0.25) tipo = 'ronquido';
+    const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
+    const audio = concat(e.blocks);
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, top, peak: e.peak, est: e.est, audio});
+  }
+  flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
+}
+
+// ---------- Guardar sonidos de una noche ----------
+function newNight(fuente, extra = {}) {
+  return {id: Date.now(), inicio: Date.now(), fin: null, fuente, ronquidos: 0, voces: 0, otros: 0, descartados: 0, segRonquido: 0, timeline: [], ...extra};
+}
+function makeSaver(night, onChange) {
+  let chain = Promise.resolve();
+  return {
+    event(ev) {
+      if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
+      else if (ev.tipo === 'voz') night.voces++; else night.otros++;
+      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio)};
+      chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
+      onChange?.(ev);
+    },
+    minute(db) { night.timeline.push(Math.round(db * 10) / 10); chain = chain.then(() => DB.put('noches', night)).catch(console.error); },
+    discard() { night.descartados++; },
+    done() { return chain.then(() => DB.put('noches', night)); }
+  };
+}
+
+// ---------- Escuchar en directo ----------
+const live = {};
+const workletSrc = `class Cap extends AudioWorkletProcessor{constructor(){super();this.b=new Float32Array(2048);this.i=0}
+process(inp){const c=inp[0]&&inp[0][0];if(c){for(let k=0;k<c.length;k++){this.b[this.i++]=c[k];if(this.i===2048){this.port.postMessage(this.b);this.b=new Float32Array(2048);this.i=0}}}return true}}
+registerProcessor('cap',Cap);`;
+
+async function startListening() {
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}});
+  } catch (e) {
+    alert('No puedo usar el micrófono. Revisa el permiso del navegador para esta página.\n\n(' + e.message + ')'); return;
+  }
+  const ctx = new AudioContext();
+  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([workletSrc], {type: 'text/javascript'})));
+  const src = ctx.createMediaStreamSource(stream), node = new AudioWorkletNode(ctx, 'cap'), mute = ctx.createGain();
+  mute.gain.value = 0; src.connect(node).connect(mute).connect(ctx.destination);
+  await ctx.resume();
+
+  const night = newNight('micro');
+  await DB.put('noches', night);
+  const saver = makeSaver(night, ev => {
+    $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
+    $('lastEv').textContent = `Último: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
+    $('lstate').textContent = 'Escuchando…';
+  });
+  const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
+    onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
+    onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }});
+  const rs = new Resampler(ctx.sampleRate);
+  node.port.onmessage = m => det.push(rs.process(m.data));
+  stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Terminar la noche» para guardar.');
+
+  Object.assign(live, {stream, ctx, night, saver, det});
+  $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
+  $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
+  $('listen').classList.add('on');
+  await keepAwake();
+  wake();
+  live.timer = setInterval(() => {
+    $('clock').textContent = hhmm(Date.now());
+    $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
+    $('lvl').style.width = (det.level * 100) + '%';
+    $('lvl').classList.toggle('hot', !!det.ev);
+    if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = 'Escuchando…';
+    if (ctx.state === 'suspended') ctx.resume();
+  }, 500);
+  try { navigator.storage?.persist?.(); } catch {}
+}
+
+async function stopListening() {
+  if (!confirm('¿Terminar la noche y ver el resumen?')) return;
+  clearInterval(live.timer); clearTimeout(live.dimT);
+  live.det.flush();
+  live.stream.getTracks().forEach(t => t.stop());
+  live.ctx.close();
+  live.night.fin = Date.now();
+  await live.saver.done();
+  try { await live.lock?.release(); } catch {}
+  live.lock = null;
+  $('listen').classList.remove('on');
+  const id = live.night.id;
+  for (const k of Object.keys(live)) delete live[k];
+  await renderHome(); openNight(id);
+}
+
+async function keepAwake() {
+  try { live.lock = await navigator.wakeLock.request('screen'); }
+  catch { showWarn('Este navegador no puede mantener la pantalla encendida. Pon el bloqueo de pantalla en «Nunca» esta noche, o usa Chrome.'); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (live.night && document.visibilityState === 'visible') { keepAwake(); live.ctx?.resume(); }
+});
+function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
+function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
+  $('listen').classList.remove('dim'); clearTimeout(live.dimT);
+  live.dimT = setTimeout(() => $('listen').classList.add('dim'), 15000);
+}
+$('listen').addEventListener('pointerdown', e => {
+  if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
+  else wake();
+}, true);
+$('stopBtn').onclick = stopListening;
+$('startBtn').onclick = startListening;
+
+// ---------- Analizar un archivo de audio ----------
+$('fileBtn').onclick = () => $('fileIn').click();
+$('fileIn').onchange = async () => {
+  const file = $('fileIn').files[0]; $('fileIn').value = '';
+  if (!file) return;
+  if (file.size > 120e6 && !confirm('El archivo es muy grande y el móvil podría quedarse sin memoria. ¿Probar igualmente?')) return;
+  $('fileCard').hidden = false; $('fileTxt').textContent = 'Leyendo «' + file.name + '»…'; $('fileProg').style.width = '0';
+  try {
+    const ab = await file.arrayBuffer();
+    const buf = await new OfflineAudioContext(1, 1, SR).decodeAudioData(ab); // se convierte a 16 kHz al leer
+    let mono = buf.getChannelData(0);
+    if (buf.numberOfChannels > 1) {
+      const m = new Float32Array(buf.length);
+      for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < m.length; i++) m[i] += d[i] / buf.numberOfChannels; }
+      mono = m;
+    }
+    const night = newNight('archivo', {nombre: file.name, inicio: Date.now()});
+    await DB.put('noches', night);
+    const saver = makeSaver(night);
+    const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec, onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard});
+    const step = SR * 30;
+    for (let i = 0; i < mono.length; i += step) {
+      det.push(mono.subarray(i, Math.min(i + step, mono.length)));
+      $('fileProg').style.width = (Math.min(1, (i + step) / mono.length) * 100) + '%';
+      $('fileTxt').textContent = `Analizando… ${dur(i / SR)} de ${dur(mono.length / SR)} · 😴 ${night.ronquidos} · 🗣️ ${night.voces}`;
+      await new Promise(r => setTimeout(r, 0));
+    }
+    det.flush();
+    night.fin = night.inicio + mono.length / SR * 1000;
+    await saver.done();
+    $('fileCard').hidden = true;
+    await renderHome(); openNight(night.id);
+  } catch (e) {
+    console.error(e);
+    $('fileTxt').textContent = '❌ No pude leer ese archivo (' + e.message + '). Prueba con un audio .mp3, .m4a o .wav.';
+  }
+};
+
+// ---------- Pantallas ----------
+const hhmm = t => new Date(t).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+  return h ? `${h} h ${m} min` : m ? `${m} min` : `${s} s`; };
+const clockOff = s => { s = Math.round(s); return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES') : clockOff(off);
+const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
+  : 'Noche del ' + new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short'});
+
+async function renderHome() {
+  const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id);
+  $('nights').innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
+  for (const n of ns) {
+    const b = document.createElement('button'); b.className = 'night';
+    const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
+      : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
+    b.innerHTML = `<div><div class="when"></div><div class="sub"></div></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div>`;
+    b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
+    b.onclick = () => openNight(n.id);
+    $('nights').append(b);
+  }
+}
+
+let cur = null, curEvs = [], filter = 'todos';
+async function openNight(id) {
+  cur = await DB.get('noches', id); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off);
+  filter = 'todos';
+  $('home').hidden = true; $('night').hidden = false; window.scrollTo(0, 0);
+  const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
+  $('nTitle').textContent = nightName(n);
+  $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
+    + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '');
+  renderStats(); drawTimeline(total); renderList();
+}
+function renderStats() {
+  const s = curEvs.filter(e => e.tipo === 'ronquido');
+  $('tSnore').textContent = s.length;
+  $('tSnoreMin').textContent = Math.round(s.reduce((a, e) => a + e.dur, 0) / 60);
+  $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
+  const c = {todos: curEvs.length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
+  const lbl = {todos: 'Todos', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
+  $('chips').innerHTML = '';
+  for (const k of Object.keys(lbl)) {
+    if (k === 'otro' && !c.otro) continue;
+    const b = document.createElement('button'); b.className = 'chip' + (filter === k ? ' on' : '');
+    b.textContent = `${lbl[k]} (${c[k]})`; b.onclick = () => { filter = k; renderStats(); renderList(); };
+    $('chips').append(b);
+  }
+}
+function drawTimeline(total) {
+  const cv = $('tl'), dpr = devicePixelRatio || 1, W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d'), tl = cur.timeline, top = 16 * dpr, base = H - 18 * dpr;
+  total = Math.max(total, 60);
+  if (tl.length) {
+    const lo = Math.min(...tl), hi = Math.max(...tl, lo + 10), bw = W / Math.max(tl.length, total / 60);
+    g.fillStyle = '#334155';
+    tl.forEach((v, i) => { const h = Math.max(1, (v - lo) / (hi - lo) * (base - top - 6 * dpr)); g.fillRect(i * bw, base - h, Math.max(1, bw - 1), h); });
+  }
+  const col = {ronquido: '#A78BFA', voz: '#FBBF24', otro: '#64748B'};
+  for (const e of curEvs) {
+    g.fillStyle = col[e.tipo];
+    g.fillRect(e.off / total * W, 2 * dpr, Math.max(2 * dpr, e.dur / total * W), 10 * dpr);
+  }
+  g.fillStyle = '#64748B'; g.font = `${11 * dpr}px system-ui`; g.textBaseline = 'bottom';
+  const step = total > 4 * 3600 ? 3600 : total > 3600 ? 1800 : total > 600 ? 300 : 60;
+  for (let s = 0; s <= total; s += step) {
+    const x = s / total * W, label = cur.fuente === 'micro' ? hhmm(cur.inicio + s * 1000) : dur(s);
+    if (x > W - 30 * dpr) break;
+    g.fillText(label, x, H);
+  }
+}
+const TIPOS = ['ronquido', 'voz', 'otro'];
+const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : '🔊 ' + es(e.top);
+function renderList() {
+  const list = curEvs.filter(e => filter === 'todos' || e.tipo === filter);
+  $('evList').innerHTML = list.length ? '' : '<div class="empty">No se grabó nada de este tipo.</div>';
+  for (const e of list) {
+    const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
+    const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
+    d.innerHTML = `<div class="top"><span class="t">${evTime(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>
+      <span class="meta">${Math.round(e.dur)} s${conf != null && !e.fix ? ` · ${Math.round(conf * 100)}%` : ''}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
+      <span class="acts"><button class="play" title="Escuchar">▶</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div>`;
+    const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
+    a.href = '#'; a.onclick = ev => { a.href = url(); a.download = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`; };
+    d.querySelector('.play').onclick = () => {
+      let au = d.querySelector('audio');
+      if (!au) { au = document.createElement('audio'); au.controls = true; au.src = url(); d.append(au); }
+      au.play();
+    };
+    d.querySelector('.tag').onclick = async () => {
+      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true;
+      const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+    };
+    d.querySelector('.del').onclick = async () => {
+      if (!confirm('¿Borrar esta grabación?')) return;
+      await DB.tx('eventos', 'readwrite', st => st.delete(e.id));
+      curEvs = curEvs.filter(x => x !== e); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+    };
+    $('evList').append(d);
+  }
+}
+const timelineTotal = () => ((cur.fin || (cur.inicio + cur.timeline.length * 60e3)) - cur.inicio) / 1000;
+async function recount() {
+  const s = curEvs.filter(e => e.tipo === 'ronquido');
+  cur.ronquidos = s.length; cur.segRonquido = s.reduce((a, e) => a + e.dur, 0);
+  cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
+  await DB.put('noches', cur);
+}
+$('backBtn').onclick = () => { $('night').hidden = true; $('home').hidden = false; renderHome(); };
+$('delNight').onclick = async () => {
+  if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
+  await DB.delNight(cur.id); $('backBtn').onclick();
+};
+addEventListener('resize', () => { if (!$('night').hidden) drawTimeline(timelineTotal()); });
+
+// ---------- Arranque ----------
+if (!window.isSecureContext || !navigator.mediaDevices) {
+  setIA('bad', 'Abre la app desde su enlace https:// para poder usar el micrófono');
+}
+await DB.open();
+renderHome();
+IA.load();
+window.__EN = {IA, Detector, DB, SR}; // para pruebas
+</script>
+</body>
+</html>
