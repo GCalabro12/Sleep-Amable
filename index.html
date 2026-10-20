@@ -322,7 +322,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.6'; // v1.6: app Android (APK): botón que pone y quita «No molestar», wifi, sigue con la pantalla apagada, compartir grabaciones
+const VERSION = 'v1.7'; // v1.7: nueva musiquita de bienvenida (caja de música)
+// v1.6: app Android (APK): botón que pone y quita «No molestar», wifi, sigue con la pantalla apagada, compartir grabaciones
 // v1.5: la musiquita suena al tocar en Android (evento click, no pointerdown) y más volumen
 // v1.4: // v1.4: musiquita de bienvenida asegurada (toca para empezar si el móvil la bloquea) + lista «Antes de dormir» (No molestar / modo avión)
 // v1.3: // v1.3: bienvenida con logo y musiquita, menú con solo 2 opciones, instalable (manifest + sw)
@@ -989,29 +990,28 @@ function show(id) {
   for (const x of ['menu', 'home', 'mask', 'night']) $(x).hidden = x !== id;
   window.scrollTo(0, 0);
 }
-// Musiquita: un ronquido grave que se corta… y unas campanitas alegres
+// Musiquita: una nana de caja de música, con un eco suave (elegida por Gustavo en la v1.7)
 function jingle() {
   let c;
   try { c = new AudioContext(); } catch { return null; }
   const play = () => {
-    const t = c.currentTime + .05, out = c.createGain(); out.gain.value = .7; out.connect(c.destination);
-    const n = c.sampleRate, buf = c.createBuffer(1, n, n), d = buf.getChannelData(0); let br = 0;
-    for (let i = 0; i < n; i++) { br = (br + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = br * 3.5; }
-    const src = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain(), trem = c.createOscillator(), tg = c.createGain();
-    src.buffer = buf; lp.type = 'lowpass'; lp.frequency.value = 700; // más agudo para que se oiga en el altavoz del móvil
-    trem.frequency.value = 28; tg.gain.value = .5; trem.connect(tg).connect(g.gain);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.55, t + .55); g.gain.linearRampToValueAtTime(0, t + .8);
-    src.connect(lp).connect(g).connect(out); src.start(t); trem.start(t); src.stop(t + .9); trem.stop(t + .9);
-    [[523.25, 1.0], [659.25, 1.18], [783.99, 1.36], [1046.5, 1.6]].forEach(([f, at], i) => {
-      for (const [mul, vol] of [[1, .3], [2, .07]]) {
-        const o = c.createOscillator(), og = c.createGain();
+    const t = c.currentTime + .05, out = c.createGain(); out.gain.value = .9; out.connect(c.destination);
+    // Eco suave, como una sala
+    const d = c.createDelay(), fb = c.createGain(), lp = c.createBiquadFilter(), wet = c.createGain(), bus = c.createGain();
+    d.delayTime.value = .23; fb.gain.value = .32; lp.type = 'lowpass'; lp.frequency.value = 2600; wet.gain.value = .35;
+    bus.connect(out); bus.connect(d); d.connect(lp).connect(fb).connect(d); lp.connect(wet).connect(out);
+    // Cada nota: el tono + dos armónicos cortos que le dan el brillo de la caja de música
+    [[659.25, 0], [783.99, .32], [1046.5, .64], [987.77, .96], [783.99, 1.28], [880, 1.6], [1046.5, 1.95]].forEach(([f, at], i, a) => {
+      const dur = i === a.length - 1 ? 2.4 : 1.2;
+      for (const [mul, vol, caida = dur] of [[1, .28], [4, .05, .25], [3, .04, .4]]) {
+        const o = c.createOscillator(), g = c.createGain();
         o.type = 'sine'; o.frequency.value = f * mul;
-        og.gain.setValueAtTime(0, t + at); og.gain.linearRampToValueAtTime(vol, t + at + .02);
-        og.gain.exponentialRampToValueAtTime(.0001, t + at + (i === 3 ? 2 : 1.1));
-        o.connect(og).connect(out); o.start(t + at); o.stop(t + at + 2.1);
+        g.gain.setValueAtTime(0, t + at); g.gain.linearRampToValueAtTime(vol, t + at + .008);
+        g.gain.exponentialRampToValueAtTime(.0001, t + at + caida);
+        o.connect(g).connect(bus); o.start(t + at); o.stop(t + at + caida + .05);
       }
     });
-    setTimeout(() => c.close(), 4500);
+    setTimeout(() => c.close(), 6000);
   };
   c.resume().then(() => { if (c.state === 'running') play(); });
   return c;
