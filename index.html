@@ -82,6 +82,12 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .nat.on{border-color:#4ADE80;color:#86EFAC;background:#14532d33}
 .nat:disabled{opacity:.85}
 .natTxt{font-size:13px;color:var(--muted);margin-top:6px}
+/* Aviso «Instala la app» (solo en el navegador de un Android) */
+#apkBanner{border-color:#6D5BD0;background:linear-gradient(135deg,#1B2440,#231B4D)}
+#apkBanner h3{margin:0 0 6px;font-size:17px} #apkBanner p{margin:0 0 6px;font-size:14px;color:var(--muted)}
+#apkBanner ol{margin:6px 0 10px;padding-left:20px;font-size:13px;color:var(--muted)}
+#apkBanner .apkdl{display:block;text-align:center;text-decoration:none;color:#fff;padding:14px;border-radius:14px;font-weight:800;background:linear-gradient(135deg,#6D5BD0,#4338CA)}
+#apkBanner .apkno{display:block;margin:8px auto 0;background:none;border:0;color:var(--muted);font-size:14px;text-decoration:underline}
 @keyframes rq-pop{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-float{50%{transform:translateY(-6px)}}
@@ -187,6 +193,17 @@ canvas{width:100%;height:110px;display:block}
   </g>
   <path d="M322 146 L452 320" stroke="#F87171" stroke-width="26" stroke-linecap="round"/>
 </svg><h1>Ronqui<span style="color:#F87171">No</span></h1><span class="ver" id="ver"></span></header>
+  <div class="card" id="apkBanner" hidden>
+    <h3>📲 Instala la app de RonquiNo</h3>
+    <p>Con la app de Android, RonquiNo pone y quita «No molestar» por ti y sigue funcionando con la pantalla apagada.</p>
+    <ol>
+      <li>Toca el botón: se descarga <b>RonquiNo.apk</b>.</li>
+      <li>Cuando termine, toca <b>«Abrir»</b> (o la notificación de la descarga).</li>
+      <li>Toca <b>«Instalar»</b>. Si te pide permiso para instalar apps desde el navegador, actívalo y vuelve atrás.</li>
+    </ol>
+    <a class="apkdl" id="apkDl" href="RonquiNo.apk" download="RonquiNo.apk">⬇️ Descargar RonquiNo</a>
+    <button class="apkno" id="apkNo">Ahora no</button>
+  </div>
   <p class="hello">¿Qué necesitas esta noche?</p>
   <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Saber si ronco<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
@@ -209,7 +226,7 @@ canvas{width:100%;height:110px;display:block}
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
-    <li id="tipApk">📱 En Android, la <a href="https://github.com/GCalabro12/RonquiNo-Android/releases/latest/download/RonquiNo.apk" target="_blank" rel="noopener" style="color:var(--snore)">app RonquiNo</a> pone y quita «No molestar» por ti.</li>
+    <li id="tipApk">📱 En Android, la <a href="RonquiNo.apk" download="RonquiNo.apk" style="color:var(--snore)">app RonquiNo</a> pone y quita «No molestar» por ti.</li>
     <li>Solo se graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
   </ul>
@@ -322,7 +339,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.7'; // v1.7: nueva musiquita de bienvenida (caja de música)
+const VERSION = 'v1.8'; // v1.8: el APK se descarga desde la propia web (desde GitHub la descarga se quedaba trabada) + aviso «Instala la app» en Android
+// v1.7: nueva musiquita de bienvenida (caja de música)
 // v1.6: app Android (APK): botón que pone y quita «No molestar», wifi, sigue con la pantalla apagada, compartir grabaciones
 // v1.5: la musiquita suena al tocar en Android (evento click, no pointerdown) y más volumen
 // v1.4: // v1.4: musiquita de bienvenida asegurada (toca para empezar si el móvil la bloquea) + lista «Antes de dormir» (No molestar / modo avión)
@@ -1040,7 +1058,16 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 if (!window.isSecureContext || !navigator.mediaDevices) {
   setIA('bad', 'Abre la app desde su enlace https:// para poder usar el micrófono');
 }
+// En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
+// Con cada APK nueva: copiar RonquiNo.apk a la web y subir APK_ULTIMA.
+const APK_ULTIMA = '1.6';
 if (AND || !/Android/i.test(navigator.userAgent)) $('tipApk').remove();
+else {
+  $('apkDl').textContent = '⬇️ Descargar RonquiNo ' + APK_ULTIMA;
+  let oculto = false; try { oculto = localStorage.getItem('ronquino-sinApk') === APK_ULTIMA; } catch {}
+  $('apkBanner').hidden = oculto;
+  $('apkNo').onclick = () => { $('apkBanner').hidden = true; try { localStorage.setItem('ronquino-sinApk', APK_ULTIMA); } catch {} };
+}
 await DB.open();
 renderHome();
 IA.load();
