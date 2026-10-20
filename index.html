@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1020">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RonquiNo">
 <title>RonquiNo</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22rq-bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23312E81%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230B1020%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cmask%20id%3D%22rq-moon%22%3E%0A%20%20%20%20%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22%23fff%22/%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%22262%22%20cy%3D%22196%22%20r%3D%22124%22%20fill%3D%22%23000%22/%3E%0A%20%20%20%20%3C/mask%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22116%22%20fill%3D%22url%28%23rq-bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%2270%22%20cy%3D%22110%22%20r%3D%226%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.7%22/%3E%0A%20%20%3Ccircle%20cx%3D%22120%22%20cy%3D%22420%22%20r%3D%224%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22440%22%20cy%3D%22440%22%20r%3D%225%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.6%22/%3E%0A%20%20%3C%21--%20luna%20dormida%20--%3E%0A%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22262%22%20r%3D%22150%22%20fill%3D%22%23FDE68A%22%20mask%3D%22url%28%23rq-moon%29%22/%3E%0A%20%20%3Cpath%20d%3D%22M104%20300%20q26%2024%2054%202%22%20fill%3D%22none%22%20stroke%3D%22%231E1B4B%22%20stroke-width%3D%2213%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Ccircle%20cx%3D%22122%22%20cy%3D%22345%22%20r%3D%2215%22%20fill%3D%22%23FB7185%22%20opacity%3D%22.55%22/%3E%0A%20%20%3C%21--%20sonido%20del%20ronquido%2C%20silenciado%20--%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23A78BFA%22%20stroke-width%3D%2222%22%20stroke-linecap%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M330%20200%20a40%2040%200%200%201%200%2064%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M366%20172%20a78%2078%200%200%201%200%20120%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M402%20144%20a116%20116%200%200%201%200%20176%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cpath%20d%3D%22M322%20146%20L452%20320%22%20stroke%3D%22%23F87171%22%20stroke-width%3D%2226%22%20stroke-linecap%3D%22round%22/%3E%0A%3C/svg%3E">
 <style>
@@ -58,6 +62,25 @@ input[type=range]{width:100%;accent-color:#2DD4BF}
 .steps b{color:var(--text)}
 .ntxt{font-size:14px;color:#99F6E4;text-align:center;min-height:20px;margin-top:10px}
 input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;margin-top:8px}
+/* Bienvenida */
+#splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%,#312E81 0,#0B1020 62%);transition:opacity .7s}
+#splash.out{opacity:0;pointer-events:none}
+#splash img{width:150px;height:150px;filter:drop-shadow(0 12px 30px #4338ca88);animation:rq-pop .9s cubic-bezier(.34,1.56,.64,1) both,rq-float 3s ease-in-out .9s infinite}
+#splash .name{font-size:40px;font-weight:800;margin-top:24px;letter-spacing:-.5px;animation:rq-up .5s ease-out .8s both}
+#splash .sellos{margin-top:22px;animation:rq-up .5s ease-out 1.2s both}
+@keyframes rq-pop{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes rq-up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@keyframes rq-float{50%{transform:translateY(-6px)}}
+/* Menú: solo dos opciones */
+#menu{min-height:calc(100vh - 64px);display:flex;flex-direction:column}
+.hello{font-size:15px;color:var(--muted);margin:10px 0 18px}
+.choice{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:24px 18px;border:0;border-radius:22px;margin-bottom:16px;font-size:21px;font-weight:700}
+.choice small{display:block;font-size:14px;font-weight:400;opacity:.85;margin-top:4px}
+.choice .ic{font-size:40px;line-height:1}
+.choice.a{background:linear-gradient(135deg,#6D5BD0,#4338CA);box-shadow:0 8px 24px #4338ca55}
+.choice.b{background:linear-gradient(135deg,#0F766E,#155E75);box-shadow:0 8px 24px #0f766e44}
+#menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
 #listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .8s}
 #listen.on{display:flex}
@@ -102,7 +125,7 @@ canvas{width:100%;height:110px;display:block}
 .prog i{display:block;height:100%;width:0;background:#6D5BD0}
 .note{font-size:12px;color:var(--dim);margin-top:8px}
 /* Sellos (copiado de PC & Body-mind / Grow Panel): «by Práctica Integral» y «with Grow Panel» */
-.sellos{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:26px}
+.sellos{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
 .pi-seal,.gp-seal{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.3px;
   color:#94A3B8;border:1px solid #334155;border-radius:999px;padding:6px 12px;text-decoration:none;line-height:16px;white-space:nowrap;transition:color .2s,border-color .2s}
 .pi-seal::before{content:"";width:7px;height:7px;border-radius:50%;background:#4ADE80}
@@ -113,10 +136,16 @@ canvas{width:100%;height:110px;display:block}
 </style>
 </head>
 <body>
+<div id="splash"><img src="logo.svg" alt=""><div class="name">Ronqui<span style="color:#F87171">No</span></div>
+<div class="sellos">
+    <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
+    <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
+  </div>
+</div>
 <div class="wrap">
 
-<!-- INICIO -->
-<section id="home">
+<!-- MENÚ -->
+<section id="menu">
   <header><svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
   <defs>
     <linearGradient id="rq-bg" x1="0" y1="0" x2="1" y2="1">
@@ -143,12 +172,24 @@ canvas{width:100%;height:110px;display:block}
   </g>
   <path d="M322 146 L452 320" stroke="#F87171" stroke-width="26" stroke-linecap="round"/>
 </svg><h1>Ronqui<span style="color:#F87171">No</span></h1><span class="ver" id="ver"></span></header>
+  <p class="hello">¿Qué necesitas esta noche?</p>
+  <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Saber si ronco<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
+  <div class="sellos">
+    <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
+    <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
+  </div>
+</section>
+
+<!-- SABER SI RONCO -->
+<section id="home" hidden>
+  <button class="back" id="homeBack">← Inicio</button>
+  <h1 style="font-size:21px;margin:0 0 12px">😴 Saber si ronco</h1>
 
   <div class="card">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
   </div>
 
-  <div class="mode">😴 Saber si ronco</div>
   <button class="big" id="startBtn">🌙 Empezar a escuchar</button>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
@@ -157,11 +198,7 @@ canvas{width:100%;height:110px;display:block}
     <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
   </ul>
 
-  <div class="mode">🎧 Dormir junto a alguien que ronca</div>
-  <button class="big alt" id="maskBtn">🎧 Alguien ronca a mi lado</button>
-
-  <div class="mode">📂 Otras opciones</div>
-  <button class="btn wide" id="fileBtn">📂 Analizar una grabación (máx. ~1 hora)</button>
+  <button class="btn wide" id="fileBtn" style="margin-top:16px">📂 Analizar una grabación (máx. ~1 hora)</button>
   <input type="file" id="fileIn" accept="audio/*,video/*" hidden>
   <div class="card" id="fileCard" hidden>
     <div id="fileTxt">Analizando…</div>
@@ -181,16 +218,12 @@ canvas{width:100%;height:110px;display:block}
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
   </details>
 
-  <div class="sellos">
-    <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
-    <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
-  </div>
 </section>
 
 <!-- ALGUIEN RONCA A MI LADO -->
 <section id="mask" hidden>
-  <button class="back" id="maskBack">← Volver</button>
-  <h1 style="font-size:21px;margin:0 0 12px">🎧 Alguien ronca a mi lado</h1>
+  <button class="back" id="maskBack">← Inicio</button>
+  <h1 style="font-size:21px;margin:0 0 12px">🎧 Dormir junto a alguien que ronca</h1>
   <div class="card">
     <ol class="steps">
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
@@ -256,7 +289,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.2'; // v1.2: nombre RonquiNo + logo + modo «Alguien ronca a mi lado» (ruido que tapa ronquidos)
+const VERSION = 'v1.3'; // v1.3: bienvenida con logo y musiquita, menú con solo 2 opciones, instalable (manifest + sw)
+// v1.2: // v1.2: nombre RonquiNo + logo + modo «Alguien ronca a mi lado» (ruido que tapa ronquidos)
 // v1.1: sello «by Práctica Integral» + «with Grow Panel»; publicada en GitHub Pages
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-audio@0.10.14';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite';
@@ -619,7 +653,7 @@ let cur = null, curEvs = [], filter = 'todos';
 async function openNight(id) {
   cur = await DB.get('noches', id); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off);
   filter = 'todos';
-  $('home').hidden = true; $('night').hidden = false; window.scrollTo(0, 0);
+  show('night');
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
   $('nTitle').textContent = nightName(n);
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
@@ -701,7 +735,7 @@ async function recount() {
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
   await DB.put('noches', cur);
 }
-$('backBtn').onclick = () => { $('night').hidden = true; $('home').hidden = false; renderHome(); };
+$('backBtn').onclick = () => { show('home'); renderHome(); };
 $('delNight').onclick = async () => {
   if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
   await DB.delNight(cur.id); $('backBtn').onclick();
@@ -811,8 +845,10 @@ function renderNoise() {
   $('volTxt').textContent = noise.vol + '%' + (noise.vol > 60 ? ' · ⚠️ alto para toda la noche' : '');
   $('ntxt').textContent = playing() ? (noise.endAt ? `Sonando · se apagará hacia las ${hhmm(noise.endAt)}` : 'Sonando toda la noche · que descanses 🌙') : '';
 }
-$('maskBtn').onclick = () => { $('home').hidden = true; $('mask').hidden = false; window.scrollTo(0, 0); renderSounds(); renderNoise(); };
-$('maskBack').onclick = () => { $('mask').hidden = true; $('home').hidden = false; };
+$('maskBack').onclick = () => show('menu');
+$('goMask').onclick = () => { show('mask'); renderSounds(); renderNoise(); };
+$('goSnore').onclick = () => show('home');
+$('homeBack').onclick = () => show('menu');
 $('playBtn').onclick = () => playing() ? stopNoise() : startNoise().catch(e => alert('No se pudo reproducir: ' + e.message));
 $('vol').oninput = () => {
   noise.vol = +$('vol').value; clearInterval(noise.fadeT); noise.fadeT = null;
@@ -826,6 +862,49 @@ $('ytBtn').onclick = () => {
   if (!/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(u)) return alert('Pega un enlace de YouTube (empieza por https://youtube.com o https://youtu.be)');
   saveNoise(); window.open(u, '_blank', 'noopener');
 };
+
+// ---------- Pantallas y bienvenida ----------
+function show(id) {
+  for (const x of ['menu', 'home', 'mask', 'night']) $(x).hidden = x !== id;
+  window.scrollTo(0, 0);
+}
+// Musiquita: un ronquido grave que se corta… y unas campanitas alegres
+function jingle() {
+  let c;
+  try { c = new AudioContext(); } catch { return null; }
+  const play = () => {
+    const t = c.currentTime + .05, out = c.createGain(); out.gain.value = .5; out.connect(c.destination);
+    const n = c.sampleRate, buf = c.createBuffer(1, n, n), d = buf.getChannelData(0); let br = 0;
+    for (let i = 0; i < n; i++) { br = (br + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = br * 3.5; }
+    const src = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain(), trem = c.createOscillator(), tg = c.createGain();
+    src.buffer = buf; lp.type = 'lowpass'; lp.frequency.value = 380;
+    trem.frequency.value = 28; tg.gain.value = .5; trem.connect(tg).connect(g.gain);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.55, t + .55); g.gain.linearRampToValueAtTime(0, t + .8);
+    src.connect(lp).connect(g).connect(out); src.start(t); trem.start(t); src.stop(t + .9); trem.stop(t + .9);
+    [[523.25, 1.0], [659.25, 1.18], [783.99, 1.36], [1046.5, 1.6]].forEach(([f, at], i) => {
+      for (const [mul, vol] of [[1, .16], [2, .04]]) {
+        const o = c.createOscillator(), og = c.createGain();
+        o.type = 'sine'; o.frequency.value = f * mul;
+        og.gain.setValueAtTime(0, t + at); og.gain.linearRampToValueAtTime(vol, t + at + .02);
+        og.gain.exponentialRampToValueAtTime(.0001, t + at + (i === 3 ? 2 : 1.1));
+        o.connect(og).connect(out); o.start(t + at); o.stop(t + at + 2.1);
+      }
+    });
+    setTimeout(() => c.close(), 4500);
+  };
+  c.resume().then(() => { if (c.state === 'running') play(); });
+  return c;
+}
+function runSplash() {
+  const sp = $('splash'); let done = false;
+  const c = jingle();
+  const end = () => { if (done) return; done = true; sp.classList.add('out'); setTimeout(() => sp.remove(), 800); };
+  // si el navegador no deja sonar sin tocar antes, suena al tocar la pantalla
+  sp.addEventListener('pointerdown', () => { if (c && c.state !== 'running') { c.close(); jingle(); setTimeout(end, 2600); } else end(); });
+  setTimeout(() => { if (!c || c.state === 'running') end(); else setTimeout(end, 2500); }, 3200);
+}
+runSplash();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
 
 // ---------- Arranque ----------
 if (!window.isSecureContext || !navigator.mediaDevices) {
