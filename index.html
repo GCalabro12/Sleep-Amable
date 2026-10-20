@@ -77,6 +77,11 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #prep h2{margin:0 0 12px;font-size:20px}
 #prep .steps li{margin:10px 0}
 #prepAir.ok{color:#86EFAC} #prepAir.no{color:var(--voice)}
+/* Solo en la app Android: botones que activan los modos de verdad */
+.nat{display:block;width:100%;margin-top:8px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card2);font-size:15px;font-weight:700;text-align:center}
+.nat.on{border-color:#4ADE80;color:#86EFAC;background:#14532d33}
+.nat:disabled{opacity:.85}
+.natTxt{font-size:13px;color:var(--muted);margin-top:6px}
 @keyframes rq-pop{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-float{50%{transform:translateY(-6px)}}
@@ -204,6 +209,7 @@ canvas{width:100%;height:110px;display:block}
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
+    <li id="tipApk">📱 En Android, la <a href="https://github.com/GCalabro12/RonquiNo-Android/releases/latest/download/RonquiNo.apk" target="_blank" rel="noopener" style="color:var(--snore)">app RonquiNo</a> pone y quita «No molestar» por ti.</li>
     <li>Solo se graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
   </ul>
@@ -288,10 +294,11 @@ canvas{width:100%;height:110px;display:block}
     <h2>🌙 Antes de dormir</h2>
     <ol class="steps">
       <li><b>🔌 Enchufa el móvil</b> y déjalo cerca de la cama, con la pantalla hacia abajo.</li>
-      <li><b>🌙 Activa «No molestar»</b> (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</li>
-      <li><b>✈️ Modo avión: opcional.</b> <span id="prepAir"></span></li>
+      <li id="liDnd"><b>🌙 Activa «No molestar»</b> (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</li>
+      <li id="liAir"><b>✈️ Modo avión: opcional.</b> <span id="prepAir"></span></li>
+      <li id="liWifi" hidden></li>
     </ol>
-    <p class="note">RonquiNo no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
+    <p class="note" id="prepNote">RonquiNo no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
     <button class="btn wide" id="prepNo">Cancelar</button>
   </div>
@@ -315,7 +322,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.5'; // v1.5: la musiquita suena al tocar en Android (evento click, no pointerdown) y más volumen
+const VERSION = 'v1.6'; // v1.6: app Android (APK): botón que pone y quita «No molestar», wifi, sigue con la pantalla apagada, compartir grabaciones
+// v1.5: la musiquita suena al tocar en Android (evento click, no pointerdown) y más volumen
 // v1.4: // v1.4: musiquita de bienvenida asegurada (toca para empezar si el móvil la bloquea) + lista «Antes de dormir» (No molestar / modo avión)
 // v1.3: // v1.3: bienvenida con logo y musiquita, menú con solo 2 opciones, instalable (manifest + sw)
 // v1.2: // v1.2: nombre RonquiNo + logo + modo «Alguien ronca a mi lado» (ruido que tapa ronquidos)
@@ -328,6 +336,8 @@ const PRE = 8;             // 2 s de audio antes del sonido
 const QUIET = 24;          // 6 s de silencio cierran la grabación
 
 const $ = id => document.getElementById(id);
+// Dentro de la app Android existe este puente (No molestar, wifi, pantalla, servicio de noche…). En el navegador es null.
+const AND = window.RonquiNoAndroid || null;
 $('ver').textContent = VERSION;
 
 // ---------- Ajustes ----------
@@ -542,7 +552,9 @@ async function startListening() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}});
   } catch (e) {
-    alert('No puedo usar el micrófono. Revisa el permiso del navegador para esta página.\n\n(' + e.message + ')'); return;
+    AND?.restaurar();
+    alert((AND ? 'No puedo usar el micrófono. Dale permiso a RonquiNo en los ajustes de Android (Aplicaciones → RonquiNo → Permisos → Micrófono).'
+      : 'No puedo usar el micrófono. Revisa el permiso del navegador para esta página.') + '\n\n(' + e.message + ')'); return;
   }
   const ctx = new AudioContext();
   await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([workletSrc], {type: 'text/javascript'})));
@@ -568,6 +580,7 @@ async function startListening() {
   $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on');
+  AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
   await keepAwake();
   wake();
   live.timer = setInterval(() => {
@@ -591,6 +604,7 @@ async function stopListening() {
   await live.saver.done();
   try { await live.lock?.release(); } catch {}
   live.lock = null;
+  AND?.noche(false); // «No molestar» y wifi vuelven a como estaban
   $('listen').classList.remove('on');
   const id = live.night.id;
   for (const k of Object.keys(live)) delete live[k];
@@ -598,6 +612,7 @@ async function stopListening() {
 }
 
 async function keepAwake() {
+  if (AND) return; // en la app Android la pantalla se queda encendida sola
   try { live.lock = await navigator.wakeLock.request('screen'); }
   catch { showWarn('Este navegador no puede mantener la pantalla encendida. Pon el bloqueo de pantalla en «Nunca» esta noche, o usa Chrome.'); }
 }
@@ -606,8 +621,8 @@ document.addEventListener('visibilitychange', () => {
 });
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
-  $('listen').classList.remove('dim'); clearTimeout(live.dimT);
-  live.dimT = setTimeout(() => $('listen').classList.add('dim'), 15000);
+  $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
+  live.dimT = setTimeout(() => { $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000);
 }
 $('listen').addEventListener('pointerdown', e => {
   if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
@@ -621,8 +636,64 @@ $('startBtn').onclick = () => {
     ? 'Puedes ponerlo: el detector de ronquidos ya está cargado y RonquiNo funciona sin internet ni wifi. Eso sí, tampoco te entrarán llamadas.'
     : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera a ver «Detector listo» arriba antes de ponerlo.';
   $('prep').hidden = false;
+  if (AND) renderPrep();
 };
-$('prepNo').onclick = () => { $('prep').hidden = true; };
+$('prepNo').onclick = () => { $('prep').hidden = true; AND?.restaurar(); };
+
+// ---------- App Android: «No molestar» y wifi de verdad ----------
+let dndPedido = false; // tocó «Activar» y fue a dar el permiso
+function renderPrep() {
+  const acceso = AND.hasDndAccess(), activo = AND.dndActivo(), mio = AND.dndMio();
+  let btn, txt, on = false, off = false;
+  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Terminar la noche». Toca para quitarlo ya.'; }
+  else if (activo) { on = true; off = true; btn = '✅ Ya tienes «No molestar» puesto'; txt = 'Lo pusiste tú, así que RonquiNo lo deja como está.'; }
+  else if (!acceso) { btn = '🌙 Activar «No molestar»'; txt = 'La primera vez Android te pide permiso: busca <b>RonquiNo</b> en la lista, actívalo y vuelve a la app.'; }
+  else { btn = '🌙 Activar «No molestar»'; txt = 'RonquiNo lo pone ahora y lo quita al terminar la noche.'; }
+  $('liDnd').innerHTML = `<b>🌙 «No molestar»</b>: ninguna notificación ni llamada te despierta ni se cuela en las grabaciones. Las alarmas suenan según cómo lo tengas configurado.
+    <button class="nat${on ? ' on' : ''}" id="dndBtn"${off ? ' disabled' : ''}>${btn}</button><div class="natTxt">${txt}</div>`;
+  $('dndBtn').onclick = () => {
+    if (AND.dndMio()) AND.setDnd(false);
+    else if (!AND.hasDndAccess()) { dndPedido = true; AND.pedirDnd(); return; }
+    else if (AND.setDnd(true) !== 'ok') alert('Android no ha dejado poner «No molestar». Ponlo tú desde los ajustes rápidos (la luna).');
+    renderPrep();
+  };
+  // Modo avión: imposible desde una app
+  const air = $('prepAir').outerHTML;
+  $('liAir').innerHTML = `<b>✈️ Modo avión: opcional.</b> Android no deja que ninguna app lo active (está prohibido desde Android 4.2): si lo quieres, ponlo tú desde los ajustes rápidos. ${air}
+    <button class="nat" id="airBtn">✈️ Abrir los ajustes del modo avión</button>`;
+  $('airBtn').onclick = () => AND.abrirModoAvion();
+  // Wifi: hasta Android 9 RonquiNo lo apaga y lo enciende; desde Android 10 solo puede abrir el panel
+  const directo = AND.wifiDirecto(), wifiOn = AND.wifiEncendido(), wMio = AND.wifiMio();
+  let wb, wt, won = false;
+  if (directo && wMio && !wifiOn) { won = true; wb = '✅ Wifi apagado'; wt = 'Se encenderá solo al terminar la noche. Toca para encenderlo ya.'; }
+  else if (!wifiOn) { won = true; wb = '✅ El wifi ya está apagado'; wt = 'RonquiNo funciona sin internet una vez cargado el detector.'; }
+  else if (directo) { wb = '📶 Apagar el wifi esta noche'; wt = 'RonquiNo lo apaga ahora y lo vuelve a encender al terminar la noche.'; }
+  else { wb = '📶 Abrir el panel del wifi'; wt = 'Desde Android 10 ninguna app puede apagar el wifi sola: se abre el panel para que lo apagues tú (acuérdate de encenderlo por la mañana).'; }
+  $('liWifi').hidden = false;
+  $('liWifi').innerHTML = `<b>📶 Wifi: opcional.</b> <button class="nat${won ? ' on' : ''}" id="wifiBtn">${wb}</button><div class="natTxt">${wt}</div>`;
+  $('wifiBtn').onclick = () => {
+    if (AND.wifiMio() && !AND.wifiEncendido()) AND.encenderWifi();
+    else if (AND.wifiEncendido() && AND.apagarWifi() === 'error') alert('Android no ha dejado apagar el wifi. Apágalo tú desde los ajustes rápidos.');
+    setTimeout(renderPrep, 800); // el wifi tarda un poco en cambiar
+  };
+  $('prepNote').textContent = 'RonquiNo pone y quita «No molestar» por ti. El modo avión no: Android no lo permite a ninguna app.';
+}
+// Android llama a esto al volver de sus ajustes (permiso de «No molestar», panel del wifi…)
+window.nativeVuelta = () => {
+  if (!AND || $('prep').hidden) return;
+  if (dndPedido && AND.hasDndAccess() && !AND.dndActivo()) AND.setDnd(true);
+  dndPedido = false;
+  renderPrep();
+};
+// Botón «atrás» de Android: cierra la hoja o vuelve al menú; en el menú, la app se va al fondo
+window.atrasNativo = () => {
+  if ($('splash')) return false;
+  if (live.night) return true; // escuchando: no se sale sin «Terminar la noche»
+  if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
+  if (!$('night').hidden) { $('backBtn').onclick(); return true; }
+  if (!$('home').hidden || !$('mask').hidden) { show('menu'); return true; }
+  return false;
+};
 $('prepGo').onclick = () => { $('prep').hidden = true; startListening(); };
 
 // ---------- Analizar un archivo de audio ----------
@@ -747,7 +818,15 @@ function renderList() {
       <span class="meta">${Math.round(e.dur)} s${conf != null && !e.fix ? ` · ${Math.round(conf * 100)}%` : ''}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="play" title="Escuchar">▶</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
-    a.href = '#'; a.onclick = ev => { a.href = url(); a.download = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`; };
+    const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
+    if (AND) { // en la app Android no hay descargas: se comparte (WhatsApp, correo, Drive…)
+      a.textContent = '⤴'; a.title = 'Compartir';
+      a.onclick = async ev => {
+        ev.preventDefault();
+        const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(',')[1]); fr.readAsDataURL(e.blob); });
+        if (!AND.compartir(fname, b64)) alert('No se pudo compartir la grabación.');
+      };
+    } else { a.href = '#'; a.onclick = ev => { a.href = url(); a.download = fname; }; }
     d.querySelector('.play').onclick = () => {
       let au = d.querySelector('audio');
       if (!au) { au = document.createElement('audio'); au.controls = true; au.src = url(); d.append(au); }
@@ -821,6 +900,11 @@ function makeNoise(id) {
 }
 const noise = {au: new Audio(), id: null, urls: {}, vol: 40, fadeT: null, endT: null, endAt: 0};
 noise.au.loop = true;
+if (AND) { // en la app Android, un servicio mantiene el sonido con la pantalla apagada
+  let t;
+  noise.au.addEventListener('playing', () => { clearTimeout(t); AND.ruido(true); });
+  noise.au.addEventListener('pause', () => { clearTimeout(t); t = setTimeout(() => { if (noise.au.paused) AND.ruido(false); }, 1500); });
+}
 try {
   const o = JSON.parse(localStorage.getItem('ronquino-ruido') || '{}');
   noise.id = o.id; noise.vol = o.vol ?? 40; $('tmr').value = o.tmr ?? 0; $('ytUrl').value = o.yt || '';
@@ -956,6 +1040,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 if (!window.isSecureContext || !navigator.mediaDevices) {
   setIA('bad', 'Abre la app desde su enlace https:// para poder usar el micrófono');
 }
+if (AND || !/Android/i.test(navigator.userAgent)) $('tipApk').remove();
 await DB.open();
 renderHome();
 IA.load();
