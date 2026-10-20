@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1020">
-<title>Escucha Nocturna</title>
+<title>RonquiNo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22rq-bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23312E81%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230B1020%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cmask%20id%3D%22rq-moon%22%3E%0A%20%20%20%20%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22%23fff%22/%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%22262%22%20cy%3D%22196%22%20r%3D%22124%22%20fill%3D%22%23000%22/%3E%0A%20%20%20%20%3C/mask%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22116%22%20fill%3D%22url%28%23rq-bg%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%2270%22%20cy%3D%22110%22%20r%3D%226%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.7%22/%3E%0A%20%20%3Ccircle%20cx%3D%22120%22%20cy%3D%22420%22%20r%3D%224%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22440%22%20cy%3D%22440%22%20r%3D%225%22%20fill%3D%22%23C7D2FE%22%20opacity%3D%22.6%22/%3E%0A%20%20%3C%21--%20luna%20dormida%20--%3E%0A%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22262%22%20r%3D%22150%22%20fill%3D%22%23FDE68A%22%20mask%3D%22url%28%23rq-moon%29%22/%3E%0A%20%20%3Cpath%20d%3D%22M104%20300%20q26%2024%2054%202%22%20fill%3D%22none%22%20stroke%3D%22%231E1B4B%22%20stroke-width%3D%2213%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Ccircle%20cx%3D%22122%22%20cy%3D%22345%22%20r%3D%2215%22%20fill%3D%22%23FB7185%22%20opacity%3D%22.55%22/%3E%0A%20%20%3C%21--%20sonido%20del%20ronquido%2C%20silenciado%20--%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23A78BFA%22%20stroke-width%3D%2222%22%20stroke-linecap%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M330%20200%20a40%2040%200%200%201%200%2064%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M366%20172%20a78%2078%200%200%201%200%20120%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M402%20144%20a116%20116%200%200%201%200%20176%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Cpath%20d%3D%22M322%20146%20L452%20320%22%20stroke%3D%22%23F87171%22%20stroke-width%3D%2226%22%20stroke-linecap%3D%22round%22/%3E%0A%3C/svg%3E">
 <style>
 :root{
   --bg:#0B1020; --card:#141B2E; --card2:#1B2440; --line:#26304D;
@@ -16,7 +17,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 header{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
-header .moon{font-size:30px}
+header .logo{width:40px;height:40px;flex:none}
 header h1{font-size:22px;margin:0;font-weight:700}
 header .ver{margin-left:auto;font-size:12px;color:var(--dim)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
@@ -41,6 +42,22 @@ details.cfg summary{cursor:pointer;color:var(--muted);font-size:15px}
 .row small{display:block;color:var(--dim);font-size:12px}
 select,input[type=number]{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 9px;font:inherit}
 input[type=checkbox]{width:20px;height:20px;accent-color:#6D5BD0}
+.big.alt{background:linear-gradient(135deg,#0F766E,#155E75);box-shadow:0 8px 24px #0f766e44}
+.mode{font-size:13px;color:var(--muted);margin:22px 0 8px;text-transform:uppercase;letter-spacing:.6px}
+/* Ruido para tapar ronquidos */
+.sounds{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;margin:12px 0}
+.snd{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;font-size:14px}
+.snd b{display:block;font-size:26px;font-weight:400}
+.snd small{display:block;color:var(--dim);font-size:11px}
+.snd.on{border-color:#2DD4BF;background:#134E4A}
+.playbig{display:block;width:100%;padding:18px;border:0;border-radius:18px;background:linear-gradient(135deg,#0F766E,#155E75);font-size:20px;font-weight:700;margin-top:6px}
+.playbig.on{background:#1F2937;color:#99F6E4}
+input[type=range]{width:100%;accent-color:#2DD4BF}
+.steps{margin:0;padding-left:20px;font-size:14px;color:var(--muted)}
+.steps li{margin:5px 0}
+.steps b{color:var(--text)}
+.ntxt{font-size:14px;color:#99F6E4;text-align:center;min-height:20px;margin-top:10px}
+input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;margin-top:8px}
 /* Escuchando */
 #listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .8s}
 #listen.on{display:flex}
@@ -100,12 +117,38 @@ canvas{width:100%;height:110px;display:block}
 
 <!-- INICIO -->
 <section id="home">
-  <header><span class="moon">🌙</span><h1>Escucha Nocturna</h1><span class="ver" id="ver"></span></header>
+  <header><svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+  <defs>
+    <linearGradient id="rq-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#312E81"/><stop offset="1" stop-color="#0B1020"/>
+    </linearGradient>
+    <mask id="rq-moon">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="262" cy="196" r="124" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#rq-bg)"/>
+  <circle cx="70" cy="110" r="6" fill="#C7D2FE" opacity=".7"/>
+  <circle cx="120" cy="420" r="4" fill="#C7D2FE" opacity=".5"/>
+  <circle cx="440" cy="440" r="5" fill="#C7D2FE" opacity=".6"/>
+  <!-- luna dormida -->
+  <circle cx="200" cy="262" r="150" fill="#FDE68A" mask="url(#rq-moon)"/>
+  <path d="M104 300 q26 24 54 2" fill="none" stroke="#1E1B4B" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="122" cy="345" r="15" fill="#FB7185" opacity=".55"/>
+  <!-- sonido del ronquido, silenciado -->
+  <g fill="none" stroke="#A78BFA" stroke-width="22" stroke-linecap="round">
+    <path d="M330 200 a40 40 0 0 1 0 64"/>
+    <path d="M366 172 a78 78 0 0 1 0 120"/>
+    <path d="M402 144 a116 116 0 0 1 0 176"/>
+  </g>
+  <path d="M322 146 L452 320" stroke="#F87171" stroke-width="26" stroke-linecap="round"/>
+</svg><h1>Ronqui<span style="color:#F87171">No</span></h1><span class="ver" id="ver"></span></header>
 
   <div class="card">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
   </div>
 
+  <div class="mode">😴 Saber si ronco</div>
   <button class="big" id="startBtn">🌙 Empezar a escuchar</button>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
@@ -114,6 +157,10 @@ canvas{width:100%;height:110px;display:block}
     <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
   </ul>
 
+  <div class="mode">🎧 Dormir junto a alguien que ronca</div>
+  <button class="big alt" id="maskBtn">🎧 Alguien ronca a mi lado</button>
+
+  <div class="mode">📂 Otras opciones</div>
   <button class="btn wide" id="fileBtn">📂 Analizar una grabación (máx. ~1 hora)</button>
   <input type="file" id="fileIn" accept="audio/*,video/*" hidden>
   <div class="card" id="fileCard" hidden>
@@ -138,6 +185,35 @@ canvas{width:100%;height:110px;display:block}
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
   </div>
+</section>
+
+<!-- ALGUIEN RONCA A MI LADO -->
+<section id="mask" hidden>
+  <button class="back" id="maskBack">← Volver</button>
+  <h1 style="font-size:21px;margin:0 0 12px">🎧 Alguien ronca a mi lado</h1>
+  <div class="card">
+    <ol class="steps">
+      <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
+      <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
+      <li>Sube el volumen poco a poco <b>solo hasta dejar de notar los ronquidos</b>. Cuanto más bajo, mejor para tus oídos.</li>
+    </ol>
+  </div>
+  <div class="sounds" id="sounds"></div>
+  <button class="playbig" id="playBtn">▶ Empezar el sonido</button>
+  <div class="ntxt" id="ntxt"></div>
+  <div class="card" style="margin-top:12px">
+    <div class="row" style="margin-top:0"><label for="vol">🔈 Volumen</label><span id="volTxt"></span></div>
+    <input type="range" id="vol" min="1" max="100" step="1">
+    <div class="row"><label for="tmr">⏲️ Apagar después de<small>Se apaga poco a poco, sin despertarte</small></label>
+      <select id="tmr"><option value="0">Nunca (toda la noche)</option><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select></div>
+  </div>
+  <p class="note">Funciona sin internet y con la pantalla apagada. En iPhone el volumen se ajusta con los botones del móvil.</p>
+  <details class="cfg card">
+    <summary>▶️ ¿Prefieres tu vídeo de YouTube?</summary>
+    <input type="url" id="ytUrl" placeholder="Pega aquí el enlace del vídeo">
+    <button class="btn wide" id="ytBtn">Abrir mi vídeo</button>
+    <p class="note">Ojo: con la pantalla apagada YouTube suele pararse (salvo con YouTube Premium) y los anuncios pueden despertarte. Los sonidos de aquí arriba no tienen ese problema.</p>
+  </details>
 </section>
 
 <!-- NOCHE -->
@@ -180,7 +256,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.1'; // v1.1: sello «by Práctica Integral» + «with Grow Panel»; publicada en GitHub Pages
+const VERSION = 'v1.2'; // v1.2: nombre RonquiNo + logo + modo «Alguien ronca a mi lado» (ruido que tapa ronquidos)
+// v1.1: sello «by Práctica Integral» + «with Grow Panel»; publicada en GitHub Pages
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-audio@0.10.14';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite';
 const SR = 16000;          // todo se analiza y guarda a 16 kHz
@@ -193,18 +270,18 @@ $('ver').textContent = VERSION;
 
 // ---------- Ajustes ----------
 const cfg = {sens:10, keepOther:false, maxSec:60};
-try { Object.assign(cfg, JSON.parse(localStorage.getItem('en-cfg') || '{}')); } catch {}
+try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
 $('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec;
 for (const id of ['sens','keepOther','maxSec']) $(id).onchange = () => {
   cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value;
-  try { localStorage.setItem('en-cfg', JSON.stringify(cfg)); } catch {}
+  try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
 };
 
 // ---------- Base de datos (IndexedDB) ----------
 const DB = {
   db: null,
   open() { return new Promise((res, rej) => {
-    const r = indexedDB.open('escucha-nocturna', 1);
+    const r = indexedDB.open('ronquino', 1);
     r.onupgradeneeded = () => {
       const d = r.result;
       d.createObjectStore('noches', {keyPath:'id'});
@@ -631,6 +708,125 @@ $('delNight').onclick = async () => {
 };
 addEventListener('resize', () => { if (!$('night').hidden) drawTimeline(timelineTotal()); });
 
+// ---------- Ruido para tapar ronquidos ----------
+// Se genera aquí mismo (sin internet): 60 s que se repiten sin cortes, en un <audio> para que siga con la pantalla apagada.
+const SOUNDS = [
+  {id:'marron', e:'🟤', n:'Marrón', d:'el mejor para ronquidos'},
+  {id:'rosa', e:'🌸', n:'Rosa', d:'suave y equilibrado'},
+  {id:'blanco', e:'⚪', n:'Blanco', d:'el clásico, más agudo'},
+  {id:'lluvia', e:'🌧️', n:'Lluvia', d:'lluvia constante'},
+  {id:'olas', e:'🌊', n:'Olas', d:'mar en calma'}
+];
+const NSR = 22050, NLEN = NSR * 60, NFADE = NSR * 2;
+function makeNoise(id) {
+  const L = NLEN + NFADE, a = new Float32Array(L);
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0;
+  const pink = w => { // filtro de Paul Kellet
+    b0 = .99886*b0 + w*.0555179; b1 = .99332*b1 + w*.0750759; b2 = .969*b2 + w*.153852; b3 = .8665*b3 + w*.3104856;
+    b4 = .55*b4 + w*.5329522; b5 = -.7616*b5 - w*.016898; const o = b0+b1+b2+b3+b4+b5+b6 + w*.5362; b6 = w*.115926; return o * .11;
+  };
+  for (let i = 0; i < L; i++) {
+    const w = Math.random() * 2 - 1;
+    if (id === 'blanco') a[i] = w * .3;
+    else if (id === 'rosa') a[i] = pink(w);
+    else { br = (br + .02 * w) / 1.02; a[i] = br * 3.5; }
+    if (id === 'lluvia') a[i] = pink(w) * .7 + a[i] * .5;
+  }
+  if (id === 'lluvia') for (let k = 0; k < 60 * 40; k++) { // gotas
+    const p = Math.floor(Math.random() * (L - 400)), amp = .05 + Math.random() * .15;
+    for (let j = 0; j < 300; j++) a[p + j] += (Math.random() * 2 - 1) * amp * Math.exp(-j / 40);
+  }
+  const out = new Float32Array(NLEN); // el final se funde con el principio: el bucle no se nota
+  for (let i = 0; i < NLEN; i++) out[i] = i < NFADE ? a[i] * (i / NFADE) + a[NLEN + i] * (1 - i / NFADE) : a[i];
+  if (id === 'olas') for (let i = 0; i < NLEN; i++) out[i] *= .25 + .75 * Math.pow(.5 - .5 * Math.cos(2 * Math.PI * i / NSR / 10), 1.6);
+  let pk = 0; for (const v of out) pk = Math.max(pk, Math.abs(v));
+  const buf = new ArrayBuffer(44 + NLEN * 2), v = new DataView(buf);
+  const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  wr(0,'RIFF'); v.setUint32(4,36+NLEN*2,true); wr(8,'WAVE'); wr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true);
+  v.setUint16(22,1,true); v.setUint32(24,NSR,true); v.setUint32(28,NSR*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  wr(36,'data'); v.setUint32(40,NLEN*2,true);
+  for (let i = 0; i < NLEN; i++) v.setInt16(44 + i * 2, out[i] / pk * .9 * 0x7fff, true);
+  return URL.createObjectURL(new Blob([buf], {type: 'audio/wav'}));
+}
+const noise = {au: new Audio(), id: null, urls: {}, vol: 40, fadeT: null, endT: null, endAt: 0};
+noise.au.loop = true;
+try {
+  const o = JSON.parse(localStorage.getItem('ronquino-ruido') || '{}');
+  noise.id = o.id; noise.vol = o.vol ?? 40; $('tmr').value = o.tmr ?? 0; $('ytUrl').value = o.yt || '';
+} catch {}
+if (!SOUNDS.some(x => x.id === noise.id)) noise.id = 'marron';
+const saveNoise = () => { try { localStorage.setItem('ronquino-ruido', JSON.stringify({id: noise.id, vol: noise.vol, tmr: $('tmr').value, yt: $('ytUrl').value})); } catch {} };
+const playing = () => !noise.au.paused;
+function renderSounds() {
+  $('sounds').innerHTML = '';
+  for (const x of SOUNDS) {
+    const b = document.createElement('button'); b.className = 'snd' + (noise.id === x.id ? ' on' : '');
+    b.innerHTML = `<b>${x.e}</b>${x.n}<small>${x.d}</small>`;
+    b.onclick = () => { noise.id = x.id; saveNoise(); renderSounds(); if (playing()) startNoise(true); };
+    $('sounds').append(b);
+  }
+}
+function fadeTo(target, ms, then) { // sube o baja el volumen poco a poco
+  clearInterval(noise.fadeT);
+  const from = noise.au.volume, t0 = Date.now();
+  noise.fadeT = setInterval(() => {
+    const k = Math.min(1, (Date.now() - t0) / ms);
+    try { noise.au.volume = from + (target - from) * k; } catch {}
+    if (k >= 1) { clearInterval(noise.fadeT); noise.fadeT = null; then?.(); }
+  }, 100);
+}
+async function startNoise(swap) {
+  clearInterval(noise.fadeT); noise.fadeT = null;
+  const url = noise.urls[noise.id] ||= makeNoise(noise.id);
+  if (noise.au.src !== url) noise.au.src = url;
+  noise.au.volume = swap ? noise.vol / 100 : 0;
+  await noise.au.play();
+  if (!swap) fadeTo(noise.vol / 100, 8000);
+  setTimer();
+  if ('mediaSession' in navigator) {
+    const x = SOUNDS.find(s => s.id === noise.id);
+    navigator.mediaSession.metadata = new MediaMetadata({title: 'Ruido ' + x.n.toLowerCase(), artist: 'RonquiNo'});
+    navigator.mediaSession.setActionHandler('pause', stopNoise);
+    navigator.mediaSession.setActionHandler('play', () => startNoise());
+  }
+}
+function stopNoise() {
+  clearTimeout(noise.endT); noise.endAt = 0;
+  fadeTo(0, 1500, () => { noise.au.pause(); renderNoise(); });
+  renderNoise();
+}
+function setTimer() {
+  clearTimeout(noise.endT); noise.endAt = 0;
+  const min = +$('tmr').value;
+  if (min && playing()) {
+    noise.endAt = Date.now() + min * 60e3;
+    noise.endT = setTimeout(() => fadeTo(0, 60e3, () => { noise.au.pause(); noise.endAt = 0; renderNoise(); }), min * 60e3 - 60e3);
+  }
+  renderNoise();
+}
+function renderNoise() {
+  $('playBtn').textContent = playing() ? '⏸ Parar el sonido' : '▶ Empezar el sonido';
+  $('playBtn').classList.toggle('on', playing());
+  $('vol').value = noise.vol;
+  $('volTxt').textContent = noise.vol + '%' + (noise.vol > 60 ? ' · ⚠️ alto para toda la noche' : '');
+  $('ntxt').textContent = playing() ? (noise.endAt ? `Sonando · se apagará hacia las ${hhmm(noise.endAt)}` : 'Sonando toda la noche · que descanses 🌙') : '';
+}
+$('maskBtn').onclick = () => { $('home').hidden = true; $('mask').hidden = false; window.scrollTo(0, 0); renderSounds(); renderNoise(); };
+$('maskBack').onclick = () => { $('mask').hidden = true; $('home').hidden = false; };
+$('playBtn').onclick = () => playing() ? stopNoise() : startNoise().catch(e => alert('No se pudo reproducir: ' + e.message));
+$('vol').oninput = () => {
+  noise.vol = +$('vol').value; clearInterval(noise.fadeT); noise.fadeT = null;
+  try { noise.au.volume = noise.vol / 100; } catch {}
+  saveNoise(); renderNoise();
+};
+$('tmr').onchange = () => { saveNoise(); setTimer(); };
+$('ytUrl').onchange = saveNoise;
+$('ytBtn').onclick = () => {
+  const u = $('ytUrl').value.trim();
+  if (!/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(u)) return alert('Pega un enlace de YouTube (empieza por https://youtube.com o https://youtu.be)');
+  saveNoise(); window.open(u, '_blank', 'noopener');
+};
+
 // ---------- Arranque ----------
 if (!window.isSecureContext || !navigator.mediaDevices) {
   setIA('bad', 'Abre la app desde su enlace https:// para poder usar el micrófono');
@@ -638,7 +834,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 await DB.open();
 renderHome();
 IA.load();
-window.__EN = {IA, Detector, DB, SR}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, noise}; // para pruebas
 </script>
 </body>
 </html>
