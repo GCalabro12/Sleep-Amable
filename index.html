@@ -69,6 +69,14 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #splash img{width:150px;height:150px;filter:drop-shadow(0 12px 30px #4338ca88);animation:rq-pop .9s cubic-bezier(.34,1.56,.64,1) both,rq-float 3s ease-in-out .9s infinite}
 #splash .name{font-size:40px;font-weight:800;margin-top:24px;letter-spacing:-.5px;animation:rq-up .5s ease-out .8s both}
 #splash .sellos{margin-top:22px;animation:rq-up .5s ease-out 1.2s both}
+#splash .hi{font-size:17px;color:#C7D2FE;margin-top:6px;animation:rq-up .5s ease-out 1s both}
+#splash .tap{position:absolute;bottom:12%;font-size:17px;color:#E0E7FF;background:#ffffff14;border:1px solid #ffffff2a;padding:10px 20px;border-radius:999px;animation:pulse 1.1s infinite alternate}
+/* Antes de dormir */
+#prep{position:fixed;inset:0;z-index:20;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+#prep .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px 16px 26px}
+#prep h2{margin:0 0 12px;font-size:20px}
+#prep .steps li{margin:10px 0}
+#prepAir.ok{color:#86EFAC} #prepAir.no{color:var(--voice)}
 @keyframes rq-pop{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-float{50%{transform:translateY(-6px)}}
@@ -137,6 +145,8 @@ canvas{width:100%;height:110px;display:block}
 </head>
 <body>
 <div id="splash"><img src="logo.svg" alt=""><div class="name">Ronqui<span style="color:#F87171">No</span></div>
+<div class="hi">¡Te damos la bienvenida!</div>
+<div class="tap" id="tapHint" hidden>👆 Toca para empezar</div>
 <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
@@ -229,6 +239,7 @@ canvas{width:100%;height:110px;display:block}
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
       <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
       <li>Sube el volumen poco a poco <b>solo hasta dejar de notar los ronquidos</b>. Cuanto más bajo, mejor para tus oídos.</li>
+      <li>Activa <b>🌙 No molestar</b> para que no te despierten notificaciones. Si pones el modo avión, vuelve a encender el <b>Bluetooth</b> si tus auriculares son inalámbricos.</li>
     </ol>
   </div>
   <div class="sounds" id="sounds"></div>
@@ -271,6 +282,21 @@ canvas{width:100%;height:110px;display:block}
 
 </div>
 
+<!-- ANTES DE DORMIR -->
+<div id="prep" hidden>
+  <div class="sheet">
+    <h2>🌙 Antes de dormir</h2>
+    <ol class="steps">
+      <li><b>🔌 Enchufa el móvil</b> y déjalo cerca de la cama, con la pantalla hacia abajo.</li>
+      <li><b>🌙 Activa «No molestar»</b> (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</li>
+      <li><b>✈️ Modo avión: opcional.</b> <span id="prepAir"></span></li>
+    </ol>
+    <p class="note">RonquiNo no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
+    <button class="big" id="prepGo">🌙 Listo, empezar</button>
+    <button class="btn wide" id="prepNo">Cancelar</button>
+  </div>
+</div>
+
 <!-- ESCUCHANDO -->
 <div id="listen">
   <div class="inner">
@@ -289,7 +315,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v1.3'; // v1.3: bienvenida con logo y musiquita, menú con solo 2 opciones, instalable (manifest + sw)
+const VERSION = 'v1.4'; // v1.4: musiquita de bienvenida asegurada (toca para empezar si el móvil la bloquea) + lista «Antes de dormir» (No molestar / modo avión)
+// v1.3: // v1.3: bienvenida con logo y musiquita, menú con solo 2 opciones, instalable (manifest + sw)
 // v1.2: // v1.2: nombre RonquiNo + logo + modo «Alguien ronca a mi lado» (ruido que tapa ronquidos)
 // v1.1: sello «by Práctica Integral» + «with Grow Panel»; publicada en GitHub Pages
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-audio@0.10.14';
@@ -586,7 +613,16 @@ $('listen').addEventListener('pointerdown', e => {
   else wake();
 }, true);
 $('stopBtn').onclick = stopListening;
-$('startBtn').onclick = startListening;
+$('startBtn').onclick = () => {
+  const ok = !!IA.clf;
+  $('prepAir').className = ok ? 'ok' : 'no';
+  $('prepAir').textContent = ok
+    ? 'Puedes ponerlo: el detector de ronquidos ya está cargado y RonquiNo funciona sin internet ni wifi. Eso sí, tampoco te entrarán llamadas.'
+    : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera a ver «Detector listo» arriba antes de ponerlo.';
+  $('prep').hidden = false;
+};
+$('prepNo').onclick = () => { $('prep').hidden = true; };
+$('prepGo').onclick = () => { $('prep').hidden = true; startListening(); };
 
 // ---------- Analizar un archivo de audio ----------
 $('fileBtn').onclick = () => $('fileIn').click();
@@ -873,7 +909,7 @@ function jingle() {
   let c;
   try { c = new AudioContext(); } catch { return null; }
   const play = () => {
-    const t = c.currentTime + .05, out = c.createGain(); out.gain.value = .5; out.connect(c.destination);
+    const t = c.currentTime + .05, out = c.createGain(); out.gain.value = .9; out.connect(c.destination);
     const n = c.sampleRate, buf = c.createBuffer(1, n, n), d = buf.getChannelData(0); let br = 0;
     for (let i = 0; i < n; i++) { br = (br + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = br * 3.5; }
     const src = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain(), trem = c.createOscillator(), tg = c.createGain();
@@ -896,12 +932,20 @@ function jingle() {
   return c;
 }
 function runSplash() {
-  const sp = $('splash'); let done = false;
-  const c = jingle();
+  const sp = $('splash'); let done = false, c = jingle();
   const end = () => { if (done) return; done = true; sp.classList.add('out'); setTimeout(() => sp.remove(), 800); };
-  // si el navegador no deja sonar sin tocar antes, suena al tocar la pantalla
-  sp.addEventListener('pointerdown', () => { if (c && c.state !== 'running') { c.close(); jingle(); setTimeout(end, 2600); } else end(); });
-  setTimeout(() => { if (!c || c.state === 'running') end(); else setTimeout(end, 2500); }, 3200);
+  // Si el móvil no deja sonar la musiquita sin tocar antes la pantalla, la bienvenida espera a que toques
+  setTimeout(() => {
+    if (c && c.state === 'running') setTimeout(end, 2800);
+    else $('tapHint').hidden = false;
+  }, 400);
+  sp.addEventListener('pointerdown', () => {
+    if (done) return;
+    if (!c || c.state !== 'running') {
+      try { c?.close(); } catch {}
+      c = jingle(); $('tapHint').hidden = true; setTimeout(end, 2800);
+    } else end();
+  });
 }
 runSplash();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
