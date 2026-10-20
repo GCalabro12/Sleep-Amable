@@ -1,0 +1,30 @@
+// RonquiNo — funciona sin conexión. Subir CACHE con cada versión.
+const CACHE = 'ronquino-v1.3';
+const CORE = ['./', './index.html', './logo.svg', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+// La IA (MediaPipe + modelo YAMNet) se guarda la primera vez que se descarga
+const IA_HOSTS = ['cdn.jsdelivr.net', 'storage.googleapis.com'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys()
+    .then(ks => Promise.all(ks.filter(k => k.startsWith('ronquino-') && k !== CACHE && k !== 'ronquino-ia').map(k => caches.delete(k))))
+    .then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  const r = e.request, u = new URL(r.url);
+  if (r.method !== 'GET') return;
+  if (IA_HOSTS.includes(u.hostname)) { // primero la copia guardada
+    e.respondWith(caches.open('ronquino-ia').then(c => c.match(r).then(hit => hit || fetch(r).then(res => {
+      if (res.ok) c.put(r, res.clone());
+      return res;
+    }))));
+    return;
+  }
+  if (u.origin !== location.origin || !u.pathname.startsWith(new URL('./', self.registration.scope).pathname)) return;
+  e.respondWith(fetch(r).then(res => { // primero la red (para recibir versiones nuevas), si no hay, la copia
+    if (res.ok && !u.search) caches.open(CACHE).then(c => c.put(r, res.clone()));
+    return res;
+  }).catch(() => caches.match(r, {ignoreSearch: true}).then(hit => hit || caches.match('./index.html'))));
+});
