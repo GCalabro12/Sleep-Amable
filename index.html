@@ -137,6 +137,9 @@ canvas{width:100%;height:110px;display:block}
 .chip.on{background:#312E81;border-color:#4338CA}
 .ev{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 46px 10px 12px;margin-bottom:8px}
 .ev.sel{background:#1E1B4B}
+.ev{scroll-margin-top:64px;scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
+.ev .acts .fav{color:#94A3B8}
+.ev .acts .fav.on{color:#FB923C;border-color:#FB923C;background:#431407}
 .pick{width:26px;height:26px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:7px;border:2px solid #64748B;background:transparent;color:#fff;font-size:16px;font-weight:800;line-height:1}
 .pick.on{background:#6D5BD0;border-color:#6D5BD0}
 .ev > .pick{position:absolute;top:10px;right:10px}
@@ -389,7 +392,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.3'; // v2.3: cuadrito para seleccionar cada grabación + «seleccionar todas»; compartir o borrar las seleccionadas
+const VERSION = 'v2.4'; // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
+// v2.3: // v2.3: cuadrito para seleccionar cada grabación + «seleccionar todas»; compartir o borrar las seleccionadas
 // v2.2: // v2.2: reproductor fijo abajo en cada noche: barra para avanzar, anterior/siguiente, velocidad para todas (1×, 1,5×, 2×, 3×), subir volumen (×2, ×4) y reproducción seguida; sensibilidad Baja/Normal/Alta cambiable mientras escucha, con raya en la barra
 // v2.1: // v2.1: sonidos para dormir en estéreo, 44 kHz y filtrados (blanco suave, marrón sin retumbe, lluvia sin chasquidos, olas más reales)
 // v2.0: // v2.0: nombre «Amable Sleep» (Amable delante, como toda la familia: Amable Life, Amable PC, Amable Vision); app Android 1.8
@@ -860,11 +864,11 @@ function renderStats() {
   $('tSnore').textContent = s.length;
   $('tSnoreMin').textContent = Math.round(s.reduce((a, e) => a + e.dur, 0) / 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
-  const c = {todos: curEvs.length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
-  const lbl = {todos: 'Todos', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
+  const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
+  const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
   $('chips').innerHTML = '';
   for (const k of Object.keys(lbl)) {
-    if (k === 'otro' && !c.otro) continue;
+    if ((k === 'otro' || k === 'fav') && !c[k] && filter !== k) continue;
     const b = document.createElement('button'); b.className = 'chip' + (filter === k ? ' on' : '');
     b.textContent = `${lbl[k]} (${c[k]})`; b.onclick = () => { filter = k; sel.clear(); renderStats(); renderList(); };
     $('chips').append(b);
@@ -896,7 +900,7 @@ function drawTimeline(total) {
 const TIPOS = ['ronquido', 'voz', 'otro'];
 const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : '🔊 ' + es(e.top);
 function renderList() {
-  const list = curList = curEvs.filter(e => filter === 'todos' || e.tipo === filter);
+  const list = curList = curEvs.filter(e => filter === 'todos' || (filter === 'fav' ? e.fav : e.tipo === filter));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
   $('selbar').hidden = !list.length;
   $('evList').innerHTML = list.length ? '' : '<div class="empty">No se grabó nada de este tipo.</div>';
@@ -905,7 +909,7 @@ function renderList() {
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
     d.innerHTML = `<div class="top"><span class="t">${evTime(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>
       <span class="meta">${Math.round(e.dur)} s${conf != null && !e.fix ? ` · ${Math.round(conf * 100)}%` : ''}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
-      <span class="acts"><button class="play" title="Escuchar">▶</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div>`;
+      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><button class="play" title="Escuchar">▶</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
     if (AND) { // en la app Android no hay descargas: se comparte (WhatsApp, correo, Drive…)
@@ -921,6 +925,13 @@ function renderList() {
     pk.onclick = () => { sel.has(e.id) ? sel.delete(e.id) : sel.add(e.id); renderSel(); };
     d.append(pk);
     d.querySelector('.play').onclick = () => PL.list[PL.i] === e ? plToggle() : plPlay(PL.list.indexOf(e));
+    d.querySelector('.fav').onclick = async () => {
+      e.fav = !e.fav;
+      const {_url, ...rec} = e; await DB.put('eventos', rec);
+      if (filter === 'fav' && !e.fav) { renderStats(); renderList(); return; }
+      const b = d.querySelector('.fav'); b.classList.toggle('on', e.fav); b.textContent = e.fav ? '★' : '☆';
+      renderStats();
+    };
     d.querySelector('.tag').onclick = async () => {
       e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
@@ -1024,6 +1035,7 @@ function plSetList(list) {
   if (was && PL.i < 0) { PL.au.pause(); PL.au.removeAttribute('src'); PL.au.load(); $('plSeek').value = 0; $('plT').textContent = $('plD').textContent = '0:00'; }
   $('pl').hidden = !list.length;
   document.body.classList.toggle('pl-on', !!list.length);
+  if (list.length) requestAnimationFrame(() => document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'));
   plRender();
 }
 function plPlay(i) {
