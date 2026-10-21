@@ -76,6 +76,17 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #prep .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px 16px 26px}
 #prep h2{margin:0 0 12px;font-size:20px}
 #prep .steps li{margin:10px 0}
+.pdet{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--card2)}
+.pdet summary{padding:13px 14px;cursor:pointer;font-weight:600;font-size:15px}
+.pdet summary small{color:var(--dim);font-weight:400}
+.pdet .pbody{padding:0 14px 13px;font-size:14px;color:var(--muted)}
+.cunas{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:4px}
+.cuna{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:13px;color:var(--text)}
+.cuna b{display:block;font-size:26px;font-weight:400}
+.cuna.on{border-color:#A78BFA;background:#312E81}
+details.hist summary{cursor:pointer;font-size:17px;font-weight:700;padding:2px 0}
+details.hist summary small{font-weight:400;color:var(--muted);font-size:14px}
+details.hist[open] summary{margin-bottom:10px}
 #prepAir.ok{color:#86EFAC} #prepAir.no{color:var(--voice)}
 /* Solo en la app Android: botones que activan los modos de verdad */
 .nat{display:block;width:100%;margin-top:8px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card2);font-size:15px;font-weight:700;text-align:center}
@@ -117,7 +128,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .lsens{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px;font-size:13px;color:var(--dim)}
 .lsens button{background:#111827;border:1px solid #1F2937;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
-.lhint{font-size:12px;color:var(--dim);margin-bottom:14px}
+.lhint{font-size:12px;color:var(--dim);margin-bottom:10px}
+.mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:9px 16px;font-size:14px;margin-bottom:14px}
+.lcuna{font-size:14px;color:#C4B5FD;margin-bottom:12px}
+.lcuna button{margin-left:8px;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;padding:4px 10px;font-size:13px}
 .state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
 .last{font-size:14px;color:var(--muted);min-height:20px;margin-bottom:28px}
 #stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
@@ -132,6 +146,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 canvas{width:100%;height:90px;display:block}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
+#tl{touch-action:none}
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
@@ -273,8 +288,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prog"><i id="fileProg"></i></div>
   </div>
 
-  <h2>Noches</h2>
-  <div id="nights"></div>
+  <details class="hist card" id="histDet">
+    <summary>📚 Historial de grabaciones <small id="histN"></small></summary>
+    <div id="nights"></div>
+  </details>
 
   <details class="cfg card">
     <summary>⚙️ Ajustes</summary>
@@ -330,7 +347,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span>🤏 pellizca para ampliar</span></div>
   </div>
   <div class="chips" id="chips"></div>
   <div class="selbar" id="selbar">
@@ -364,12 +381,11 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <ol class="steps">
-      <li><b>🔌 Enchufa el móvil</b> y déjalo cerca de la cama, con la pantalla hacia abajo.</li>
-      <li id="liDnd"><b>🌙 Activa «No molestar»</b> (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</li>
-      <li id="liAir"><b>✈️ Modo avión: opcional.</b> <span id="prepAir"></span></li>
-      <li id="liWifi" hidden></li>
-    </ol>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo.</div></details>
+    <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
+    <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
+    <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
+    <details class="pdet" id="dCuna"><summary>🎵 Canción de cuna <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
     <p class="note" id="prepNote">Amable Sleep no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
     <button class="btn wide" id="prepNo">Cancelar</button>
@@ -388,6 +404,8 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
+    <button class="mute" id="muteBtn">⏸ No grabar +5 s</button>
+    <div class="lcuna" id="lcuna" hidden></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <button id="stopBtn">☀️ Terminar la noche</button>
@@ -396,7 +414,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.6'; // v2.6: día de la semana completo («Noche del martes, 20 de octubre»); gráfico fijo arriba con raya que avanza con lo que suena; tocar el gráfico va a esa hora
+const VERSION = 'v2.7'; // v2.7: gráfico ampliable con dos dedos que sigue a lo que suena; «Historial» desplegable; «Antes de dormir» en desplegables; botón «No grabar +5 s»; sección «Canción de cuna» (Suno)
+// v2.6: // v2.6: día de la semana completo («Noche del martes, 20 de octubre»); gráfico fijo arriba con raya que avanza con lo que suena; tocar el gráfico va a esa hora
 // v2.5: // v2.5: mantener pulsado un cuadrito marca todo el tramo hasta la última marcada
 // v2.4: // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
 // v2.3: // v2.3: cuadrito para seleccionar cada grabación + «seleccionar todas»; compartir o borrar las seleccionadas
@@ -565,10 +584,11 @@ class Detector {
     if (this.floor === null) this.floor = db;
     const thr = this.floor + this.sens, loud = db > thr && db > -75;
     this.level = Math.max(0, Math.min(1, (db - this.floor) / (this.sens * 2)));
+    const muted = this.muteUntil > t0; // «No grabar»: ni graba ni aprende el ruido de fondo
     if (!this.ev) {
-      this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
+      if (!muted) this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
       this.pre.push(b); if (this.pre.length > PRE) this.pre.shift();
-      if (loud && this.samples > SR * 3) {
+      if (loud && !muted && this.samples > SR * 3) {
         this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], tops: {}, peak: db, est: false};
         this.pre = [];
         this.onStart?.();
@@ -581,6 +601,12 @@ class Detector {
       if (e.quiet >= QUIET) { e.blocks.length -= QUIET - 4; this.finish(); }
       else if (e.blocks.length * BLK / SR >= this.maxSec) this.finish();
     }
+  }
+  // Añade segundos sin grabar (y descarta lo que estuviera grabando en ese momento)
+  mute(sec) {
+    const now = this.samples / SR;
+    this.muteUntil = Math.max(now, this.muteUntil || 0) + sec;
+    this.ev = null; this.pre = [];
   }
   classify(blocks) {
     const e = this.ev, r = IA.scores(concat(blocks));
@@ -674,6 +700,7 @@ async function startListening() {
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
     if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = 'Escuchando…';
+    muteTick();
     if (ctx.state === 'suspended') ctx.resume();
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
@@ -693,6 +720,7 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
 async function stopListening() {
   if (!confirm('¿Terminar la noche y ver el resumen?')) return;
   clearInterval(live.timer); clearTimeout(live.dimT);
+  if (live.cuna) endCuna();
   live.det.flush();
   live.stream.getTracks().forEach(t => t.stop());
   live.ctx.close();
@@ -732,6 +760,7 @@ $('startBtn').onclick = () => {
     ? 'Puedes ponerlo: el detector de ronquidos ya está cargado y Amable Sleep funciona sin internet ni wifi. Eso sí, tampoco te entrarán llamadas.'
     : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera a ver «Detector listo» arriba antes de ponerlo.';
   $('prep').hidden = false;
+  renderCunas();
   if (AND) renderPrep();
 };
 $('prepNo').onclick = () => { $('prep').hidden = true; AND?.restaurar(); };
@@ -747,6 +776,7 @@ function renderPrep() {
   else { btn = '🌙 Activar «No molestar»'; txt = 'Amable Sleep lo pone ahora y lo quita al terminar la noche.'; }
   $('liDnd').innerHTML = `<b>🌙 «No molestar»</b>: ninguna notificación ni llamada te despierta ni se cuela en las grabaciones. Las alarmas suenan según cómo lo tengas configurado.
     <button class="nat${on ? ' on' : ''}" id="dndBtn"${off ? ' disabled' : ''}>${btn}</button><div class="natTxt">${txt}</div>`;
+  $('sDnd').textContent = on ? '✅' : '';
   $('dndBtn').onclick = () => {
     if (AND.dndMio()) AND.setDnd(false);
     else if (!AND.hasDndAccess()) { dndPedido = true; AND.pedirDnd(); return; }
@@ -765,7 +795,7 @@ function renderPrep() {
   else if (!wifiOn) { won = true; wb = '✅ El wifi ya está apagado'; wt = 'Amable Sleep funciona sin internet una vez cargado el detector.'; }
   else if (directo) { wb = '📶 Apagar el wifi esta noche'; wt = 'Amable Sleep lo apaga ahora y lo vuelve a encender al terminar la noche.'; }
   else { wb = '📶 Abrir el panel del wifi'; wt = 'Desde Android 10 ninguna app puede apagar el wifi sola: se abre el panel para que lo apagues tú (acuérdate de encenderlo por la mañana).'; }
-  $('liWifi').hidden = false;
+  $('dWifi').hidden = false; $('sWifi').textContent = won ? '✅' : '';
   $('liWifi').innerHTML = `<b>📶 Wifi: opcional.</b> <button class="nat${won ? ' on' : ''}" id="wifiBtn">${wb}</button><div class="natTxt">${wt}</div>`;
   $('wifiBtn').onclick = () => {
     if (AND.wifiMio() && !AND.wifiEncendido()) AND.encenderWifi();
@@ -790,7 +820,72 @@ window.atrasNativo = () => {
   if (!$('home').hidden || !$('mask').hidden) { show('menu'); return true; }
   return false;
 };
-$('prepGo').onclick = () => { $('prep').hidden = true; startListening(); };
+$('prepGo').onclick = async () => {
+  $('prep').hidden = true;
+  await startListening();
+  const c = cunaSel(); if (c && live.det) playCuna(c);
+};
+$('muteBtn').onclick = () => { if (live.det) { live.det.mute(5); muteTick(); } };
+// Texto de «sin grabar» en la pantalla negra (lo llama también el reloj de cada medio segundo)
+function muteTick() {
+  const d = live.det; if (!d) return;
+  const rem = (d.muteUntil || 0) - d.samples / SR;
+  if (live.cuna) $('lstate').textContent = '🎵 Sin grabar mientras suena la canción';
+  else if (rem > 0) $('lstate').textContent = `⏸ Sin grabar: ${Math.ceil(rem)} s`;
+  else if ($('lstate').textContent.startsWith('⏸') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
+}
+
+// ---------- Canciones de cuna (hechas con Suno) ----------
+// Archivos en cuna/. Cada una suena 5 minutos (se repite si es más corta) y se apaga en 5 segundos.
+// Mientras suena no se graba; al acabar empieza la escucha normal.
+const CUNAS = [ // {id, icon, name, file}
+];
+const CUNA_SEG = 300, CUNA_FADE = 5;
+let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
+const cunaSel = () => CUNAS.find(c => c.id === cunaId) || null;
+function renderCunas() {
+  const c = cunaSel();
+  $('sCuna').textContent = c ? `${c.icon} ${c.name}` : 'ninguna';
+  if (!CUNAS.length) {
+    $('cunaBody').innerHTML = 'Aún no hay canciones de cuna: las estamos haciendo con Suno y aparecerán aquí, cada una con su dibujito. Sonarán 5 minutos y se irán apagando en 5 segundos; mientras suenan no se graba.';
+    return;
+  }
+  $('cunaBody').innerHTML = '<div>Suena 5 minutos y se va apagando en 5 segundos. Mientras suena, no se graba.</div><div class="cunas"></div>';
+  const box = $('cunaBody').querySelector('.cunas');
+  for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
+    const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
+    b.innerHTML = `<b>${x.icon}</b>${x.name}`;
+    b.onclick = () => { cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {} renderCunas(); };
+    box.append(b);
+  }
+}
+function playCuna(c) {
+  const au = new Audio(c.file); au.loop = true; au.volume = .7;
+  au.play().catch(() => {});
+  live.cuna = {au, t0: Date.now(), c};
+  live.det.muteUntil = Infinity;
+  $('lcuna').hidden = false;
+  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaStop">⏹ Parar</button>`;
+  $('cunaStop').onclick = () => endCuna(true);
+  live.cuna.timer = setInterval(() => {
+    const t = (Date.now() - live.cuna.t0) / 1000;
+    if (t >= CUNA_SEG - CUNA_FADE) au.volume = Math.max(0, .7 * (CUNA_SEG - t) / CUNA_FADE);
+    if (t >= CUNA_SEG) endCuna();
+  }, 100);
+  muteTick();
+}
+function endCuna(now) {
+  const k = live.cuna; if (!k) return;
+  clearInterval(k.timer);
+  const stop = () => { k.au.pause(); k.au.src = ''; };
+  if (now) { // parada a mano: se apaga en 1 segundo
+    const v0 = k.au.volume, t0 = Date.now();
+    const f = setInterval(() => { const x = (Date.now() - t0) / 1000; k.au.volume = Math.max(0, v0 * (1 - x)); if (x >= 1) { clearInterval(f); stop(); } }, 50);
+  } else stop();
+  live.cuna = null; $('lcuna').hidden = true;
+  if (live.det) live.det.muteUntil = live.det.samples / SR + 2;
+  muteTick();
+}
 
 // ---------- Analizar un archivo de audio ----------
 $('fileBtn').onclick = () => $('fileIn').click();
@@ -841,6 +936,7 @@ const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
 
 async function renderHome() {
   const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id);
+  $('histN').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
   $('nights').innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
   for (const n of ns) {
     const b = document.createElement('button'); b.className = 'night';
@@ -858,6 +954,7 @@ const sel = new Set(); // grabaciones seleccionadas (id)
 let lastPick = null;   // la última que se marcó (para marcar tramos)
 async function openNight(id) {
   cur = await DB.get('noches', id); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
+  TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = 'todos';
   show('night');
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
@@ -869,23 +966,81 @@ async function openNight(id) {
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
 function tlSticky() { document.documentElement.style.setProperty('--tlh', $('tlCard').offsetHeight + 'px'); plHead(); }
-// Raya blanca en el gráfico: la hora de lo que está sonando
+// ---------- Gráfico de la noche ----------
+// Se ve una ventana de la noche (1 hora al abrir). Pellizcar con dos dedos amplía o reduce, arrastrar la mueve
+// y tocar va a esa hora. Mientras suena, la raya avanza desde la izquierda y, al llegar al centro, se mueve el gráfico.
+const TLV = {start: 0, span: 0, follow: true};
+function tlClamp() {
+  TLV.span = Math.max(120, Math.min(curTotal, TLV.span || 3600));
+  TLV.start = Math.max(0, Math.min(curTotal - TLV.span, TLV.start));
+}
 function plHead() {
   const e = PL.list[PL.i], h = $('tlHead');
   if (!e || $('night').hidden) { h.hidden = true; return; }
-  h.hidden = false;
-  h.style.left = Math.min(1, (e.off + (PL.au.currentTime || 0)) / curTotal) * $('tl').clientWidth + 'px';
+  const t = e.off + (PL.au.currentTime || 0);
+  if (TLV.follow) {
+    const s0 = TLV.start; TLV.start = t - TLV.span / 2; tlClamp();
+    if (Math.abs(TLV.start - s0) > TLV.span / 500) drawTimeline();
+  }
+  const x = (t - TLV.start) / TLV.span;
+  h.hidden = x < 0 || x > 1;
+  h.style.left = x * $('tl').clientWidth + 'px';
 }
-// Tocar el gráfico: va a la grabación de esa hora (o la más cercana)
-$('tl').onclick = ev => {
+function tlSeek(t) {
   if (!curList.length) return;
-  const r = $('tl').getBoundingClientRect(), t = (ev.clientX - r.left) / r.width * curTotal;
   let i = curList.findIndex(e => t >= e.off && t <= e.off + e.dur), into = 0;
   if (i >= 0) into = t - curList[i].off;
   else { let best = Infinity; curList.forEach((e, k) => { const d = Math.abs(e.off + e.dur / 2 - t); if (d < best) { best = d; i = k; } }); }
+  TLV.follow = true;
   plPlay(i);
   if (into > 1) PL.au.addEventListener('loadedmetadata', () => { PL.au.currentTime = into; }, {once: true});
+}
+const tlPts = new Map(); let tlG = null;
+function tlBase() { // foto del gesto: punto(s) de partida y ventana de ese momento
+  const r = $('tl').getBoundingClientRect(), xs = [...tlPts.values()];
+  tlG = {left: r.left, w: r.width, start: TLV.start, span: TLV.span, xs, moved: tlG?.moved || false,
+    mid: xs.reduce((a, x) => a + x, 0) / xs.length, d: xs.length > 1 ? Math.abs(xs[0] - xs[1]) || 1 : 0};
+}
+$('tl').addEventListener('pointerdown', ev => {
+  try { $('tl').setPointerCapture(ev.pointerId); } catch {}
+  if (!tlPts.size) tlG = null;
+  tlPts.set(ev.pointerId, ev.clientX); tlBase();
+});
+$('tl').addEventListener('pointermove', ev => {
+  if (!tlPts.has(ev.pointerId) || !tlG) return;
+  tlPts.set(ev.pointerId, ev.clientX);
+  const xs = [...tlPts.values()];
+  if (xs.length === 1) {
+    const dx = xs[0] - tlG.xs[0];
+    if (Math.abs(dx) < 6 && !tlG.moved) return;
+    tlG.moved = true;
+    TLV.start = tlG.start - dx / tlG.w * tlG.span;
+  } else {
+    const d = Math.abs(xs[0] - xs[1]) || 1, mid = (xs[0] + xs[1]) / 2;
+    const tm = tlG.start + (tlG.mid - tlG.left) / tlG.w * tlG.span; // la hora que estaba entre los dedos
+    TLV.span = Math.max(120, Math.min(curTotal, tlG.span * tlG.d / d));
+    TLV.start = tm - (mid - tlG.left) / tlG.w * TLV.span;
+    tlG.moved = true;
+  }
+  TLV.follow = false;
+  drawTimeline(); plHead();
+});
+const tlUp = ev => {
+  if (!tlPts.has(ev.pointerId)) return;
+  const tap = tlPts.size === 1 && tlG && !tlG.moved;
+  tlPts.delete(ev.pointerId);
+  if (tap && ev.type === 'pointerup') tlSeek(TLV.start + (ev.clientX - tlG.left) / tlG.w * TLV.span);
+  if (tlPts.size) tlBase(); else tlG = null;
 };
+$('tl').addEventListener('pointerup', tlUp);
+$('tl').addEventListener('pointercancel', tlUp);
+$('tl').addEventListener('wheel', ev => { // ordenador: la rueda amplía o reduce
+  ev.preventDefault();
+  const r = $('tl').getBoundingClientRect(), tm = TLV.start + (ev.clientX - r.left) / r.width * TLV.span;
+  TLV.span = Math.max(120, Math.min(curTotal, TLV.span * (ev.deltaY > 0 ? 1.25 : .8)));
+  TLV.start = tm - (ev.clientX - r.left) / r.width * TLV.span;
+  TLV.follow = false; drawTimeline(); plHead();
+}, {passive: false});
 function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   $('tSnore').textContent = s.length;
@@ -902,26 +1057,37 @@ function renderStats() {
   }
 }
 function drawTimeline(total) {
+  if (total != null) curTotal = Math.max(total, 60);
+  tlClamp();
   const cv = $('tl'), dpr = devicePixelRatio || 1, W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d'), tl = cur.timeline, top = 16 * dpr, base = H - 18 * dpr;
-  total = Math.max(total, 60); curTotal = total;
+  const X = t => (t - TLV.start) / TLV.span * W;
   if (tl.length) {
-    const lo = Math.min(...tl), hi = Math.max(...tl, lo + 10), bw = W / Math.max(tl.length, total / 60);
+    const lo = Math.min(...tl), hi = Math.max(...tl, lo + 10), bw = 60 / TLV.span * W;
     g.fillStyle = '#334155';
-    tl.forEach((v, i) => { const h = Math.max(1, (v - lo) / (hi - lo) * (base - top - 6 * dpr)); g.fillRect(i * bw, base - h, Math.max(1, bw - 1), h); });
+    tl.forEach((v, i) => {
+      const x = X(i * 60); if (x < -bw || x > W) return;
+      const h = Math.max(1, (v - lo) / (hi - lo) * (base - top - 6 * dpr));
+      g.fillRect(x, base - h, Math.max(1, bw - dpr), h);
+    });
   }
   const col = {ronquido: '#A78BFA', voz: '#FBBF24', otro: '#64748B'};
   for (const e of curEvs) {
+    const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
+    if (x + w < 0 || x > W) continue;
     g.fillStyle = col[e.tipo];
-    g.fillRect(e.off / total * W, 2 * dpr, Math.max(2 * dpr, e.dur / total * W), 10 * dpr);
+    g.fillRect(x, 2 * dpr, w, 10 * dpr);
   }
   g.fillStyle = '#64748B'; g.font = `${11 * dpr}px system-ui`; g.textBaseline = 'bottom';
-  const step = total > 4 * 3600 ? 3600 : total > 3600 ? 1800 : total > 600 ? 300 : 60;
-  for (let s = 0; s <= total; s += step) {
-    const x = s / total * W, label = cur.fuente === 'micro' ? hhmm(cur.inicio + s * 1000) : dur(s);
-    if (x > W - 30 * dpr) break;
-    g.fillText(label, x, H);
+  const step = [60, 120, 300, 600, 900, 1800, 3600, 7200].find(st => TLV.span / st <= 6) || 7200;
+  for (let t = Math.ceil(TLV.start / step) * step; t <= TLV.start + TLV.span; t += step) {
+    const x = X(t); if (x > W - 30 * dpr) break;
+    g.fillText(cur.fuente === 'micro' ? hhmm(cur.inicio + t * 1000) : dur(t), x, H);
+  }
+  if (TLV.span < curTotal - 1) { // barrita: qué parte de la noche se ve
+    g.fillStyle = '#1F2937'; g.fillRect(0, H - 2 * dpr, W, 2 * dpr);
+    g.fillStyle = '#94A3B8'; g.fillRect(TLV.start / curTotal * W, H - 2 * dpr, Math.max(4 * dpr, TLV.span / curTotal * W), 2 * dpr);
   }
 }
 const TIPOS = ['ronquido', 'voz', 'otro'];
@@ -1092,7 +1258,7 @@ function plSetList(list) {
 }
 function plPlay(i) {
   if (i < 0 || i >= PL.list.length) return;
-  const e = PL.list[i]; PL.i = i;
+  const e = PL.list[i]; PL.i = i; TLV.follow = true;
   PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
   PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
   plGraph();
@@ -1394,7 +1560,7 @@ else {
 await DB.open();
 renderHome();
 IA.load();
-window.__EN = {IA, Detector, DB, SR, noise, joinWavs}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV}; // para pruebas
 </script>
 </body>
 </html>
