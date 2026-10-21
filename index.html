@@ -110,9 +110,14 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .counters{display:flex;gap:26px;justify-content:center;font-size:20px;margin-bottom:24px}
 .counters b{display:block;font-size:34px;font-weight:600}
 .c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
-.meter{width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
+.meter{position:relative;width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
+.meter::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#F8FAFCaa}
 .meter i{display:block;height:100%;width:0;background:#475569;transition:width .2s}
 .meter i.hot{background:var(--snore)}
+.lsens{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px;font-size:13px;color:var(--dim)}
+.lsens button{background:#111827;border:1px solid #1F2937;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
+.lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
+.lhint{font-size:12px;color:var(--dim);margin-bottom:14px}
 .state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
 .last{font-size:14px;color:var(--muted);min-height:20px;margin-bottom:28px}
 #stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
@@ -140,6 +145,21 @@ canvas{width:100%;height:110px;display:block}
 .ev .acts{margin-left:auto;display:flex;gap:6px}
 .ev .acts button,.ev .acts a{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 9px;font-size:14px;color:var(--text);text-decoration:none}
 .ev audio{width:100%;margin-top:8px;height:36px}
+.ev.playing{outline:2px solid #A78BFA;outline-offset:1px}
+/* Reproductor fijo de la noche */
+#pl{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#0F1529f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
+#pl .in{max-width:640px;margin:0 auto}
+#pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#pl .bar{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:4px}
+#pl .bar input{flex:1;accent-color:#A78BFA;height:28px}
+#pl .ctl{display:grid;grid-template-columns:1fr 52px 60px 52px 1fr;align-items:center;gap:12px;margin-top:2px}
+#pl .ctl button{background:none;border:0;color:var(--text);font-size:24px;width:52px;height:52px;border-radius:50%;padding:0}
+#pl .ctl button:disabled{opacity:.3}
+#pl .ctl .pp{width:60px;height:60px;background:linear-gradient(135deg,#6D5BD0,#4338CA);font-size:24px;box-shadow:0 6px 18px #4338ca55}
+#pl .ctl .bst{grid-column:1;justify-self:start;width:auto;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:19px;font-size:14px;font-weight:700;background:var(--card2)}
+#pl .ctl .bst.on{border-color:#A78BFA;color:#C4B5FD}
+#pl .ctl .spd{grid-column:5;justify-self:end;width:auto;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:19px;font-size:15px;font-weight:700;background:var(--card2)}
+body.pl-on .wrap{padding-bottom:190px}
 .prog{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:10px}
 .prog i{display:block;height:100%;width:0;background:#6D5BD0}
 .note{font-size:12px;color:var(--dim);margin-top:8px}
@@ -244,7 +264,7 @@ canvas{width:100%;height:110px;display:block}
   <details class="cfg card">
     <summary>⚙️ Ajustes</summary>
     <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
-      <select id="sens"><option value="6">Alta</option><option value="10">Media</option><option value="15">Baja</option></select></div>
+      <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
     <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
       <input type="checkbox" id="keepOther"></div>
     <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias</small></label>
@@ -305,6 +325,21 @@ canvas{width:100%;height:110px;display:block}
 
 </div>
 
+<!-- REPRODUCTOR DE LA NOCHE -->
+<div id="pl" hidden>
+  <div class="in">
+    <div class="now" id="plNow"></div>
+    <div class="bar"><span id="plT">0:00</span><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación"><span id="plD">0:00</span></div>
+    <div class="ctl">
+      <button id="plBst" class="bst" title="Subir el volumen de las grabaciones">🔊 1×</button>
+      <button id="plPrev" title="Anterior">⏮</button>
+      <button id="plPP" class="pp" title="Reproducir">▶</button>
+      <button id="plNext" title="Siguiente">⏭</button>
+      <button id="plSpd" class="spd" title="Velocidad (para todas las grabaciones)">1×</button>
+    </div>
+  </div>
+</div>
+
 <!-- ANTES DE DORMIR -->
 <div id="prep" hidden>
   <div class="sheet">
@@ -330,7 +365,9 @@ canvas{width:100%;height:110px;display:block}
       <div class="c-snore"><b id="cSnore">0</b>😴 ronquidos</div>
       <div class="c-voice"><b id="cVoice">0</b>🗣️ voces</div>
     </div>
+    <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
+    <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <button id="stopBtn">☀️ Terminar la noche</button>
@@ -339,7 +376,8 @@ canvas{width:100%;height:110px;display:block}
 </div>
 
 <script type="module">
-const VERSION = 'v2.1'; // v2.1: sonidos para dormir en estéreo, 44 kHz y filtrados (blanco suave, marrón sin retumbe, lluvia sin chasquidos, olas más reales)
+const VERSION = 'v2.2'; // v2.2: reproductor fijo abajo en cada noche: barra para avanzar, anterior/siguiente, velocidad para todas (1×, 1,5×, 2×, 3×), subir volumen (×2, ×4) y reproducción seguida; sensibilidad Baja/Normal/Alta cambiable mientras escucha, con raya en la barra
+// v2.1: // v2.1: sonidos para dormir en estéreo, 44 kHz y filtrados (blanco suave, marrón sin retumbe, lluvia sin chasquidos, olas más reales)
 // v2.0: // v2.0: nombre «Amable Sleep» (Amable delante, como toda la familia: Amable Life, Amable PC, Amable Vision); app Android 1.8
 // v1.9: RonquiNo pasa a llamarse Sleep Amable (nueva dirección /Sleep-Amable/, app Android 1.7)
 // v1.8: // v1.8: el APK se descarga desde la propia web (desde GitHub la descarga se quedaba trabada) + aviso «Instala la app» en Android
@@ -605,6 +643,7 @@ async function startListening() {
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
   await keepAwake();
   wake();
+  renderLiveSens();
   live.timer = setInterval(() => {
     $('clock').textContent = hhmm(Date.now());
     $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
@@ -615,6 +654,17 @@ async function startListening() {
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
 }
+
+// Sensibilidad mientras escucha: se nota al momento en la barra y se guarda para la próxima noche
+function renderLiveSens() {
+  document.querySelectorAll('#lsens button').forEach(b => b.classList.toggle('on', +b.dataset.v === cfg.sens));
+}
+document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
+  cfg.sens = +b.dataset.v; $('sens').value = cfg.sens;
+  try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  if (live.det) live.det.sens = cfg.sens;
+  renderLiveSens();
+});
 
 async function stopListening() {
   if (!confirm('¿Terminar la noche y ver el resumen?')) return;
@@ -849,11 +899,8 @@ function renderList() {
         if (!AND.compartir(fname, b64)) alert('No se pudo compartir la grabación.');
       };
     } else { a.href = '#'; a.onclick = ev => { a.href = url(); a.download = fname; }; }
-    d.querySelector('.play').onclick = () => {
-      let au = d.querySelector('audio');
-      if (!au) { au = document.createElement('audio'); au.controls = true; au.src = url(); d.append(au); }
-      au.play();
-    };
+    d._ev = e;
+    d.querySelector('.play').onclick = () => PL.list[PL.i] === e ? plToggle() : plPlay(PL.list.indexOf(e));
     d.querySelector('.tag').onclick = async () => {
       e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
@@ -865,6 +912,7 @@ function renderList() {
     };
     $('evList').append(d);
   }
+  plSetList(list);
 }
 const timelineTotal = () => ((cur.fin || (cur.inicio + cur.timeline.length * 60e3)) - cur.inicio) / 1000;
 async function recount() {
@@ -873,7 +921,95 @@ async function recount() {
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
   await DB.put('noches', cur);
 }
-$('backBtn').onclick = () => { show('home'); renderHome(); };
+$('backBtn').onclick = () => { plSetList([]); show('home'); renderHome(); };
+
+// ---------- Reproductor de la noche (fijo abajo, aunque hagas scroll) ----------
+// Suena la lista que se ve (según el filtro), una tras otra; la velocidad vale para todas.
+const PL = {au: new Audio(), list: [], i: -1, seeking: false, speeds: [1, 1.5, 2, 3], speed: 1, boosts: [1, 2, 4], boost: 1, ctx: null, g: null};
+try { const v = +localStorage.getItem('ronquino-boost'); if ([1, 2, 4].includes(v)) PL.boost = v; } catch {}
+// Subir volumen: el audio pasa por una ganancia y un limitador (para que al subir no distorsione)
+function plGraph() {
+  if (!PL.ctx) {
+    try {
+      const c = new AudioContext(), src = c.createMediaElementSource(PL.au), g = c.createGain(), lim = c.createDynamicsCompressor();
+      lim.threshold.value = -3; lim.knee.value = 3; lim.ratio.value = 20; lim.attack.value = .002; lim.release.value = .15;
+      src.connect(g).connect(lim).connect(c.destination);
+      PL.ctx = c; PL.g = g;
+    } catch (e) { console.warn('Sin subir volumen', e); return; }
+  }
+  PL.g.gain.value = PL.boost;
+  if (PL.ctx.state !== 'running') PL.ctx.resume();
+}
+try { const v = +localStorage.getItem('ronquino-vel'); if ([1, 1.5, 2, 3].includes(v)) PL.speed = v; } catch {}
+const mss = x => { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60) + ':' + String(x % 60).padStart(2, '0'); };
+function plSetList(list) {
+  const was = PL.list[PL.i];
+  PL.list = list; PL.i = was ? list.indexOf(was) : -1;
+  if (was && PL.i < 0) { PL.au.pause(); PL.au.removeAttribute('src'); PL.au.load(); $('plSeek').value = 0; $('plT').textContent = $('plD').textContent = '0:00'; }
+  $('pl').hidden = !list.length;
+  document.body.classList.toggle('pl-on', !!list.length);
+  plRender();
+}
+function plPlay(i) {
+  if (i < 0 || i >= PL.list.length) return;
+  const e = PL.list[i]; PL.i = i;
+  PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
+  PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
+  plGraph();
+  PL.au.play().catch(() => {});
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({title: tagTxt(e) + ' · ' + evTime(cur, e.off), artist: 'Amable Sleep'});
+    navigator.mediaSession.setActionHandler('play', () => PL.au.play());
+    navigator.mediaSession.setActionHandler('pause', () => PL.au.pause());
+    navigator.mediaSession.setActionHandler('previoustrack', () => plPlay(PL.i - 1));
+    navigator.mediaSession.setActionHandler('nexttrack', () => plPlay(PL.i + 1));
+  }
+  plRender();
+  document.querySelector('.ev.playing')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+}
+function plToggle() {
+  if (PL.i < 0) return plPlay(0);
+  if (PL.au.paused) { PL.au.playbackRate = PL.speed; plGraph(); PL.au.play().catch(() => {}); } else PL.au.pause();
+}
+function plRender() {
+  const e = PL.list[PL.i], on = !!e && !PL.au.paused;
+  $('plNow').textContent = e ? `${tagTxt(e)} · ${evTime(cur, e.off)} · ${PL.i + 1} de ${PL.list.length}`
+    : `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
+  $('plPP').textContent = on ? '⏸' : '▶';
+  $('plSpd').textContent = String(PL.speed).replace('.', ',') + '×';
+  $('plBst').textContent = '🔊 ' + (PL.boost === 1 ? '1×' : '×' + PL.boost);
+  $('plBst').classList.toggle('on', PL.boost > 1);
+  $('plPrev').disabled = PL.i <= 0;
+  $('plNext').disabled = PL.i >= PL.list.length - 1;
+  document.querySelectorAll('#evList .ev').forEach(d => {
+    const me = d._ev === e; d.classList.toggle('playing', me);
+    const b = d.querySelector('.play'); if (b) b.textContent = me && on ? '⏸' : '▶';
+  });
+}
+PL.au.ontimeupdate = () => {
+  const d = PL.au.duration || 0;
+  if (!PL.seeking) { $('plSeek').max = d; $('plSeek').value = PL.au.currentTime; }
+  $('plT').textContent = mss(PL.au.currentTime); $('plD').textContent = mss(d);
+};
+PL.au.onloadedmetadata = PL.au.ontimeupdate;
+PL.au.onplay = PL.au.onpause = plRender;
+PL.au.onended = () => { if (PL.i < PL.list.length - 1) plPlay(PL.i + 1); else plRender(); };
+$('plSeek').oninput = () => { PL.seeking = true; PL.au.currentTime = +$('plSeek').value; $('plT').textContent = mss(+$('plSeek').value); };
+$('plSeek').onchange = () => { PL.seeking = false; };
+$('plPP').onclick = plToggle;
+$('plPrev').onclick = () => plPlay(PL.i - 1);
+$('plNext').onclick = () => plPlay(PL.i + 1);
+$('plBst').onclick = () => {
+  PL.boost = PL.boosts[(PL.boosts.indexOf(PL.boost) + 1) % PL.boosts.length];
+  try { localStorage.setItem('ronquino-boost', PL.boost); } catch {}
+  plGraph(); plRender();
+};
+$('plSpd').onclick = () => {
+  PL.speed = PL.speeds[(PL.speeds.indexOf(PL.speed) + 1) % PL.speeds.length];
+  PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
+  try { localStorage.setItem('ronquino-vel', PL.speed); } catch {}
+  plRender();
+};
 $('delNight').onclick = async () => {
   if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
   await DB.delNight(cur.id); $('backBtn').onclick();
