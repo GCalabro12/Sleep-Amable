@@ -77,6 +77,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #prep{position:fixed;inset:0;z-index:20;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #prep .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px 16px 26px}
 #prep h2{margin:0 0 12px;font-size:20px}
+#ask{position:fixed;inset:0;z-index:30;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+#ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
+#ask h2{margin:0 0 6px;font-size:20px}
+#ask p{color:var(--muted);font-size:15px;margin:0 0 16px}
 #prep .steps li{margin:10px 0}
 .pdet{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--card2)}
 .pdet summary{padding:13px 14px;cursor:pointer;font-weight:600;font-size:15px}
@@ -379,6 +383,16 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 </div>
 
+<!-- PREGUNTA (guardar o borrar) -->
+<div id="ask" hidden>
+  <div class="sheet">
+    <h2 id="askT"></h2>
+    <p id="askP"></p>
+    <button class="big" id="askA"></button>
+    <button class="btn wide" id="askB"></button>
+  </div>
+</div>
+
 <!-- ANTES DE DORMIR -->
 <div id="prep" hidden>
   <div class="sheet">
@@ -416,7 +430,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.9'; // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
+const VERSION = 'v3.0'; // v3.0: la canción de cuna se puede pausar (y seguir) además de parar; muestra el tiempo que le queda; al terminar una noche de menos de 20 min pregunta si guardarla o borrarla (suele ser una prueba)
+// v2.9: // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
 // v2.8: // v2.8: nombre de cada noche en una sola línea (ronquidos y voces debajo)
 // v2.7: // v2.7: gráfico ampliable con dos dedos que sigue a lo que suena; «Historial» desplegable; «Antes de dormir» en desplegables; botón «No grabar +5 s»; sección «Canción de cuna» (Suno)
 // v2.6: // v2.6: día de la semana completo («Noche del martes, 20 de octubre»); gráfico fijo arriba con raya que avanza con lo que suena; tocar el gráfico va a esa hora
@@ -734,9 +749,26 @@ async function stopListening() {
   live.lock = null;
   AND?.noche(false); // «No molestar» y wifi vuelven a como estaban
   $('listen').classList.remove('on');
-  const id = live.night.id;
+  const night = live.night, id = night.id;
   for (const k of Object.keys(live)) delete live[k];
+  // Noche corta (menos de 20 min): casi siempre es una prueba, así que pregunta si se guarda
+  const secs = (night.fin - night.inicio) / 1000, n = night.ronquidos + night.voces + night.otros;
+  if (secs < 20 * 60) {
+    const keep = await ask('¿Guardar esta grabación?',
+      `Ha durado ${dur(secs)}${n ? ` y tiene ${n} ${n === 1 ? 'sonido grabado' : 'sonidos grabados'}` : ' y no se grabó ningún sonido'}. Si era una prueba, puedes borrarla.`,
+      '🗑️ Borrarla (era una prueba)', '💾 Guardarla');
+    if (keep === 'a') { await DB.delNight(id); await renderHome(); show('home'); return; }
+  }
   await renderHome(); openNight(id);
+}
+// Hoja con dos botones; devuelve 'a' (botón grande) o 'b'
+function ask(title, text, a, b) {
+  $('askT').textContent = title; $('askP').textContent = text; $('askA').textContent = a; $('askB').textContent = b;
+  $('ask').hidden = false;
+  return new Promise(res => {
+    $('askA').onclick = () => { $('ask').hidden = true; res('a'); };
+    $('askB').onclick = () => { $('ask').hidden = true; res('b'); };
+  });
 }
 
 async function keepAwake() {
@@ -819,6 +851,7 @@ window.nativeVuelta = () => {
 window.atrasNativo = () => {
   if ($('splash')) return false;
   if (live.night) return true; // escuchando: no se sale sin «Terminar la noche»
+  if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
   if (!$('home').hidden || !$('mask').hidden) { show('menu'); return true; }
@@ -834,7 +867,11 @@ $('muteBtn').onclick = () => { if (live.det) { live.det.mute(5); muteTick(); } }
 function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
-  if (live.cuna) $('lstate').textContent = '🎵 Sin grabar mientras suena la canción';
+  if (live.cuna) {
+    const k = live.cuna, left = Math.max(0, CUNA_SEG - k.played);
+    $('lstate').textContent = k.paused ? '⏸ Canción en pausa: prueba la sensibilidad (no se graba)'
+      : `🎵 Sin grabar mientras suena la canción · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
+  }
   else if (rem > 0) $('lstate').textContent = `⏸ Sin grabar: ${Math.ceil(rem)} s`;
   else if ($('lstate').textContent.startsWith('⏸') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
 }
@@ -873,13 +910,24 @@ function renderCunas() {
 function playCuna(c) {
   const au = new Audio(c.file); au.loop = true; au.volume = .7;
   au.play().catch(() => {});
-  live.cuna = {au, t0: Date.now(), c};
+  live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
   live.det.muteUntil = Infinity;
   $('lcuna').hidden = false;
-  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaStop">⏹ Parar</button>`;
+  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaPause">⏸ Pausar</button><button id="cunaStop">⏹ Parar</button>`;
+  // Pausar: la canción se queda donde está (y su cuenta de 5 minutos también) para probar la sensibilidad; «Seguir» la reanuda
+  $('cunaPause').onclick = () => {
+    const k = live.cuna; if (!k) return;
+    k.paused = !k.paused;
+    if (k.paused) k.au.pause(); else k.au.play().catch(() => {});
+    $('cunaPause').textContent = k.paused ? '▶ Seguir' : '⏸ Pausar';
+    muteTick();
+  };
   $('cunaStop').onclick = () => endCuna(true);
   live.cuna.timer = setInterval(() => {
-    const t = (Date.now() - live.cuna.t0) / 1000;
+    const k = live.cuna, now = Date.now();
+    if (!k.paused) k.played += (now - k.last) / 1000;
+    k.last = now;
+    const t = k.played;
     if (t >= CUNA_SEG - CUNA_FADE) au.volume = Math.max(0, .7 * (CUNA_SEG - t) / CUNA_FADE);
     if (t >= CUNA_SEG) endCuna();
   }, 100);
