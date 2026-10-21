@@ -142,6 +142,7 @@ canvas{width:100%;height:110px;display:block}
 .ev .acts .fav.on{color:#FB923C;border-color:#FB923C;background:#431407}
 .pick{width:26px;height:26px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:7px;border:2px solid #64748B;background:transparent;color:#fff;font-size:16px;font-weight:800;line-height:1}
 .pick.on{background:#6D5BD0;border-color:#6D5BD0}
+.pick{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .ev > .pick{position:absolute;top:10px;right:10px}
 .selbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;background:var(--bg);padding:8px 0 8px 2px;margin-bottom:4px;font-size:14px;color:var(--muted)}
 .selbar .selacts{margin-left:auto;display:flex;gap:6px}
@@ -335,7 +336,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <span class="selacts" id="selActs" hidden><button id="selShare">⤴ Compartir</button><button class="del" id="selDel">🗑️ Borrar</button></span>
   </div>
   <div id="evList"></div>
-  <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla.</p>
+  <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
   <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
 </section>
 
@@ -392,7 +393,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.4'; // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
+const VERSION = 'v2.5'; // v2.5: mantener pulsado un cuadrito marca todo el tramo hasta la última marcada
+// v2.4: // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
 // v2.3: // v2.3: cuadrito para seleccionar cada grabación + «seleccionar todas»; compartir o borrar las seleccionadas
 // v2.2: // v2.2: reproductor fijo abajo en cada noche: barra para avanzar, anterior/siguiente, velocidad para todas (1×, 1,5×, 2×, 3×), subir volumen (×2, ×4) y reproducción seguida; sensibilidad Baja/Normal/Alta cambiable mientras escucha, con raya en la barra
 // v2.1: // v2.1: sonidos para dormir en estéreo, 44 kHz y filtrados (blanco suave, marrón sin retumbe, lluvia sin chasquidos, olas más reales)
@@ -849,6 +851,7 @@ async function renderHome() {
 
 let cur = null, curEvs = [], filter = 'todos', curList = [];
 const sel = new Set(); // grabaciones seleccionadas (id)
+let lastPick = null;   // la última que se marcó (para marcar tramos)
 async function openNight(id) {
   cur = await DB.get('noches', id); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   filter = 'todos';
@@ -922,7 +925,19 @@ function renderList() {
     } else { a.href = '#'; a.onclick = ev => { a.href = url(); a.download = fname; }; }
     d._ev = e;
     const pk = document.createElement('button'); pk.className = 'pick'; pk.setAttribute('aria-label', 'Seleccionar');
-    pk.onclick = () => { sel.has(e.id) ? sel.delete(e.id) : sel.add(e.id); renderSel(); };
+    // Toque: marca o desmarca esta. Mantener pulsado: marca todo el tramo desde aquí hasta la última marcada.
+    let lpT = null, lpDone = false;
+    pk.onpointerdown = () => {
+      lpDone = false; clearTimeout(lpT);
+      lpT = setTimeout(() => { lpDone = true; selectRange(e); try { navigator.vibrate?.(35); } catch {} }, 550);
+    };
+    pk.onpointerup = pk.onpointerleave = pk.onpointercancel = () => clearTimeout(lpT);
+    pk.oncontextmenu = ev => ev.preventDefault();
+    pk.onclick = () => {
+      if (lpDone) { lpDone = false; return; }
+      if (sel.has(e.id)) sel.delete(e.id); else { sel.add(e.id); lastPick = e.id; }
+      renderSel();
+    };
     d.append(pk);
     d.querySelector('.play').onclick = () => PL.list[PL.i] === e ? plToggle() : plPlay(PL.list.indexOf(e));
     d.querySelector('.fav').onclick = async () => {
@@ -955,6 +970,18 @@ function renderSel() {
   $('selAll').classList.toggle('on', n > 0); $('selAll').textContent = all ? '✓' : n ? '–' : '';
   $('selTxt').textContent = n ? (n === 1 ? '1 seleccionada' : n + ' seleccionadas') : 'Seleccionar todas';
   $('selActs').hidden = !n;
+}
+function selectRange(e) {
+  const i = curList.indexOf(e);
+  let a = curList.findIndex(x => x.id === lastPick && sel.has(x.id));
+  if (a < 0) { // si no hay una «última marcada», la marcada más cercana por encima; si no hay, desde la primera
+    a = 0;
+    for (let k = i - 1; k >= 0; k--) if (sel.has(curList[k].id)) { a = k; break; }
+  }
+  const [from, to] = a < i ? [a, i] : [i, a];
+  for (let k = from; k <= to; k++) sel.add(curList[k].id);
+  lastPick = e.id;
+  renderSel();
 }
 $('selAll').onclick = () => {
   const all = curList.length && curList.every(e => sel.has(e.id));
