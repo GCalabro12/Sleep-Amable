@@ -90,6 +90,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .cuna{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:13px;color:var(--text)}
 .cuna b{display:block;font-size:26px;font-weight:400}
 .cuna.on{border-color:#A78BFA;background:#312E81}
+.cuna small{display:block;font-size:11px;color:#C4B5FD;margin-top:2px}
 details.hist summary{cursor:pointer;font-size:17px;font-weight:700;padding:2px 0}
 details.hist summary small{font-weight:400;color:var(--muted);font-size:14px}
 details.hist[open] summary{margin-bottom:10px}
@@ -430,7 +431,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.1'; // v3.1: nombre corto «Noche miércoles 21 oct 2026»; sonidos de aspiradora, secador, ventilador y batidora (hechos por la app, también como canción de cuna); 2 canciones de cuna más (Bosque dormido, Nubes de algodón)
+const VERSION = 'v3.2'; // v3.2: al tocar una canción de cuna en la lista suena para escucharla (tocar otra vez la para)
+// v3.1: // v3.1: nombre corto «Noche miércoles 21 oct 2026»; sonidos de aspiradora, secador, ventilador y batidora (hechos por la app, también como canción de cuna); 2 canciones de cuna más (Bosque dormido, Nubes de algodón)
 // v3.0: // v3.0: la canción de cuna se puede pausar (y seguir) además de parar; muestra el tiempo que le queda; al terminar una noche de menos de 20 min pregunta si guardarla o borrarla (suele ser una prueba)
 // v2.9: // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
 // v2.8: // v2.8: nombre de cada noche en una sola línea (ronquidos y voces debajo)
@@ -800,7 +802,7 @@ $('startBtn').onclick = () => {
   renderCunas();
   if (AND) renderPrep();
 };
-$('prepNo').onclick = () => { $('prep').hidden = true; AND?.restaurar(); };
+$('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.restaurar(); };
 
 // ---------- App Android: «No molestar» y wifi de verdad ----------
 let dndPedido = false; // tocó «Activar» y fue a dar el permiso
@@ -859,6 +861,7 @@ window.atrasNativo = () => {
   return false;
 };
 $('prepGo').onclick = async () => {
+  stopCunaPrev();
   $('prep').hidden = true;
   await startListening();
   const c = cunaSel(); if (c && live.det) playCuna(c);
@@ -895,6 +898,19 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
 const CUNA_SEG = 300, CUNA_FADE = 5;
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
 const cunaSel = () => CUNAS.find(c => c.id === cunaId) || null;
+// Escuchar una canción de cuna en la lista, antes de elegirla
+let cunaPrev = null; // {id, au}
+function playCunaPrev(x) {
+  stopCunaPrev();
+  const au = new Audio(x.file || (noise.urls[x.noise] ||= makeNoise(x.noise)));
+  au.loop = true; au.volume = .7; au.play().catch(() => {});
+  cunaPrev = {id: x.id, au};
+}
+function stopCunaPrev() {
+  if (!cunaPrev) return;
+  const au = cunaPrev.au, v0 = au.volume, t0 = Date.now(); cunaPrev = null;
+  const f = setInterval(() => { const k = (Date.now() - t0) / 300; au.volume = Math.max(0, v0 * (1 - k)); if (k >= 1) { clearInterval(f); au.pause(); au.src = ''; } }, 30);
+}
 function renderCunas() {
   const c = cunaSel();
   $('sCuna').textContent = c ? `${c.icon} ${c.name}` : 'ninguna';
@@ -902,14 +918,16 @@ function renderCunas() {
     $('cunaBody').innerHTML = 'Aún no hay canciones de cuna: las estamos haciendo con Suno y aparecerán aquí, cada una con su dibujito. Sonarán 5 minutos y se irán apagando en 5 segundos; mientras suenan no se graba.';
     return;
   }
-  $('cunaBody').innerHTML = '<div>Suena 5 minutos y se va apagando en 5 segundos. Mientras suena, no se graba.</div><div class="cunas"></div>';
+  $('cunaBody').innerHTML = '<div>Toca una para escucharla y elegirla (otro toque la para). Por la noche suena 5 minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div><div class="cunas"></div>';
   const box = $('cunaBody').querySelector('.cunas');
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
-    b.innerHTML = `<b>${x.icon}</b>${x.name}`;
+    const sounding = cunaPrev && cunaPrev.id === x.id;
+    b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ⏹</small>' : ''}`;
     b.onclick = () => {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
-      if (x.file) fetch(x.file).catch(() => {}); // se guarda en el móvil por si luego pones el modo avión
+      // Escuchar al elegir: suena la que tocas; si ya sonaba, se para
+      if (sounding || !x.id) stopCunaPrev(); else playCunaPrev(x);
       renderCunas();
     };
     box.append(b);
