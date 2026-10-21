@@ -129,7 +129,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .tile b{display:block;font-size:24px}
 .tile span{font-size:12px;color:var(--muted)}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
-canvas{width:100%;height:110px;display:block}
+canvas{width:100%;height:90px;display:block}
+.tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
+.tlbox{position:relative;cursor:pointer}
+#tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
@@ -137,14 +140,14 @@ canvas{width:100%;height:110px;display:block}
 .chip.on{background:#312E81;border-color:#4338CA}
 .ev{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 46px 10px 12px;margin-bottom:8px}
 .ev.sel{background:#1E1B4B}
-.ev{scroll-margin-top:64px;scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
+.ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
 .ev .acts .fav{color:#94A3B8}
 .ev .acts .fav.on{color:#FB923C;border-color:#FB923C;background:#431407}
 .pick{width:26px;height:26px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:7px;border:2px solid #64748B;background:transparent;color:#fff;font-size:16px;font-weight:800;line-height:1}
 .pick.on{background:#6D5BD0;border-color:#6D5BD0}
 .pick{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .ev > .pick{position:absolute;top:10px;right:10px}
-.selbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;background:var(--bg);padding:8px 0 8px 2px;margin-bottom:4px;font-size:14px;color:var(--muted)}
+.selbar{position:sticky;top:var(--tlh, 0px);z-index:5;display:flex;align-items:center;gap:10px;background:var(--bg);padding:8px 0 8px 2px;margin-bottom:4px;font-size:14px;color:var(--muted)}
 .selbar .selacts{margin-left:auto;display:flex;gap:6px}
 .selbar .selacts button{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:14px;color:var(--text)}
 .selbar .selacts .del{color:var(--bad)}
@@ -325,8 +328,8 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile s"><b id="tSnoreMin">0</b><span>min roncando</span></div>
     <div class="tile v"><b id="tVoice">0</b><span>voces</span></div>
   </div>
-  <div class="card">
-    <canvas id="tl"></canvas>
+  <div class="card tlcard" id="tlCard">
+    <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span></div>
   </div>
   <div class="chips" id="chips"></div>
@@ -393,7 +396,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.5'; // v2.5: mantener pulsado un cuadrito marca todo el tramo hasta la última marcada
+const VERSION = 'v2.6'; // v2.6: día de la semana completo («Noche del martes, 20 de octubre»); gráfico fijo arriba con raya que avanza con lo que suena; tocar el gráfico va a esa hora
+// v2.5: // v2.5: mantener pulsado un cuadrito marca todo el tramo hasta la última marcada
 // v2.4: // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
 // v2.3: // v2.3: cuadrito para seleccionar cada grabación + «seleccionar todas»; compartir o borrar las seleccionadas
 // v2.2: // v2.2: reproductor fijo abajo en cada noche: barra para avanzar, anterior/siguiente, velocidad para todas (1×, 1,5×, 2×, 3×), subir volumen (×2, ×4) y reproducción seguida; sensibilidad Baja/Normal/Alta cambiable mientras escucha, con raya en la barra
@@ -833,7 +837,7 @@ const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.f
 const clockOff = s => { s = Math.round(s); return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES') : clockOff(off);
 const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
-  : 'Noche del ' + new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short'});
+  : 'Noche del ' + new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'});
 
 async function renderHome() {
   const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id);
@@ -849,7 +853,7 @@ async function renderHome() {
   }
 }
 
-let cur = null, curEvs = [], filter = 'todos', curList = [];
+let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
 const sel = new Set(); // grabaciones seleccionadas (id)
 let lastPick = null;   // la última que se marcó (para marcar tramos)
 async function openNight(id) {
@@ -861,7 +865,27 @@ async function openNight(id) {
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
     + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '');
   renderStats(); drawTimeline(total); renderList();
+  requestAnimationFrame(tlSticky);
 }
+// El gráfico queda fijo arriba: la barra de selección va justo debajo
+function tlSticky() { document.documentElement.style.setProperty('--tlh', $('tlCard').offsetHeight + 'px'); plHead(); }
+// Raya blanca en el gráfico: la hora de lo que está sonando
+function plHead() {
+  const e = PL.list[PL.i], h = $('tlHead');
+  if (!e || $('night').hidden) { h.hidden = true; return; }
+  h.hidden = false;
+  h.style.left = Math.min(1, (e.off + (PL.au.currentTime || 0)) / curTotal) * $('tl').clientWidth + 'px';
+}
+// Tocar el gráfico: va a la grabación de esa hora (o la más cercana)
+$('tl').onclick = ev => {
+  if (!curList.length) return;
+  const r = $('tl').getBoundingClientRect(), t = (ev.clientX - r.left) / r.width * curTotal;
+  let i = curList.findIndex(e => t >= e.off && t <= e.off + e.dur), into = 0;
+  if (i >= 0) into = t - curList[i].off;
+  else { let best = Infinity; curList.forEach((e, k) => { const d = Math.abs(e.off + e.dur / 2 - t); if (d < best) { best = d; i = k; } }); }
+  plPlay(i);
+  if (into > 1) PL.au.addEventListener('loadedmetadata', () => { PL.au.currentTime = into; }, {once: true});
+};
 function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   $('tSnore').textContent = s.length;
@@ -881,7 +905,7 @@ function drawTimeline(total) {
   const cv = $('tl'), dpr = devicePixelRatio || 1, W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d'), tl = cur.timeline, top = 16 * dpr, base = H - 18 * dpr;
-  total = Math.max(total, 60);
+  total = Math.max(total, 60); curTotal = total;
   if (tl.length) {
     const lo = Math.min(...tl), hi = Math.max(...tl, lo + 10), bw = W / Math.max(tl.length, total / 60);
     g.fillStyle = '#334155';
@@ -1059,6 +1083,7 @@ const mss = x => { x = Math.max(0, Math.floor(x || 0)); return Math.floor(x / 60
 function plSetList(list) {
   const was = PL.list[PL.i];
   PL.list = list; PL.i = was ? list.indexOf(was) : -1;
+  if (typeof plHead === 'function' && $('tlHead')) setTimeout(plHead);
   if (was && PL.i < 0) { PL.au.pause(); PL.au.removeAttribute('src'); PL.au.load(); $('plSeek').value = 0; $('plT').textContent = $('plD').textContent = '0:00'; }
   $('pl').hidden = !list.length;
   document.body.classList.toggle('pl-on', !!list.length);
@@ -1079,7 +1104,7 @@ function plPlay(i) {
     navigator.mediaSession.setActionHandler('previoustrack', () => plPlay(PL.i - 1));
     navigator.mediaSession.setActionHandler('nexttrack', () => plPlay(PL.i + 1));
   }
-  plRender();
+  plRender(); plHead();
   document.querySelector('.ev.playing')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
 }
 function plToggle() {
@@ -1105,6 +1130,7 @@ PL.au.ontimeupdate = () => {
   const d = PL.au.duration || 0;
   if (!PL.seeking) { $('plSeek').max = d; $('plSeek').value = PL.au.currentTime; }
   $('plT').textContent = mss(PL.au.currentTime); $('plD').textContent = mss(d);
+  plHead();
 };
 PL.au.onloadedmetadata = PL.au.ontimeupdate;
 PL.au.onplay = PL.au.onpause = plRender;
@@ -1129,7 +1155,7 @@ $('delNight').onclick = async () => {
   if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
   await DB.delNight(cur.id); $('backBtn').onclick();
 };
-addEventListener('resize', () => { if (!$('night').hidden) drawTimeline(timelineTotal()); });
+addEventListener('resize', () => { if (!$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } });
 
 // ---------- Ruido para tapar ronquidos ----------
 // Se genera aquí mismo (sin internet): 60 s que se repiten sin cortes, en un <audio> para que siga con la pantalla apagada.
