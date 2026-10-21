@@ -430,7 +430,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.0'; // v3.0: la canción de cuna se puede pausar (y seguir) además de parar; muestra el tiempo que le queda; al terminar una noche de menos de 20 min pregunta si guardarla o borrarla (suele ser una prueba)
+const VERSION = 'v3.1'; // v3.1: nombre corto «Noche miércoles 21 oct 2026»; sonidos de aspiradora, secador, ventilador y batidora (hechos por la app, también como canción de cuna); 2 canciones de cuna más (Bosque dormido, Nubes de algodón)
+// v3.0: // v3.0: la canción de cuna se puede pausar (y seguir) además de parar; muestra el tiempo que le queda; al terminar una noche de menos de 20 min pregunta si guardarla o borrarla (suele ser una prueba)
 // v2.9: // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
 // v2.8: // v2.8: nombre de cada noche en una sola línea (ronquidos y voces debajo)
 // v2.7: // v2.7: gráfico ampliable con dos dedos que sigue a lo que suena; «Historial» desplegable; «Antes de dormir» en desplegables; botón «No grabar +5 s»; sección «Canción de cuna» (Suno)
@@ -882,7 +883,14 @@ function muteTick() {
 const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canciones de cuna – Amable Sleep»)
   {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3'},
   {id: 'estrellitas', icon: '⭐', name: 'Estrellitas', file: 'cuna/estrellitas.mp3'},
-  {id: 'mar', icon: '🌊', name: 'Mar en calma', file: 'cuna/mar-en-calma.mp3'}
+  {id: 'mar', icon: '🌊', name: 'Mar en calma', file: 'cuna/mar-en-calma.mp3'},
+  {id: 'bosque', icon: '🌲', name: 'Bosque dormido', file: 'cuna/bosque-dormido.mp3'},
+  {id: 'nubes', icon: '☁️', name: 'Nubes de algodón', file: 'cuna/nubes-de-algodon.mp3'},
+  // Sonidos que crea la app (como los de Sleep as Android): no ocupan espacio ni gastan descargas
+  {id: 'n-ventilador', icon: '🌀', name: 'Ventilador', noise: 'ventilador'},
+  {id: 'n-aspiradora', icon: '🧹', name: 'Aspiradora', noise: 'aspiradora'},
+  {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador'},
+  {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora'}
 ];
 const CUNA_SEG = 300, CUNA_FADE = 5;
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
@@ -908,7 +916,7 @@ function renderCunas() {
   }
 }
 function playCuna(c) {
-  const au = new Audio(c.file); au.loop = true; au.volume = .7;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = .7;
   au.play().catch(() => {});
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
   live.det.muteUntil = Infinity;
@@ -991,7 +999,7 @@ const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.f
 const clockOff = s => { s = Math.round(s); return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES') : clockOff(off);
 const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
-  : 'Noche del ' + new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'});
+  : (d => `Noche ${d.toLocaleDateString('es-ES', {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '')} ${d.getFullYear()}`)(new Date(n.inicio - 6 * 3600e3));
 
 // Si un texto no cabe en una línea (p. ej. con la letra grande del móvil), se achica poco a poco hasta que quepa
 function fitLine(el) {
@@ -1395,8 +1403,20 @@ const SOUNDS = [
   {id:'rosa', e:'🌸', n:'Rosa', d:'suave y equilibrado'},
   {id:'blanco', e:'⚪', n:'Blanco suave', d:'como el de YouTube'},
   {id:'lluvia', e:'🌧️', n:'Lluvia', d:'lluvia constante'},
-  {id:'olas', e:'🌊', n:'Olas', d:'mar en calma'}
+  {id:'olas', e:'🌊', n:'Olas', d:'mar en calma'},
+  {id:'ventilador', e:'🌀', n:'Ventilador', d:'zumbido suave'},
+  {id:'aspiradora', e:'🧹', n:'Aspiradora', d:'motor constante'},
+  {id:'secador', e:'💨', n:'Secador', d:'aire continuo'},
+  {id:'batidora', e:'🥤', n:'Batidora', d:'motor agudo'}
 ];
+// Motores: armónicos (relativos al ruido), un leve vaivén y, si toca, un latido. Todas las frecuencias × 60 s
+// son números enteros, así el bucle de 60 s no se nota.
+const MOTOR = {
+  aspiradora: {f: 180, h: [.9, .6, .4, .25, .15], wob: .25},
+  secador: {f: 100, h: [.35, .2], wob: .25},
+  ventilador: {f: 60, h: [.25], wob: 0, am: {f: 18, d: .12}},
+  batidora: {f: 320, h: [.7, .5, .35, .2], wob: .5, am: {f: 4, d: .1}}
+};
 const NSR = 44100, NLEN = NSR * 60, NFADE = NSR * 3;
 // Sonido estéreo (cada oído recibe un ruido distinto: suena amplio y no «dentro de la cabeza»),
 // filtrado para quitar lo chillón y el retumbe, y en bucle de 60 s sin cortes.
@@ -1415,8 +1435,8 @@ function makeNoise(id) {
       t += 8 + Math.random() * 4;
     }
   }
-  const lpF = {blanco: 6500, rosa: 11000, marron: 1500, lluvia: 8000}[id];
-  const hpF = id === 'lluvia' ? 300 : 30;
+  const lpF = {blanco: 6500, rosa: 11000, marron: 1500, lluvia: 8000, aspiradora: 7000, secador: 6000, ventilador: 900, batidora: 5000}[id];
+  const hpF = {lluvia: 300, secador: 500, batidora: 200, aspiradora: 40}[id] || 30;
   const chans = [0, 1].map(c => {
     const a = new Float32Array(L);
     let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0, hp = 0, l1 = 0, l2 = 0, fl = 1;
@@ -1429,9 +1449,10 @@ function makeNoise(id) {
     for (let i = 0; i < L; i++) {
       const w = Math.random() * 2 - 1;
       let x;
-      if (id === 'blanco') x = w * .5;
-      else if (id === 'rosa' || id === 'lluvia') x = pink(w);
+      if (id === 'blanco' || id === 'secador') x = w * .5;
+      else if (id === 'rosa' || id === 'lluvia' || id === 'batidora') x = pink(w);
       else if (id === 'olas') { br = (br + .02 * w) / 1.02; x = br * 3 + pink(w) * .6; }
+      else if (id === 'aspiradora') { br = (br + .02 * w) / 1.02; x = br * 2 + pink(w) * .8; }
       else { br = (br + .02 * w) / 1.02; x = br * 3.5; }
       hp += kHP * (x - hp); x -= hp;                       // fuera el retumbe
       let e = 1;
@@ -1439,6 +1460,16 @@ function makeNoise(id) {
       l1 += kLP * (x - l1); l2 += kLP * (l1 - l2);           // fuera lo chillón (2 polos)
       if (id === 'lluvia') { fl += kFl * ((.85 + Math.random() * .3) - fl); }  // la lluvia «respira» un poco
       a[i] = l2 * (id === 'olas' ? .12 + .88 * e : 1) * (id === 'lluvia' ? fl : 1);
+    }
+    const m = MOTOR[id];
+    if (m) { // zumbido del motor encima del ruido, a su misma escala
+      let ss = 0; for (let i = 0; i < L; i += 7) ss += a[i] * a[i];
+      const rn = Math.sqrt(ss / (L / 7));
+      for (let i = 0; i < L; i++) {
+        const t = i / NSR, ph = 2 * Math.PI * m.f * t + .8 * Math.sin(2 * Math.PI * m.wob * t);
+        let tone = 0; m.h.forEach((h, k) => { tone += h * Math.sin(ph * (k + 1)); });
+        a[i] = a[i] * (m.am ? 1 + m.am.d * Math.sin(2 * Math.PI * m.am.f * t) : 1) + rn * tone;
+      }
     }
     const out = new Float32Array(NLEN); // el final se funde con el principio: el bucle no se nota
     for (let i = 0; i < NLEN; i++) out[i] = i < NFADE ? a[i] * Math.sqrt(i / NFADE) + a[NLEN + i] * Math.sqrt(1 - i / NFADE) : a[i];
@@ -1625,7 +1656,7 @@ else {
 await DB.open();
 renderHome();
 IA.load();
-window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV, makeNoise}; // para pruebas
 </script>
 </body>
 </html>
