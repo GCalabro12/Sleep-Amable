@@ -1,5 +1,5 @@
 // Amable Sleep — funciona sin conexión. Subir CACHE con cada versión.
-const CACHE = 'sleepamable-v2.7';
+const CACHE = 'sleepamable-v2.9';
 const CORE = ['./', './index.html', './logo.svg', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 // La IA (MediaPipe + modelo YAMNet) se guarda la primera vez que se descarga
 const IA_HOSTS = ['cdn.jsdelivr.net', 'storage.googleapis.com'];
@@ -9,7 +9,7 @@ self.addEventListener('install', e => {
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
-    .then(ks => Promise.all(ks.filter(k => k.startsWith('sleepamable-') && k !== CACHE && k !== 'sleepamable-ia').map(k => caches.delete(k))))
+    .then(ks => Promise.all(ks.filter(k => k.startsWith('sleepamable-') && k !== CACHE && k !== 'sleepamable-ia' && k !== 'sleepamable-cuna').map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
@@ -18,6 +18,13 @@ self.addEventListener('fetch', e => {
   if (IA_HOSTS.includes(u.hostname)) { // primero la copia guardada
     e.respondWith(caches.open('sleepamable-ia').then(c => c.match(r).then(hit => hit || fetch(r).then(res => {
       if (res.ok) c.put(r, res.clone());
+      return res;
+    }))));
+    return;
+  }
+  if (u.origin === location.origin && u.pathname.includes('/cuna/')) { // canciones de cuna: se guardan enteras la primera vez
+    e.respondWith(caches.open('sleepamable-cuna').then(c => c.match(u.href).then(hit => hit || fetch(u.href).then(res => {
+      if (res.status === 200) c.put(u.href, res.clone());
       return res;
     }))));
     return;

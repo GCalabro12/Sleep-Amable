@@ -36,10 +36,12 @@ header .ver{margin-left:auto;font-size:12px;color:var(--dim)}
 .tips{font-size:14px;color:var(--muted);margin:12px 0 0;padding-left:18px}
 .tips li{margin:3px 0}
 h2{font-size:17px;margin:22px 0 10px}
-.night{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
-.night .when{font-weight:600}
-.night .sub{font-size:13px;color:var(--muted)}
+.night{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:8px}
+.night .when{font-weight:600;font-size:clamp(13px,4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.night .line2{display:flex;align-items:center;gap:10px;margin-top:3px}
+.night .sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .night .counts{margin-left:auto;text-align:right;font-size:14px;white-space:nowrap}
+#nTitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .empty{color:var(--dim);font-size:14px;text-align:center;padding:18px}
 details.cfg summary{cursor:pointer;color:var(--muted);font-size:15px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:15px}
@@ -338,7 +340,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- NOCHE -->
 <section id="night" hidden>
   <button class="back" id="backBtn">← Volver</button>
-  <h1 id="nTitle" style="font-size:21px;margin:0"></h1>
+  <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
   <div class="tiles">
     <div class="tile s"><b id="tSnore">0</b><span>ronquidos</span></div>
@@ -414,7 +416,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v2.7'; // v2.7: gráfico ampliable con dos dedos que sigue a lo que suena; «Historial» desplegable; «Antes de dormir» en desplegables; botón «No grabar +5 s»; sección «Canción de cuna» (Suno)
+const VERSION = 'v2.9'; // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
+// v2.8: // v2.8: nombre de cada noche en una sola línea (ronquidos y voces debajo)
+// v2.7: // v2.7: gráfico ampliable con dos dedos que sigue a lo que suena; «Historial» desplegable; «Antes de dormir» en desplegables; botón «No grabar +5 s»; sección «Canción de cuna» (Suno)
 // v2.6: // v2.6: día de la semana completo («Noche del martes, 20 de octubre»); gráfico fijo arriba con raya que avanza con lo que suena; tocar el gráfico va a esa hora
 // v2.5: // v2.5: mantener pulsado un cuadrito marca todo el tramo hasta la última marcada
 // v2.4: // v2.4: estrella de favorita (naranja, se quita al tocar otra vez) + filtro «Favoritas»; la grabación que suena queda a la vista, por encima del reproductor
@@ -838,7 +842,10 @@ function muteTick() {
 // ---------- Canciones de cuna (hechas con Suno) ----------
 // Archivos en cuna/. Cada una suena 5 minutos (se repite si es más corta) y se apaga en 5 segundos.
 // Mientras suena no se graba; al acabar empieza la escucha normal.
-const CUNAS = [ // {id, icon, name, file}
+const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canciones de cuna – Amable Sleep»)
+  {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3'},
+  {id: 'estrellitas', icon: '⭐', name: 'Estrellitas', file: 'cuna/estrellitas.mp3'},
+  {id: 'mar', icon: '🌊', name: 'Mar en calma', file: 'cuna/mar-en-calma.mp3'}
 ];
 const CUNA_SEG = 300, CUNA_FADE = 5;
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
@@ -855,7 +862,11 @@ function renderCunas() {
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
     b.innerHTML = `<b>${x.icon}</b>${x.name}`;
-    b.onclick = () => { cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {} renderCunas(); };
+    b.onclick = () => {
+      cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
+      if (x.file) fetch(x.file).catch(() => {}); // se guarda en el móvil por si luego pones el modo avión
+      renderCunas();
+    };
     box.append(b);
   }
 }
@@ -934,6 +945,11 @@ const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000
 const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
   : 'Noche del ' + new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'});
 
+// Si un texto no cabe en una línea (p. ej. con la letra grande del móvil), se achica poco a poco hasta que quepa
+function fitLine(el) {
+  let fs = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth + 1 && fs > 11) { fs -= .5; el.style.fontSize = fs + 'px'; }
+}
 async function renderHome() {
   const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id);
   $('histN').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
@@ -942,11 +958,12 @@ async function renderHome() {
     const b = document.createElement('button'); b.className = 'night';
     const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
       : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
-    b.innerHTML = `<div><div class="when"></div><div class="sub"></div></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div>`;
+    b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div>`;
     b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
     b.onclick = () => openNight(n.id);
     $('nights').append(b);
   }
+  requestAnimationFrame(() => document.querySelectorAll('#nights .when').forEach(fitLine));
 }
 
 let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
@@ -958,7 +975,7 @@ async function openNight(id) {
   filter = 'todos';
   show('night');
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
-  $('nTitle').textContent = nightName(n);
+  $('nTitle').textContent = nightName(n); $('nTitle').style.fontSize = ''; requestAnimationFrame(() => fitLine($('nTitle')));
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
     + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '');
   renderStats(); drawTimeline(total); renderList();
