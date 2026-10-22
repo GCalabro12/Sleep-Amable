@@ -128,6 +128,17 @@ body.tabs-on .wrap{padding-bottom:84px}
 .alcard .lbl{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .info{width:18px;height:18px;flex:none;border-radius:50%;border:1px solid #6D5BD0;background:none;color:#C4B5FD;font:italic 700 12px/16px Georgia,serif;padding:0}
 .alhelp{font-size:12px;color:var(--muted);background:var(--card);border-radius:10px;padding:8px 10px;margin-top:8px}
+.tonobtn{width:100%;margin-top:3px;text-align:left;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 9px;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tonoPick{position:fixed;inset:0;z-index:31;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+#tonoPick .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:18px 14px 22px}
+#tonoPick h2{margin:0 0 10px;font-size:19px}
+.tonorow{display:flex;align-items:center;gap:10px;padding:13px 10px;border-bottom:1px solid var(--line);font-size:18px;cursor:pointer}
+.tonorow .tn{flex:1}
+.tonorow .play{width:42px;height:42px;border-radius:50%;border:1px solid #6D5BD0;background:#1E1B4B;color:#C4B5FD;font-size:20px;padding:0;flex:none}
+.tonorow .play.on{background:#6D5BD0;color:#fff}
+.tonorow .radio{width:24px;height:24px;border-radius:50%;border:2px solid #94A3B8;flex:none;position:relative}
+.tonorow.sel .radio{border-color:#A78BFA}
+.tonorow.sel .radio::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#A78BFA}
 .alcard .altest{margin-top:8px;font-size:13px;background:none;border:0;color:#C4B5FD;padding:4px 0}
 .swt{position:relative;width:46px;height:26px;flex:none}
 .swt input{opacity:0;width:0;height:0}
@@ -382,7 +393,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div style="font-weight:600;font-size:17px">😴 Siesta</div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px;color:var(--muted)">
       <label>Duración<select id="napMin"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
-      <label>Tono<select id="napSon"></select></label>
+      <label>Tono<button class="tonobtn" id="napSon" type="button"></button></label>
     </div>
     <button class="napbtn" id="napGo">😴 Siesta de 25 min</button>
   </div>
@@ -534,6 +545,15 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 </div>
 
+<!-- ELEGIR TONO -->
+<div id="tonoPick" hidden>
+  <div class="sheet">
+    <h2>🎵 Elige el tono</h2>
+    <div id="tonoList"></div>
+    <button class="btn wide" id="tonoClose" style="margin-top:12px">Cerrar</button>
+  </div>
+</div>
+
 <!-- ANTES DE DORMIR -->
 <div id="prep" hidden>
   <div class="sheet">
@@ -571,7 +591,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.3'; // v4.3: «Subida volumen» con una ⓘ que lo explica; la luna con bordes suaves, más resolución y sin el hueco blanco entre el brazo y el cuerpo; app Android 2.6
+const VERSION = 'v4.4'; // v4.4: elegir tono en una lista propia con 🎵 para escucharlo antes; fuera la explicación de «Subida» de la luna (ya está en la ⓘ)
+// v4.3: // v4.3: «Subida volumen» con una ⓘ que lo explica; la luna con bordes suaves, más resolución y sin el hueco blanco entre el brazo y el cuerpo; app Android 2.6
 // v4.2: // v4.2: la subida de volumen de la alarma empieza casi en silencio y sube pareja (en decibelios); el aviso «pantalla completa» se quita al dar el permiso; app Android 2.5
 // v4.1: // v4.1: cómo desbloquear «ajustes restringidos» de Android para la alarma a pantalla completa
 // v4.0: // v4.0: al terminar la noche, hoja «Todo como antes»: quitar No molestar, encender el wifi y quitar el modo avión (app Android 2.3)
@@ -1056,6 +1077,7 @@ window.atrasNativo = () => {
   if ($('splash')) return false;
   if (live.night) return true; // escuchando: no se sale sin «Terminar la noche»
   if (nap || alWake) return true; // siesta o alarma sonando: se usan sus botones
+  if (!$('tonoPick').hidden) { $('tonoClose').onclick(); return true; }
   if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
@@ -1968,29 +1990,56 @@ function probar(id) {
   alTestAu = new Audio(srcDe(id)); alTestAu.volume = .8; alTestAu.play().catch(() => {});
   setTimeout(() => { alTestAu?.pause(); alTestAu = null; }, 6000);
 }
+const tonoTxt = id => { const t = TONOS.find(x => x.id === id) || TONOS[0]; return `${t.icon} ${t.name} ▾`; };
+let tonoPrev = null; // {id, au}
+function pararPrev() { if (tonoPrev) { tonoPrev.au.pause(); tonoPrev.au.src = ''; tonoPrev = null; } }
+function elegirTono(actual, onPick) {
+  let sel = actual;
+  const pinta = () => {
+    $('tonoList').innerHTML = '';
+    for (const t of TONOS) {
+      const r = document.createElement('div'); r.className = 'tonorow' + (t.id === sel ? ' sel' : '');
+      const suena = tonoPrev && tonoPrev.id === t.id;
+      r.innerHTML = `<span class="tn">${t.icon} ${t.name}</span><button class="play${suena ? ' on' : ''}" type="button" aria-label="Escuchar">${suena ? '⏹' : '🎵'}</button><span class="radio"></span>`;
+      r.querySelector('.play').onclick = ev => {
+        ev.stopPropagation();
+        const era = tonoPrev && tonoPrev.id === t.id; pararPrev();
+        if (!era) { const au = new Audio(srcDe(t.id)); au.volume = .8; au.loop = true; au.play().catch(() => {}); tonoPrev = {id: t.id, au}; }
+        pinta();
+      };
+      r.onclick = () => { sel = t.id; pararPrev(); $('tonoPick').hidden = true; onPick(t.id); };
+      $('tonoList').append(r);
+    }
+  };
+  pinta();
+  $('tonoPick').hidden = false;
+  $('tonoClose').onclick = () => { pararPrev(); $('tonoPick').hidden = true; };
+  $('tonoPick').onclick = ev => { if (ev.target === $('tonoPick')) $('tonoClose').onclick(); };
+}
 function renderAlarmas() {
-  $('napMin').value = ALS.siesta.min; $('napSon').innerHTML = tonos(ALS.siesta.son);
+  $('napMin').value = ALS.siesta.min; $('napSon').textContent = tonoTxt(ALS.siesta.son);
   $('napGo').textContent = `😴 Siesta de ${ALS.siesta.min} min`;
   $('alList').innerHTML = ALS.list.length ? '' : '<div class="empty" style="padding:6px 0 12px">Aún no tienes alarmas.</div>';
   for (const al of ALS.list) {
     const d = document.createElement('div'); d.className = 'alcard' + (al.on ? '' : ' off');
     d.innerHTML = `<div class="altop"><label class="swt"><input type="checkbox"${al.on ? ' checked' : ''}><i></i></label>
         <input type="time" value="${al.hora}"><button class="aldel" title="Borrar">✕</button></div>
-      <div class="algrid"><label><span class="lbl">Tono</span><select class="son">${tonos(al.son)}</select></label><label><span class="lbl">Subida volumen <button class="info" type="button" aria-label="¿Qué es?">i</button></span><select class="sub">${subidas(al.sub)}</select></label></div>
+      <div class="algrid"><label><span class="lbl">Tono</span><button class="tonobtn son" type="button">${tonoTxt(al.son)}</button></label><label><span class="lbl">Subida volumen <button class="info" type="button" aria-label="¿Qué es?">i</button></span><select class="sub">${subidas(al.sub)}</select></label></div>
       <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>
       <button class="altest">▶ Probar el tono (6 s)</button>`;
     const upd = () => { al.on = d.querySelector('.swt input').checked; al.hora = d.querySelector('input[type=time]').value || al.hora;
-      al.son = d.querySelector('.son').value; al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
+      al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
     d.querySelectorAll('input, select').forEach(x => x.onchange = upd);
     d.querySelector('.aldel').onclick = () => { if (confirm('¿Borrar esta alarma?')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
     d.querySelector('.altest').onclick = () => probar(al.son);
+    d.querySelector('.son').onclick = () => elegirTono(al.son, id => { al.son = id; al.fired = null; alSave(); renderAlarmas(); });
     d.querySelector('.info').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp'); h.hidden = !h.hidden; };
     $('alList').append(d);
   }
 }
 $('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}); alSave(); renderAlarmas(); };
 $('napMin').onchange = () => { ALS.siesta.min = +$('napMin').value; alSave(); renderAlarmas(); };
-$('napSon').onchange = () => { ALS.siesta.son = $('napSon').value; alSave(); };
+$('napSon').onclick = () => elegirTono(ALS.siesta.son, id => { ALS.siesta.son = id; alSave(); renderAlarmas(); });
 renderAlarmas();
 alSave(); // en la app Android, deja programadas las alarmas guardadas
 function renderPantallaCompleta() {
@@ -2000,8 +2049,8 @@ function renderPantallaCompleta() {
 $('alFullBtn').onclick = () => AND.pedirPantallaCompleta();
 renderPantallaCompleta();
 $('alInfo').innerHTML = NATIVA
-  ? '<p>✅ <b>Suenan aunque cierres la app</b> o bloquees el móvil: las programa el reloj de Android.</p><p>«Subida» es lo despacio que sube el volumen: de golpe o poco a poco hasta 5 minutos.</p>'
-  : `<p>Aquí, en el navegador, las alarmas solo suenan con Amable Sleep abierta: escuchando la noche (😴), con un sonido para dormir (🎧), en una siesta o en pantalla.</p><p>${/Android/i.test(navigator.userAgent) ? '📲 Con la <b>app Android</b> suenan aunque la cierres: descárgala en Inicio.' : '«Subida» es lo despacio que sube el volumen.'}</p>`;
+  ? '<p>✅ <b>Suenan aunque cierres la app</b> o bloquees el móvil: las programa el reloj de Android.</p>'
+  : `<p>Aquí, en el navegador, las alarmas solo suenan con Amable Sleep abierta: escuchando la noche (😴), con un sonido para dormir (🎧), en una siesta o en pantalla.</p><p>${/Android/i.test(navigator.userAgent) ? '📲 Con la <b>app Android</b> suenan aunque la cierres: descárgala en Inicio.' : ''}</p>`;
 
 let alWake = null; // la que está sonando: {au, t0, sub, snooze()}
 function alCheck() {
