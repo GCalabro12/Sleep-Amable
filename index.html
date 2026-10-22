@@ -354,6 +354,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
+  <div class="card">
+    <div class="row" style="margin-top:0"><label for="shareOn">🤝 Compartir mis noches de forma anónima<small>Solo se envían números de cada noche (horas, a qué hora te acuestas y te levantas, minutos roncando) y tu país. Nunca grabaciones, nombres ni correos. Con ellos se calcula la media de tu país.</small></label>
+      <label class="swt"><input type="checkbox" id="shareOn"><i></i></label></div>
+    <div id="paisBody" class="stnote"></div>
+  </div>
 </section>
 
 <!-- ALARMA -->
@@ -369,7 +374,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="alList"></div>
   <button class="btn wide" id="alAdd">＋ Añadir alarma</button>
-  <div class="moontip"><img src="luna/luna-consejo.png" alt=""><div class="bubble"><p>Las alarmas suenan con Amable Sleep abierta: escuchando la noche (😴), con un sonido para dormir (🎧), en una siesta o con la app en pantalla. Deja el móvil enchufado.</p><p>«Subida» es lo despacio que sube el volumen: de golpe o poco a poco hasta 5 minutos.</p></div></div>
+  <div class="moontip"><img src="luna/luna-consejo.png" alt=""><div class="bubble" id="alInfo"></div></div>
 </section>
 
 <!-- SIESTA -->
@@ -534,7 +539,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.7'; // v3.7: varias alarmas, cada una con su tono y su subida de volumen (de golpe a 5 min); siesta de 25 min (ajustable)
+const VERSION = 'v3.8'; // v3.8: tonos de alarma propios (no las canciones de cuna); en la app Android 2.0 las alarmas y la siesta suenan con la app cerrada; medias de tu país con los datos anónimos de quien quiera compartir (Firebase)
+// v3.7: // v3.7: varias alarmas, cada una con su tono y su subida de volumen (de golpe a 5 min); siesta de 25 min (ajustable)
 // v3.6: // v3.6: barra de abajo Inicio · Alarma · Estadísticas · Ajustes; alarma con despertar suave; la luna de Gemini da los consejos
 // v3.5: // v3.5: «Tus estadísticas» (horas, regularidad, ronquido por hora) con tu país y consejos de la luna
 // v3.4: // v3.4: logo nuevo: la luna duerme con «Zzz» (las rayas parecían el wifi); app Android 1.9 con el icono nuevo
@@ -1169,6 +1175,7 @@ function renderStatsHome(ns) {
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
   if (!ok.length) {
+    comunidad(ok, 0, 0, 0);
     $('statBody').innerHTML = `<div class="moontip">${luna('saluda', true)}<div class="bubble"><p>¡Hola! Soy la luna 🌙. En cuanto grabes alguna noche de más de 3 horas, te cuento cuánto duermes, si eres regular y cuánto roncas.</p></div></div>`;
     return;
   }
@@ -1186,8 +1193,59 @@ function renderStatsHome(ns) {
     </div>
     <div class="strow"><span>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></span><span>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></span></div>
     <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div>
-    <div class="stnote">${pais ? `🌍 La media de la gente de <b>${pais}</b> aparecerá aquí cuando más personas usen Amable Sleep.` : '🌍 Elige tu país para compararte, más adelante, con la gente de allí.'}
-      Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
+    <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
+  comunidad(ok, media, snPorHora, avg(acu));
+}
+// ---------- Media del país (datos anónimos de quien comparte; Firebase «amable-sleep») ----------
+// Cada noche compartida SUMA unos pocos números al documento de su país (las reglas de la base de datos solo dejan sumar).
+const FS = 'https://firestore.googleapis.com/v1/projects/amable-sleep/databases/(default)/documents';
+const MIN_PERSONAS = 20; // por debajo no se enseña la media (no se podría saber de quién es cada dato)
+let shareOn = false; try { shareOn = localStorage.getItem('ronquino-compartir') === '1'; } catch {}
+$('shareOn').checked = shareOn;
+$('shareOn').onchange = () => {
+  shareOn = $('shareOn').checked;
+  try { localStorage.setItem('ronquino-compartir', shareOn ? '1' : '0'); } catch {}
+  if (shareOn && !pais) alert('Elige tu país arriba para poder compartir.');
+  renderHome();
+};
+const fsNum = v => Number.isInteger(v) ? {integerValue: String(v)} : {doubleValue: v};
+async function compartirNoches(ok) {
+  if (!shareOn || !pais) return;
+  for (const n of ok) {
+    if (n.compartida) continue;
+    const sinceNoon = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
+    const h = Math.round((n.fin - n.inicio) / 36e3) / 100, yo = 'ronquino-persona-' + pais;
+    let nueva = false; try { nueva = !localStorage.getItem(yo); } catch {}
+    const campos = {noches: 1, personas: nueva ? 1 : 0, horas: h, horas2: Math.round(h * h * 100) / 100,
+      acostar: sinceNoon(n.inicio), levantar: sinceNoon(n.fin), ronquido: Math.min(900, Math.round((n.segRonquido || 0) / 6) / 10)};
+    const doc = `projects/amable-sleep/databases/(default)/documents/paises/${pais}`;
+    const body = {writes: [{transform: {document: doc, fieldTransforms: Object.entries(campos).map(([k, v]) => ({fieldPath: k, increment: fsNum(v)}))}}]};
+    try {
+      const r = await fetch(FS + ':commit', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+      if (!r.ok) continue;
+      n.compartida = true; await DB.put('noches', n);
+      if (nueva) try { localStorage.setItem(yo, '1'); } catch {}
+    } catch { return; } // sin internet: se intentará otra vez
+  }
+}
+async function comunidad(ok, media, snPorHora, acuMedia) {
+  if (!pais) { $('paisBody').innerHTML = '🌍 Elige tu país (arriba) para compararte con la gente de allí.'; return; }
+  await compartirNoches(ok);
+  let d = null;
+  try { const r = await fetch(`${FS}/paises/${encodeURIComponent(pais)}`); if (r.ok) d = (await r.json()).fields; } catch {}
+  const v = k => d && d[k] ? Number(Object.values(d[k])[0]) : 0;
+  const personas = v('personas'), noches = v('noches');
+  if (!d || personas < MIN_PERSONAS) {
+    $('paisBody').innerHTML = `🌍 <b>${pais}</b>: ${personas ? `ya ${personas === 1 ? 'comparte 1 persona' : `comparten ${personas} personas`}` : 'aún no comparte nadie'}. Con ${MIN_PERSONAS} personas aparecerá aquí la media del país.${shareOn ? '' : ' Si activas «Compartir», ayudas a que salga antes.'}`;
+    return;
+  }
+  const mh = v('horas') / noches, macu = v('acostar') / noches, mron = v('ronquido') / v('horas');
+  const dif = (a, b, u) => { const x = a - b; return Math.abs(x) < .05 ? 'igual que la media' : `${x > 0 ? '+' : '−'}${Math.abs(x).toFixed(1).replace('.', ',')} ${u} que la media`; };
+  $('paisBody').innerHTML = `🌍 <b>Media de ${pais}</b> (${personas} personas, ${noches} noches):
+    <div class="stgrid"><div class="stbox"><b>${mh.toFixed(1).replace('.', ',')} h</b><span>por noche</span></div>
+      <div class="stbox"><b>${hm(macu + 720)}</b><span>se acuestan</span></div>
+      <div class="stbox"><b>${mron.toFixed(1).replace('.', ',')} min</b><span>roncando por hora</span></div></div>
+    ${ok.length ? `Tú: ${dif(media, mh, 'h')} de sueño · ${dif(snPorHora, mron, 'min/h')} de ronquido.` : ''}`;
 }
 // Consejos sencillos de la luna (no sustituyen al médico)
 function consejos(media, desv, snPorHora) {
@@ -1804,17 +1862,29 @@ $('ytBtn').onclick = () => {
 // Suenan con la app abierta: escuchando la noche, con un sonido puesto, en una siesta o con la app en pantalla.
 // Cada alarma: hora, tono y «subida» (segundos hasta el volumen máximo; 0 = de golpe).
 const SUBIDAS = [[0, 'De golpe'], [30, '30 s'], [60, '1 min'], [120, '2 min'], [300, '5 min']];
-let ALS = {list: [], siesta: {min: 25, son: 'estrellitas', sub: 60}};
+// Tonos de alarma propios (hechos para Amable Sleep, en alarma/; la app Android lleva una copia dentro)
+const TONOS = [
+  {id: 'amanecer', icon: '🌅', name: 'Amanecer'}, {id: 'pajaros', icon: '🐦', name: 'Pájaros'},
+  {id: 'campanitas', icon: '🔔', name: 'Campanitas'}, {id: 'marimba', icon: '🎹', name: 'Marimba'},
+  {id: 'guitarra', icon: '🎸', name: 'Guitarra'}, {id: 'clasico', icon: '⏰', name: 'Clásico suave'}
+];
+const NATIVA = !!(AND && AND.setAlarmas); // app Android 2.0+: las alarmas las hace sonar Android
+let ALS = {list: [], siesta: {min: 25, son: 'amanecer', sub: 60}};
 try {
   const g = JSON.parse(localStorage.getItem('ronquino-alarmas') || 'null');
   if (g) ALS = g;
   else { const o = JSON.parse(localStorage.getItem('ronquino-alarma') || 'null'); // la alarma única de la v3.6
     ALS.list.push({id: Date.now(), on: !!o?.on, hora: o?.hora || '07:30', son: o?.son || 'estrellitas', sub: o?.suave === false ? 0 : 120}); }
 } catch {}
-const alSave = () => { try { localStorage.setItem('ronquino-alarmas', JSON.stringify(ALS)); } catch {} };
-const tonos = sel => CUNAS.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${c.icon} ${c.name}</option>`).join('');
+// Las alarmas de antes usaban canciones de cuna: pasan a «Amanecer»
+for (const al of [...ALS.list, ALS.siesta]) if (!TONOS.some(t => t.id === al.son)) al.son = 'amanecer';
+const alSave = () => {
+  try { localStorage.setItem('ronquino-alarmas', JSON.stringify(ALS)); } catch {}
+  if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub}))));
+};
+const tonos = sel => TONOS.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${c.icon} ${c.name}</option>`).join('');
 const subidas = sel => SUBIDAS.map(([v, t]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${t}</option>`).join('');
-const srcDe = id => { const c = CUNAS.find(x => x.id === id) || CUNAS[0]; return c.file || (noise.urls[c.noise] ||= makeNoise(c.noise)); };
+const srcDe = id => `alarma/${TONOS.some(t => t.id === id) ? id : 'amanecer'}.mp3`;
 let alTestAu = null;
 function probar(id) {
   if (alTestAu) { alTestAu.pause(); alTestAu = null; return; }
@@ -1839,14 +1909,18 @@ function renderAlarmas() {
     $('alList').append(d);
   }
 }
-$('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'estrellitas', sub: 120}); alSave(); renderAlarmas(); };
+$('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}); alSave(); renderAlarmas(); };
 $('napMin').onchange = () => { ALS.siesta.min = +$('napMin').value; alSave(); renderAlarmas(); };
 $('napSon').onchange = () => { ALS.siesta.son = $('napSon').value; alSave(); };
 renderAlarmas();
+alSave(); // en la app Android, deja programadas las alarmas guardadas
+$('alInfo').innerHTML = NATIVA
+  ? '<p>✅ <b>Suenan aunque cierres la app</b> o bloquees el móvil: las programa el reloj de Android.</p><p>«Subida» es lo despacio que sube el volumen: de golpe o poco a poco hasta 5 minutos.</p>'
+  : `<p>Aquí, en el navegador, las alarmas solo suenan con Amable Sleep abierta: escuchando la noche (😴), con un sonido para dormir (🎧), en una siesta o en pantalla.</p><p>${/Android/i.test(navigator.userAgent) ? '📲 Con la <b>app Android</b> suenan aunque la cierres: descárgala en Inicio.' : '«Subida» es lo despacio que sube el volumen.'}</p>`;
 
 let alWake = null; // la que está sonando: {au, t0, sub, snooze()}
 function alCheck() {
-  if (alWake) return;
+  if (alWake || NATIVA) return; // en la app Android suenan solas, aunque esté cerrada
   const abierta = !!live.night || !noise.au.paused || !!nap || document.visibilityState === 'visible';
   if (!abierta) return;
   const now = new Date();
@@ -1888,7 +1962,7 @@ $('wakeOff').onclick = () => { alStop(); for (const al of ALS.list) al.snooze = 
 // Siesta: cuenta atrás en pantalla negra (sin que se apague) y al acabar suena su alarma
 let nap = null, napSnoozeT = null;
 $('napGo').onclick = async () => {
-  const fin = Date.now() + ALS.siesta.min * 60e3;
+  const fin = NATIVA ? AND.siesta(ALS.siesta.min, ALS.siesta.son, ALS.siesta.sub) : Date.now() + ALS.siesta.min * 60e3;
   nap = {fin};
   $('napScr').hidden = false;
   try { nap.lock = await navigator.wakeLock.request('screen'); } catch {}
@@ -1897,7 +1971,7 @@ $('napGo').onclick = async () => {
   const tick = () => {
     const left = Math.max(0, nap.fin - Date.now());
     $('napLeft').textContent = `${Math.floor(left / 60e3)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
-    if (!left) { napEnd(); alRing(ALS.siesta.son, ALS.siesta.sub, () => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), 9 * 60e3); }); }
+    if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, () => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), 9 * 60e3); }); }
   };
   nap.t = setInterval(tick, 500); tick();
 };
@@ -1907,7 +1981,7 @@ function napEnd() {
   AND?.ruido(false);
   nap = null; $('napScr').hidden = true;
 }
-$('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napEnd(); };
+$('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) { if (NATIVA) AND.cancelarSiesta(); napEnd(); } };
 
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
@@ -1973,7 +2047,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '1.9';
+const APK_ULTIMA = '2.0';
 if (AND && parseFloat(AND.version()) < parseFloat(APK_ULTIMA)) {
   // App instalada más vieja: invitar a actualizar (la 1.6 aún se llamaba RonquiNo y no abre descargas)
   $('tipApk').remove();
