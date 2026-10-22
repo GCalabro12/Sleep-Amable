@@ -308,6 +308,8 @@ body.pl-on .wrap{padding-bottom:190px}
       <input type="checkbox" id="keepOther"></div>
     <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias</small></label>
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
+    <div class="row"><label for="strict">Separar ronquido de respiración<small>Estricto: solo cuenta como ronquido lo que suena claramente a ronquido</small></label>
+      <select id="strict"><option value="0.25">Suave</option><option value="0.35">Normal</option><option value="0.5">Estricto</option></select></div>
   </details>
 
 </section>
@@ -364,6 +366,8 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList"></div>
   <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
+  <button class="btn wide" id="reNight">🔄 Revisar esta noche con el detector nuevo</button>
+  <div class="card" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
   <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
 </section>
 
@@ -431,7 +435,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.2'; // v3.2: al tocar una canción de cuna en la lista suena para escucharla (tocar otra vez la para)
+const VERSION = 'v3.3'; // v3.3: el detector distingue la respiración de los ronquidos (más exigente, ajustable); botón para revisar las noches ya grabadas con el detector nuevo
+// v3.2: // v3.2: al tocar una canción de cuna en la lista suena para escucharla (tocar otra vez la para)
 // v3.1: // v3.1: nombre corto «Noche miércoles 21 oct 2026»; sonidos de aspiradora, secador, ventilador y batidora (hechos por la app, también como canción de cuna); 2 canciones de cuna más (Bosque dormido, Nubes de algodón)
 // v3.0: // v3.0: la canción de cuna se puede pausar (y seguir) además de parar; muestra el tiempo que le queda; al terminar una noche de menos de 20 min pregunta si guardarla o borrarla (suele ser una prueba)
 // v2.9: // v2.9: 3 canciones de cuna hechas con Suno (Luna dormida, Estrellitas, Mar en calma), guardadas para usarlas sin internet
@@ -466,11 +471,11 @@ const AND = window.RonquiNoAndroid || null;
 $('ver').textContent = VERSION;
 
 // ---------- Ajustes ----------
-const cfg = {sens:10, keepOther:false, maxSec:60};
+const cfg = {sens:10, keepOther:false, maxSec:60, strict:.35};
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
-$('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec;
-for (const id of ['sens','keepOther','maxSec']) $(id).onchange = () => {
-  cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value;
+$('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec; $('strict').value = cfg.strict;
+for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => {
+  cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value; cfg.strict = +$('strict').value;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
 };
 
@@ -506,6 +511,7 @@ const DB = {
 
 // ---------- Detector de IA (YAMNet: reconoce «Snoring», «Speech» y 500 sonidos más) ----------
 const SNORE = new Set(['Snoring', 'Snort']);
+const BREATH = new Set(['Breathing', 'Gasp', 'Pant', 'Wheeze', 'Sigh']); // respirar fuerte NO es roncar
 const VOICE = new Set(['Speech','Conversation','Narration, monologue','Babbling','Whispering','Male speech, man speaking','Female speech, woman speaking','Child speech, kid speaking','Shout','Laughter']);
 const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathing:'respiración',Gasp:'jadeo',Sniff:'sorbido',
   Dog:'perro',Bark:'ladrido',Cat:'gato',Meow:'maullido',Music:'música',Television:'tele',Vehicle:'vehículo',Car:'coche',
@@ -531,14 +537,17 @@ const IA = {
   // Devuelve la probabilidad de ronquido y de voz de un trozo de audio
   scores(f) {
     if (this.clf) {
-      let sn = 0, vo = 0, top = null, topS = 0;
+      let sn = 0, vo = 0, br = 0, top = null, topS = 0;
       for (const r of this.clf.classify(f, SR)) for (const c of r.classifications[0].categories) {
         const n = c.categoryName, s = c.score;
         if (SNORE.has(n)) sn = Math.max(sn, s);
         else if (VOICE.has(n)) vo = Math.max(vo, s);
-        else if (n !== 'Silence' && s > topS) { topS = s; top = n; }
+        else {
+          if (BREATH.has(n)) br = Math.max(br, s);
+          if (n !== 'Silence' && s > topS) { topS = s; top = n; }
+        }
       }
-      return {sn, vo, top, topS, est:false};
+      return {sn, vo, br, top, topS, est:false};
     }
     // Básico: los ronquidos son graves (mucha energía < 400 Hz) y la voz cruza más veces el cero
     let y = 0, lo = 0, tot = 0, zc = 0;
@@ -547,9 +556,20 @@ const IA = {
       if (i && (f[i] >= 0) !== (f[i-1] >= 0)) zc++;
     }
     const ratio = lo / (tot + 1e-12), zcr = zc / f.length * SR;
-    return {sn: ratio > 0.6 && zcr < 1500 ? ratio : 0, vo: ratio <= 0.6 && zcr > 300 && zcr < 4000 ? 0.5 : 0, top:null, topS:0, est:true};
+    return {sn: ratio > 0.6 && zcr < 1500 ? ratio : 0, vo: ratio <= 0.6 && zcr > 300 && zcr < 4000 ? 0.5 : 0, br: 0, top:null, topS:0, est:true};
   }
 };
+// Decide qué es una grabación a partir de lo que la IA oyó en cada segundo.
+// Ronquido solo si en algún segundo el ronquido es claro (≥ exigencia) Y gana a la respiración; si no, la respiración
+// fuerte se queda en «otro» (respiración), que es lo que más se confundía.
+function decide(sn, vo, br) {
+  const max = a => a.length ? Math.max(...a) : 0, avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  const thr = cfg.strict || .35;
+  const clear = sn.filter((v, i) => v >= thr && v > (br[i] || 0) * 1.15).length; // segundos de ronquido claro
+  if (clear >= 1 && avg(sn) >= avg(br) && avg(sn) >= avg(vo) * .8) return 'ronquido';
+  if (max(vo) >= .3) return 'voz';
+  return 'otro';
+}
 function setIA(state, txt) {
   $('iaDot').className = 'dot ' + state; $('iaTxt').textContent = txt;
 }
@@ -611,7 +631,7 @@ class Detector {
       if (!muted) this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
       this.pre.push(b); if (this.pre.length > PRE) this.pre.shift();
       if (loud && !muted && this.samples > SR * 3) {
-        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], tops: {}, peak: db, est: false};
+        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], br: [], tops: {}, peak: db, est: false};
         this.pre = [];
         this.onStart?.();
       }
@@ -632,7 +652,7 @@ class Detector {
   }
   classify(blocks) {
     const e = this.ev, r = IA.scores(concat(blocks));
-    e.sn.push(r.sn); e.vo.push(r.vo); e.est = e.est || r.est;
+    e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.est = e.est || r.est;
     if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
   }
   finish() {
@@ -641,14 +661,11 @@ class Detector {
     if (e.loud < 2 || !e.sn.length) return; // un golpe suelto: se ignora
     const max = a => Math.max(...a), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
     const snMax = max(e.sn), voMax = max(e.vo);
-    let tipo = 'otro';
-    if (snMax >= 0.25 && avg(e.sn) >= avg(e.vo) * 0.8) tipo = 'ronquido';
-    else if (voMax >= 0.3) tipo = 'voz';
-    else if (snMax >= 0.25) tipo = 'ronquido';
+    const tipo = decide(e.sn, e.vo, e.br);
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
-    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, top, peak: e.peak, est: e.est, audio});
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), top, peak: e.peak, est: e.est, audio});
   }
   flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
 }
@@ -663,7 +680,7 @@ function makeSaver(night, onChange) {
     event(ev) {
       if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
       else if (ev.tipo === 'voz') night.voces++; else night.otros++;
-      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio)};
+      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio)};
       chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
       onChange?.(ev);
     },
@@ -1316,6 +1333,32 @@ async function recount() {
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
   await DB.put('noches', cur);
 }
+// Vuelve a pasar la IA por cada grabación de la noche (no toca las que corregiste tú a mano)
+$('reNight').onclick = async () => {
+  if (!IA.clf) return alert('El detector con IA aún no está listo. Espera a ver «Detector listo» (hace falta internet la primera vez).');
+  const evs = curEvs.filter(e => !e.fix); if (!evs.length) return alert('No hay grabaciones que revisar.');
+  if (!confirm(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`)) return;
+  plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
+  const antes = {ronquido: 0, voz: 0, otro: 0}, cambios = {};
+  for (let k = 0; k < evs.length; k++) {
+    const e = evs[k]; antes[e.tipo]++;
+    const ab = await e.blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
+    const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
+    const sn = [], vo = [], br = [];
+    for (let i = 0; i + sr * .5 <= f.length; i += sr) { const r = IA.scores(f.subarray(i, Math.min(i + sr, f.length))); sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0); }
+    const tipo = sn.length ? decide(sn, vo, br) : e.tipo;
+    if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
+    e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0);
+    const {_url, ...rec} = e; await DB.put('eventos', rec);
+    $('reProg').style.width = ((k + 1) / evs.length * 100) + '%';
+    $('reTxt').textContent = `Revisando ${k + 1} de ${evs.length}…`;
+    await new Promise(r => setTimeout(r, 0));
+  }
+  await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+  const txt = Object.entries(cambios).map(([k, n]) => `${n} ${k.replace('ronquido', 'ronquido').replace('otro', 'respiración/otro')}`).join(' · ');
+  $('reTxt').textContent = txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
+  $('reNight').disabled = false;
+};
 $('backBtn').onclick = () => { plSetList([]); show('home'); renderHome(); };
 
 // ---------- Reproductor de la noche (fijo abajo, aunque hagas scroll) ----------
