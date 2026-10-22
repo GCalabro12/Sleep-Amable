@@ -80,6 +80,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #ask{position:fixed;inset:0;z-index:30;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
 #ask h2{margin:0 0 6px;font-size:20px}
+#ask .finrow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
+#ask .finrow span{flex:1}
+#ask .finrow button{background:#312E81;border:0;color:#E0E7FF;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+#ask .finrow.ok{color:#86EFAC}
 #ask p{color:var(--muted);font-size:15px;margin:0 0 16px}
 #prep .steps li{margin:10px 0}
 .pdet{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--card2)}
@@ -513,6 +517,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="sheet">
     <h2 id="askT"></h2>
     <p id="askP"></p>
+    <div id="askList"></div>
     <button class="big" id="askA"></button>
     <button class="btn wide" id="askB"></button>
   </div>
@@ -555,7 +560,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.9'; // v3.9: deslizar el dedo pasa a la pantalla anterior o siguiente (Inicio · Alarma · Estadísticas · Ajustes); pantalla de alarmas en dos bloques (Siesta y Alarmas, con «Añadir alarma» dentro); en cada noche «grabaciones con ronquido» y el tiempo roncando en horas; alarma: posponer 1/3/5/9 min y, en la app Android 2.2, pantalla completa con la luna animada
+const VERSION = 'v4.0'; // v4.0: al terminar la noche, hoja «Todo como antes»: quitar No molestar, encender el wifi y quitar el modo avión (app Android 2.3)
+// v3.9: // v3.9: deslizar el dedo pasa a la pantalla anterior o siguiente (Inicio · Alarma · Estadísticas · Ajustes); pantalla de alarmas en dos bloques (Siesta y Alarmas, con «Añadir alarma» dentro); en cada noche «grabaciones con ronquido» y el tiempo roncando en horas; alarma: posponer 1/3/5/9 min y, en la app Android 2.2, pantalla completa con la luna animada
 // v3.8: // v3.8: tonos de alarma propios (no las canciones de cuna); en la app Android 2.0 las alarmas y la siesta suenan con la app cerrada; medias de tu país con los datos anónimos de quien quiera compartir (Firebase)
 // v3.7: // v3.7: varias alarmas, cada una con su tono y su subida de volumen (de golpe a 5 min); siesta de 25 min (ajustable)
 // v3.6: // v3.6: barra de abajo Inicio · Alarma · Estadísticas · Ajustes; alarma con despertar suave; la luna de Gemini da los consejos
@@ -894,6 +900,7 @@ async function stopListening() {
   try { await live.lock?.release(); } catch {}
   live.lock = null;
   AND?.noche(false); // «No molestar» y wifi vuelven a como estaban
+  if (AND) await todoComoAntes();
   $('listen').classList.remove('on');
   const night = live.night, id = night.id;
   for (const k of Object.keys(live)) delete live[k];
@@ -906,6 +913,41 @@ async function stopListening() {
     if (keep === 'a') { await DB.delNight(id); await renderHome(); show('home'); return; }
   }
   await renderHome(); openNight(id);
+}
+// Al terminar la noche: lo que la app no puede deshacer sola (modo avión, wifi en Android 10+, «No molestar» puesto a mano)
+// sale con un botón para hacerlo en un toque; solo aparece si queda algo pendiente.
+function pendientes() {
+  const p = [];
+  try {
+    const avion = !!(AND.modoAvion && AND.modoAvion());
+    if (avion) p.push({k: 'avion', t: '✈️ El modo avión sigue puesto', b: 'Quitarlo', f: () => AND.abrirModoAvion()});
+    if (!avion && !AND.wifiEncendido()) p.push({k: 'wifi', t: '📶 El wifi está apagado', b: 'Encenderlo', f: () => AND.wifiDirecto() ? AND.encenderWifi() : (AND.abrirPanelWifi ? AND.abrirPanelWifi() : AND.apagarWifi())});
+    if (AND.dndActivo()) p.push({k: 'dnd', t: '🌙 «No molestar» sigue puesto', b: 'Quitarlo', f: () => AND.hasDndAccess() ? AND.setDnd(false) : AND.pedirDnd()});
+  } catch {}
+  return p;
+}
+let finRefresh = null;
+function todoComoAntes() {
+  if (!pendientes().length) return Promise.resolve();
+  $('askT').textContent = '☀️ ¡Buenos días! Todo como antes';
+  $('askP').textContent = 'Amable Sleep ya ha quitado lo que puso por la noche. Esto lo tienes que hacer tú (Android no deja que una app lo haga sola):';
+  $('askA').textContent = '✅ Listo'; $('askB').textContent = 'Más tarde';
+  const pinta = () => {
+    const p = pendientes();
+    $('askList').innerHTML = p.length ? '' : '<div class="finrow ok"><span>✅ Todo vuelve a estar como antes</span></div>';
+    for (const x of p) {
+      const d = document.createElement('div'); d.className = 'finrow';
+      d.innerHTML = `<span>${x.t}</span><button>${x.b}</button>`;
+      d.querySelector('button').onclick = () => { x.f(); setTimeout(pinta, 1500); };
+      $('askList').append(d);
+    }
+  };
+  pinta(); finRefresh = pinta; // al volver de los ajustes de Android se repinta
+  $('ask').hidden = false;
+  return new Promise(res => {
+    const fin = () => { $('ask').hidden = true; $('askList').innerHTML = ''; finRefresh = null; res(); };
+    $('askA').onclick = fin; $('askB').onclick = fin;
+  });
 }
 // Hoja con dos botones; devuelve 'a' (botón grande) o 'b'
 function ask(title, text, a, b) {
@@ -988,6 +1030,7 @@ function renderPrep() {
 }
 // Android llama a esto al volver de sus ajustes (permiso de «No molestar», panel del wifi…)
 window.nativeVuelta = () => {
+  if (finRefresh) setTimeout(finRefresh, 800);
   if (typeof renderPantallaCompleta === 'function') renderPantallaCompleta();
   if (!AND || $('prep').hidden) return;
   if (dndPedido && AND.hasDndAccess() && !AND.dndActivo()) AND.setDnd(true);
@@ -2098,7 +2141,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '2.2';
+const APK_ULTIMA = '2.3';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
