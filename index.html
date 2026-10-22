@@ -591,7 +591,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.4'; // v4.4: elegir tono en una lista propia con 🎵 para escucharlo antes; fuera la explicación de «Subida» de la luna (ya está en la ⓘ)
+const VERSION = 'v4.5'; // v4.5: la noche se termina sola a las 13 h y al sonar la alarma (el micrófono no se queda abierto de día: las llamadas no sonaban); micrófono cerrado del todo al acabar
+// v4.4: // v4.4: elegir tono en una lista propia con 🎵 para escucharlo antes; fuera la explicación de «Subida» de la luna (ya está en la ⓘ)
 // v4.3: // v4.3: «Subida volumen» con una ⓘ que lo explica; la luna con bordes suaves, más resolución y sin el hueco blanco entre el brazo y el cuerpo; app Android 2.6
 // v4.2: // v4.2: la subida de volumen de la alarma empieza casi en silencio y sube pareja (en decibelios); el aviso «pantalla completa» se quita al dar el permiso; app Android 2.5
 // v4.1: // v4.1: cómo desbloquear «ajustes restringidos» de Android para la alarma a pantalla completa
@@ -908,6 +909,11 @@ async function startListening() {
     if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = 'Escuchando…';
     muteTick();
     if (ctx.state === 'suspended') ctx.resume();
+    // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
+    // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
+    if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
+    // Suena una alarma (con la app Android): ya es de día, la noche se termina sola
+    else if (AND?.alarmaSonando?.()) stopListening(true);
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
 }
@@ -923,13 +929,17 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   renderLiveSens();
 });
 
-async function stopListening() {
-  if (!confirm('¿Terminar la noche y ver el resumen?')) return;
+async function stopListening(auto) {
+  if (!live.night || live.parando) return;
+  if (auto !== true && !confirm('¿Terminar la noche y ver el resumen?')) return;
+  live.parando = true;
   clearInterval(live.timer); clearTimeout(live.dimT);
   if (live.cuna) endCuna();
   live.det.flush();
+  // El micrófono se cierra del todo (si no, el móvil sigue «como en una llamada»)
   live.stream.getTracks().forEach(t => t.stop());
-  live.ctx.close();
+  try { live.ctx.close(); } catch {}
+  AND?.audioNormal?.();
   live.night.fin = Date.now();
   await live.saver.done();
   try { await live.lock?.release(); } catch {}
@@ -1011,7 +1021,7 @@ $('listen').addEventListener('pointerdown', e => {
   if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
   else wake();
 }, true);
-$('stopBtn').onclick = stopListening;
+$('stopBtn').onclick = () => stopListening();
 $('startBtn').onclick = () => {
   const ok = !!IA.clf;
   $('prepAir').className = ok ? 'ok' : 'no';
@@ -2077,6 +2087,7 @@ function alRing(son, sub, onSnooze) {
   const au = new Audio(srcDe(son)); au.loop = true; au.volume = sub ? .9 * ganancia(0) : .9; au.play().catch(() => {});
   alWake = {au, t0: Date.now(), sub, onSnooze};
   if (live.det) live.det.muteUntil = Infinity; // la alarma no se graba
+  if (live.night) stopListening(true); // ya es de día: la noche se termina (y se cierra el micrófono)
   if (!noise.au.paused) stopNoise();
   $('wakeUp').hidden = false;
   if (live.night) wake(); // ilumina la pantalla negra
@@ -2208,7 +2219,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '2.6';
+const APK_ULTIMA = '2.7';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
