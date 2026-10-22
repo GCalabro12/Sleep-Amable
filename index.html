@@ -154,6 +154,10 @@ details.ajd>summary::after{content:"";margin-left:auto;flex:none;border-left:8px
 details.ajd[open]>summary::after{border-top:0;border-bottom:11px solid #A78BFA}
 details.ajd[open]>summary{margin-bottom:8px}
 details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;white-space:nowrap}
+.retorow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.retorow .rt{flex:1;font-size:16px}
+.retorow .info{width:24px;height:24px;font-size:15px;line-height:22px}
+.retohelp{font-size:13px;color:var(--muted);background:var(--card2);border-radius:10px;padding:8px 10px;margin:0 0 8px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -458,10 +462,9 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="btn wide avisoTest">▶ Probar la voz</button>
   </details>
   <details class="card ajd">
-    <summary>⏰ Prueba para apagar la alarma <small id="sRetoAj"></small></summary>
-    <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces la prueba (mientras la haces, el volumen baja). Posponer funciona igual. Vale para todas las alarmas.</p>
-    <select id="retoSel" style="width:100%"></select>
-    <div id="codRow"></div>
+    <summary>⏰ Reto para apagar la alarma <small id="sRetoAj"></small></summary>
+    <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces el reto (mientras lo haces, el volumen baja). Posponer funciona igual. Vale para todas las alarmas. Si no activas ninguno, se apaga con el botón.</p>
+    <div id="retoList"></div>
     <p class="note" id="retoNo" hidden></p>
   </details>
   <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · todo se guarda en este móvil</p>
@@ -619,7 +622,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.8'; // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
+const VERSION = 'v4.9'; // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
+// v4.8: // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
 // v4.7: 💪 alarma reforzada (app 2.9): para apagarla, caminar 20 pasos, 3 cuentas o escanear un código de barras guardado
 // v4.6: // v4.6: botones de pausa/parar sin fondo naranja (■ y ❚❚ en vez de los emojis, que en Android salen naranjas); 🎧 aviso «Estás roncando, cambia de posición» solo por los auriculares (app 2.8); siesta con interruptor como las alarmas (tono a la izquierda, duración a la derecha); aviso «Sonará en…» al activar; fuera el botón grande de siesta y «Probar el tono»
 // v4.5: // v4.5: la noche se termina sola a las 13 h y al sonar la alarma (el micrófono no se queda abierto de día: las llamadas no sonaban); micrófono cerrado del todo al acabar
@@ -2105,25 +2109,39 @@ function elegirTono(actual, onPick) {
   $('tonoClose').onclick = () => { pararPrev(); $('tonoPick').hidden = true; };
   $('tonoPick').onclick = ev => { if (ev.target === $('tonoPick')) $('tonoClose').onclick(); };
 }
-// ⏰ Prueba para apagar la alarma (Ajustes, app Android 2.9+): vale para todas las alarmas
+// ⏰ Reto para apagar la alarma (Ajustes, app Android 2.9+): vale para todas las alarmas. Solo uno activo; ninguno = botón
 const RETO_OK = !!(AND && AND.escanearCodigo);
-const RETOS = [['', 'Ninguna: se apaga con el botón'], ['cuentas', '🧮 Hacer 3 cuentas'], ['pasos', '🚶 Caminar 20 pasos'], ['codigo', '📷 Escanear un código de barras']];
+const RETOS = [
+  {id: 'cuentas', t: '🧮 Hacer 3 cuentas', corto: '3 cuentas',
+   help: 'Al tocar «Apagar» salen 3 cuentas sencillas (sumas, restas o multiplicaciones, como 23 + 48) con un teclado grande. Hasta que las aciertas las 3, la alarma no se apaga; si fallas, vuelves a probar.'},
+  {id: 'pasos', t: '🚶 Caminar 20 pasos', corto: '20 pasos',
+   help: 'Tienes que levantarte y andar 20 pasos con el móvil en la mano. El móvil los cuenta con su sensor de movimiento y, al llegar a 20, la alarma se apaga.'},
+  {id: 'codigo', t: '📷 Escanear un código', corto: 'código',
+   help: 'Antes guardas el código de barras de algo que esté lejos de la cama (la pasta de dientes, el champú, el bote del café…). Al sonar, tienes que ir hasta él y escanearlo con la cámara. Si el lector fallara, harías las cuentas.'}
+];
+let retoInfo = null; // la ⓘ que está abierta
 function renderReto() {
-  $('retoSel').innerHTML = RETOS.map(([v, t]) => `<option value="${v}"${v === (ALS.reto || '') ? ' selected' : ''}>${t}</option>`).join('');
-  $('retoSel').disabled = !RETO_OK;
-  $('sRetoAj').textContent = '· ' + ({'': 'ninguna', cuentas: '3 cuentas', pasos: '20 pasos', codigo: 'código'}[ALS.reto || ''] || 'ninguna');
+  $('sRetoAj').textContent = '· ' + (RETOS.find(r => r.id === ALS.reto)?.corto || 'ninguno');
+  $('retoList').innerHTML = '';
+  for (const r of RETOS) {
+    const d = document.createElement('div');
+    d.innerHTML = `<div class="retorow"><button class="info" type="button" aria-label="¿En qué consiste?">i</button><span class="rt">${r.t}</span>
+        <label class="swt"><input type="checkbox"${ALS.reto === r.id ? ' checked' : ''}${RETO_OK ? '' : ' disabled'}><i></i></label></div>
+      <div class="retohelp"${retoInfo === r.id ? '' : ' hidden'}>${r.help}</div>
+      ${r.id === 'codigo' && ALS.cod ? `<div class="codrow" style="margin:0 0 8px">📷 Código guardado: …${ALS.cod.slice(-6).replace(/[<>&"]/g, '')}<button type="button" class="codcam">Cambiar</button></div>` : ''}`;
+    d.querySelector('.info').onclick = () => { retoInfo = retoInfo === r.id ? null : r.id; renderReto(); };
+    d.querySelector('input').onchange = ev => {
+      if (!ev.target.checked) { ALS.reto = ''; alSave(); renderReto(); return; }
+      if (r.id === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) ALS.reto = 'codigo'; alSave(); renderReto(); }); return; }
+      ALS.reto = r.id; alSave(); renderReto();
+      toast(`⏰ Para apagar la alarma: ${r.corto}`);
+    };
+    d.querySelector('.codcam')?.addEventListener('click', () => pedirCodigo(ALS, () => { alSave(); renderReto(); }));
+    $('retoList').append(d);
+  }
   $('retoNo').hidden = RETO_OK;
   $('retoNo').textContent = AND ? '📲 Necesita la app Android 2.9 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android.';
-  $('codRow').innerHTML = ALS.reto === 'codigo' && ALS.cod
-    ? `<div class="codrow">📷 Código guardado: …${ALS.cod.slice(-6).replace(/[<>&"]/g, '')}<button type="button" id="codCam">Cambiar</button></div>` : '';
-  $('codCam')?.addEventListener('click', () => pedirCodigo(ALS, () => { alSave(); renderReto(); }));
 }
-$('retoSel').onchange = () => {
-  const v = $('retoSel').value;
-  if (v === 'codigo') { pedirCodigo(ALS, ok => { if (ok) ALS.reto = 'codigo'; alSave(); renderReto(); }); return; }
-  ALS.reto = v; alSave(); renderReto();
-  if (v) toast(v === 'cuentas' ? '🧮 Para apagar la alarma: 3 cuentas' : '🚶 Para apagar la alarma: 20 pasos');
-};
 function pedirCodigo(al, done) {
   if (!confirm('📷 Escanea ahora el código de barras de algo que esté lejos de la cama: la pasta de dientes, el champú, el bote del café…\n\nCuando suene la alarma tendrás que ir hasta él y escanearlo para apagarla.')) return done(false);
   window.codigoEscaneado = (v, err) => {
