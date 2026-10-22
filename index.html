@@ -139,13 +139,14 @@ body.tabs-on .wrap{padding-bottom:84px}
 .tonorow .radio{width:24px;height:24px;border-radius:50%;border:2px solid #94A3B8;flex:none;position:relative}
 .tonorow.sel .radio{border-color:#A78BFA}
 .tonorow.sel .radio::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#A78BFA}
-.alcard .altest{margin-top:8px;font-size:13px;background:none;border:0;color:#C4B5FD;padding:4px 0}
 .swt{position:relative;width:46px;height:26px;flex:none}
 .swt input{opacity:0;width:0;height:0}
 .swt i{position:absolute;inset:0;background:#374151;border-radius:13px;transition:.2s}
 .swt i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
 .swt input:checked + i{background:#6D5BD0} .swt input:checked + i::after{left:23px}
-.napbtn{display:block;width:100%;padding:18px;border:0;border-radius:18px;background:linear-gradient(135deg,#B45309,#7C2D12);font-size:19px;font-weight:700;margin:10px 0 6px}
+.napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
+#toast.fuera{opacity:0;pointer-events:none}
 #napScr{position:fixed;inset:0;z-index:35;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 #napScr .nclock{font-size:72px;font-weight:200;color:#CBD5E1;font-variant-numeric:tabular-nums}
 #napScr .ntx{color:var(--dim);margin:6px 0 30px}
@@ -390,12 +391,11 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="alarma" hidden>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas y siesta</h1>
   <div class="card">
-    <div style="font-weight:600;font-size:17px">😴 Siesta</div>
-    <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px;color:var(--muted)">
-      <label>Duración<select id="napMin"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
+    <div style="display:flex;align-items:center;gap:10px"><label class="swt"><input type="checkbox" id="napOn"><i></i></label><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span></div>
+    <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)">
       <label>Tono<button class="tonobtn" id="napSon" type="button"></button></label>
+      <label>Duración<select id="napMin" style="width:100%;margin-top:3px"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
     </div>
-    <button class="napbtn" id="napGo">😴 Siesta de 25 min</button>
   </div>
   <div class="card" id="alFull" hidden>
     <div style="font-weight:600">📱 Alarma a pantalla completa</div>
@@ -418,6 +418,8 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="moontip"><img src="luna/luna-consejo.png" alt=""><div class="bubble" id="alInfo"></div></div>
 </section>
 
+<div id="toast" class="fuera"></div>
+
 <!-- SIESTA -->
 <div id="napScr" hidden>
   <div class="nclock" id="napLeft">25:00</div>
@@ -438,6 +440,11 @@ body.pl-on .wrap{padding-bottom:190px}
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
     <div class="row"><label for="strict">Separar ronquido de respiración<small>Estricto: solo cuenta como ronquido lo que suena claramente a ronquido</small></label>
       <select id="strict"><option value="0.25">Suave</option><option value="0.35">Normal</option><option value="0.5">Estricto</option></select></div>
+  </div>
+  <div class="card">
+    <div class="row"><label for="avisoRonco">🎧 Avisarme si ronco<small class="avisoTx">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: si no hay, no dice nada (no despierta a nadie).</small></label>
+      <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
+    <button class="btn wide avisoTest">▶ Probar la voz</button>
   </div>
   <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · todo se guarda en este móvil</p>
 </section>
@@ -562,6 +569,9 @@ body.pl-on .wrap{padding-bottom:190px}
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
+    <details class="pdet"><summary>🎧 Avisarme si ronco <small id="sAviso">no</small></summary><div class="pbody">
+      <div style="display:flex;align-items:center;gap:10px"><span class="avisoTx" style="flex:1">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: si no hay, no dice nada (no despierta a nadie).</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+      <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button></div></details>
     <details class="pdet" id="dCuna"><summary>🎵 Canción de cuna <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
     <p class="note" id="prepNote">Amable Sleep no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
@@ -581,7 +591,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <button class="mute" id="muteBtn">⏸ No grabar +5 s</button>
+    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
     <div class="lcuna" id="lcuna" hidden></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
@@ -591,7 +601,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.5'; // v4.5: la noche se termina sola a las 13 h y al sonar la alarma (el micrófono no se queda abierto de día: las llamadas no sonaban); micrófono cerrado del todo al acabar
+const VERSION = 'v4.6'; // v4.6: botones de pausa/parar sin fondo naranja (■ y ❚❚ en vez de los emojis, que en Android salen naranjas); 🎧 aviso «Estás roncando, cambia de posición» solo por los auriculares (app 2.8); siesta con interruptor como las alarmas (tono a la izquierda, duración a la derecha); aviso «Sonará en…» al activar; fuera el botón grande de siesta y «Probar el tono»
+// v4.5: // v4.5: la noche se termina sola a las 13 h y al sonar la alarma (el micrófono no se queda abierto de día: las llamadas no sonaban); micrófono cerrado del todo al acabar
 // v4.4: // v4.4: elegir tono en una lista propia con 🎵 para escucharlo antes; fuera la explicación de «Subida» de la luna (ya está en la ⓘ)
 // v4.3: // v4.3: «Subida volumen» con una ⓘ que lo explica; la luna con bordes suaves, más resolución y sin el hueco blanco entre el brazo y el cuerpo; app Android 2.6
 // v4.2: // v4.2: la subida de volumen de la alarma empieza casi en silencio y sube pareja (en decibelios); el aviso «pantalla completa» se quita al dar el permiso; app Android 2.5
@@ -646,6 +657,40 @@ for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => 
   cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value; cfg.strict = +$('strict').value;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
 };
+
+// 🎧 Aviso de ronquido: solo en la app Android 2.8+, y solo por los auriculares
+const VOZ_OK = !!(AND && AND.decir), FRASE = 'Estás roncando. Cambia de posición.';
+function pintaAviso() {
+  for (const id of ['avisoRonco', 'avisoRonco2']) { $(id).checked = VOZ_OK && !!cfg.avisoRonco; $(id).disabled = !VOZ_OK; }
+  $('sAviso').textContent = VOZ_OK && cfg.avisoRonco ? 'sí' : 'no';
+  if (!VOZ_OK) document.querySelectorAll('.avisoTx').forEach(x => x.textContent = AND
+    ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.'
+    : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.');
+  document.querySelectorAll('.avisoTest').forEach(b => b.hidden = !VOZ_OK);
+}
+for (const id of ['avisoRonco', 'avisoRonco2']) $(id).onchange = () => {
+  cfg.avisoRonco = $(id).checked;
+  try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  if (cfg.avisoRonco) AND.prepararVoz();
+  pintaAviso();
+};
+document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
+  AND.prepararVoz();
+  if (!AND.decir(FRASE)) alert('🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie.');
+});
+pintaAviso();
+// 3 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
+function avisoRonco(ev) {
+  if (!VOZ_OK || !cfg.avisoRonco || ev.tipo !== 'ronquido' || ev.sn < .6) return;
+  const now = Date.now(), A = live.aviso || (live.aviso = {seguros: []});
+  A.seguros = A.seguros.filter(t => now - t < 5 * 60e3); A.seguros.push(now);
+  if (A.seguros.length < 3) return;
+  A.seguros = [];
+  if (AND.decir(FRASE)) {
+    live.night.avisos = (live.night.avisos || 0) + 1;
+    setTimeout(() => { $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(now)}`; }, 50);
+  }
+}
 
 // ---------- Base de datos (IndexedDB) ----------
 const DB = {
@@ -881,7 +926,9 @@ async function startListening() {
 
   const night = newNight('micro');
   await DB.put('noches', night);
+  if (VOZ_OK && cfg.avisoRonco) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
+    avisoRonco(ev);
     $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
     $('lastEv').textContent = `Último: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
     $('lstate').textContent = 'Escuchando…';
@@ -1107,11 +1154,11 @@ function muteTick() {
   const rem = (d.muteUntil || 0) - d.samples / SR;
   if (live.cuna) {
     const k = live.cuna, left = Math.max(0, CUNA_SEG - k.played);
-    $('lstate').textContent = k.paused ? '⏸ Canción en pausa: prueba la sensibilidad (no se graba)'
+    $('lstate').textContent = k.paused ? '❚❚ Canción en pausa: prueba la sensibilidad (no se graba)'
       : `🎵 Sin grabar mientras suena la canción · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
   }
-  else if (rem > 0) $('lstate').textContent = `⏸ Sin grabar: ${Math.ceil(rem)} s`;
-  else if ($('lstate').textContent.startsWith('⏸') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
+  else if (rem > 0) $('lstate').textContent = `❚❚ Sin grabar: ${Math.ceil(rem)} s`;
+  else if ($('lstate').textContent.startsWith('❚❚') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
 }
 
 // ---------- Canciones de cuna (hechas con Suno) ----------
@@ -1157,7 +1204,7 @@ function renderCunas() {
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
     const sounding = cunaPrev && cunaPrev.id === x.id;
-    b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ⏹</small>' : ''}`;
+    b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : ''}`;
     b.onclick = () => {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
       // Escuchar al elegir: suena la que tocas; si ya sonaba, se para
@@ -1173,13 +1220,13 @@ function playCuna(c) {
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
   live.det.muteUntil = Infinity;
   $('lcuna').hidden = false;
-  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaPause">⏸ Pausar</button><button id="cunaStop">⏹ Parar</button>`;
+  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaPause">❚❚ Pausar</button><button id="cunaStop">■ Parar</button>`;
   // Pausar: la canción se queda donde está (y su cuenta de 5 minutos también) para probar la sensibilidad; «Seguir» la reanuda
   $('cunaPause').onclick = () => {
     const k = live.cuna; if (!k) return;
     k.paused = !k.paused;
     if (k.paused) k.au.pause(); else k.au.play().catch(() => {});
-    $('cunaPause').textContent = k.paused ? '▶ Seguir' : '⏸ Pausar';
+    $('cunaPause').textContent = k.paused ? '▶ Seguir' : '❚❚ Pausar';
     muteTick();
   };
   $('cunaStop').onclick = () => endCuna(true);
@@ -1745,7 +1792,7 @@ function plRender() {
   const e = PL.list[PL.i], on = !!e && !PL.au.paused;
   $('plNow').textContent = e ? `${tagTxt(e)} · ${evTime(cur, e.off)} · ${PL.i + 1} de ${PL.list.length}`
     : `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
-  $('plPP').textContent = on ? '⏸' : '▶';
+  $('plPP').textContent = on ? '❚❚' : '▶';
   $('plSpd').textContent = String(PL.speed).replace('.', ',') + '×';
   $('plBst').textContent = '🔊 ' + (PL.boost === 1 ? '1×' : '×' + PL.boost);
   $('plBst').classList.toggle('on', PL.boost > 1);
@@ -1753,7 +1800,7 @@ function plRender() {
   $('plNext').disabled = PL.i >= PL.list.length - 1;
   document.querySelectorAll('#evList .ev').forEach(d => {
     const me = d._ev === e; d.classList.toggle('playing', me);
-    const b = d.querySelector('.play'); if (b) b.textContent = me && on ? '⏸' : '▶';
+    const b = d.querySelector('.play'); if (b) b.textContent = me && on ? '❚❚' : '▶';
   });
 }
 PL.au.ontimeupdate = () => {
@@ -1943,7 +1990,7 @@ function setTimer() {
   renderNoise();
 }
 function renderNoise() {
-  $('playBtn').textContent = playing() ? '⏸ Parar el sonido' : '▶ Empezar el sonido';
+  $('playBtn').textContent = playing() ? '❚❚ Parar el sonido' : '▶ Empezar el sonido';
   $('playBtn').classList.toggle('on', playing());
   $('vol').value = noise.vol;
   $('volTxt').textContent = noise.vol + '%' + (noise.vol > 60 ? ' · ⚠️ alto para toda la noche' : '');
@@ -1994,11 +2041,20 @@ const alSave = () => {
 const tonos = sel => TONOS.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${c.icon} ${c.name}</option>`).join('');
 const subidas = sel => SUBIDAS.map(([v, t]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${t}</option>`).join('');
 const srcDe = id => `alarma/${TONOS.some(t => t.id === id) ? id : 'amanecer'}.mp3`;
-let alTestAu = null;
-function probar(id) {
-  if (alTestAu) { alTestAu.pause(); alTestAu = null; return; }
-  alTestAu = new Audio(srcDe(id)); alTestAu.volume = .8; alTestAu.play().catch(() => {});
-  setTimeout(() => { alTestAu?.pause(); alTestAu = null; }, 6000);
+// «Sonará en 8 horas y 12 min» / «Sonará en 25 minutos»
+function faltaTxt(ms) {
+  const m = Math.max(1, Math.ceil(ms / 60e3)), h = Math.floor(m / 60), r = m % 60;
+  return h ? `${h} ${h === 1 ? 'hora' : 'horas'}${r ? ` y ${r} min` : ''}` : `${m} ${m === 1 ? 'minuto' : 'minutos'}`;
+}
+function proxima(hora) {
+  const [h, m] = hora.split(':').map(Number), t = new Date(); t.setHours(h, m, 0, 0);
+  if (t <= new Date()) t.setDate(t.getDate() + 1);
+  return t.getTime();
+}
+let toastT = null;
+function toast(t) {
+  $('toast').textContent = t; $('toast').classList.remove('fuera');
+  clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.add('fuera'), 3500);
 }
 const tonoTxt = id => { const t = TONOS.find(x => x.id === id) || TONOS[0]; return `${t.icon} ${t.name} ▾`; };
 let tonoPrev = null; // {id, au}
@@ -2010,7 +2066,7 @@ function elegirTono(actual, onPick) {
     for (const t of TONOS) {
       const r = document.createElement('div'); r.className = 'tonorow' + (t.id === sel ? ' sel' : '');
       const suena = tonoPrev && tonoPrev.id === t.id;
-      r.innerHTML = `<span class="tn">${t.icon} ${t.name}</span><button class="play${suena ? ' on' : ''}" type="button" aria-label="Escuchar">${suena ? '⏹' : '🎵'}</button><span class="radio"></span>`;
+      r.innerHTML = `<span class="tn">${t.icon} ${t.name}</span><button class="play${suena ? ' on' : ''}" type="button" aria-label="Escuchar">${suena ? '■' : '🎵'}</button><span class="radio"></span>`;
       r.querySelector('.play').onclick = ev => {
         ev.stopPropagation();
         const era = tonoPrev && tonoPrev.id === t.id; pararPrev();
@@ -2028,27 +2084,30 @@ function elegirTono(actual, onPick) {
 }
 function renderAlarmas() {
   $('napMin').value = ALS.siesta.min; $('napSon').textContent = tonoTxt(ALS.siesta.son);
-  $('napGo').textContent = `😴 Siesta de ${ALS.siesta.min} min`;
+  napCard();
   $('alList').innerHTML = ALS.list.length ? '' : '<div class="empty" style="padding:6px 0 12px">Aún no tienes alarmas.</div>';
   for (const al of ALS.list) {
     const d = document.createElement('div'); d.className = 'alcard' + (al.on ? '' : ' off');
     d.innerHTML = `<div class="altop"><label class="swt"><input type="checkbox"${al.on ? ' checked' : ''}><i></i></label>
         <input type="time" value="${al.hora}"><button class="aldel" title="Borrar">✕</button></div>
       <div class="algrid"><label><span class="lbl">Tono</span><button class="tonobtn son" type="button">${tonoTxt(al.son)}</button></label><label><span class="lbl">Subida volumen <button class="info" type="button" aria-label="¿Qué es?">i</button></span><select class="sub">${subidas(al.sub)}</select></label></div>
-      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>
-      <button class="altest">▶ Probar el tono (6 s)</button>`;
+      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>`;
     const upd = () => { al.on = d.querySelector('.swt input').checked; al.hora = d.querySelector('input[type=time]').value || al.hora;
       al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
-    d.querySelectorAll('input, select').forEach(x => x.onchange = upd);
+    // al activarla o cambiar la hora: cuánto falta para que suene
+    d.querySelectorAll('input, select').forEach(x => x.onchange = () => { upd(); if (al.on && x.tagName === 'INPUT') toast(`⏰ Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}`); });
     d.querySelector('.aldel').onclick = () => { if (confirm('¿Borrar esta alarma?')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
-    d.querySelector('.altest').onclick = () => probar(al.son);
     d.querySelector('.son').onclick = () => elegirTono(al.son, id => { al.son = id; al.fired = null; alSave(); renderAlarmas(); });
     d.querySelector('.info').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp'); h.hidden = !h.hidden; };
     $('alList').append(d);
   }
 }
-$('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}); alSave(); renderAlarmas(); };
-$('napMin').onchange = () => { ALS.siesta.min = +$('napMin').value; alSave(); renderAlarmas(); };
+$('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}); alSave(); renderAlarmas(); toast(`⏰ Sonará en ${faltaTxt(proxima('07:30') - Date.now())}`); };
+$('napMin').onchange = () => {
+  ALS.siesta.min = +$('napMin').value; alSave();
+  if (ALS.siesta.fin) { napParar(); napGo(); } // con la siesta en marcha: vuelve a contar con la duración nueva
+  renderAlarmas();
+};
 $('napSon').onclick = () => elegirTono(ALS.siesta.son, id => { ALS.siesta.son = id; alSave(); renderAlarmas(); });
 renderAlarmas();
 alSave(); // en la app Android, deja programadas las alarmas guardadas
@@ -2107,10 +2166,23 @@ document.querySelectorAll('#wakeSnooze button').forEach(b => b.onclick = () => {
 $('wakeOff').onclick = () => { alStop(); for (const al of ALS.list) al.snooze = null; napSnoozeT && clearTimeout(napSnoozeT); alSave(); };
 
 // Siesta: cuenta atrás en pantalla negra (sin que se apague) y al acabar suena su alarma
+// (en la app Android la programa el reloj de Android: no hace falta la pantalla negra)
 let nap = null, napSnoozeT = null;
-$('napGo').onclick = async () => {
+function napCard() {
+  const f = ALS.siesta.fin, on = !!f && f > Date.now() && (NATIVA || !!nap);
+  if (f && !on) { delete ALS.siesta.fin; alSave(); }
+  $('napOn').checked = on;
+  $('napEst').textContent = on ? `⏰ a las ${hhmm(f)}` : '';
+}
+setInterval(napCard, 5000);
+$('napOn').onchange = () => { if ($('napOn').checked) napGo(); else napParar(); };
+function napParar() { if (NATIVA) AND.cancelarSiesta(); napEnd(); }
+async function napGo() {
   const fin = NATIVA ? AND.siesta(ALS.siesta.min, ALS.siesta.son, ALS.siesta.sub) : Date.now() + ALS.siesta.min * 60e3;
-  nap = {fin};
+  ALS.siesta.fin = fin; alSave();
+  toast(`😴 Sonará en ${faltaTxt(fin - Date.now())}`);
+  if (NATIVA) { napCard(); return; }
+  nap = {fin}; napCard();
   $('napScr').hidden = false;
   try { nap.lock = await navigator.wakeLock.request('screen'); } catch {}
   AND?.ruido(true); // en la app Android: sigue aunque se apague la pantalla
@@ -2121,14 +2193,16 @@ $('napGo').onclick = async () => {
     if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, m => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), m * 60e3); }); }
   };
   nap.t = setInterval(tick, 500); tick();
-};
+}
 function napEnd() {
+  if (ALS.siesta.fin) { delete ALS.siesta.fin; alSave(); }
+  napCard();
   if (!nap) return;
   clearInterval(nap.t); try { nap.lock?.release(); } catch {}
   AND?.ruido(false);
   nap = null; $('napScr').hidden = true;
 }
-$('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) { if (NATIVA) AND.cancelarSiesta(); napEnd(); } };
+$('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napParar(); };
 
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
@@ -2219,7 +2293,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '2.7';
+const APK_ULTIMA = '2.8';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
