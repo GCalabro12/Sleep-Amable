@@ -385,8 +385,16 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div class="card" id="alFull" hidden>
     <div style="font-weight:600">📱 Alarma a pantalla completa</div>
-    <p class="note" style="margin:6px 0 0">Para que al sonar ocupe toda la pantalla (también si estás usando el móvil), Android pide un permiso. Activa «Amable Sleep» en la pantalla que se abre y vuelve.</p>
+    <p class="note" style="margin:6px 0 0">Para que al sonar ocupe toda la pantalla (también si estás usando el móvil), Android pide el permiso «Mostrar encima de otras aplicaciones». Actívalo en la pantalla que se abre y vuelve.</p>
     <button class="btn wide" id="alFullBtn">Dar el permiso</button>
+    <details class="cfg" style="margin-top:10px"><summary style="font-size:14px">¿Sale «Controlado por ajustes restringidos»?</summary>
+      <ol class="steps" style="margin-top:8px">
+        <li>Es una protección de Android para las apps que no vienen de Play Store. Se desbloquea una sola vez.</li>
+        <li>Abre <b>Ajustes → Aplicaciones → Amable Sleep</b>.</li>
+        <li>Toca los <b>tres puntos ⋮</b> de arriba a la derecha → <b>«Permitir ajustes restringidos»</b> y confirma con tu huella o PIN.</li>
+        <li>Vuelve aquí, toca <b>«Dar el permiso»</b> y activa el interruptor.</li>
+      </ol>
+    </details>
   </div>
   <div class="card">
     <div style="font-weight:600;font-size:17px;margin-bottom:10px">⏰ Alarmas</div>
@@ -560,7 +568,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.0'; // v4.0: al terminar la noche, hoja «Todo como antes»: quitar No molestar, encender el wifi y quitar el modo avión (app Android 2.3)
+const VERSION = 'v4.1'; // v4.1: cómo desbloquear «ajustes restringidos» de Android para la alarma a pantalla completa
+// v4.0: // v4.0: al terminar la noche, hoja «Todo como antes»: quitar No molestar, encender el wifi y quitar el modo avión (app Android 2.3)
 // v3.9: // v3.9: deslizar el dedo pasa a la pantalla anterior o siguiente (Inicio · Alarma · Estadísticas · Ajustes); pantalla de alarmas en dos bloques (Siesta y Alarmas, con «Añadir alarma» dentro); en cada noche «grabaciones con ronquido» y el tiempo roncando en horas; alarma: posponer 1/3/5/9 min y, en la app Android 2.2, pantalla completa con la luna animada
 // v3.8: // v3.8: tonos de alarma propios (no las canciones de cuna); en la app Android 2.0 las alarmas y la siesta suenan con la app cerrada; medias de tu país con los datos anónimos de quien quiera compartir (Firebase)
 // v3.7: // v3.7: varias alarmas, cada una con su tono y su subida de volumen (de golpe a 5 min); siesta de 25 min (ajustable)
