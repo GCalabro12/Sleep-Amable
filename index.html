@@ -23,7 +23,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 header{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
 header .logo{width:40px;height:40px;flex:none}
 header h1{font-size:22px;margin:0;font-weight:700}
-header .ver{margin-left:auto;font-size:12px;color:var(--dim)}
+header .ver{margin-left:auto;font-size:12px;color:var(--dim);white-space:nowrap}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 .ia{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
@@ -2099,6 +2099,9 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
 const APK_ULTIMA = '2.2';
+// Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
+{ let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
+  $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
 if (AND && parseFloat(AND.version()) < parseFloat(APK_ULTIMA)) {
   // App instalada más vieja: invitar a actualizar (la 1.6 aún se llamaba RonquiNo y no abre descargas)
   $('tipApk').remove();
