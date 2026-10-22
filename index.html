@@ -98,6 +98,9 @@ details.hist summary{cursor:pointer;font-size:17px;font-weight:700;padding:2px 0
 #tabs button b{font-size:21px;font-weight:400;line-height:1.1}
 #tabs button.on{color:#C4B5FD}
 body.tabs-on .wrap{padding-bottom:84px}
+.slide-l{animation:rq-slide-l .28s ease-out} .slide-r{animation:rq-slide-r .28s ease-out}
+@keyframes rq-slide-l{from{transform:translateX(48px);opacity:0}to{transform:none;opacity:1}}
+@keyframes rq-slide-r{from{transform:translateX(-48px);opacity:0}to{transform:none;opacity:1}}
 .moontip img{width:86px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
 .moontip img.wave{animation:rq-float 3s ease-in-out infinite,rq-wave 1.6s ease-in-out infinite;transform-origin:50% 90%}
 @keyframes rq-wave{0%,100%{rotate:-4deg}50%{rotate:5deg}}
@@ -107,8 +110,11 @@ body.tabs-on .wrap{padding-bottom:84px}
 #wakeUp .wclock{font-size:64px;font-weight:200;margin:10px 0 0}
 #wakeUp .wtxt{font-size:22px;margin:4px 0 26px;color:#FDE68A}
 #wakeUp button{display:block;width:260px;margin:8px auto;padding:16px;border-radius:16px;font-size:18px;font-weight:700;border:0}
-#wakeSnooze{background:#312E81;color:#E0E7FF} #wakeOff{background:#FDE68A;color:#1E1B4B}
-.alcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+#wakeUp .snz{display:flex;gap:8px;justify-content:center;width:100%;max-width:340px;margin:4px auto 6px}
+#wakeUp .snz button{width:auto;flex:1;margin:0;padding:16px 0;font-size:19px}
+#wakeUp .snzT{color:#C7D2FE;font-size:15px}
+#wakeSnooze button{background:#312E81;color:#E0E7FF} #wakeOff{background:#FDE68A;color:#1E1B4B}
+.alcard{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
 .alcard.off{opacity:.55}
 .alcard .altop{display:flex;align-items:center;gap:10px}
 .alcard input[type=time]{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:24px;font-weight:600;font-family:inherit}
@@ -192,7 +198,8 @@ details.hist[open] summary{margin-bottom:10px}
 .back{background:none;border:0;color:var(--muted);padding:6px 0;margin-bottom:6px}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
 .tile{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
-.tile b{display:block;font-size:24px}
+.tile b{display:block;font-size:24px;white-space:nowrap}
+.tile b.long{font-size:19px;line-height:29px}
 .tile span{font-size:12px;color:var(--muted)}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
 canvas{width:100%;height:90px;display:block}
@@ -363,17 +370,25 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- ALARMA -->
 <section id="alarma" hidden>
-  <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas y siesta</h1>
   <div class="card">
-    <div style="font-weight:600">😴 Siesta</div>
+    <div style="font-weight:600;font-size:17px">😴 Siesta</div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px;color:var(--muted)">
       <label>Duración<select id="napMin"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
       <label>Tono<select id="napSon"></select></label>
     </div>
     <button class="napbtn" id="napGo">😴 Siesta de 25 min</button>
   </div>
-  <div id="alList"></div>
-  <button class="btn wide" id="alAdd">＋ Añadir alarma</button>
+  <div class="card" id="alFull" hidden>
+    <div style="font-weight:600">📱 Alarma a pantalla completa</div>
+    <p class="note" style="margin:6px 0 0">Para que al sonar ocupe toda la pantalla (también si estás usando el móvil), Android pide un permiso. Activa «Amable Sleep» en la pantalla que se abre y vuelve.</p>
+    <button class="btn wide" id="alFullBtn">Dar el permiso</button>
+  </div>
+  <div class="card">
+    <div style="font-weight:600;font-size:17px;margin-bottom:10px">⏰ Alarmas</div>
+    <div id="alList"></div>
+    <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
+  </div>
   <div class="moontip"><img src="luna/luna-consejo.png" alt=""><div class="bubble" id="alInfo"></div></div>
 </section>
 
@@ -437,9 +452,9 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
   <div class="tiles">
-    <div class="tile s"><b id="tSnore">0</b><span>ronquidos</span></div>
-    <div class="tile s"><b id="tSnoreMin">0</b><span>min roncando</span></div>
-    <div class="tile v"><b id="tVoice">0</b><span>voces</span></div>
+    <div class="tile s"><b id="tSnore">0</b><span>grabaciones con ronquido</span></div>
+    <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
+    <div class="tile v"><b id="tVoice">0</b><span>grabaciones con voz</span></div>
   </div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
@@ -473,7 +488,8 @@ body.pl-on .wrap{padding-bottom:190px}
   <img src="luna/luna-saluda.png" alt="">
   <div class="wclock" id="wakeClock"></div>
   <div class="wtxt">☀️ ¡Buenos días!</div>
-  <button id="wakeSnooze">😴 Posponer 9 min</button>
+  <div class="snzT">😴 Posponer</div>
+  <div class="snz" id="wakeSnooze"><button data-m="1">1 min</button><button data-m="3">3 min</button><button data-m="5">5 min</button><button data-m="9">9 min</button></div>
   <button id="wakeOff">☀️ Apagar</button>
 </div>
 
@@ -539,7 +555,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v3.8'; // v3.8: tonos de alarma propios (no las canciones de cuna); en la app Android 2.0 las alarmas y la siesta suenan con la app cerrada; medias de tu país con los datos anónimos de quien quiera compartir (Firebase)
+const VERSION = 'v3.9'; // v3.9: deslizar el dedo pasa a la pantalla anterior o siguiente (Inicio · Alarma · Estadísticas · Ajustes); pantalla de alarmas en dos bloques (Siesta y Alarmas, con «Añadir alarma» dentro); en cada noche «grabaciones con ronquido» y el tiempo roncando en horas; alarma: posponer 1/3/5/9 min y, en la app Android 2.2, pantalla completa con la luna animada
+// v3.8: // v3.8: tonos de alarma propios (no las canciones de cuna); en la app Android 2.0 las alarmas y la siesta suenan con la app cerrada; medias de tu país con los datos anónimos de quien quiera compartir (Firebase)
 // v3.7: // v3.7: varias alarmas, cada una con su tono y su subida de volumen (de golpe a 5 min); siesta de 25 min (ajustable)
 // v3.6: // v3.6: barra de abajo Inicio · Alarma · Estadísticas · Ajustes; alarma con despertar suave; la luna de Gemini da los consejos
 // v3.5: // v3.5: «Tus estadísticas» (horas, regularidad, ronquido por hora) con tu país y consejos de la luna
@@ -971,6 +988,7 @@ function renderPrep() {
 }
 // Android llama a esto al volver de sus ajustes (permiso de «No molestar», panel del wifi…)
 window.nativeVuelta = () => {
+  if (typeof renderPantallaCompleta === 'function') renderPantallaCompleta();
   if (!AND || $('prep').hidden) return;
   if (dndPedido && AND.hasDndAccess() && !AND.dndActivo()) AND.setDnd(true);
   dndPedido = false;
@@ -1373,7 +1391,9 @@ $('tl').addEventListener('wheel', ev => { // ordenador: la rueda amplía o reduc
 function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   $('tSnore').textContent = s.length;
-  $('tSnoreMin').textContent = Math.round(s.reduce((a, e) => a + e.dur, 0) / 60);
+  const minR = Math.round(s.reduce((a, e) => a + e.dur, 0) / 60);
+  $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${minR % 60} min` : `${minR} min`;
+  $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
   const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
   const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
@@ -1894,7 +1914,7 @@ function probar(id) {
 function renderAlarmas() {
   $('napMin').value = ALS.siesta.min; $('napSon').innerHTML = tonos(ALS.siesta.son);
   $('napGo').textContent = `😴 Siesta de ${ALS.siesta.min} min`;
-  $('alList').innerHTML = ALS.list.length ? '' : '<div class="empty">No tienes alarmas. Toca «＋ Añadir alarma».</div>';
+  $('alList').innerHTML = ALS.list.length ? '' : '<div class="empty" style="padding:6px 0 12px">Aún no tienes alarmas.</div>';
   for (const al of ALS.list) {
     const d = document.createElement('div'); d.className = 'alcard' + (al.on ? '' : ' off');
     d.innerHTML = `<div class="altop"><label class="swt"><input type="checkbox"${al.on ? ' checked' : ''}><i></i></label>
@@ -1914,6 +1934,12 @@ $('napMin').onchange = () => { ALS.siesta.min = +$('napMin').value; alSave(); re
 $('napSon').onchange = () => { ALS.siesta.son = $('napSon').value; alSave(); };
 renderAlarmas();
 alSave(); // en la app Android, deja programadas las alarmas guardadas
+function renderPantallaCompleta() {
+  const falta = NATIVA && AND.puedePantallaCompleta && !AND.puedePantallaCompleta();
+  $('alFull').hidden = !falta;
+}
+$('alFullBtn').onclick = () => AND.pedirPantallaCompleta();
+renderPantallaCompleta();
 $('alInfo').innerHTML = NATIVA
   ? '<p>✅ <b>Suenan aunque cierres la app</b> o bloquees el móvil: las programa el reloj de Android.</p><p>«Subida» es lo despacio que sube el volumen: de golpe o poco a poco hasta 5 minutos.</p>'
   : `<p>Aquí, en el navegador, las alarmas solo suenan con Amable Sleep abierta: escuchando la noche (😴), con un sonido para dormir (🎧), en una siesta o en pantalla.</p><p>${/Android/i.test(navigator.userAgent) ? '📲 Con la <b>app Android</b> suenan aunque la cierres: descárgala en Inicio.' : '«Subida» es lo despacio que sube el volumen.'}</p>`;
@@ -1931,7 +1957,7 @@ function alCheck() {
     const due = al.snooze ? now.getTime() >= al.snooze : (now >= target && now - target < 2 * 3600e3 && al.fired !== key);
     if (due) {
       al.fired = key; al.snooze = null; alSave();
-      alRing(al.son, al.sub, () => { al.snooze = Date.now() + 9 * 60e3; alSave(); });
+      alRing(al.son, al.sub, m => { al.snooze = Date.now() + m * 60e3; alSave(); });
       return;
     }
   }
@@ -1956,7 +1982,7 @@ function alStop() {
   $('wakeUp').hidden = true;
   if (live.det) live.det.muteUntil = live.det.samples / SR + 2;
 }
-$('wakeSnooze').onclick = () => { const f = alWake?.onSnooze; alStop(); f?.(); };
+document.querySelectorAll('#wakeSnooze button').forEach(b => b.onclick = () => { const f = alWake?.onSnooze; alStop(); f?.(+b.dataset.m); });
 $('wakeOff').onclick = () => { alStop(); for (const al of ALS.list) al.snooze = null; napSnoozeT && clearTimeout(napSnoozeT); alSave(); };
 
 // Siesta: cuenta atrás en pantalla negra (sin que se apague) y al acabar suena su alarma
@@ -1971,7 +1997,7 @@ $('napGo').onclick = async () => {
   const tick = () => {
     const left = Math.max(0, nap.fin - Date.now());
     $('napLeft').textContent = `${Math.floor(left / 60e3)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
-    if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, () => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), 9 * 60e3); }); }
+    if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, m => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), m * 60e3); }); }
   };
   nap.t = setInterval(tick, 500); tick();
 };
@@ -1995,6 +2021,31 @@ function show(id) {
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
+// Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
+const ORDEN = ['menu', 'alarma', 'stats', 'ajustes'];
+let sw0 = null;
+document.addEventListener('touchstart', e => {
+  const t = e.touches[0], el = e.target;
+  sw0 = null;
+  if (e.touches.length !== 1 || $('tabs').hidden) return;
+  // no en controles que ya se arrastran (barras, selectores, el gráfico…) ni con algo encima de la pantalla
+  if (el.closest('input, select, textarea, canvas, #pl, #listen, #prep, #ask, #wakeUp, #napScr, #splash')) return;
+  sw0 = {x: t.clientX, y: t.clientY, t: Date.now()};
+}, {passive: true});
+document.addEventListener('touchend', e => {
+  if (!sw0) return;
+  const t = e.changedTouches[0], dx = t.clientX - sw0.x, dy = t.clientY - sw0.y, dt = Date.now() - sw0.t;
+  sw0 = null;
+  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5 || dt > 700) return;
+  const vis = ['menu', 'home', 'mask', 'alarma', 'stats', 'ajustes'].find(id => !$(id).hidden);
+  if (!vis) return;
+  const i = ORDEN.indexOf(['home', 'mask'].includes(vis) ? 'menu' : vis);
+  const j = i + (dx < 0 ? 1 : -1);
+  if (j < 0 || j >= ORDEN.length) return;
+  show(ORDEN[j]);
+  const sec = $(ORDEN[j]); sec.classList.remove('slide-l', 'slide-r'); void sec.offsetWidth;
+  sec.classList.add(dx < 0 ? 'slide-l' : 'slide-r');
+}, {passive: true});
 // Musiquita: una nana de caja de música, con un eco suave (elegida por Gustavo en la v1.7)
 function jingle() {
   let c;
@@ -2047,7 +2098,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '2.0';
+const APK_ULTIMA = '2.2';
 if (AND && parseFloat(AND.version()) < parseFloat(APK_ULTIMA)) {
   // App instalada más vieja: invitar a actualizar (la 1.6 aún se llamaba RonquiNo y no abre descargas)
   $('tipApk').remove();
