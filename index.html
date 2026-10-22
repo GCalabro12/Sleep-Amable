@@ -144,6 +144,10 @@ body.tabs-on .wrap{padding-bottom:84px}
 .swt i{position:absolute;inset:0;background:#374151;border-radius:13px;transition:.2s}
 .swt i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
 .swt input:checked + i{background:#6D5BD0} .swt input:checked + i::after{left:23px}
+.refz{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+.refz select{width:100%;margin-top:3px}
+.codrow{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:var(--text)}
+.codrow button{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;color:#C4B5FD}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -601,7 +605,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v4.6'; // v4.6: botones de pausa/parar sin fondo naranja (■ y ❚❚ en vez de los emojis, que en Android salen naranjas); 🎧 aviso «Estás roncando, cambia de posición» solo por los auriculares (app 2.8); siesta con interruptor como las alarmas (tono a la izquierda, duración a la derecha); aviso «Sonará en…» al activar; fuera el botón grande de siesta y «Probar el tono»
+const VERSION = 'v4.7'; // v4.7: 💪 alarma reforzada (app 2.9): para apagarla, caminar 20 pasos, 3 cuentas o escanear un código de barras guardado
+// v4.6: // v4.6: botones de pausa/parar sin fondo naranja (■ y ❚❚ en vez de los emojis, que en Android salen naranjas); 🎧 aviso «Estás roncando, cambia de posición» solo por los auriculares (app 2.8); siesta con interruptor como las alarmas (tono a la izquierda, duración a la derecha); aviso «Sonará en…» al activar; fuera el botón grande de siesta y «Probar el tono»
 // v4.5: // v4.5: la noche se termina sola a las 13 h y al sonar la alarma (el micrófono no se queda abierto de día: las llamadas no sonaban); micrófono cerrado del todo al acabar
 // v4.4: // v4.4: elegir tono en una lista propia con 🎵 para escucharlo antes; fuera la explicación de «Subida» de la luna (ya está en la ⓘ)
 // v4.3: // v4.3: «Subida volumen» con una ⓘ que lo explica; la luna con bordes suaves, más resolución y sin el hueco blanco entre el brazo y el cuerpo; app Android 2.6
@@ -2036,7 +2041,7 @@ try {
 for (const al of [...ALS.list, ALS.siesta]) if (!TONOS.some(t => t.id === al.son)) al.son = 'amanecer';
 const alSave = () => {
   try { localStorage.setItem('ronquino-alarmas', JSON.stringify(ALS)); } catch {}
-  if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub}))));
+  if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub, reto: a.reto || '', cod: a.cod || ''}))));
 };
 const tonos = sel => TONOS.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${c.icon} ${c.name}</option>`).join('');
 const subidas = sel => SUBIDAS.map(([v, t]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${t}</option>`).join('');
@@ -2082,6 +2087,19 @@ function elegirTono(actual, onPick) {
   $('tonoClose').onclick = () => { pararPrev(); $('tonoPick').hidden = true; };
   $('tonoPick').onclick = ev => { if (ev.target === $('tonoPick')) $('tonoClose').onclick(); };
 }
+// 💪 Alarma reforzada (app Android 2.9+): la prueba para apagarla
+const RETO_OK = !!(AND && AND.escanearCodigo);
+const RETOS = [['', 'No: se apaga con el botón'], ['pasos', '🚶 Caminar 20 pasos'], ['cuentas', '🧮 Hacer 3 cuentas'], ['codigo', '📷 Escanear un código de barras']];
+const retos = sel => RETOS.map(([v, t]) => `<option value="${v}"${v === (sel || '') ? ' selected' : ''}>${t}</option>`).join('');
+function pedirCodigo(al, done) {
+  if (!confirm('📷 Escanea ahora el código de barras de algo que esté lejos de la cama: la pasta de dientes, el champú, el bote del café…\n\nCuando suene la alarma tendrás que ir hasta él y escanearlo para apagarla.')) return done(false);
+  window.codigoEscaneado = (v, err) => {
+    window.codigoEscaneado = null;
+    if (v) { al.cod = v; toast('📷 Código guardado'); done(true); }
+    else { if (err && err !== 'cancelado') alert('No se ha podido abrir el lector de códigos.\n\n(' + err + ')'); done(false); }
+  };
+  AND.escanearCodigo();
+}
 function renderAlarmas() {
   $('napMin').value = ALS.siesta.min; $('napSon').textContent = tonoTxt(ALS.siesta.son);
   napCard();
@@ -2091,7 +2109,10 @@ function renderAlarmas() {
     d.innerHTML = `<div class="altop"><label class="swt"><input type="checkbox"${al.on ? ' checked' : ''}><i></i></label>
         <input type="time" value="${al.hora}"><button class="aldel" title="Borrar">✕</button></div>
       <div class="algrid"><label><span class="lbl">Tono</span><button class="tonobtn son" type="button">${tonoTxt(al.son)}</button></label><label><span class="lbl">Subida volumen <button class="info" type="button" aria-label="¿Qué es?">i</button></span><select class="sub">${subidas(al.sub)}</select></label></div>
-      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>`;
+      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>
+      <label class="refz"><span class="lbl">💪 Alarma reforzada <button class="info info2" type="button" aria-label="¿Qué es?">i</button></span><select class="reto"${RETO_OK ? '' : ' disabled'}>${retos(al.reto)}</select></label>
+      <div class="alhelp alhelp2" hidden>Para no volver a dormirte: al sonar, «Apagar» te pide una prueba y la alarma no se calla hasta que la haces (mientras tanto el volumen baja). Posponer funciona igual.${RETO_OK ? '' : AND ? '<br>📲 Necesita la app Android 2.9 o más nueva: actualízala en Inicio.' : '<br>📲 Solo en la app Android.'}</div>
+      ${al.reto === 'codigo' && al.cod ? `<div class="codrow">📷 Código guardado: …${al.cod.slice(-6).replace(/[<>&"]/g, '')}<button class="codcam" type="button">Cambiar</button></div>` : ''}`;
     const upd = () => { al.on = d.querySelector('.swt input').checked; al.hora = d.querySelector('input[type=time]').value || al.hora;
       al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
     // al activarla o cambiar la hora: cuánto falta para que suene
@@ -2099,6 +2120,13 @@ function renderAlarmas() {
     d.querySelector('.aldel').onclick = () => { if (confirm('¿Borrar esta alarma?')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
     d.querySelector('.son').onclick = () => elegirTono(al.son, id => { al.son = id; al.fired = null; alSave(); renderAlarmas(); });
     d.querySelector('.info').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp'); h.hidden = !h.hidden; };
+    d.querySelector('.info2').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp2'); h.hidden = !h.hidden; };
+    d.querySelector('.reto').onchange = ev => {
+      const v = ev.target.value;
+      if (v === 'codigo') { pedirCodigo(al, ok => { if (ok) al.reto = 'codigo'; alSave(); renderAlarmas(); }); return; }
+      al.reto = v; alSave(); renderAlarmas();
+    };
+    d.querySelector('.codcam')?.addEventListener('click', () => pedirCodigo(al, () => { alSave(); renderAlarmas(); }));
     $('alList').append(d);
   }
 }
@@ -2293,7 +2321,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '2.8';
+const APK_ULTIMA = '2.9';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
