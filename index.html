@@ -371,7 +371,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
   </div>
 
-  <button class="big" id="startBtn">🌙 Empezar a escuchar</button>
+  <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
@@ -465,6 +465,10 @@ body.pl-on .wrap{padding-bottom:190px}
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
     <div class="row"><label for="strict">Separar ronquido de respiración<small>Estricto: solo cuenta como ronquido lo que suena claramente a ronquido</small></label>
       <select id="strict"><option value="0.25">Suave</option><option value="0.35">Normal</option><option value="0.5">Estricto</option></select></div>
+    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo.</small></label>
+      <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
+    <button class="btn wide" id="sonarTest">▶ Probar el sonar (10 s)</button>
+    <p class="note" id="sonarRes" hidden></p>
   </details>
   <details class="card ajd">
     <summary>🎧 Avisarme si ronco <small id="sAvisoAj"></small></summary>
@@ -597,7 +601,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b>, también verás en el gráfico cuándo te mueves.</div></details>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves.</div></details>
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
@@ -633,7 +637,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.1'; // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
+const VERSION = 'v5.2'; // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
+// v5.1: // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
 // v5.0: // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
 // v4.9: // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
 // v4.8: // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
@@ -687,7 +692,7 @@ const AND = window.RonquiNoAndroid || null;
 $('ver').textContent = VERSION; $('ver2').textContent = VERSION;
 
 // ---------- Ajustes ----------
-const cfg = {sens:10, keepOther:false, maxSec:60, strict:.35};
+const cfg = {sens:10, keepOther:false, maxSec:60, strict:.35, sonar:false};
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
 $('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec; $('strict').value = cfg.strict;
 for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => {
@@ -730,6 +735,72 @@ function avisoRonco(ev) {
     setTimeout(() => { $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(now)}`; }, 50);
   }
 }
+
+// 📡 Sonar: el altavoz emite un tono de 19 kHz y el micrófono escucha su eco. Si algo se mueve cerca,
+// el eco cambia un poco de tono (efecto Doppler) y aparece energía a los lados del tono.
+class Sonar {
+  constructor(ctx, src, onMov) {
+    this.f0 = 19000; this.snr = -99; this.ok = ctx.sampleRate >= 44100;
+    if (!this.ok) return;
+    this.ctx = ctx; this.onMov = onMov; this.base = null; this.last = 0;
+    this.osc = ctx.createOscillator(); this.osc.frequency.value = this.f0;
+    this.g = ctx.createGain(); this.g.gain.value = 0;
+    this.osc.connect(this.g).connect(ctx.destination); this.osc.start();
+    this.vol(true); // sube despacio: sin «clic»
+    this.an = ctx.createAnalyser(); this.an.fftSize = 8192; this.an.smoothingTimeConstant = 0;
+    src.connect(this.an);
+    this.buf = new Float32Array(this.an.frequencyBinCount);
+    this.k0 = Math.round(this.f0 / (ctx.sampleRate / this.an.fftSize));
+    this.t = setInterval(() => this.tick(), 100);
+  }
+  vol(on) { this.g?.gain.setTargetAtTime(on ? .3 : 0, this.ctx.currentTime, .5); }
+  tick() {
+    this.an.getFloatFrequencyData(this.buf);
+    const P = k => Math.pow(10, this.buf[k] / 10);
+    let car = 0; for (let k = this.k0 - 2; k <= this.k0 + 2; k++) car = Math.max(car, P(k));
+    let side = 0; for (let d = 4; d <= 24; d++) side += P(this.k0 + d) + P(this.k0 - d);
+    let ruido = 0; for (let d = 60; d <= 80; d++) ruido += P(this.k0 - d);
+    side /= 42; ruido /= 21;
+    this.snr = 10 * Math.log10(car / ruido);
+    if (!(this.snr > 15)) return; // el pitido no llega al micrófono
+    const r = side / car;
+    if (this.base == null || this.base > r * 50) { this.base = r; return; } // al empezar: el arranque del tono no cuenta
+    const mov = r > this.base * 3 && side > ruido * 4;
+    if (!mov) this.base = r < this.base ? this.base * .7 + r * .3 : this.base * .98 + r * .02; // baja deprisa, sube despacio
+    else if (Date.now() - this.last > 1000) { this.last = Date.now(); this.onMov?.(); }
+  }
+  stop() { clearInterval(this.t); try { this.osc?.stop(); } catch {} try { this.g?.disconnect(); this.an?.disconnect(); } catch {} }
+}
+$('sonarOn').checked = !!cfg.sonar;
+$('sonarOn').onchange = () => { cfg.sonar = $('sonarOn').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} };
+$('sonarTest').onclick = async () => {
+  if (live.night) { alert('Pruébalo cuando no estés monitoreando la noche.'); return; }
+  if (AND?.auriculares?.()) { alert('🎧 Quítate los auriculares: el sonar sale por el altavoz del móvil.'); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}}); }
+  catch (e) { alert('No puedo usar el micrófono. (' + e.message + ')'); return; }
+  const ctx = new AudioContext(); await ctx.resume();
+  let n = 0, snr = -99;
+  const s = new Sonar(ctx, ctx.createMediaStreamSource(stream), () => { n++; });
+  const fin = () => { s.stop(); stream.getTracks().forEach(t => t.stop()); try { ctx.close(); } catch {} AND?.audioNormal?.(); $('sonarTest').disabled = false; };
+  $('sonarRes').hidden = false;
+  if (!s.ok) { fin(); $('sonarRes').textContent = '❌ Este móvil no puede emitir el pitido del sonar.'; return; }
+  $('sonarTest').disabled = true;
+  const t0 = Date.now();
+  await new Promise(res => {
+    const iv = setInterval(() => {
+      snr = Math.max(snr, s.snr);
+      const left = Math.ceil((10e3 - (Date.now() - t0)) / 1000);
+      $('sonarRes').textContent = `👋 Deja el móvil quieto y mueve la mano a 30–50 cm de él… ${left} s · movimientos notados: ${n}`;
+      if (left <= 0) { clearInterval(iv); res(); }
+    }, 250);
+  });
+  fin();
+  $('sonarRes').textContent = snr < 15
+    ? '❌ Tu móvil no capta el pitido del sonar (su altavoz o su micrófono lo recortan). El movimiento se seguirá viendo con el móvil sobre el colchón.'
+    : n ? `✅ Funciona: ha notado ${n} ${n === 1 ? 'movimiento' : 'movimientos'}. Esta noche verás en el gráfico cuándo te mueves.`
+      : '⚠️ Capta el pitido, pero no ha notado la mano. Prueba otra vez, más cerca y moviendo la mano más deprisa.';
+};
 
 // ---------- Base de datos (IndexedDB) ----------
 const DB = {
@@ -960,7 +1031,11 @@ async function startListening() {
   const ctx = new AudioContext();
   await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([workletSrc], {type: 'text/javascript'})));
   const src = ctx.createMediaStreamSource(stream), node = new AudioWorkletNode(ctx, 'cap'), mute = ctx.createGain();
-  mute.gain.value = 0; src.connect(node).connect(mute).connect(ctx.destination);
+  mute.gain.value = 0;
+  // Filtro: a 16 kHz solo cabe hasta 8 kHz; así ni el pitido del sonar ni los agudos se cuelan en las grabaciones
+  const lp1 = ctx.createBiquadFilter(), lp2 = ctx.createBiquadFilter();
+  lp1.type = lp2.type = 'lowpass'; lp1.frequency.value = lp2.frequency.value = 7500;
+  src.connect(lp1).connect(lp2).connect(node).connect(mute).connect(ctx.destination);
   await ctx.resume();
 
   const night = newNight('micro');
@@ -981,6 +1056,7 @@ async function startListening() {
 
   Object.assign(live, {stream, ctx, night, saver, det});
   movEmpezar(night);
+  if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
   $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on');
@@ -996,6 +1072,7 @@ async function startListening() {
     if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = 'Escuchando…';
     muteTick();
     if (ctx.state === 'suspended') ctx.resume();
+    if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
     // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
@@ -1019,6 +1096,7 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
 // 🛏️ Movimiento: con el móvil sobre el colchón, el acelerómetro nota cuándo te mueves o te das la vuelta.
 // Se apunta el segundo de la noche (como mucho una marca cada 20 s). Tocar la pantalla no cuenta.
 let movToque = 0;
+function marcaMov(night, t) { night.mov ||= []; if (!night.mov.length || t - night.mov.at(-1) >= 20) night.mov.push(t); }
 function movEmpezar(night) {
   night.mov ||= [];
   let g = null, pico = 0, seg = 0;
@@ -1029,7 +1107,7 @@ function movEmpezar(night) {
     pico = Math.max(pico, Math.abs(m - g));
     const t = Math.floor((Date.now() - night.inicio) / 1000);
     if (t === seg) return;
-    if (pico > .35 && Date.now() - movToque > 3000 && (!night.mov.length || t - night.mov.at(-1) >= 20)) night.mov.push(t);
+    if (pico > .35 && Date.now() - movToque > 3000) marcaMov(night, t);
     pico = 0; seg = t;
   };
   addEventListener('devicemotion', live.mov);
@@ -1041,6 +1119,7 @@ async function stopListening(auto) {
   if (auto !== true && !confirm('¿Fin del monitoreo de la noche? Verás el resumen.')) return;
   live.parando = true;
   if (live.mov) removeEventListener('devicemotion', live.mov);
+  live.sonar?.stop();
   clearInterval(live.timer); clearTimeout(live.dimT);
   if (live.cuna) endCuna();
   live.det.flush();
