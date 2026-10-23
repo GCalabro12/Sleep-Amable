@@ -105,7 +105,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 .slide-l{animation:rq-slide-l .28s ease-out} .slide-r{animation:rq-slide-r .28s ease-out}
 @keyframes rq-slide-l{from{transform:translateX(48px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-slide-r{from{transform:translateX(-48px);opacity:0}to{transform:none;opacity:1}}
-.moontip img{width:86px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
+.moontip img{float:left;margin:0 12px 4px 0;width:86px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
 .moontip img.wave{animation:rq-float 3s ease-in-out infinite,rq-wave 1.6s ease-in-out infinite;transform-origin:50% 90%}
 @keyframes rq-wave{0%,100%{rotate:-4deg}50%{rotate:5deg}}
 /* Alarma sonando */
@@ -158,6 +158,28 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .retorow .rt{flex:1;font-size:16px}
 .retorow .info{width:24px;height:24px;font-size:15px;line-height:22px}
 .retohelp{font-size:13px;color:var(--muted);background:var(--card2);border-radius:10px;padding:8px 10px;margin:0 0 8px}
+.choice.f{background:linear-gradient(135deg,#7C3AED,#5B21B6);box-shadow:0 8px 24px #7c3aed44}
+.lunahead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.lunahead img{width:72px;height:auto;flex:none}
+.lunahead h1{font-size:21px;margin:0}
+.lunahead small{color:var(--muted);font-size:13px}
+#lunaChat{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.lmsg{max-width:86%;padding:10px 13px;border-radius:16px;font-size:16px;line-height:1.4;white-space:pre-wrap}
+.lmsg.yo{align-self:flex-end;background:#4338CA;color:#fff;border-bottom-right-radius:4px}
+.lmsg.luna{align-self:flex-start;background:#1E1B4B;border:1px solid #312E81;color:#E0E7FF;border-bottom-left-radius:4px}
+.lmsg.luna.pensando{opacity:.7;font-style:italic}
+.lmsg .oir{background:none;border:0;color:#C4B5FD;font-size:15px;padding:2px 0 0;display:block}
+#lunaSug{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+#lunaSug button{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:7px 11px;color:#C4B5FD;font-size:14px}
+#lunaForm{display:flex;gap:8px;align-items:flex-end}
+#lunaIn{flex:1;resize:none;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:11px 12px;font:inherit;font-size:16px;min-height:46px;max-height:140px}
+#lunaForm button{width:48px;height:46px;border-radius:14px;border:0;background:#6D5BD0;color:#fff;font-size:20px;flex:none}
+details.lunadet{margin-top:10px}
+details.lunadet>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;padding:4px 0;color:#C4B5FD}
+details.lunadet>summary::-webkit-details-marker{display:none}
+details.lunadet>summary::after{content:"";margin-left:auto;flex:none;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #A78BFA}
+details.lunadet[open]>summary::after{border-top:0;border-bottom:10px solid #A78BFA}
+details.lunadet .moontip{margin-top:6px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -170,7 +192,7 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .stbox b{display:block;font-size:20px}
 .stbox span{font-size:11px;color:var(--muted)}
 .stbox.ok b{color:#86EFAC} .stbox.mid b{color:var(--voice)} .stbox.bad b{color:#FCA5A5}
-.moontip{display:flex;gap:12px;align-items:flex-start;background:#1E1B4B;border:1px solid #312E81;border-radius:16px;padding:12px;margin-top:10px}
+.moontip{display:flow-root;background:#1E1B4B;border:1px solid #312E81;border-radius:16px;padding:12px;margin-top:10px}
 .moontip svg{width:74px;height:74px;flex:none;animation:rq-float 3s ease-in-out infinite}
 .moontip .bubble{font-size:14px;color:#E0E7FF}
 .moontip .bubble p{margin:0 0 6px}
@@ -355,6 +377,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
+  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic">🧰</span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span>Ajustes<small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
@@ -403,9 +426,12 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
+  <details class="card ajd" id="misDet">
+    <summary>📚 Mis noches <small id="misN"></small></summary>
+    <div id="nights2"></div>
+  </details>
   <div class="card">
-    <div class="row" style="margin-top:0"><label for="shareOn">🤝 Compartir mis noches de forma anónima<small>Solo se envían números de cada noche (horas, a qué hora te acuestas y te levantas, minutos roncando) y tu país. Nunca grabaciones, nombres ni correos. Con ellos se calcula la media de tu país.</small></label>
-      <label class="swt"><input type="checkbox" id="shareOn"><i></i></label></div>
+    <div style="font-weight:600">🌍 Media de tu país</div>
     <div id="paisBody" class="stnote"></div>
   </div>
 </section>
@@ -452,6 +478,23 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- AJUSTES -->
+<section id="utiles" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
+  <h1 style="font-size:21px;margin:0 0 12px">🧰 Utilidades</h1>
+  <button class="choice sm a" data-go="luna"><span class="ic">🌙</span><span>Habla con Luna<small>Pregúntale lo que quieras sobre el sueño y los ronquidos</small></span></button>
+</section>
+
+<section id="luna" hidden>
+  <button class="back" data-go="utiles">← Utilidades</button>
+  <div class="lunahead"><img src="luna/luna-consejo.png" alt=""><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
+  <div id="lunaChat"></div>
+  <div id="lunaSug"></div>
+  <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
+  <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="Escribe tu pregunta…" maxlength="600"></textarea><button type="submit" aria-label="Enviar">➤</button></form>
+  <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
+  <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
+</section>
+
 <section id="ajustes" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⚙️ Ajustes</h1>
@@ -475,6 +518,16 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: si no hay, no dice nada (no despierta a nadie).</small></label>
       <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
     <button class="btn wide avisoTest">▶ Probar la voz</button>
+  </details>
+  <details class="card ajd">
+    <summary>💾 Noches guardadas <small id="sGuardar"></small></summary>
+    <div class="row"><label for="guardar">Cuántas noches guardar<small>Las más antiguas se borran solas, con sus grabaciones, para no llenar el móvil.</small></label>
+      <select id="guardar"><option value="7">7</option><option value="14">14</option><option value="30">30</option><option value="60">60</option><option value="0">Todas</option></select></div>
+  </details>
+  <details class="card ajd">
+    <summary>🤝 Compartir mis noches <small id="sShare"></small></summary>
+    <div class="row"><label for="shareOn">Compartir de forma anónima<small>Solo se envían números de cada noche (horas, a qué hora te acuestas y te levantas, minutos roncando) y tu país. Nunca grabaciones, nombres ni correos. Con ellos se calcula la media de tu país (en Estadísticas).</small></label>
+      <label class="swt"><input type="checkbox" id="shareOn"><i></i></label></div>
   </details>
   <details class="card ajd">
     <summary>⏰ Reto para apagar la alarma <small id="sRetoAj"></small></summary>
@@ -637,7 +690,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.2'; // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
+const VERSION = 'v5.3'; // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
+// v5.2: // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
 // v5.1: // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
 // v5.0: // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
 // v4.9: // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
@@ -1278,7 +1332,8 @@ window.atrasNativo = () => {
   if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
-  if (['home', 'mask', 'alarma', 'stats', 'ajustes'].some(x => !$(x).hidden)) { show('menu'); return true; }
+  if (!$('luna').hidden) { show('utiles'); return true; }
+  if (['home', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
   return false;
 };
 $('prepGo').onclick = async () => {
@@ -1464,6 +1519,7 @@ const LUNA_SVG_OLD = `<svg viewBox="0 0 120 120" aria-hidden="true"><defs><mask 
   <circle cx="84" cy="94" r="7"/></g>
   <path d="M100 26 h9 l-9 9 h9" fill="none" stroke="#A78BFA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const hm = mins => `${Math.floor(mins / 60) % 24}:${String(Math.round(mins % 60)).padStart(2, '0')}`;
+let lunaDetAbierto = true; try { lunaDetAbierto = localStorage.getItem('ronquino-lunadet') !== '0'; } catch {}
 function renderStatsHome(ns) {
   // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan). Las últimas 14.
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
@@ -1486,20 +1542,22 @@ function renderStatsHome(ns) {
       <div class="stbox ${cls(snPorHora, 3, 10)}"><b>${snPorHora.toFixed(1).replace('.', ',')} min</b><span>roncando por hora</span></div>
     </div>
     <div class="strow"><span>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></span><span>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></span></div>
-    <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div>
+    <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>🌙 Consejos de la luna</summary>
+    <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div></details>
     <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
+  $('lunaDet').ontoggle = () => { lunaDetAbierto = $('lunaDet').open; try { localStorage.setItem('ronquino-lunadet', lunaDetAbierto ? '1' : '0'); } catch {} };
   comunidad(ok, media, snPorHora, avg(acu));
 }
 // ---------- Media del país (datos anónimos de quien comparte; Firebase «amable-sleep») ----------
 // Cada noche compartida SUMA unos pocos números al documento de su país (las reglas de la base de datos solo dejan sumar).
 const FS = 'https://firestore.googleapis.com/v1/projects/amable-sleep/databases/(default)/documents';
 const MIN_PERSONAS = 20; // por debajo no se enseña la media (no se podría saber de quién es cada dato)
-let shareOn = false; try { shareOn = localStorage.getItem('ronquino-compartir') === '1'; } catch {}
-$('shareOn').checked = shareOn;
+let shareOn = true; try { shareOn = localStorage.getItem('ronquino-compartir') !== '0'; } catch {}
+$('shareOn').checked = shareOn; $('sShare').textContent = shareOn ? '· sí' : '· no';
 $('shareOn').onchange = () => {
-  shareOn = $('shareOn').checked;
+  shareOn = $('shareOn').checked; $('sShare').textContent = shareOn ? '· sí' : '· no';
   try { localStorage.setItem('ronquino-compartir', shareOn ? '1' : '0'); } catch {}
-  if (shareOn && !pais) alert('Elige tu país arriba para poder compartir.');
+  if (shareOn && !pais) alert('Elige tu país en Estadísticas para poder compartir.');
   renderHome();
 };
 const fsNum = v => Number.isInteger(v) ? {integerValue: String(v)} : {doubleValue: v};
@@ -1555,21 +1613,41 @@ function consejos(media, desv, snPorHora) {
   else c.push('😴 Apenas roncas. ¡Así da gusto!');
   return c;
 }
+// 💾 Solo se guardan las últimas N noches (Ajustes); las más antiguas se borran con sus grabaciones
+let guardar = 0; try { guardar = +(localStorage.getItem('ronquino-guardar') || 0); } catch {}
+$('guardar').value = String(guardar); $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
+async function podar(ns) {
+  if (!guardar || ns.length <= guardar) return ns;
+  for (const n of ns.slice(guardar)) if (n.id !== live.night?.id) await DB.delNight(n.id);
+  return ns.slice(0, guardar);
+}
+$('guardar').onchange = async () => {
+  const nuevo = +$('guardar').value;
+  const ns = await DB.all('noches'), sobran = nuevo ? Math.max(0, ns.length - nuevo) : 0;
+  if (sobran && !confirm(`Se borrarán ${sobran === 1 ? 'la noche más antigua' : `las ${sobran} noches más antiguas`}, con sus grabaciones. ¿Seguro?`)) { $('guardar').value = String(guardar); return; }
+  guardar = nuevo; try { localStorage.setItem('ronquino-guardar', String(guardar)); } catch {}
+  $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
+  renderHome();
+};
+let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco» o a «Estadísticas», según de dónde se abrió
 async function renderHome() {
-  const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id);
+  const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
   $('histN').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
-  $('nights').innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
-  for (const n of ns) {
-    const b = document.createElement('button'); b.className = 'night';
-    const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
-      : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
-    b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div>`;
-    b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
-    b.onclick = () => openNight(n.id);
-    $('nights').append(b);
+  $('misN').textContent = ns.length ? `(${ns.length})` : '';
+  for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats']]) {
+    $(lista).innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
+    for (const n of ns) {
+      const b = document.createElement('button'); b.className = 'night';
+      const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
+        : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
+      b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div>`;
+      b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
+      b.onclick = () => { nightFrom = desde; openNight(n.id); };
+      $(lista).append(b);
+    }
   }
-  requestAnimationFrame(() => document.querySelectorAll('#nights .when').forEach(fitLine));
+  requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when').forEach(fitLine));
 }
 
 let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
@@ -1886,7 +1964,7 @@ $('reNight').onclick = async () => {
   $('reTxt').textContent = txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
   $('reNight').disabled = false;
 };
-$('backBtn').onclick = () => { plSetList([]); show('home'); renderHome(); };
+$('backBtn').onclick = () => { plSetList([]); show(nightFrom); renderHome(); nightFrom = 'home'; };
 
 // ---------- Reproductor de la noche (fijo abajo, aunque hagas scroll) ----------
 // Suena la lista que se ve (según el filtro), una tras otra; la velocidad vale para todas.
@@ -2398,13 +2476,106 @@ function napEnd() {
 }
 $('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napParar(); };
 
+// ---------- 🌙 Habla con Luna (IA de Gemini a través del servidor propio de Amable Sleep) ----------
+// Servidor: «Worker Cloudflare/amable-sleep-api.js» (3 preguntas al día gratis)
+const LUNA_API = ['https://amable-sleep-api.proud-hill-016b.workers.dev'];
+const LUNA_SUG = ['¿Por qué ronco?', '¿Qué tal han ido mis noches?', 'No consigo dormirme, ¿qué hago?', '¿Cómo roncar menos?', '¿Cuánto debería dormir?'];
+let lunaHist = [];
+try { lunaHist = JSON.parse(localStorage.getItem('ronquino-luna') || '[]'); } catch {}
+let lunaVoz = false; try { lunaVoz = localStorage.getItem('ronquino-luna-voz') === '1'; } catch {}
+$('lunaVoz').checked = lunaVoz;
+$('lunaVoz').onchange = () => { lunaVoz = $('lunaVoz').checked; try { localStorage.setItem('ronquino-luna-voz', lunaVoz ? '1' : '0'); } catch {} };
+const lunaGuarda = () => { lunaHist = lunaHist.slice(-30); try { localStorage.setItem('ronquino-luna', JSON.stringify(lunaHist)); } catch {} };
+async function lunaPost(ruta, body) {
+  let err = null;
+  for (const base of LUNA_API) {
+    try {
+      const r = await fetch(base + ruta, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: AbortSignal.timeout(30000)});
+      if (r.status < 500) return r;
+      err = new Error('HTTP ' + r.status);
+    } catch (e) { err = e; }
+  }
+  throw err || new Error('sin conexión');
+}
+// Lo que Luna sabe de tus noches: solo números (horas, ronquidos, movimientos…), nunca las grabaciones
+async function lunaContexto() {
+  const ns = (await DB.all('noches')).filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 2 * 3600e3)
+    .sort((a, b) => b.inicio - a.inicio).slice(0, 7);
+  return {pais, noches: ns.map(n => ({
+    fecha: new Date(n.inicio).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'short'}),
+    acostarse: hhmm(n.inicio), levantarse: hhmm(n.fin), horas: Math.round((n.fin - n.inicio) / 36e5 * 10) / 10,
+    minutosRoncando: Math.round((n.segRonquido || 0) / 60), ronquidos: n.ronquidos, voces: n.voces,
+    movimientos: (n.mov || []).length, avisosDeVoz: n.avisos || 0}))};
+}
+let lunaAu = null;
+async function lunaOir(texto, btn) {
+  if (lunaAu) { lunaAu.pause(); lunaAu = null; }
+  if (btn) btn.textContent = '⏳';
+  try {
+    const r = await lunaPost('/luna-voz', {texto});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const au = lunaAu = new Audio(URL.createObjectURL(await r.blob()));
+    au.onended = () => { if (btn) btn.textContent = '🔊 Escuchar'; };
+    await au.play();
+    if (btn) btn.textContent = '■ Parar';
+  } catch { if (btn) btn.textContent = '🔊 Escuchar'; }
+}
+function lunaPinta() {
+  $('lunaChat').innerHTML = '';
+  if (!lunaHist.length) lunaMsg('luna', '¡Hola! Soy Luna 🌙. Pregúntame lo que quieras sobre el sueño o los ronquidos. También puedo mirar tus noches y darte consejos.', false);
+  for (const m of lunaHist) lunaMsg(m.de, m.texto, false);
+  $('lunaSug').innerHTML = '';
+  for (const q of LUNA_SUG) { const b = document.createElement('button'); b.type = 'button'; b.textContent = q; b.onclick = () => lunaEnviar(q); $('lunaSug').append(b); }
+  $('lunaSug').hidden = lunaHist.length > 2;
+}
+function lunaMsg(de, texto, voz) {
+  const d = document.createElement('div'); d.className = 'lmsg ' + de; d.textContent = texto;
+  if (de === 'luna' && texto) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'oir'; b.textContent = '🔊 Escuchar';
+    b.onclick = () => { if (lunaAu && !lunaAu.paused) { lunaAu.pause(); b.textContent = '🔊 Escuchar'; } else lunaOir(texto, b); };
+    d.append(b);
+    if (voz) lunaOir(texto, b);
+  }
+  $('lunaChat').append(d);
+  return d;
+}
+function lunaAbrir() { lunaPinta(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
+let lunaOcupada = false;
+async function lunaEnviar(texto) {
+  texto = String(texto || '').trim();
+  if (!texto || lunaOcupada) return;
+  lunaOcupada = true; $('lunaIn').value = ''; $('lunaSug').hidden = true;
+  const historial = lunaHist.slice(-10);
+  lunaHist.push({de: 'yo', texto}); lunaGuarda(); lunaMsg('yo', texto, false);
+  const pens = lunaMsg('luna pensando', 'Luna está pensando… 🌙', false);
+  window.scrollTo(0, document.body.scrollHeight);
+  let resp;
+  try {
+    const r = await lunaPost('/luna', {mensaje: texto, historial, contexto: await lunaContexto()});
+    const d = await r.json().catch(() => ({}));
+    resp = d.respuesta || d.error || (r.status === 429 ? 'Por hoy ya hemos hablado mucho 😊. Mañana seguimos, ¿vale?' : 'Ahora mismo no puedo responder. Prueba un poco más tarde.');
+    if (d.respuesta) { lunaHist.push({de: 'luna', texto: d.respuesta}); lunaGuarda(); }
+    if (d.quedan != null) { $('lunaQuedan').hidden = false; $('lunaQuedan').textContent = d.quedan ? `Hoy te ${d.quedan === 1 ? 'queda 1 pregunta' : `quedan ${d.quedan} preguntas`} a Luna.` : 'Por hoy no quedan más preguntas a Luna: mañana tienes 3 más.'; }
+  } catch { resp = 'No consigo conectarme. Revisa que tengas internet y vuelve a probar.'; }
+  pens.remove(); lunaMsg('luna', resp, lunaVoz);
+  window.scrollTo(0, document.body.scrollHeight);
+  lunaOcupada = false;
+}
+// El botón de Utilidades sale en cuanto el servidor de Luna está listo (con su clave de Gemini puesta)
+fetch(LUNA_API[0] + '/', {signal: AbortSignal.timeout(10000)}).then(r => r.json()).then(d => { if (d.luna) $('goUtiles').hidden = false; }).catch(() => {});
+$('lunaForm').onsubmit = ev => { ev.preventDefault(); lunaEnviar($('lunaIn').value); };
+$('lunaIn').onkeydown = ev => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); lunaEnviar($('lunaIn').value); } };
+$('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').style.height = Math.min(140, $('lunaIn').scrollHeight) + 'px'; };
+
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
-  for (const x of ['menu', 'home', 'mask', 'night', 'stats', 'alarma', 'ajustes']) $(x).hidden = x !== id;
+  for (const x of ['menu', 'home', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna']) $(x).hidden = x !== id;
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
   $('tabs').hidden = true;
   document.body.classList.remove('tabs-on');
   if (id === 'stats') renderHome();
+  if (id === 'stats') $('misDet').ontoggle = () => requestAnimationFrame(() => document.querySelectorAll('#nights2 .when').forEach(fitLine));
+  if (id === 'luna') lunaAbrir();
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
