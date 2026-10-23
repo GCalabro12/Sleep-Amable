@@ -512,7 +512,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span>🤏 pellizca para ampliar</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar</span></div>
   </div>
   <div class="chips" id="chips"></div>
   <div class="selbar" id="selbar">
@@ -586,7 +586,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo.</div></details>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b>, también verás en el gráfico cuándo te mueves.</div></details>
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
@@ -616,13 +616,14 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lcuna" id="lcuna" hidden></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
-    <button id="stopBtn">☀️ Terminar la noche</button>
+    <button id="stopBtn">☀️ Fin monitoreo de la noche</button>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v4.9'; // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
+const VERSION = 'v5.0'; // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
+// v4.9: // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
 // v4.8: // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
 // v4.7: 💪 alarma reforzada (app 2.9): para apagarla, caminar 20 pasos, 3 cuentas o escanear un código de barras guardado
 // v4.6: // v4.6: botones de pausa/parar sin fondo naranja (■ y ❚❚ en vez de los emojis, que en Android salen naranjas); 🎧 aviso «Estás roncando, cambia de posición» solo por los auriculares (app 2.8); siesta con interruptor como las alarmas (tono a la izquierda, duración a la derecha); aviso «Sonará en…» al activar; fuera el botón grande de siesta y «Probar el tono»
@@ -713,6 +714,7 @@ function avisoRonco(ev) {
   A.seguros = [];
   if (AND.decir(FRASE)) {
     live.night.avisos = (live.night.avisos || 0) + 1;
+    (live.night.avisoT ||= []).push(Math.round((now - live.night.inicio) / 1000));
     setTimeout(() => { $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(now)}`; }, 50);
   }
 }
@@ -963,9 +965,10 @@ async function startListening() {
     onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }});
   const rs = new Resampler(ctx.sampleRate);
   node.port.onmessage = m => det.push(rs.process(m.data));
-  stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Terminar la noche» para guardar.');
+  stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo de la noche» para guardar.');
 
   Object.assign(live, {stream, ctx, night, saver, det});
+  movEmpezar(night);
   $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on');
@@ -1001,10 +1004,31 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   renderLiveSens();
 });
 
+// 🛏️ Movimiento: con el móvil sobre el colchón, el acelerómetro nota cuándo te mueves o te das la vuelta.
+// Se apunta el segundo de la noche (como mucho una marca cada 20 s). Tocar la pantalla no cuenta.
+let movToque = 0;
+function movEmpezar(night) {
+  night.mov ||= [];
+  let g = null, pico = 0, seg = 0;
+  live.mov = e => {
+    const a = e.accelerationIncludingGravity; if (!a || a.x == null) return;
+    const m = Math.hypot(a.x, a.y, a.z);
+    g = g == null ? m : g * .95 + m * .05;
+    pico = Math.max(pico, Math.abs(m - g));
+    const t = Math.floor((Date.now() - night.inicio) / 1000);
+    if (t === seg) return;
+    if (pico > .35 && Date.now() - movToque > 3000 && (!night.mov.length || t - night.mov.at(-1) >= 20)) night.mov.push(t);
+    pico = 0; seg = t;
+  };
+  addEventListener('devicemotion', live.mov);
+}
+$('listen').addEventListener('pointerdown', () => { movToque = Date.now(); }, true);
+
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
-  if (auto !== true && !confirm('¿Terminar la noche y ver el resumen?')) return;
+  if (auto !== true && !confirm('¿Fin del monitoreo de la noche? Verás el resumen.')) return;
   live.parando = true;
+  if (live.mov) removeEventListener('devicemotion', live.mov);
   clearInterval(live.timer); clearTimeout(live.dimT);
   if (live.cuna) endCuna();
   live.det.flush();
@@ -1111,7 +1135,7 @@ let dndPedido = false; // tocó «Activar» y fue a dar el permiso
 function renderPrep() {
   const acceso = AND.hasDndAccess(), activo = AND.dndActivo(), mio = AND.dndMio();
   let btn, txt, on = false, off = false;
-  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Terminar la noche». Toca para quitarlo ya.'; }
+  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Fin monitoreo de la noche». Toca para quitarlo ya.'; }
   else if (activo) { on = true; off = true; btn = '✅ Ya tienes «No molestar» puesto'; txt = 'Lo pusiste tú, así que Amable Sleep lo deja como está.'; }
   else if (!acceso) { btn = '🌙 Activar «No molestar»'; txt = 'La primera vez Android te pide permiso: busca <b>Amable Sleep</b> en la lista, actívalo y vuelve a la app.'; }
   else { btn = '🌙 Activar «No molestar»'; txt = 'Amable Sleep lo pone ahora y lo quita al terminar la noche.'; }
@@ -1582,6 +1606,16 @@ function drawTimeline(total) {
       g.fillRect(x, base - h, Math.max(1, bw - dpr), h);
     });
   }
+  // 🛏️ movimientos (azul) y avisos de voz «estás roncando» (amarillo): líneas de abajo arriba
+  g.fillStyle = '#38BDF8';
+  for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x, top, Math.max(1.5 * dpr, 1), base - top); }
+  g.fillStyle = '#FDE047';
+  for (const t of cur.avisoT || []) {
+    const x = X(t); if (x < -4 * dpr || x > W) continue;
+    g.fillRect(x - dpr, top, 2 * dpr, base - top);
+    g.beginPath(); g.arc(x, base - 4 * dpr, 4 * dpr, 0, 7); g.fill();
+  }
+  $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
   const col = {ronquido: '#A78BFA', voz: '#FBBF24', otro: '#64748B'};
   for (const e of curEvs) {
     const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
