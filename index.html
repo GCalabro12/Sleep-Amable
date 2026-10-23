@@ -201,6 +201,11 @@ details.hist[open] summary{margin-bottom:10px}
 .choice .ic{font-size:40px;line-height:1}
 .choice.a{background:linear-gradient(135deg,#6D5BD0,#4338CA);box-shadow:0 8px 24px #4338ca55}
 .choice.b{background:linear-gradient(135deg,#0F766E,#155E75);box-shadow:0 8px 24px #0f766e44}
+.choice.sm{padding:16px 18px;font-size:19px;margin-bottom:12px}
+.choice.sm .ic{font-size:32px}
+.choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
+.choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
+.choice.e{background:linear-gradient(135deg,#334155,#1E293B);box-shadow:0 8px 24px #33415544}
 #menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
 #listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .8s}
@@ -348,6 +353,9 @@ body.pl-on .wrap{padding-bottom:190px}
   <p class="hello">¿Qué necesitas esta noche?</p>
   <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Saber si ronco<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
+  <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
+  <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
+  <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span>Ajustes<small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
@@ -389,6 +397,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- ESTADÍSTICAS -->
 <section id="stats" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
   <div class="card">
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
@@ -403,6 +412,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- ALARMA -->
 <section id="alarma" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas y siesta</h1>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px"><label class="swt"><input type="checkbox" id="napOn"><i></i></label><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span></div>
@@ -443,6 +453,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- AJUSTES -->
 <section id="ajustes" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⚙️ Ajustes</h1>
   <details class="card ajd">
     <summary>😴 Detector de ronquidos</summary>
@@ -530,7 +541,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- BARRA DE ABAJO -->
-<nav id="tabs">
+<nav id="tabs" hidden>
   <button data-tab="menu"><b>🏠</b>Inicio</button>
   <button data-tab="alarma"><b>⏰</b>Alarma</button>
   <button data-tab="stats"><b>📊</b>Estadísticas</button>
@@ -622,7 +633,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.0'; // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
+const VERSION = 'v5.1'; // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
+// v5.0: // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
 // v4.9: // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
 // v4.8: // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
 // v4.7: 💪 alarma reforzada (app 2.9): para apagarla, caminar 20 pasos, 3 cuentas o escanear un código de barras guardado
@@ -1187,7 +1199,7 @@ window.atrasNativo = () => {
   if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
-  if (!$('home').hidden || !$('mask').hidden) { show('menu'); return true; }
+  if (['home', 'mask', 'alarma', 'stats', 'ajustes'].some(x => !$(x).hidden)) { show('menu'); return true; }
   return false;
 };
 $('prepGo').onclick = async () => {
@@ -2310,15 +2322,14 @@ $('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napParar(
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
   for (const x of ['menu', 'home', 'mask', 'night', 'stats', 'alarma', 'ajustes']) $(x).hidden = x !== id;
-  // Barra de abajo: en todas las pantallas menos dentro de una noche (allí abajo va el reproductor)
-  const tab = ['home', 'mask', 'menu'].includes(id) ? 'menu' : id;
-  $('tabs').hidden = id === 'night';
-  document.body.classList.toggle('tabs-on', id !== 'night');
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
+  $('tabs').hidden = true;
+  document.body.classList.remove('tabs-on');
   if (id === 'stats') renderHome();
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
 // Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
 const ORDEN = ['menu', 'alarma', 'stats', 'ajustes'];
 let sw0 = null;
