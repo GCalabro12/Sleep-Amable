@@ -169,11 +169,22 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .lmsg.luna{align-self:flex-start;background:#1E1B4B;border:1px solid #312E81;color:#E0E7FF;border-bottom-left-radius:4px}
 .lmsg.luna.pensando{opacity:.7;font-style:italic}
 .lmsg .oir{background:none;border:0;color:#C4B5FD;font-size:15px;padding:2px 0 0;display:block}
-#lunaSug{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-#lunaSug button{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:7px 11px;color:#C4B5FD;font-size:14px}
-#lunaForm{display:flex;gap:8px;align-items:flex-end}
-#lunaIn{flex:1;resize:none;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:11px 12px;font:inherit;font-size:16px;min-height:46px;max-height:140px}
-#lunaForm button{width:48px;height:46px;border-radius:14px;border:0;background:#6D5BD0;color:#fff;font-size:20px;flex:none}
+#lunaSugBox{margin:4px 0 14px}
+.sugT{font-size:13px;color:#9CA3AF;margin-bottom:6px}
+#lunaSug{display:flex;flex-wrap:wrap;gap:6px}
+#lunaSug button{background:#1F2937;border:1px solid #374151;border-radius:14px;padding:7px 11px;color:#9CA3AF;font-size:14px}
+#lunaForm{display:flex;gap:8px;align-items:flex-end;background:#1E1B4B;border:2px solid #8B5CF6;border-radius:18px;padding:8px;box-shadow:0 0 0 4px #8b5cf622}
+#lunaIn{flex:1;resize:none;background:transparent;color:#fff;border:0;outline:0;padding:9px 6px;font:inherit;font-size:17px;min-height:44px;max-height:140px}
+#lunaIn::placeholder{color:#C4B5FD}
+#lunaForm button{width:46px;height:44px;border-radius:14px;border:0;background:#6D5BD0;color:#fff;font-size:20px;flex:none}
+#lunaForm #lunaMic{background:#312E81}
+#lunaForm #lunaMic.on{background:#DC2626;animation:rq-pulso 1s ease-in-out infinite}
+@keyframes rq-pulso{50%{transform:scale(1.08)}}
+.lmsg.pensando{display:flex;align-items:center;gap:10px}
+.lpens{width:54px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
+.puntos::after{content:'';animation:rq-puntos 1.2s steps(1) infinite}
+@keyframes rq-puntos{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.choice .icimg{width:46px;height:auto;display:block}
 details.lunadet{margin-top:10px}
 details.lunadet>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;padding:4px 0;color:#C4B5FD}
 details.lunadet>summary::-webkit-details-marker{display:none}
@@ -377,7 +388,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
-  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic">🧰</span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
+  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic"><img class="icimg" src="luna/luna-saluda.png" alt=""></span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span>Ajustes<small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
@@ -480,17 +491,17 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- AJUSTES -->
 <section id="utiles" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">🧰 Utilidades</h1>
-  <button class="choice sm a" data-go="luna"><span class="ic">🌙</span><span>Habla con Luna<small>Pregúntale lo que quieras sobre el sueño y los ronquidos</small></span></button>
+  <h1 style="font-size:21px;margin:0 0 12px">✨ Utilidades</h1>
+  <button class="choice sm a" data-go="luna"><span class="ic"><img class="icimg" src="luna/luna-consejo.png" alt=""></span><span>Habla con Luna<small>Pregúntale lo que quieras sobre el sueño y los ronquidos</small></span></button>
 </section>
 
 <section id="luna" hidden>
   <button class="back" data-go="utiles">← Utilidades</button>
   <div class="lunahead"><img src="luna/luna-consejo.png" alt=""><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
   <div id="lunaChat"></div>
-  <div id="lunaSug"></div>
+  <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
   <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
-  <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="Escribe tu pregunta…" maxlength="600"></textarea><button type="submit" aria-label="Enviar">➤</button></form>
+  <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="✍️ Escribe tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta">🎤</button><button type="submit" aria-label="Enviar">➤</button></form>
   <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
   <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
 </section>
@@ -690,7 +701,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.3'; // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
+const VERSION = 'v5.4'; // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
+// v5.3: // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
 // v5.2: // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
 // v5.1: // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
 // v5.0: // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
@@ -2479,23 +2491,15 @@ $('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napParar(
 // ---------- 🌙 Habla con Luna (IA de Gemini a través del servidor propio de Amable Sleep) ----------
 // Servidor: «Worker Cloudflare/amable-sleep-api.js» (3 preguntas al día gratis)
 const LUNA_API = ['https://amable-sleep-api.proud-hill-016b.workers.dev'];
-const LUNA_SUG = ['¿Por qué ronco?', '¿Qué tal han ido mis noches?', 'No consigo dormirme, ¿qué hago?', '¿Cómo roncar menos?', '¿Cuánto debería dormir?'];
+const LUNA_SUG = ['¿Por qué ronco?', '¿Qué tal han ido mis noches?', 'No consigo dormirme, ¿qué hago?', '¿Cómo roncar menos?'];
 let lunaHist = [];
 try { lunaHist = JSON.parse(localStorage.getItem('ronquino-luna') || '[]'); } catch {}
 let lunaVoz = false; try { lunaVoz = localStorage.getItem('ronquino-luna-voz') === '1'; } catch {}
 $('lunaVoz').checked = lunaVoz;
 $('lunaVoz').onchange = () => { lunaVoz = $('lunaVoz').checked; try { localStorage.setItem('ronquino-luna-voz', lunaVoz ? '1' : '0'); } catch {} };
 const lunaGuarda = () => { lunaHist = lunaHist.slice(-30); try { localStorage.setItem('ronquino-luna', JSON.stringify(lunaHist)); } catch {} };
-async function lunaPost(ruta, body) {
-  let err = null;
-  for (const base of LUNA_API) {
-    try {
-      const r = await fetch(base + ruta, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: AbortSignal.timeout(30000)});
-      if (r.status < 500) return r;
-      err = new Error('HTTP ' + r.status);
-    } catch (e) { err = e; }
-  }
-  throw err || new Error('sin conexión');
+async function lunaPost(ruta, body, ms = 45000) {
+  return fetch(LUNA_API[0] + ruta, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: AbortSignal.timeout(ms)});
 }
 // Lo que Luna sabe de tus noches: solo números (horas, ronquidos, movimientos…), nunca las grabaciones
 async function lunaContexto() {
@@ -2507,18 +2511,34 @@ async function lunaContexto() {
     minutosRoncando: Math.round((n.segRonquido || 0) / 60), ronquidos: n.ronquidos, voces: n.voces,
     movimientos: (n.mov || []).length, avisosDeVoz: n.avisos || 0}))};
 }
+// Voz de Luna: la bonita de Gemini si llega en unos segundos; si no, la del móvil (más robótica, pero al momento)
 let lunaAu = null;
-async function lunaOir(texto, btn) {
-  if (lunaAu) { lunaAu.pause(); lunaAu = null; }
-  if (btn) btn.textContent = '⏳';
+function lunaCallar() { if (lunaAu) { lunaAu.pause(); lunaAu = null; } try { AND?.callar?.(); } catch {} try { if (!AND) speechSynthesis.cancel(); } catch {} }
+async function lunaAudio(texto) {
   try {
-    const r = await lunaPost('/luna-voz', {texto});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const au = lunaAu = new Audio(URL.createObjectURL(await r.blob()));
-    au.onended = () => { if (btn) btn.textContent = '🔊 Escuchar'; };
-    await au.play();
-    if (btn) btn.textContent = '■ Parar';
-  } catch { if (btn) btn.textContent = '🔊 Escuchar'; }
+    const r = await lunaPost('/luna-voz', {texto}, 12000);
+    return r.ok ? new Audio(URL.createObjectURL(await r.blob())) : null;
+  } catch { return null; }
+}
+function vozMovil(texto, fin) {
+  if (AND?.hablar) { AND.hablar(texto); setTimeout(fin, Math.min(40000, 1500 + texto.length * 65)); return true; }
+  if (!AND && window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(texto); u.lang = 'es-ES';
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+    u.onend = fin; speechSynthesis.speak(u); return true;
+  }
+  return false;
+}
+async function lunaOir(texto, btn, au) {
+  lunaCallar();
+  const fin = () => { if (btn) btn.textContent = '🔊 Escuchar'; };
+  if (btn) btn.textContent = '⏳';
+  if (au === undefined) au = await lunaAudio(texto); // null = ya se probó la voz de Gemini y no llegó
+  if (au) {
+    lunaAu = au; au.onended = fin;
+    try { await au.play(); if (btn) btn.textContent = '■ Parar'; return; } catch {}
+  }
+  if (vozMovil(texto, fin)) { if (btn) btn.textContent = '■ Parar'; } else fin();
 }
 function lunaPinta() {
   $('lunaChat').innerHTML = '';
@@ -2526,43 +2546,67 @@ function lunaPinta() {
   for (const m of lunaHist) lunaMsg(m.de, m.texto, false);
   $('lunaSug').innerHTML = '';
   for (const q of LUNA_SUG) { const b = document.createElement('button'); b.type = 'button'; b.textContent = q; b.onclick = () => lunaEnviar(q); $('lunaSug').append(b); }
-  $('lunaSug').hidden = lunaHist.length > 2;
+  $('lunaSugBox').hidden = lunaHist.length > 2;
 }
-function lunaMsg(de, texto, voz) {
+function lunaMsg(de, texto, voz, au) {
   const d = document.createElement('div'); d.className = 'lmsg ' + de; d.textContent = texto;
   if (de === 'luna' && texto) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'oir'; b.textContent = '🔊 Escuchar';
-    b.onclick = () => { if (lunaAu && !lunaAu.paused) { lunaAu.pause(); b.textContent = '🔊 Escuchar'; } else lunaOir(texto, b); };
+    b.onclick = () => { if (b.textContent === '■ Parar') { lunaCallar(); b.textContent = '🔊 Escuchar'; } else lunaOir(texto, b); };
     d.append(b);
-    if (voz) lunaOir(texto, b);
+    if (voz) lunaOir(texto, b, au);
   }
   $('lunaChat').append(d);
   return d;
 }
-function lunaAbrir() { lunaPinta(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
+function lunaAbrir() { lunaCallar(); lunaPinta(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
 let lunaOcupada = false;
 async function lunaEnviar(texto) {
   texto = String(texto || '').trim();
   if (!texto || lunaOcupada) return;
-  lunaOcupada = true; $('lunaIn').value = ''; $('lunaSug').hidden = true;
+  lunaOcupada = true; $('lunaIn').value = ''; $('lunaSugBox').hidden = true;
   const historial = lunaHist.slice(-10);
   lunaHist.push({de: 'yo', texto}); lunaGuarda(); lunaMsg('yo', texto, false);
-  const pens = lunaMsg('luna pensando', 'Luna está pensando… 🌙', false);
+  const pens = document.createElement('div'); pens.className = 'lmsg luna pensando';
+  pens.innerHTML = '<img class="lpens" src="luna/luna-consejo.png" alt=""><span>Luna está pensando<span class="puntos"></span></span>';
+  $('lunaChat').append(pens);
   window.scrollTo(0, document.body.scrollHeight);
-  let resp;
+  let resp, ok = false;
   try {
     const r = await lunaPost('/luna', {mensaje: texto, historial, contexto: await lunaContexto()});
     const d = await r.json().catch(() => ({}));
     resp = d.respuesta || d.error || (r.status === 429 ? 'Por hoy ya hemos hablado mucho 😊. Mañana seguimos, ¿vale?' : 'Ahora mismo no puedo responder. Prueba un poco más tarde.');
-    if (d.respuesta) { lunaHist.push({de: 'luna', texto: d.respuesta}); lunaGuarda(); }
+    if (d.respuesta) { ok = true; lunaHist.push({de: 'luna', texto: d.respuesta}); lunaGuarda(); }
     if (d.quedan != null) { $('lunaQuedan').hidden = false; $('lunaQuedan').textContent = d.quedan ? `Hoy te ${d.quedan === 1 ? 'queda 1 pregunta' : `quedan ${d.quedan} preguntas`} a Luna.` : 'Por hoy no quedan más preguntas a Luna: mañana tienes 3 más.'; }
   } catch { resp = 'No consigo conectarme. Revisa que tengas internet y vuelve a probar.'; }
-  pens.remove(); lunaMsg('luna', resp, lunaVoz);
+  // Con «Leer en voz alta»: la luna sigue pensando hasta tener la voz, y luego salen el texto y el sonido a la vez
+  const au = ok && lunaVoz ? await lunaAudio(resp) : null;
+  pens.remove(); lunaMsg('luna', resp, ok && lunaVoz, au);
   window.scrollTo(0, document.body.scrollHeight);
   lunaOcupada = false;
 }
 // El botón de Utilidades sale en cuanto el servidor de Luna está listo (con su clave de Gemini puesta)
 fetch(LUNA_API[0] + '/', {signal: AbortSignal.timeout(10000)}).then(r => r.json()).then(d => { if (d.luna) $('goUtiles').hidden = false; }).catch(() => {});
+const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
+function ponDictado(t) {
+  $('lunaMic').classList.remove('on');
+  if (!t) return;
+  $('lunaIn').value = ($('lunaIn').value ? $('lunaIn').value + ' ' : '') + t;
+  $('lunaIn').oninput(); $('lunaIn').focus();
+}
+window.dictado = (t, err) => {
+  ponDictado(t);
+  if (!t && err === 'sin-dictado') alert('Este móvil no tiene el dictado por voz de Google. Escribe la pregunta, por favor.');
+};
+$('lunaMic').onclick = () => {
+  if (AND?.dictar) { $('lunaMic').classList.add('on'); AND.dictar(); return; }
+  if (AND) { alert('📲 Para dictar, actualiza la app Amable Sleep a la versión 3.1 (en Inicio).'); return; }
+  if (!RecVoz) { alert('Este navegador no deja dictar. Escribe la pregunta, por favor.'); return; }
+  const r = new RecVoz(); r.lang = 'es-ES'; r.interimResults = false;
+  r.onresult = e => ponDictado(e.results[0][0].transcript);
+  r.onerror = r.onend = () => $('lunaMic').classList.remove('on');
+  $('lunaMic').classList.add('on'); r.start();
+};
 $('lunaForm').onsubmit = ev => { ev.preventDefault(); lunaEnviar($('lunaIn').value); };
 $('lunaIn').onkeydown = ev => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); lunaEnviar($('lunaIn').value); } };
 $('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').style.height = Math.min(140, $('lunaIn').scrollHeight) + 'px'; };
@@ -2657,7 +2701,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.0';
+const APK_ULTIMA = '3.1';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
