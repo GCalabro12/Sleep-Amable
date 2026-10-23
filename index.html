@@ -184,6 +184,12 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .lpens{width:54px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
 .puntos::after{content:'';animation:rq-puntos 1.2s steps(1) infinite}
 @keyframes rq-puntos{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.ev.avisado{border-right:5px solid #FDE047}
+.avnote{margin-top:6px;font-size:13px;color:#FDE047}
+.avrow{border:1px dashed #FDE047;color:#FDE047;border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:14px}
+.avcard{border-color:#854D0E;background:#1C1917}
+.avcard b{color:#FDE047}
+.avcard .avl{font-size:14px;color:#E7E5E4;margin-top:4px}
 .choice .icimg{width:46px;height:auto;display:block}
 details.lunadet{margin-top:10px}
 details.lunadet>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;padding:4px 0;color:#C4B5FD}
@@ -437,6 +443,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
+  <div class="card avcard" id="avStats" hidden></div>
   <details class="card ajd" id="misDet">
     <summary>📚 Mis noches <small id="misN"></small></summary>
     <div id="nights2"></div>
@@ -589,6 +596,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
     <div class="tile v"><b id="tVoice">0</b><span>grabaciones con voz</span></div>
   </div>
+  <div class="card avcard" id="avCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar</span></div>
@@ -701,7 +709,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.4'; // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
+const VERSION = 'v5.5'; // v5.5: 🎧 en las grabaciones, raya amarilla donde se dijo «estás roncando»; cuánto sirve el aviso (antes/después, dejó de roncar, se movió) en la noche y en Estadísticas
+// v5.4: // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
 // v5.3: // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
 // v5.2: // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
 // v5.1: // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
@@ -1537,7 +1546,7 @@ function renderStatsHome(ns) {
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
   if (!ok.length) {
-    comunidad(ok, 0, 0, 0);
+    comunidad(ok, 0, 0, 0); renderAvisoStats(ns);
     $('statBody').innerHTML = `<div class="moontip">${luna('saluda', true)}<div class="bubble"><p>¡Hola! Soy la luna 🌙. En cuanto grabes alguna noche de más de 3 horas, te cuento cuánto duermes, si eres regular y cuánto roncas.</p></div></div>`;
     return;
   }
@@ -1559,6 +1568,7 @@ function renderStatsHome(ns) {
     <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
   $('lunaDet').ontoggle = () => { lunaDetAbierto = $('lunaDet').open; try { localStorage.setItem('ronquino-lunadet', lunaDetAbierto ? '1' : '0'); } catch {} };
   comunidad(ok, media, snPorHora, avg(acu));
+  renderAvisoStats(ns);
 }
 // ---------- Media del país (datos anónimos de quien comparte; Firebase «amable-sleep») ----------
 // Cada noche compartida SUMA unos pocos números al documento de su país (las reglas de la base de datos solo dejan sumar).
@@ -1754,6 +1764,39 @@ $('tl').addEventListener('wheel', ev => { // ordenador: la rueda amplía o reduc
   TLV.start = tm - (ev.clientX - r.left) / r.width * TLV.span;
   TLV.follow = false; drawTimeline(); plHead();
 }, {passive: false});
+// 🎧 ¿Sirve el aviso «estás roncando»? Para cada aviso: minutos roncando 10 min antes y 10 min después,
+// si dejó de roncar al menos 5 minutos y si se movió en el minuto siguiente
+function efectoAvisos(n, evs) {
+  const sn = evs.filter(e => e.tipo === 'ronquido');
+  const enVentana = (a, b) => sn.reduce((s, e) => s + Math.max(0, Math.min(b, e.off + e.dur) - Math.max(a, e.off)), 0);
+  return (n.avisoT || []).map(t => ({
+    t, antes: enVentana(t - 600, t), despues: enVentana(t, t + 600),
+    paro: !sn.some(e => e.off > t + 5 && e.off < t + 300),
+    movio: (n.mov || []).some(m => m >= t - 5 && m <= t + 60)
+  }));
+}
+function textoEfecto(fx) {
+  const antes = fx.reduce((a, x) => a + x.antes, 0) / 60, despues = fx.reduce((a, x) => a + x.despues, 0) / 60;
+  const paro = fx.filter(x => x.paro).length, movio = fx.filter(x => x.movio).length, n = fx.length;
+  const cambio = antes > 0 ? Math.round((despues - antes) / antes * 100) : null;
+  const m = v => v < 1 && v > 0 ? 'menos de 1 min' : `${Math.round(v)} min`;
+  return `<div class="avl">En los 10 minutos de antes roncaste <b>${m(antes)}</b>${n > 1 ? ' en total' : ''}; en los 10 de después, <b>${m(despues)}</b>${cambio == null ? '' : cambio < 0 ? ` (<b>${-cambio} % menos</b>)` : cambio > 0 ? ` (${cambio} % más)` : ' (igual)'}.</div>
+    <div class="avl">Dejaste de roncar al menos 5 minutos en <b>${paro} de ${n}</b> ${n === 1 ? 'aviso' : 'avisos'}${(n && movio) || fx.some(x => x.movio) ? ` y te moviste justo después en <b>${movio} de ${n}</b>` : ''}.</div>`;
+}
+function renderAvisoNoche() {
+  const fx = efectoAvisos(cur, curEvs);
+  $('avCard').hidden = !fx.length;
+  if (fx.length) $('avCard').innerHTML = `<div>🎧 <b>${fx.length} ${fx.length === 1 ? 'aviso' : 'avisos'} «estás roncando»</b> esta noche (${fx.map(x => evTime(cur, x.t)).join(', ')})</div>` + textoEfecto(fx);
+}
+async function renderAvisoStats(ns) {
+  const con = ns.filter(n => (n.avisoT || []).length).slice(0, 30);
+  if (!con.length) { $('avStats').hidden = true; return; }
+  let fx = [];
+  for (const n of con) fx = fx.concat(efectoAvisos(n, await DB.byNight(n.id)));
+  $('avStats').hidden = false;
+  $('avStats').innerHTML = `<div style="font-weight:600">🎧 ¿Te ayuda el aviso «estás roncando»?</div>
+    <div class="avl">${fx.length} ${fx.length === 1 ? 'aviso' : 'avisos'} en ${con.length} ${con.length === 1 ? 'noche' : 'noches'}.</div>` + textoEfecto(fx);
+}
 function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   $('tSnore').textContent = s.length;
@@ -1761,6 +1804,7 @@ function renderStats() {
   $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${minR % 60} min` : `${minR} min`;
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
+  renderAvisoNoche();
   const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
   const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
   $('chips').innerHTML = '';
@@ -1822,7 +1866,12 @@ function renderList() {
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
   $('selbar').hidden = !list.length;
   $('evList').innerHTML = list.length ? '' : '<div class="empty">No se grabó nada de este tipo.</div>';
+  // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
+  const avisos = ['todos', 'ronquido'].includes(filter) ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
+  const usados = new Set();
+  const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🟡 ${evTime(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
   for (const e of list) {
+    for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
     d.innerHTML = `<div class="top"><span class="t">${evTime(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>
@@ -1871,8 +1920,16 @@ function renderList() {
       await DB.tx('eventos', 'readwrite', st => st.delete(e.id));
       curEvs = curEvs.filter(x => x !== e); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
     };
+    const suyos = avisos.filter(t => !usados.has(t) && t >= e.off && t <= e.off + e.dur + 10);
+    if (suyos.length) {
+      d.classList.add('avisado');
+      const nota = document.createElement('div'); nota.className = 'avnote';
+      nota.textContent = `🟡 Al acabar esta grabación (${evTime(cur, suyos[0])}) se dijo «estás roncando»`;
+      d.append(nota); suyos.forEach(t => usados.add(t));
+    }
     $('evList').append(d);
   }
+  for (const t of avisos) if (!usados.has(t)) filaAviso(t);
   plSetList(list);
   renderSel();
 }
