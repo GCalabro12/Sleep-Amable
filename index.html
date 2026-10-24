@@ -77,6 +77,24 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #prep{position:fixed;inset:0;z-index:20;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #prep .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px 16px 26px}
 #prep h2{margin:0 0 12px;font-size:20px}
+#cuentaPanel{position:fixed;inset:0;z-index:25;background:var(--bg);overflow-y:auto;padding:24px 16px}
+.cpbox{max-width:440px;margin:0 auto;display:flex;flex-direction:column}
+.cplogo{font-size:22px;font-weight:800;margin:8px 0 18px}
+.cpbox h2{margin:0 0 6px;font-size:24px}
+.cplab{display:block;margin:12px 0 0;font-size:15px;font-weight:600}
+.cplab small{font-weight:400;color:var(--muted)}
+.cpin{display:block;width:100%;margin-top:6px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-size:17px}
+.cpin:focus{outline:2px solid #6D5BD0;border-color:transparent}
+.cppass{position:relative;display:block}
+.cppass .cpin{padding-right:52px}
+.cppass button{position:absolute;right:6px;top:calc(50% + 3px);transform:translateY(-50%);background:none;border:0;font-size:20px;padding:6px 8px}
+.cperr{color:var(--bad);font-size:15px;margin:12px 0 0}
+#cpGo{margin-top:18px}
+#cpGo:disabled{opacity:.6}
+.cplink{background:none;border:0;color:#C4B5FD;font-size:16px;padding:14px 0 4px;text-decoration:underline}
+.cplink.cpno{color:var(--muted);font-size:15px}
+.cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
+#cuBorForm .cpin{margin:8px 0}
 #ask{position:fixed;inset:0;z-index:30;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
 #ask h2{margin:0 0 6px;font-size:20px}
@@ -634,6 +652,10 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⚙️ Ajustes</h1>
   <details class="card ajd">
+    <summary>👤 Mi cuenta <small id="sCuenta"></small></summary>
+    <div id="cuentaBody"></div>
+  </details>
+  <details class="card ajd">
     <summary>😴 Detector de ronquidos</summary>
     <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
       <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
@@ -670,7 +692,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="retoList"></div>
     <p class="note" id="retoNo" hidden></p>
   </details>
-  <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · todo se guarda en este móvil</p>
+  <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · <span id="dondeSe">todo se guarda en este móvil</span></p>
 </section>
 
 <!-- ALGUIEN RONCA A MI LADO -->
@@ -769,6 +791,21 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- PREGUNTA (guardar o borrar) -->
+<div id="cuentaPanel" hidden>
+  <form class="cpbox" id="cpForm" novalidate>
+    <div class="cplogo">🌙 Amable Sleep</div>
+    <h2 id="cpTit">Crea tu cuenta</h2>
+    <p class="note">Así tus noches quedan guardadas aunque cambies de móvil. Solo se guardan los números de cada noche, nunca las grabaciones.</p>
+    <label class="cplab" id="cpNomL">Tu nombre <small>(opcional)</small><input class="cpin" id="cpNom" autocomplete="given-name" maxlength="40"></label>
+    <label class="cplab">Email<input class="cpin" id="cpEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+    <label class="cplab">Contraseña <small>(al menos 6 letras o números)</small>
+      <span class="cppass"><input class="cpin" id="cpPass" type="password" autocomplete="new-password"><button type="button" id="cpVer" aria-label="Ver la contraseña">👁</button></span></label>
+    <p class="cperr" id="cpErr" hidden></p>
+    <button class="big" id="cpGo" type="submit"><span id="cpGoTx">Crear cuenta</span></button>
+    <button type="button" class="cplink" id="cpCambia">Ya tengo cuenta: entrar</button>
+    <button type="button" class="cplink cpno" id="cpNo">Ahora no, seguir sin cuenta</button>
+  </form>
+</div>
 <div id="ask" hidden>
   <div class="sheet">
     <h2 id="askT"></h2>
@@ -855,7 +892,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v8.5'; // v8.5: con la app 3.9, mientras la voz avisa por los pinganillos el volumen sube al menos a 3/4 y luego vuelve a como estaba
+const VERSION = 'v9.0'; // v9.0: cuentas con email y contraseña (crear cuenta, entrar, salir, borrar la cuenta); con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones) y se recuperan en otro móvil
+// v8.5: // v8.5: con la app 3.9, mientras la voz avisa por los pinganillos el volumen sube al menos a 3/4 y luego vuelve a como estaba
 // v8.4: // v8.4: aviso «Estás roncando» al minuto de roncar y, si sigues, cada 30 s; tras 30 s sin roncar vuelve a esperar 1 minuto
 // v8.3: // v8.3: en el monitoreo, «🎧 Avisa si ronco» si está activado (en gris si faltan los auriculares); el aviso «Estás roncando» salta tras 1 minuto roncando en los últimos 5 (y espera 5 min para repetir); texto más claro; bloque sin el emoji naranja
 // v8.2: // v8.2: en el monitoreo, minutos de ronquido y de voces (no número de grabaciones); a la derecha de «Probar», el bloque que está grabando y cuánto le queda; el aviso «Estás roncando» con 2 ronquidos seguros en 5 min
@@ -2107,6 +2145,7 @@ async function renderHome() {
     }
   }
   requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when').forEach(fitLine));
+  subeNoches(); // con cuenta: sube las noches nuevas o cambiadas
 }
 
 let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
@@ -2120,7 +2159,8 @@ async function openNight(id) {
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
   $('nTitle').textContent = nightName(n); $('nTitle').style.fontSize = ''; requestAnimationFrame(() => fitLine($('nTitle')));
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
-    + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '');
+    + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '')
+    + (n.restaurada ? ' · recuperada de tu cuenta (las grabaciones se quedaron en el otro móvil)' : '');
   renderStats(); drawTimeline(total); renderList();
   requestAnimationFrame(tlSticky);
 }
@@ -2564,7 +2604,7 @@ $('plSpd').onclick = () => {
 };
 $('delNight').onclick = async () => {
   if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
-  await DB.delNight(cur.id); $('backBtn').onclick();
+  await DB.delNight(cur.id); borraNocheCuenta(cur.id); $('backBtn').onclick();
 };
 addEventListener('resize', () => { if (!$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } });
 
@@ -3150,6 +3190,142 @@ async function lunaEnviar(texto) {
 }
 // El botón de Utilidades sale en cuanto el servidor de Luna está listo (con su clave de Gemini puesta)
 fetch(LUNA_API[0] + '/', {signal: AbortSignal.timeout(10000)}).then(r => r.json()).then(d => { if (d.luna) $('goUtiles').hidden = false; }).catch(() => {});
+// ---------- 👤 Cuenta: email y contraseña (servidor amable-sleep-api, base de datos D1) ----------
+// Con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones):
+// así no se pierden al cambiar de móvil. Sin cuenta, la app funciona igual y todo se queda en el móvil.
+const CUENTA_API = LUNA_API[0];
+let sesion = null; try { sesion = JSON.parse(localStorage.getItem('ronquino-sesion') || 'null'); } catch {}
+function guardaSesion(s) {
+  sesion = s;
+  try { s ? localStorage.setItem('ronquino-sesion', JSON.stringify(s)) : localStorage.removeItem('ronquino-sesion'); } catch {}
+  pintaCuenta();
+}
+async function apiCuenta(ruta, body) {
+  let r;
+  try {
+    r = await fetch(CUENTA_API + ruta, {method: body ? 'POST' : 'GET', signal: AbortSignal.timeout(20000),
+      headers: {'Content-Type': 'application/json', ...(sesion?.token ? {Authorization: 'Bearer ' + sesion.token} : {})},
+      body: body ? JSON.stringify(body) : undefined});
+  } catch { throw new Error('No se ha podido conectar. Mira si tienes internet y vuelve a probar.'); }
+  const d = await r.json().catch(() => ({}));
+  // la sesión ya no vale (caducada o cuenta borrada): se sale sin perder nada del móvil
+  if (r.status === 401 && sesion && (ruta === '/yo' || ruta.startsWith('/noches'))) { guardaSesion(null); toast('👤 Vuelve a entrar en tu cuenta (en Ajustes)'); }
+  if (!r.ok) throw new Error(d.error || 'Ahora no se puede. Prueba un poco más tarde.');
+  return d;
+}
+// Qué noches ya están subidas (y cómo eran): solo se vuelve a subir la que ha cambiado
+const subKey = () => 'ronquino-subidas-' + (sesion?.id || '');
+function leeSubidas() { try { return JSON.parse(localStorage.getItem(subKey()) || '{}'); } catch { return {}; } }
+function guardaSubidas(m) { try { localStorage.setItem(subKey(), JSON.stringify(m)); } catch {} }
+const firmaNoche = n => [n.fin, n.ronquidos, n.voces, n.otros, n.segRonquido, n.segVoz || 0, (n.timeline || []).length,
+  n.nombre || '', n.avisos || 0, (n.mov || []).length].join('|');
+let subiendo = false;
+async function subeNoches() {
+  if (!sesion || subiendo) return;
+  subiendo = true;
+  try {
+    const sub = leeSubidas();
+    const ns = (await DB.all('noches')).filter(n => n.fin && n.id !== live.night?.id && sub[n.id] !== firmaNoche(n));
+    for (let i = 0; i < ns.length; i += 50) {
+      const lote = ns.slice(i, i + 50);
+      await apiCuenta('/noches', {noches: lote});
+      lote.forEach(n => { sub[n.id] = firmaNoche(n); }); guardaSubidas(sub);
+    }
+  } catch {} // sin internet: se intenta la próxima vez
+  finally { subiendo = false; }
+}
+// Al entrar (p. ej. en un móvil nuevo): se traen las noches de la cuenta que no están en este móvil
+async function bajaNoches() {
+  const {noches} = await apiCuenta('/noches');
+  const tengo = new Set((await DB.all('noches')).map(n => n.id)), sub = leeSubidas();
+  let nuevas = 0;
+  for (const n of noches || []) {
+    if (!n || !n.id || tengo.has(n.id)) continue;
+    n.timeline ||= []; n.restaurada = true;
+    await DB.put('noches', n); sub[n.id] = firmaNoche(n); nuevas++;
+  }
+  guardaSubidas(sub);
+  return nuevas;
+}
+function borraNocheCuenta(id) { if (sesion) apiCuenta('/noches/borrar', {ids: [id]}).catch(() => {}); }
+
+// Pantalla de crear cuenta / entrar
+let cpModo = 'registro';
+function cpPinta() {
+  const reg = cpModo === 'registro';
+  $('cpTit').textContent = reg ? 'Crea tu cuenta' : 'Entra en tu cuenta';
+  $('cpNomL').hidden = !reg;
+  $('cpPass').autocomplete = reg ? 'new-password' : 'current-password';
+  $('cpGoTx').textContent = reg ? 'Crear cuenta' : 'Entrar';
+  $('cpCambia').textContent = reg ? 'Ya tengo cuenta: entrar' : 'No tengo cuenta: crearla';
+  $('cpErr').hidden = true;
+}
+function abreCuenta(modo, desdeAjustes) {
+  cpModo = modo || 'registro'; cpPinta();
+  $('cpNo').textContent = desdeAjustes ? 'Cancelar' : 'Ahora no, seguir sin cuenta';
+  $('cuentaPanel').hidden = false;
+}
+$('cpCambia').onclick = () => { cpModo = cpModo === 'registro' ? 'entrar' : 'registro'; cpPinta(); };
+$('cpVer').onclick = () => { const p = $('cpPass'); p.type = p.type === 'password' ? 'text' : 'password'; };
+$('cpNo').onclick = () => {
+  $('cuentaPanel').hidden = true;
+  try { localStorage.setItem('ronquino-sincuenta', '1'); } catch {}
+};
+$('cpForm').onsubmit = async e => {
+  e.preventDefault();
+  const reg = cpModo === 'registro', email = $('cpEmail').value.trim(), pass = $('cpPass').value;
+  const err = t => { $('cpErr').textContent = t; $('cpErr').hidden = false; };
+  if (!email || !pass) return err('Escribe tu email y tu contraseña.');
+  if (reg && pass.length < 6) return err('La contraseña tiene que tener al menos 6 caracteres.');
+  $('cpGo').disabled = true; $('cpGoTx').textContent = reg ? 'Creando tu cuenta…' : 'Entrando…'; $('cpErr').hidden = true;
+  try {
+    const d = await apiCuenta(reg ? '/registro' : '/entrar', reg ? {email, pass, nombre: $('cpNom').value.trim()} : {email, pass});
+    guardaSesion({token: d.token, id: d.usuario.id, email: d.usuario.email, nombre: d.usuario.nombre});
+    $('cuentaPanel').hidden = true; $('cpPass').value = '';
+    let nuevas = 0; if (!reg) try { nuevas = await bajaNoches(); } catch {}
+    toast(reg ? '✅ Cuenta creada. Tus noches se guardarán también en tu cuenta' : `✅ Has entrado${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
+    renderHome();
+  } catch (x) { err(x.message); }
+  finally { $('cpGo').disabled = false; $('cpGoTx').textContent = reg ? 'Crear cuenta' : 'Entrar'; }
+};
+// En Ajustes: quién ha entrado, salir y borrar la cuenta
+function pintaCuenta() {
+  $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
+  $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
+  const b = $('cuentaBody');
+  if (!sesion) {
+    b.innerHTML = `<p class="note" style="margin:6px 0 10px">No has entrado. Con una cuenta, tus noches quedan guardadas aunque cambies de móvil (solo los números de cada noche, nunca las grabaciones).</p>
+      <button class="btn wide" id="cuEntrar">👤 Entrar o crear cuenta</button>`;
+    $('cuEntrar').onclick = () => abreCuenta('entrar', true);
+    return;
+  }
+  b.innerHTML = `<p class="note" style="margin:6px 0 10px">Has entrado como <b></b>. Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
+    <button class="btn wide" id="cuSalir">Salir de la cuenta</button>
+    <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
+    <form id="cuBorForm" hidden><p class="note">Se borrarán tu cuenta y las noches guardadas en ella. Las de este móvil se quedan. Escribe tu contraseña para confirmarlo:</p>
+      <input type="password" id="cuBorPass" autocomplete="current-password" class="cpin">
+      <p class="cperr" id="cuBorErr" hidden></p>
+      <button class="btn wide cubor" id="cuBorGo">Borrar mi cuenta para siempre</button></form>`;
+  b.querySelector('b').textContent = sesion.email;
+  $('cuSalir').onclick = async () => {
+    if (await ask('¿Salir de la cuenta?', 'Tus noches siguen en este móvil y en tu cuenta. Puedes volver a entrar cuando quieras.', 'Salir', 'Cancelar') !== 'a') return;
+    guardaSesion(null); toast('👋 Has salido de tu cuenta');
+  };
+  $('cuBorrar').onclick = () => { $('cuBorForm').hidden = false; $('cuBorPass').focus(); };
+  $('cuBorForm').onsubmit = async e => {
+    e.preventDefault();
+    $('cuBorGo').disabled = true;
+    try {
+      await apiCuenta('/cuenta/borrar', {pass: $('cuBorPass').value});
+      try { localStorage.removeItem(subKey()); } catch {}
+      guardaSesion(null); toast('🗑️ Tu cuenta se ha borrado');
+    } catch (x) { $('cuBorErr').textContent = x.message; $('cuBorErr').hidden = false; }
+    finally { const g = $('cuBorGo'); if (g) g.disabled = false; }
+  };
+}
+pintaCuenta();
+// Comprobar la sesión de vez en cuando (si se borró la cuenta en otro móvil, se sale) y subir lo pendiente
+if (sesion) apiCuenta('/yo').then(d => { if (d?.usuario) guardaSesion({...sesion, email: d.usuario.email, nombre: d.usuario.nombre}); }).catch(() => {});
 const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
 let dictBase = null; // lo que había escrito antes de dictar
 function ponDictado(t) {
@@ -3300,6 +3476,9 @@ await DB.open();
 renderHome();
 IA.load();
 show('menu');
+// Primera vez: invitar a crear una cuenta (se puede seguir sin ella)
+{ let no = false; try { no = localStorage.getItem('ronquino-sincuenta') === '1'; } catch {}
+  if (!sesion && !no) abreCuenta('registro'); }
 window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV, makeNoise, ALS, alCheck}; // para pruebas
 </script>
 </body>
