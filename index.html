@@ -335,6 +335,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
+#pruebaBtn{display:block;margin:0 auto 10px;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
 .monit{font-size:18px;font-weight:700;color:#A78BFA;margin-bottom:2px;letter-spacing:.3px}
 .tres{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
 .tres i{width:9px;height:9px;border-radius:50%;background:#A78BFA;opacity:.15;animation:2s linear infinite}
@@ -825,9 +826,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <button type="button" id="prGrab"><span id="prGrabTx">● Grabar</span></button>
     <div class="meter" style="width:80%;margin:10px auto"><i id="prLvl"></i></div>
     <div id="prRes" hidden></div>
-    <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📤 Enviar</button></div><div id="prHist"></div></div>
+    <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
+    <button type="button" id="pruebaBtn">🧪 Probar detección</button>
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
@@ -838,7 +840,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button> <button class="mute" id="pruebaBtn">🧪 Probar detección</button>
+    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
     <div class="lcuna" id="lcuna" hidden></div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
@@ -849,7 +851,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.7'; // v7.7: botones del inicio en móvil: título en una línea a todo lo ancho y debajo icono + texto; «Dormir con quien ronca»
+const VERSION = 'v7.8'; // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
+// v7.7: // v7.7: botones del inicio en móvil: título en una línea a todo lo ancho y debajo icono + texto; «Dormir con quien ronca»
 // v7.6: // v7.6: «Probar detección» con guía de pruebas (ronquido fuerte/suave/con respiración, respirar, voz alta/baja, silencio) que se corrige sola; termina siempre a los 6 s (pitido) y el botón la para; «🎧 Auriculares» en la prueba y en el monitoreo; si el micrófono se para, se vuelve a encender solo
 // v7.5: // v7.5: en pantallas estrechas, el texto de los botones del inicio usa todo el ancho (también debajo del icono)
 // v7.4: // v7.4: en el monitoreo, 🌙 No molestar, 🎵 y ✈️ en gris si están apagados y en color si están activados
@@ -1656,7 +1659,7 @@ function analizaPrueba(buf) {
     x.ok = b.dataset.ok === '1'; if (x.ok) x.real = tipo; guardaPruebas(); pintaPruebas();
     $('prReal').hidden = x.ok; if (x.ok) toast('✅ Apuntado: ha acertado');
   });
-  $('prRes').querySelectorAll('[data-real]').forEach(b => b.onclick = () => { x.real = b.dataset.real; guardaPruebas(); pintaPruebas(); $('prReal').hidden = true; toast('📋 Apuntado, gracias'); });
+  $('prRes').querySelectorAll('[data-real]').forEach(b => b.onclick = () => { x.real = b.dataset.real; x.ok = x.real === tipo; guardaPruebas(); pintaPruebas(); $('prReal').hidden = true; toast('📋 Apuntado, gracias'); });
   // con la guía, la siguiente prueba ya queda elegida
   if (g.esp && prGuiaI < PR_GUIA.length - 2) { prGuiaI++; try { localStorage.setItem('ronquino-prguia', String(prGuiaI)); } catch {} }
   pintaGuia(); pintaPruebas(); wake();
@@ -1677,11 +1680,11 @@ $('prEnviar').onclick = async () => {
   if (!pruebas.length) { toast('Aún no hay pruebas'); return; }
   const txt = `Pruebas de detección · Amable Sleep ${VERSION}\n` + pruebas.map(p =>
     `${new Date(p.t).toLocaleString('es-ES')} | ${p.prueba || 'libre'} | dijo ${nomTipo(p.tipo)} | auriculares ${p.auric ? 'sí' : 'no'} | ${p.ok === true ? 'CORRECTO' : p.ok === false ? 'MAL, era ' + (p.real || '¿?') : 'sin valorar'} | sens ${p.sens} exig ${p.strict} | ronquido ${p.sn.map(pct).join(' ')} | voz ${p.vo.map(pct).join(' ')} | resp ${p.br.map(pct).join(' ')} | top ${p.top || '-'}`).join('\n');
-  if (AND?.compartir) {
-    const b64 = btoa(unescape(encodeURIComponent(txt)));
-    if (!AND.compartir('pruebas-deteccion.txt', b64)) toast('No se pudo compartir');
-  } else if (navigator.share) { try { await navigator.share({title: 'Pruebas de detección', text: txt}); } catch {} }
-  else { try { await navigator.clipboard.writeText(txt); toast('📋 Copiado: pégalo en el chat'); } catch {} }
+  // Se copia el texto: luego se pega en WhatsApp o en el chat (WhatsApp no deja enviar el archivo .txt)
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch {}
+  if (!ok) { const t = document.createElement('textarea'); t.value = txt; document.body.append(t); t.select(); try { ok = document.execCommand('copy'); } catch {} t.remove(); }
+  toast(ok ? '📋 Copiado: pégalo en WhatsApp o en el chat' : 'No se pudo copiar');
 };
 $('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.restaurar(); };
 
