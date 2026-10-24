@@ -17,7 +17,7 @@
   --snore:#A78BFA; --voice:#FBBF24; --other:#64748B; --ok:#4ADE80; --bad:#F87171;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html,body{margin:0;overflow-anchor:none;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 header{display:flex;align-items:center;gap:10px;margin:4px 0 22px}
@@ -831,7 +831,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.1'; // v7.1: en las respuestas de Luna, un altavoz sencillo a la derecha (sin «Escuchar»)
+const VERSION = 'v7.2'; // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
+// v7.1: // v7.1: en las respuestas de Luna, un altavoz sencillo a la derecha (sin «Escuchar»)
 // v7.0: // v7.0: «auriculares» una sola vez en el texto del aviso; «Habla con Luna» se abre por arriba; «Probar detección» a pantalla completa: botón que graba 6 s (pitido al acabar), resultado por segundo, «Correcto / No correcto» e historial para enviar; el ronquido cuenta aunque venga con respiración (la espiración es parte del ronquido)
 // v6.9: // v6.9: dictado dentro de la app, sin la ventana de Google, con el texto apareciendo en la caja (app 3.8); micrófono sencillo; la voz no lee los emojis; la caja no se agranda; «¿Fin del monitoreo?» en una ventana de la app
 // v6.8: // v6.8: en el reto de cada alarma, cada opción con su «?» que explica en qué consiste
@@ -2992,7 +2993,12 @@ function lunaMsg(de, texto, voz, au) {
   $('lunaChat').append(d);
   return d;
 }
-function lunaAbrir() { lunaCallar(); lunaArchiva(); lunaPinta(); pintaCharlas(); window.scrollTo(0, 0); } // se abre por arriba: Luna y su saludo a la vista
+function lunaAbrir() { // se abre por arriba: Luna y su saludo a la vista
+  lunaCallar(); lunaArchiva(); lunaPinta(); pintaCharlas();
+  if (document.activeElement?.blur) document.activeElement.blur();
+  // el móvil a veces recoloca la página al pintar o cargar las imágenes: se vuelve arriba varias veces
+  for (const ms of [0, 60, 200, 500, 1000]) setTimeout(() => { if (!$('luna').hidden && !lunaOcupada) window.scrollTo(0, 0); }, ms);
+}
 let lunaOcupada = false;
 async function lunaEnviar(texto) {
   texto = String(texto || '').trim();
