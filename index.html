@@ -906,7 +906,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.2'; // v9.2: app 4.0; «Continuar con Google» preparado (se enciende con GOOGLE_LISTO) (en la web, el botón de Google; en la app 4.0, el selector de cuentas de Android); quien entra con Google puede poner contraseña en Ajustes
+const VERSION = 'v9.3'; // v9.3: «Continuar con Google» encendido (pantalla de Google «Práctica Integral» publicada)
+// v9.2: // v9.2: app 4.0; «Continuar con Google» preparado (se enciende con GOOGLE_LISTO) (en la web, el botón de Google; en la app 4.0, el selector de cuentas de Android); quien entra con Google puede poner contraseña en Ajustes
 // v9.1: // v9.1: en Ajustes → Mi cuenta: cambiar nombre, email (con código) y contraseña; el nombre es obligatorio (Luna te llama por tu nombre); «¿Has olvidado tu contraseña?» con un código por email (bonito, como los de Metas); ya no se puede seguir sin cuenta
 // v9.0: // v9.0: cuentas con email y contraseña (crear cuenta, entrar, salir, borrar la cuenta); con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones) y se recuperan en otro móvil
 // v8.5: // v8.5: con la app 3.9, mientras la voz avisa por los pinganillos el volumen sube al menos a 3/4 y luego vuelve a como estaba
@@ -3322,8 +3323,8 @@ $('cpForm').onsubmit = async e => {
 // «Continuar con Google»: en la web, el botón de Google; en la app Android (4.0 o más), el selector de cuentas
 // de Android (Google no deja abrir su ventana dentro de una app). El servidor comprueba el token con Google.
 const GOOGLE_CLIENT_ID = '976261264218-26cmuog040g9l4qns79q56344n8fcq7m.apps.googleusercontent.com';
-// Se enciende cuando la pantalla de Google («Metas Amables» en Google Cloud) esté publicada para todo el mundo
-const GOOGLE_LISTO = false;
+// Pantalla de Google «Práctica Integral» (proyecto metas-amables de Google Cloud), publicada para todo el mundo
+const GOOGLE_LISTO = true;
 async function entraConGoogle(credential) {
   const err = t => { $('cpErr').textContent = t; $('cpErr').hidden = false; };
   $('cpErr').hidden = true; $('cpGoogle').classList.add('ocupado');
