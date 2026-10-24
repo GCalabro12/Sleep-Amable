@@ -68,11 +68,11 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:radial-gradient(circle at 50% 40%,#312E81 0,#0B1020 62%);transition:opacity .7s}
 #splash.out{opacity:0;pointer-events:none}
-#splash img{width:150px;height:150px;filter:drop-shadow(0 12px 30px #4338ca88);animation:rq-pop .9s cubic-bezier(.34,1.56,.64,1) both,rq-float 3s ease-in-out .9s infinite}
-#splash .name{font-size:40px;font-weight:800;margin-top:24px;letter-spacing:-.5px;animation:rq-up .5s ease-out .8s both}
+#spVid{width:min(76vw,46vh,420px);aspect-ratio:1;object-fit:cover;border-radius:32px;background:#1E1B4B;box-shadow:0 18px 50px #4338ca66;animation:rq-pop .9s cubic-bezier(.34,1.56,.64,1) both}
+#splash .name{font-size:40px;font-weight:800;margin-top:20px;letter-spacing:-.5px;animation:rq-up .5s ease-out .8s both}
 #splash .sellos{margin-top:22px;animation:rq-up .5s ease-out 1.2s both}
 #splash .hi{font-size:17px;color:#C7D2FE;margin-top:6px;animation:rq-up .5s ease-out 1s both}
-#splash .tap{position:absolute;bottom:12%;font-size:17px;color:#E0E7FF;background:#ffffff14;border:1px solid #ffffff2a;padding:10px 20px;border-radius:999px;animation:pulse 1.1s infinite alternate}
+#splash .tap{position:absolute;bottom:6%;font-size:17px;color:#E0E7FF;background:#ffffff14;border:1px solid #ffffff2a;padding:10px 20px;border-radius:999px;animation:pulse 1.1s infinite alternate}
 /* Antes de dormir */
 #prep{position:fixed;inset:0;z-index:20;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #prep .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:20px 16px 26px}
@@ -139,7 +139,8 @@ body.tabs-on .wrap{padding-bottom:84px}
 .slide-l{animation:rq-slide-l .28s ease-out} .slide-r{animation:rq-slide-r .28s ease-out}
 @keyframes rq-slide-l{from{transform:translateX(48px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rq-slide-r{from{transform:translateX(-48px);opacity:0}to{transform:none;opacity:1}}
-.moontip img{float:left;margin:0 12px 4px 0;width:86px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
+.moontip img,.moontip .lunavid{float:left;margin:0 12px 4px 0;width:86px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
+.lunavid{display:block;aspect-ratio:1;background:transparent;pointer-events:none}
 .moontip img.wave{animation:rq-float 3s ease-in-out infinite,rq-wave 1.6s ease-in-out infinite;transform-origin:50% 90%}
 @keyframes rq-wave{0%,100%{rotate:-4deg}50%{rotate:5deg}}
 /* Alarma sonando */
@@ -194,7 +195,7 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .retohelp{font-size:13px;color:var(--muted);background:var(--card2);border-radius:10px;padding:8px 10px;margin:0 0 8px}
 .choice.f{background:linear-gradient(135deg,#7C3AED,#5B21B6);box-shadow:0 8px 24px #7c3aed44}
 .lunahead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.lunahead img{width:72px;height:auto;flex:none}
+.lunahead img,.lunahead .lunavid{width:72px;height:auto;flex:none}
 .lunahead h1{font-size:21px;margin:0}
 .lunahead small{color:var(--muted);font-size:13px}
 #lunaChat{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
@@ -484,7 +485,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </style>
 </head>
 <body>
-<div id="splash"><img src="logo.svg" alt=""><div class="name"><span style="color:#A78BFA">Amable</span> Sleep</div>
+<div id="splash"><video id="spVid" src="luna/luna-saluda.mp4" poster="luna/luna-saluda.png" autoplay muted playsinline></video><div class="name"><span style="color:#A78BFA">Amable</span> Sleep</div>
 <div class="hi">¡Te damos la bienvenida!</div>
 <div class="tap" id="tapHint" hidden>👆 Toca para empezar</div>
 <div class="sellos">
@@ -632,7 +633,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="alList"></div>
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
-  <div class="moontip"><img src="luna/luna-consejo.png" alt=""><div class="bubble" id="alInfo"></div></div>
+  <div class="moontip"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble" id="alInfo"></div></div>
 </section>
 
 <div id="toast" class="fuera"></div>
@@ -653,7 +654,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <section id="luna" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <div class="lunahead"><img src="luna/luna-consejo.png" alt=""><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
+  <div class="lunahead"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
   <div id="lunaChat"></div>
   <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
   <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
@@ -912,7 +913,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.4'; // v9.4: pantalla de la cuenta con dos pestañas arriba («Crear cuenta» / «Ya tengo cuenta»), la explicación abajo y la versión visible
+const VERSION = 'v9.6'; // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
+// v9.5: // v9.5: el gerente (sus emails, rol «admin» en la base de datos) ve «Probar detección» y el resumen de cuentas y países; el país se guarda en la cuenta
+// v9.4: // v9.4: pantalla de la cuenta con dos pestañas arriba («Crear cuenta» / «Ya tengo cuenta»), la explicación abajo y la versión visible
 // v9.3: // v9.3: «Continuar con Google» encendido (pantalla de Google «Práctica Integral» publicada)
 // v9.2: // v9.2: app 4.0; «Continuar con Google» preparado (se enciende con GOOGLE_LISTO) (en la web, el botón de Google; en la app 4.0, el selector de cuentas de Android); quien entra con Google puede poner contraseña en Ajustes
 // v9.1: // v9.1: en Ajustes → Mi cuenta: cambiar nombre, email (con código) y contraseña; el nombre es obligatorio (Luna te llama por tu nombre); «¿Has olvidado tu contraseña?» con un código por email (bonito, como los de Metas); ya no se puede seguir sin cuenta
@@ -2027,9 +2030,11 @@ const PAISES = ['España', 'México', 'Argentina', 'Colombia', 'Chile', 'Perú',
 let pais = ''; try { pais = localStorage.getItem('ronquino-pais') || ''; } catch {}
 $('pais').innerHTML = '<option value="">Elige…</option>' + PAISES.map(p => `<option>${p}</option>`).join('');
 $('pais').value = pais;
-$('pais').onchange = () => { pais = $('pais').value; try { localStorage.setItem('ronquino-pais', pais); } catch {} renderHome(); };
+$('pais').onchange = () => { pais = $('pais').value; try { localStorage.setItem('ronquino-pais', pais); } catch {} renderHome(); sincronizaPais(); };
 // La luna que da los consejos (ilustración hecha con Gemini: saluda / consejo / aplaude)
-const luna = (k, wave) => `<img src="luna/luna-${k}.png" alt=""${wave ? ' class="wave"' : ''}>`;
+// Luna dando consejos se mueve (vídeo con fondo transparente; si el navegador no lo sabe poner, queda la imagen quieta)
+const luna = (k, wave) => k === 'consejo' ? '<video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video>'
+  : `<img src="luna/luna-${k}.png" alt=""${wave ? ' class="wave"' : ''}>`;
 const LUNA_SVG_OLD = `<svg viewBox="0 0 120 120" aria-hidden="true"><defs><mask id="lunaM"><rect width="120" height="120" fill="#fff"/><circle cx="76" cy="40" r="34" fill="#000"/></mask></defs>
   <circle cx="58" cy="62" r="42" fill="#FDE68A" mask="url(#lunaM)"/>
   <ellipse cx="34" cy="60" rx="4.5" ry="6" fill="#1E1B4B"/><circle cx="35.5" cy="58" r="1.6" fill="#fff"/>
@@ -3224,6 +3229,13 @@ function guardaSesion(s) {
   try { s ? localStorage.setItem('ronquino-sesion', JSON.stringify(s)) : localStorage.removeItem('ronquino-sesion'); } catch {}
   pintaCuenta();
 }
+const sesionDe = (token, u) => ({token, id: u.id, email: u.email, nombre: u.nombre, conPass: u.conPass, admin: !!u.admin, pais: u.pais || ''});
+// El país (Estadísticas) también se guarda en la cuenta: si el móvil no lo tiene, se toma el de la cuenta, y al revés
+function sincronizaPais() {
+  if (!sesion) return;
+  if (pais && pais !== sesion.pais) apiCuenta('/pais', {pais}).then(d => guardaSesion({...sesion, pais: d.usuario.pais})).catch(() => {});
+  else if (!pais && sesion.pais) { pais = sesion.pais; try { localStorage.setItem('ronquino-pais', pais); } catch {} $('pais').value = pais; renderHome(); }
+}
 async function apiCuenta(ruta, body) {
   let r;
   try {
@@ -3325,7 +3337,7 @@ $('cpForm').onsubmit = async e => {
     const d = m === 'registro' ? await apiCuenta('/registro', {email, pass, nombre})
       : m === 'codigo' ? await apiCuenta('/recuperar/cambiar', {email, codigo: $('cpCod').value, nueva: pass})
       : await apiCuenta('/entrar', {email, pass});
-    guardaSesion({token: d.token, id: d.usuario.id, email: d.usuario.email, nombre: d.usuario.nombre, conPass: d.usuario.conPass});
+    guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true; $('cpPass').value = ''; $('cpCod').value = '';
     let nuevas = 0; if (m !== 'registro') try { nuevas = await bajaNoches(); } catch {}
     toast(m === 'registro' ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada`
@@ -3344,7 +3356,7 @@ async function entraConGoogle(credential) {
   $('cpErr').hidden = true; $('cpGoogle').classList.add('ocupado');
   try {
     const d = await apiCuenta('/google', {credential});
-    guardaSesion({token: d.token, id: d.usuario.id, email: d.usuario.email, nombre: d.usuario.nombre, conPass: d.usuario.conPass});
+    guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true;
     let nuevas = 0; if (!d.nuevo) try { nuevas = await bajaNoches(); } catch {}
     toast(d.nuevo ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada` : `✅ Hola de nuevo, ${d.usuario.nombre}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
@@ -3378,6 +3390,7 @@ window.googleNativo = (token, error) => {
 // En Ajustes: tu nombre, email y contraseña (con «Cambiar»), salir y borrar la cuenta
 const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function pintaCuenta() {
+  $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el gerente
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
@@ -3400,6 +3413,7 @@ function pintaCuenta() {
     <form class="cuform" id="cuF-pass" hidden><label class="cplab"${sinPass ? ' hidden' : ''}>Contraseña actual<input class="cpin" name="actual" type="password" autocomplete="current-password"></label>
       <label class="cplab">Contraseña nueva <small>(al menos 6 letras o números)</small><input class="cpin" name="nueva" type="password" autocomplete="new-password"></label>
       <p class="cperr" hidden></p><button class="btn wide cugo">Guardar contraseña nueva</button></form>
+    ${sesion.admin ? `<div class="cufila"><span><small>Papel</small>👑 Gerente de la app</span><button type="button" class="btn" id="cuAdmin">Cuentas y países</button></div><div id="cuAdminRes" class="note" hidden></div>` : ''}
     <p class="note" style="margin:12px 0 10px">Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
     <button class="btn wide" id="cuSalir">Salir de la cuenta</button>
     <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
@@ -3410,6 +3424,13 @@ function pintaCuenta() {
   const abre = id => b.querySelectorAll('.cuform').forEach(f => { f.hidden = f.id !== 'cuF-' + id || !f.hidden; if (!f.hidden) f.querySelector('input')?.focus(); });
   b.querySelectorAll('[data-abre]').forEach(x => x.onclick = () => abre(x.dataset.abre));
   $('cuBorrar').onclick = () => abre('bor');
+  if (sesion.admin) $('cuAdmin').onclick = async () => {
+    const r = $('cuAdminRes'); r.hidden = false; r.textContent = 'Cargando…';
+    try {
+      const d = await apiCuenta('/admin');
+      r.innerHTML = `<b>${d.usuarios}</b> ${d.usuarios === 1 ? 'cuenta' : 'cuentas'} · <b>${d.activos7}</b> usadas esta semana<br>` + d.paises.map(p => `${escT(p.pais)}: ${p.n}`).join(' · ');
+    } catch (x) { r.textContent = x.message; }
+  };
   // Envío común: botón «ocupado», error debajo
   const envia = (id, fn) => {
     const f = $('cuF-' + id), err = f.querySelector('.cperr'), go = f.querySelector('.cugo');
@@ -3456,7 +3477,7 @@ function pintaCuenta() {
 }
 pintaCuenta();
 // Comprobar la sesión de vez en cuando (si se borró la cuenta en otro móvil, se sale) y subir lo pendiente
-if (sesion) apiCuenta('/yo').then(d => { if (d?.usuario) guardaSesion({...sesion, email: d.usuario.email, nombre: d.usuario.nombre, conPass: d.usuario.conPass}); }).catch(() => {});
+if (sesion) apiCuenta('/yo').then(d => { if (d?.usuario) { guardaSesion(sesionDe(sesion.token, d.usuario)); sincronizaPais(); } }).catch(() => {});
 const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
 let dictBase = null; // lo que había escrito antes de dictar
 function ponDictado(t) {
@@ -3559,7 +3580,7 @@ function runSplash() {
   const end = () => { if (done) return; done = true; sp.classList.add('out'); setTimeout(() => sp.remove(), 800); };
   // Si el móvil no deja sonar la musiquita sin tocar antes la pantalla, la bienvenida espera a que toques
   setTimeout(() => {
-    if (c && c.state === 'running') setTimeout(end, 2800);
+    if (c && c.state === 'running') setTimeout(end, 4200); // lo justo para ver a Luna saludar
     else $('tapHint').hidden = false;
   }, 400);
   // «click» y no «pointerdown»: en Android un toque solo da permiso de sonido al levantar el dedo
