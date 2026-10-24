@@ -852,7 +852,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.9'; // v7.9: en el monitoreo, cara de ronquido violeta y cabeza que habla amarilla (como sus números); el reloj de arena dice qué es
+const VERSION = 'v8.0'; // v8.0: la cuenta atrás de «¿terminas?» (luz + movimiento) ya no se ve: funciona por dentro
+// v7.9: // v7.9: en el monitoreo, cara de ronquido violeta y cabeza que habla amarilla (como sus números); el reloj de arena dice qué es
 // v7.8: // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
 // v7.7: // v7.7: botones del inicio en móvil: título en una línea a todo lo ancho y debajo icono + texto; «Dormir con quien ronca»
 // v7.6: // v7.6: «Probar detección» con guía de pruebas (ronquido fuerte/suave/con respiración, respirar, voz alta/baja, silencio) que se corrige sola; termina siempre a los 6 s (pitido) y el botón la para; «🎧 Auriculares» en la prueba y en el monitoreo; si el micrófono se para, se vuelve a encender solo
@@ -1402,7 +1403,7 @@ function vigilaDespertar(det) {
   const mov = ahora - (live.ultMov || 0) < 60e3;
   if (!live.cuenta && luz && mov && ahora > (live.noPreguntar || 0)) live.cuenta = ahora + DESPERTAR_SEG * 1000;
   if (live.cuenta && ahora - (live.ultLuz || 0) > 20e3) live.cuenta = null; // se apagó la luz: vuelve a dormir
-  $('fCuenta').hidden = !live.cuenta;
+  $('fCuenta').hidden = true; // la cuenta atrás funciona por dentro; no hace falta enseñarla
   if (live.cuenta) {
     const left = Math.max(0, Math.ceil((live.cuenta - ahora) / 1000));
     $('fCuenta').textContent = `⏳ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} y te pregunto si terminas`; // hay luz y movimiento
