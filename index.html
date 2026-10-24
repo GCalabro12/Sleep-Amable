@@ -217,6 +217,13 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .lunabar img{width:44px;height:auto;flex:none}
 .lunabar small{display:block;font-size:13px;font-weight:400;color:#C4B5FD}
 .lunabar b{margin-left:auto;font-size:28px;color:#A78BFA;font-weight:400}
+.prbar{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}
+.prbar span{width:104px;flex:none}
+.prbar i{flex:1;height:10px;background:#1F2937;border-radius:6px;overflow:hidden}
+.prbar b{display:block;height:100%;width:0;background:#A78BFA;transition:width .2s}
+.prbar em{width:40px;text-align:right;font-style:normal;color:#E0E7FF}
+.prres{padding:8px 10px;border-radius:10px;background:#0B1020;border:1px solid #1F2937;margin-bottom:6px;font-size:13px}
+.prres.r{border-color:#7C3AED}.prres.v{border-color:#CA8A04}.prres.x{opacity:.7}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -759,6 +766,18 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="lpanel" id="pDnd" hidden></div>
   <div class="lpanel" id="pCuna" hidden><b>🎵 Canción de cuna</b></div>
   <div class="lpanel" id="pAir" hidden></div>
+  <div class="lpanel" id="pPrueba" hidden>
+    <b>🧪 Probar la detección</b> <button class="mute" id="pruebaX" style="float:right;margin:0">✕</button>
+    <div class="note" style="margin:6px 0 10px">Ronca de mentira unos segundos y luego calla 6 segundos: abajo verás qué ha decidido. Después prueba hablando.</div>
+    <div id="prMic" class="note"></div>
+    <div style="font-weight:600;margin:8px 0 4px">Lo que oye ahora</div>
+    <div class="prbar"><span>😴 Ronquido</span><i><b id="prSn"></b></i><em id="prSnT">–</em></div>
+    <div class="prbar"><span>🗣️ Voz</span><i><b id="prVo"></b></i><em id="prVoT">–</em></div>
+    <div class="prbar"><span>😮‍💨 Respiración</span><i><b id="prBr"></b></i><em id="prBrT">–</em></div>
+    <div class="note" id="prTop" style="margin-top:4px">Esperando un sonido… (el nivel tiene que pasar la raya)</div>
+    <div style="font-weight:600;margin:10px 0 4px">Qué ha decidido</div>
+    <div id="prRes"><div class="note">Aún nada.</div></div>
+  </div>
   <div class="inner">
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
@@ -770,7 +789,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
+    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button> <button class="mute" id="pruebaBtn">🧪 Probar detección</button>
     <div class="lcuna" id="lcuna" hidden></div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
@@ -781,7 +800,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.5'; // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
+const VERSION = 'v6.6'; // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
+// v6.5: // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
 // v6.4: // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
 // v6.3: // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
 // v6.2: // v6.2: versiones solo con el número (sin cortarse); «Avisarme si ronco» con «Necesita auriculares» y el texto del Bluetooth
@@ -1147,6 +1167,7 @@ class Detector {
   classify(blocks) {
     const e = this.ev, r = IA.scores(concat(blocks));
     e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.est = e.est || r.est;
+    this.onScore?.(r);
     if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
   }
   finish() {
@@ -1157,6 +1178,7 @@ class Detector {
     const snMax = max(e.sn), voMax = max(e.vo);
     const tipo = decide(e.sn, e.vo, e.br);
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    this.onResult?.({tipo, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
     this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), top, peak: e.peak, est: e.est, audio});
@@ -1220,13 +1242,14 @@ async function startListening() {
   });
   const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
-    onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }});
+    onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }, onScore: pruebaScore, onResult: pruebaResult});
   const rs = new Resampler(ctx.sampleRate);
   node.port.onmessage = m => det.push(rs.process(m.data));
   stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
 
   Object.assign(live, {stream, ctx, night, saver, det});
   movEmpezar(night);
+  setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
   $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
@@ -1245,6 +1268,7 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
+    if (Date.now() % 60000 < 500 && AND?.micBluetooth?.()) AND.micMovil(); // que no grabe con el micro de los pinganillos
     // pinganillos puestos a mitad de noche: también se mira su batería
     if (VOZ_OK && cfg.avisoRonco && Date.now() % 30000 < 500) { const a = AND.auriculares(); if (a && live.auric === false) avisoBateria(); live.auric = a; }
     // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
@@ -1329,7 +1353,7 @@ document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
   if (auto !== true && !confirm('¿Fin del monitoreo del sueño? Verás el resumen.')) return;
-  live.parando = true; $('finQ').hidden = true; panel(null);
+  live.parando = true; $('finQ').hidden = true; panel(null); prueba = false; $('pPrueba').hidden = true;
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
   clearInterval(live.timer); clearTimeout(live.dimT);
@@ -1352,8 +1376,8 @@ async function stopListening(auto) {
   const secs = (night.fin - night.inicio) / 1000, n = night.ronquidos + night.voces + night.otros;
   if (secs < 20 * 60) {
     const keep = await ask('¿Guardar esta grabación?',
-      `Ha durado ${dur(secs)}${n ? ` y tiene ${n} ${n === 1 ? 'sonido grabado' : 'sonidos grabados'}` : ' y no se grabó ningún sonido'}. Si era una prueba, puedes borrarla.`,
-      '🗑️ Borrarla (era una prueba)', '💾 Guardarla');
+      `Ha durado ${dur(secs)}${n ? ` y tiene ${n} ${n === 1 ? 'sonido grabado' : 'sonidos grabados'}` : ' y no se grabó ningún sonido'}.`,
+      '🗑️ Borrarla', '💾 Guardarla');
     if (keep === 'a') { await DB.delNight(id); await renderHome(); show('home'); return; }
   }
   await renderHome(); openNight(id);
@@ -1436,11 +1460,42 @@ $('startBtn').onclick = async () => {
 };
 function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
   for (const x of ['pDnd', 'pCuna', 'pAir']) $(x).hidden = x !== id || !$(x).hidden;
+  if (id) { prueba = false; $('pPrueba').hidden = true; }
   if (!$('pCuna').hidden) renderCunas();
 }
 $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
 $('lAir').onclick = () => panel('pAir');
+// 🧪 Probar detección: lo que oye la IA en directo y lo que decide en cada sonido (para ajustar la detección)
+let prueba = false;
+const pct = v => Math.round((v || 0) * 100);
+$('pruebaBtn').onclick = () => {
+  prueba = $('pPrueba').hidden; panel(null); $('pPrueba').hidden = !prueba;
+  if (prueba) { $('prRes').innerHTML = '<div class="note">Aún nada.</div>'; pintaMic(); wake(); }
+};
+$('pruebaX').onclick = () => { prueba = false; $('pPrueba').hidden = true; };
+function pintaMic() {
+  const bt = AND?.micBluetooth?.();
+  $('prMic').textContent = AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil…' : '🎙️ Graba con el micrófono del móvil.') : '';
+  if (bt) AND.micMovil?.();
+}
+function pruebaScore(r) {
+  if (!prueba) return;
+  for (const [k, v] of [['Sn', r.sn], ['Vo', r.vo], ['Br', r.br]]) { $('pr' + k).style.width = pct(v) + '%'; $('pr' + k + 'T').textContent = pct(v) + ' %'; }
+  $('prTop').textContent = r.top ? `Lo más parecido: ${es(r.top)} (${pct(r.topS)} %)` : '';
+  wake();
+}
+function pruebaResult(x) {
+  if (!prueba) return;
+  if ($('prRes').querySelector('.note')) $('prRes').innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'prres ' + (x.tipo === 'ronquido' ? 'r' : x.tipo === 'voz' ? 'v' : 'x');
+  const que = x.tipo === 'ronquido' ? '😴 RONQUIDO' : x.tipo === 'voz' ? '🗣️ VOZ' : `🔊 otro (${es(x.top)})`;
+  d.innerHTML = `<b>${hhmm(Date.now())} · ${que}</b> · ${Math.round(x.dur)} s<br>ronquido ${pct(x.sn)} % · voz ${pct(x.vo)} % · respiración ${pct(x.br)} % · ${x.guardado ? 'guardado' : 'descartado'}`;
+  $('prRes').prepend(d);
+  while ($('prRes').children.length > 8) $('prRes').lastChild.remove();
+  wake();
+}
 $('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.restaurar(); };
 
 // ---------- App Android: «No molestar» y wifi de verdad ----------
@@ -2944,7 +2999,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.5';
+const APK_ULTIMA = '3.6';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
