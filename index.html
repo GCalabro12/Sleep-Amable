@@ -168,8 +168,8 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .lmsg.yo{align-self:flex-end;background:#4338CA;color:#fff;border-bottom-right-radius:4px}
 .lmsg.luna{align-self:flex-start;background:#1E1B4B;border:1px solid #312E81;color:#E0E7FF;border-bottom-left-radius:4px}
 .lmsg.luna.pensando{opacity:.7;font-style:italic}
-#lunaChat .lmsg.luna:not(.pensando){position:relative;padding-right:52px}
-.lmsg .oir{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:1px solid #4C1D95;background:#312E81;color:#E0E7FF;padding:0;display:flex;align-items:center;justify-content:center}
+#lunaChat .lmsg.luna:not(.pensando){position:relative;max-width:calc(100% - 54px)} /* el altavoz va fuera, a la derecha */
+.lmsg .oir{position:absolute;right:-48px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:1px solid #4C1D95;background:#312E81;color:#E0E7FF;padding:0;display:flex;align-items:center;justify-content:center}
 .lmsg .oir.on{background:#6D5BD0}
 .lmsg .oir svg{width:20px;height:20px}
 #lunaSugBox{margin:4px 0 14px}
@@ -831,7 +831,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.2'; // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
+const VERSION = 'v7.3'; // v7.3: el altavoz de las respuestas de Luna va fuera del recuadro, a su derecha
+// v7.2: // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
 // v7.1: // v7.1: en las respuestas de Luna, un altavoz sencillo a la derecha (sin «Escuchar»)
 // v7.0: // v7.0: «auriculares» una sola vez en el texto del aviso; «Habla con Luna» se abre por arriba; «Probar detección» a pantalla completa: botón que graba 6 s (pitido al acabar), resultado por segundo, «Correcto / No correcto» e historial para enviar; el ronquido cuenta aunque venga con respiración (la espiración es parte del ronquido)
 // v6.9: // v6.9: dictado dentro de la app, sin la ventana de Google, con el texto apareciendo en la caja (app 3.8); micrófono sencillo; la voz no lee los emojis; la caja no se agranda; «¿Fin del monitoreo?» en una ventana de la app
