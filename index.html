@@ -221,6 +221,23 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .lunabar img{width:44px;height:auto;flex:none}
 .lunabar small{display:block;font-size:13px;font-weight:400;color:#C4B5FD}
 .lunabar b{margin-left:auto;font-size:28px;color:#A78BFA;font-weight:400}
+#pPrueba{position:fixed;inset:0;z-index:20;background:#05070F;overflow-y:auto;padding:16px;text-align:left;color:#E0E7FF}
+.prhead{display:flex;align-items:center;justify-content:space-between;font-size:20px;margin-bottom:6px}
+.prhead button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px}
+.prtxt{font-size:15px;color:#CBD5E1;margin:6px 0 14px}
+#prGrab{display:block;margin:0 auto;width:170px;height:170px;border-radius:50%;border:4px solid #7C3AED;background:#1E1B4B;color:#fff;font-size:22px;font-weight:700}
+#prGrab.on{background:#B91C1C;border-color:#F87171;animation:rq-pulso 1s ease-in-out infinite}
+#prRes{background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;margin:10px 0}
+#prRes .prq{font-size:24px;font-weight:800;margin-bottom:8px}
+.prseg{display:flex;gap:6px;align-items:flex-end;height:70px;margin:8px 0}
+.prseg div{flex:1;display:flex;gap:2px;align-items:flex-end;height:100%}
+.prseg i{flex:1;display:block;border-radius:3px 3px 0 0;min-height:2px}
+.prok{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.prok button{flex:1;min-width:120px;padding:12px;border-radius:14px;border:1px solid #334155;background:#0B1020;color:#E0E7FF;font-size:16px}
+.prok button.si{border-color:#16A34A}.prok button.no{border-color:#DC2626}
+.prhist{margin-top:14px}
+.prhh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.prit{font-size:13px;padding:8px 10px;border-radius:10px;background:#0B1020;border:1px solid #1F2937;margin-bottom:6px}
 .prbar{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}
 .prbar span{width:104px;flex:none}
 .prbar i{flex:1;height:10px;background:#1F2937;border-radius:6px;overflow:hidden}
@@ -479,7 +496,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: recuerda que necesitas los auriculares conectados por Bluetooth.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
@@ -608,7 +625,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary><span>🎧 Avisarme si ronco <small id="sAvisoAj"></small><small style="display:block;font-size:12px;margin-top:2px">Necesita auriculares</small></span></summary>
-    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: recuerda que necesitas los auriculares conectados por Bluetooth.</small></label>
+    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</small></label>
       <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
     <button class="btn wide avisoTest">▶ Probar la voz</button>
   </details>
@@ -780,17 +797,14 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="lpanel" id="pDnd" hidden></div>
   <div class="lpanel" id="pCuna" hidden><b>🎵 Canción de cuna</b></div>
   <div class="lpanel" id="pAir" hidden></div>
-  <div class="lpanel" id="pPrueba" hidden>
-    <b>🧪 Probar la detección</b> <button class="mute" id="pruebaX" style="float:right;margin:0">✕</button>
-    <div class="note" style="margin:6px 0 10px">Ronca de mentira unos segundos y luego calla 6 segundos: abajo verás qué ha decidido. Después prueba hablando.</div>
-    <div id="prMic" class="note"></div>
-    <div style="font-weight:600;margin:8px 0 4px">Lo que oye ahora</div>
-    <div class="prbar"><span>😴 Ronquido</span><i><b id="prSn"></b></i><em id="prSnT">–</em></div>
-    <div class="prbar"><span>🗣️ Voz</span><i><b id="prVo"></b></i><em id="prVoT">–</em></div>
-    <div class="prbar"><span>😮‍💨 Respiración</span><i><b id="prBr"></b></i><em id="prBrT">–</em></div>
-    <div class="note" id="prTop" style="margin-top:4px">Esperando un sonido… (el nivel tiene que pasar la raya)</div>
-    <div style="font-weight:600;margin:10px 0 4px">Qué ha decidido</div>
-    <div id="prRes"><div class="note">Aún nada.</div></div>
+  <div id="pPrueba" hidden>
+    <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
+    <div class="note" id="prMic"></div>
+    <p class="prtxt">Pulsa el botón y ronca de mentira (o habla) durante <b>6 segundos</b>. Al acabar suena un pitido y te digo qué he oído.</p>
+    <button type="button" id="prGrab"><span id="prGrabTx">● Grabar 6 s</span></button>
+    <div class="meter" style="width:80%;margin:10px auto"><i id="prLvl"></i></div>
+    <div id="prRes" hidden></div>
+    <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📤 Enviar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
@@ -814,7 +828,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.9'; // v6.9: dictado dentro de la app, sin la ventana de Google, con el texto apareciendo en la caja (app 3.8); micrófono sencillo; la voz no lee los emojis; la caja no se agranda; «¿Fin del monitoreo?» en una ventana de la app
+const VERSION = 'v7.0'; // v7.0: «auriculares» una sola vez en el texto del aviso; «Habla con Luna» se abre por arriba; «Probar detección» a pantalla completa: botón que graba 6 s (pitido al acabar), resultado por segundo, «Correcto / No correcto» e historial para enviar; el ronquido cuenta aunque venga con respiración (la espiración es parte del ronquido)
+// v6.9: // v6.9: dictado dentro de la app, sin la ventana de Google, con el texto apareciendo en la caja (app 3.8); micrófono sencillo; la voz no lee los emojis; la caja no se agranda; «¿Fin del monitoreo?» en una ventana de la app
 // v6.8: // v6.8: en el reto de cada alarma, cada opción con su «?» que explica en qué consiste
 // v6.7: // v6.7: «Historial de charlas con Luna» (cada vez que entras, charla nueva); sin «Luna pensando», solo tres puntitos; cara dormida naranja con gorrito en «Monitorear mi sueño»; mejor voz del móvil (app 3.7)
 // v6.6: // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
@@ -1095,8 +1110,9 @@ const IA = {
 function decide(sn, vo, br) {
   const max = a => a.length ? Math.max(...a) : 0, avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const thr = cfg.strict || .35;
-  const clear = sn.filter((v, i) => v >= thr && v > (br[i] || 0) * 1.15).length; // segundos de ronquido claro
-  if (clear >= 1 && avg(sn) >= avg(br) && avg(sn) >= avg(vo) * .8) return 'ronquido';
+  // Un ronquido es inspirar roncando y espirar (que suena a respiración): basta un segundo de ronquido claro
+  const clear = sn.filter(v => v >= thr).length;
+  if (clear >= 1 && max(sn) >= max(vo) * .8) return 'ronquido';
   if (max(vo) >= .3) return 'voz';
   return 'otro';
 }
@@ -1261,7 +1277,7 @@ async function startListening() {
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
     onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }, onScore: pruebaScore, onResult: pruebaResult});
   const rs = new Resampler(ctx.sampleRate);
-  node.port.onmessage = m => det.push(rs.process(m.data));
+  node.port.onmessage = m => { const x = rs.process(m.data); det.push(x); live.capt?.add(x); };
   stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
 
   Object.assign(live, {stream, ctx, night, saver, det});
@@ -1374,7 +1390,7 @@ async function stopListening(auto) {
     if (await ask('☀️ ¿Fin del monitoreo del sueño?', 'Verás el resumen de la noche.', '☀️ Sí, terminar', '🌙 Seguir monitoreando') !== 'a') return;
     if (!live.night || live.parando) return;
   }
-  live.parando = true; $('finQ').hidden = true; panel(null); prueba = false; $('pPrueba').hidden = true;
+  live.parando = true; $('finQ').hidden = true; panel(null); prueba = false; $('pPrueba').hidden = true; live.capt = null;
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
   clearInterval(live.timer); clearTimeout(live.dimT);
@@ -1459,7 +1475,7 @@ document.addEventListener('visibilitychange', () => {
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
-  live.dimT = setTimeout(() => { $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000);
+  live.dimT = setTimeout(() => { if (prueba) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando: no se oscurece
 }
 $('listen').addEventListener('pointerdown', e => {
   if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
@@ -1481,42 +1497,102 @@ $('startBtn').onclick = async () => {
 };
 function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
   for (const x of ['pDnd', 'pCuna', 'pAir']) $(x).hidden = x !== id || !$(x).hidden;
-  if (id) { prueba = false; $('pPrueba').hidden = true; }
+  if (id && !$('pPrueba').hidden) $('pruebaX').onclick();
   if (!$('pCuna').hidden) renderCunas();
 }
 $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
 $('lAir').onclick = () => panel('pAir');
-// 🧪 Probar detección: lo que oye la IA en directo y lo que decide en cada sonido (para ajustar la detección)
-let prueba = false;
+// 🧪 Probar detección (pantalla completa): graba 6 s con el micrófono de la noche, pita y dice qué ha oído.
+// Debajo: «Correcto / No correcto» y el historial, que se puede enviar (para ajustar la detección).
+let prueba = false, pruebas = [];
+try { pruebas = JSON.parse(localStorage.getItem('ronquino-pruebas') || '[]'); } catch {}
 const pct = v => Math.round((v || 0) * 100);
+const PR_SEG = 6;
 $('pruebaBtn').onclick = () => {
-  prueba = $('pPrueba').hidden; panel(null); $('pPrueba').hidden = !prueba;
-  if (prueba) { $('prRes').innerHTML = '<div class="note">Aún nada.</div>'; pintaMic(); wake(); }
+  panel(null); prueba = true; $('pPrueba').hidden = false; $('prRes').hidden = true;
+  if (live.det) { live.prMute = live.det.muteUntil; live.det.muteUntil = Infinity; } // mientras pruebas, la noche no graba
+  pintaMic(); pintaPruebas(); wake();
 };
-$('pruebaX').onclick = () => { prueba = false; $('pPrueba').hidden = true; };
+$('pruebaX').onclick = () => {
+  prueba = false; $('pPrueba').hidden = true; live.capt = null; $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar 6 s';
+  if (live.det && !live.cuna) live.det.muteUntil = live.det.samples / SR + 1;
+};
 function pintaMic() {
   const bt = AND?.micBluetooth?.();
   $('prMic').textContent = AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil…' : '🎙️ Graba con el micrófono del móvil.') : '';
   if (bt) AND.micMovil?.();
 }
-function pruebaScore(r) {
-  if (!prueba) return;
-  for (const [k, v] of [['Sn', r.sn], ['Vo', r.vo], ['Br', r.br]]) { $('pr' + k).style.width = pct(v) + '%'; $('pr' + k + 'T').textContent = pct(v) + ' %'; }
-  $('prTop').textContent = r.top ? `Lo más parecido: ${es(r.top)} (${pct(r.topS)} %)` : '';
-  wake();
+function pruebaScore() {}
+function pruebaResult() {}
+function pitido() {
+  try { const c = live.ctx, o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = .25;
+    o.connect(g).connect(c.destination); o.start(); g.gain.setTargetAtTime(0, c.currentTime + .18, .03); o.stop(c.currentTime + .35); } catch {}
 }
-function pruebaResult(x) {
-  if (!prueba) return;
-  if ($('prRes').querySelector('.note')) $('prRes').innerHTML = '';
-  const d = document.createElement('div');
-  d.className = 'prres ' + (x.tipo === 'ronquido' ? 'r' : x.tipo === 'voz' ? 'v' : 'x');
-  const que = x.tipo === 'ronquido' ? '😴 RONQUIDO' : x.tipo === 'voz' ? '🗣️ VOZ' : `🔊 otro (${es(x.top)})`;
-  d.innerHTML = `<b>${hhmm(Date.now())} · ${que}</b> · ${Math.round(x.dur)} s<br>ronquido ${pct(x.sn)} % · voz ${pct(x.vo)} % · respiración ${pct(x.br)} % · ${x.guardado ? 'guardado' : 'descartado'}`;
-  $('prRes').prepend(d);
-  while ($('prRes').children.length > 8) $('prRes').lastChild.remove();
+$('prGrab').onclick = () => {
+  if (live.capt || !live.det) return;
+  $('prRes').hidden = true; $('prGrab').classList.add('on');
+  const buf = new Float32Array(SR * PR_SEG); let n = 0;
+  const t0 = Date.now();
+  live.capt = {add(x) {
+    for (let i = 0; i < x.length && n < buf.length; i++) buf[n++] = x[i];
+    let s = 0; for (let i = 0; i < x.length; i++) s += x[i] * x[i];
+    $('prLvl').style.width = Math.min(100, Math.sqrt(s / Math.max(1, x.length)) * 600) + '%';
+    $('prGrabTx').textContent = `⏺ ${Math.max(1, PR_SEG - Math.floor((Date.now() - t0) / 1000))} s`;
+    if (n >= buf.length) { live.capt = null; pitido(); analizaPrueba(buf); }
+  }};
   wake();
+};
+function analizaPrueba(buf) {
+  $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar otra vez';
+  const sn = [], vo = [], br = [], tops = {};
+  for (let i = 0; i + SR <= buf.length; i += SR) {
+    const r = IA.scores(buf.subarray(i, i + SR));
+    sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0);
+    if (r.top) tops[r.top] = (tops[r.top] || 0) + r.topS;
+  }
+  const tipo = decide(sn, vo, br), top = Object.entries(tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const x = {t: Date.now(), tipo, sn, vo, br, top, sens: cfg.sens, strict: cfg.strict, ok: null, real: null};
+  pruebas.unshift(x); pruebas = pruebas.slice(0, 60); guardaPruebas();
+  const que = tipo === 'ronquido' ? '😴 RONQUIDO' : tipo === 'voz' ? '🗣️ VOZ' : `🔊 Otro sonido (${es(top)})`;
+  const col = (v, c) => `<i style="height:${Math.max(2, pct(v))}%;background:${c}"></i>`;
+  $('prRes').innerHTML = `<div class="prq">${que}</div>
+    <div class="note">Cada columna es 1 segundo: <span style="color:#A78BFA">■ ronquido</span> <span style="color:#FBBF24">■ voz</span> <span style="color:#38BDF8">■ respiración</span></div>
+    <div class="prseg">${sn.map((v, i) => `<div>${col(v, '#A78BFA')}${col(vo[i], '#FBBF24')}${col(br[i], '#38BDF8')}</div>`).join('')}</div>
+    <div class="note">Máximo: ronquido ${pct(Math.max(...sn))} % · voz ${pct(Math.max(...vo))} % · respiración ${pct(Math.max(...br))} %${top ? ` · se parece a: ${es(top)}` : ''}</div>
+    <div style="margin-top:10px;font-weight:600">¿Ha acertado?</div>
+    <div class="prok"><button type="button" class="si" data-ok="1">✅ Correcto</button><button type="button" class="no" data-ok="0">❌ No correcto</button></div>
+    <div class="prok" id="prReal" hidden><span class="note" style="width:100%">¿Qué era de verdad?</span><button type="button" data-real="ronquido">😴 Ronquido</button><button type="button" data-real="voz">🗣️ Voz</button><button type="button" data-real="otro">🔊 Otra cosa</button></div>`;
+  $('prRes').hidden = false;
+  $('prRes').querySelectorAll('[data-ok]').forEach(b => b.onclick = () => {
+    x.ok = b.dataset.ok === '1'; if (x.ok) x.real = tipo; guardaPruebas(); pintaPruebas();
+    $('prReal').hidden = x.ok; if (x.ok) toast('✅ Apuntado: ha acertado');
+  });
+  $('prRes').querySelectorAll('[data-real]').forEach(b => b.onclick = () => { x.real = b.dataset.real; guardaPruebas(); pintaPruebas(); $('prReal').hidden = true; toast('📋 Apuntado, gracias'); });
+  pintaPruebas(); wake();
 }
+function guardaPruebas() { try { localStorage.setItem('ronquino-pruebas', JSON.stringify(pruebas)); } catch {} }
+const nomTipo = t => t === 'ronquido' ? 'ronquido' : t === 'voz' ? 'voz' : 'otro';
+function pintaPruebas() {
+  const hechas = pruebas.filter(p => p.ok !== null), bien = hechas.filter(p => p.ok).length;
+  $('prN').textContent = pruebas.length ? `(${pruebas.length}${hechas.length ? ` · acierta ${bien} de ${hechas.length}` : ''})` : '';
+  $('prHist').innerHTML = pruebas.length ? '' : '<div class="note">Aún no hay pruebas.</div>';
+  for (const p of pruebas.slice(0, 20)) {
+    const d = document.createElement('div'); d.className = 'prit';
+    d.textContent = `${hhmm(p.t)} · dijo ${nomTipo(p.tipo)}${p.ok === true ? ' ✅' : p.ok === false ? ` ❌ (era ${p.real ? nomTipo(p.real) : '¿?'})` : ''} · ronquido ${pct(Math.max(...p.sn))} % · voz ${pct(Math.max(...p.vo))} % · resp. ${pct(Math.max(...p.br))} %`;
+    $('prHist').append(d);
+  }
+}
+$('prEnviar').onclick = async () => {
+  if (!pruebas.length) { toast('Aún no hay pruebas'); return; }
+  const txt = `Pruebas de detección · Amable Sleep ${VERSION}\n` + pruebas.map(p =>
+    `${new Date(p.t).toLocaleString('es-ES')} | dijo ${nomTipo(p.tipo)} | ${p.ok === true ? 'CORRECTO' : p.ok === false ? 'MAL, era ' + (p.real || '¿?') : 'sin valorar'} | sens ${p.sens} exig ${p.strict} | ronquido ${p.sn.map(pct).join(' ')} | voz ${p.vo.map(pct).join(' ')} | resp ${p.br.map(pct).join(' ')} | top ${p.top || '-'}`).join('\n');
+  if (AND?.compartir) {
+    const b64 = btoa(unescape(encodeURIComponent(txt)));
+    if (!AND.compartir('pruebas-deteccion.txt', b64)) toast('No se pudo compartir');
+  } else if (navigator.share) { try { await navigator.share({title: 'Pruebas de detección', text: txt}); } catch {} }
+  else { try { await navigator.clipboard.writeText(txt); toast('📋 Copiado: pégalo en el chat'); } catch {} }
+};
 $('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.restaurar(); };
 
 // ---------- App Android: «No molestar» y wifi de verdad ----------
@@ -2908,7 +2984,7 @@ function lunaMsg(de, texto, voz, au) {
   $('lunaChat').append(d);
   return d;
 }
-function lunaAbrir() { lunaCallar(); lunaArchiva(); lunaPinta(); pintaCharlas(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
+function lunaAbrir() { lunaCallar(); lunaArchiva(); lunaPinta(); pintaCharlas(); window.scrollTo(0, 0); } // se abre por arriba: Luna y su saludo a la vista
 let lunaOcupada = false;
 async function lunaEnviar(texto) {
   texto = String(texto || '').trim();
@@ -2920,7 +2996,7 @@ async function lunaEnviar(texto) {
   const pens = document.createElement('div'); pens.className = 'lmsg luna pensando';
   pens.innerHTML = '<span class="puntos3" aria-label="Escribiendo"><i></i><i></i><i></i></span>';
   $('lunaChat').append(pens);
-  window.scrollTo(0, document.body.scrollHeight);
+  pens.scrollIntoView({block: 'center', behavior: 'smooth'});
   let resp, ok = false;
   try {
     const r = await lunaPost('/luna', {mensaje: texto, historial, contexto: await lunaContexto()});
@@ -2930,8 +3006,7 @@ async function lunaEnviar(texto) {
     if (d.quedan != null) { $('lunaQuedan').hidden = false; $('lunaQuedan').textContent = d.quedan ? `Hoy te ${d.quedan === 1 ? 'queda 1 pregunta' : `quedan ${d.quedan} preguntas`} a Luna.` : 'Por hoy no quedan más preguntas a Luna: mañana tienes 3 más.'; }
   } catch { resp = 'No consigo conectarme. Revisa que tengas internet y vuelve a probar.'; }
   // Con «Leer en voz alta»: la luna sigue pensando hasta tener la voz, y luego salen el texto y el sonido a la vez
-  pens.remove(); lunaMsg('luna', resp, ok && lunaVoz);
-  window.scrollTo(0, document.body.scrollHeight);
+  pens.remove(); lunaMsg('luna', resp, ok && lunaVoz).scrollIntoView({block: 'start', behavior: 'smooth'}); // la respuesta, desde su principio
   lunaOcupada = false;
 }
 // El botón de Utilidades sale en cuanto el servidor de Luna está listo (con su clave de Gemini puesta)
