@@ -315,6 +315,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #1F2937;background:#0B1020;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
+.lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
 .lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
@@ -831,7 +832,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.3'; // v7.3: el altavoz de las respuestas de Luna va fuera del recuadro, a su derecha
+const VERSION = 'v7.4'; // v7.4: en el monitoreo, 🌙 No molestar, 🎵 y ✈️ en gris si están apagados y en color si están activados
+// v7.3: // v7.3: el altavoz de las respuestas de Luna va fuera del recuadro, a su derecha
 // v7.2: // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
 // v7.1: // v7.1: en las respuestas de Luna, un altavoz sencillo a la derecha (sin «Escuchar»)
 // v7.0: // v7.0: «auriculares» una sola vez en el texto del aviso; «Habla con Luna» se abre por arriba; «Probar detección» a pantalla completa: botón que graba 6 s (pitido al acabar), resultado por segundo, «Correcto / No correcto» e historial para enviar; el ronquido cuenta aunque venga con respiración (la espiración es parte del ronquido)
@@ -1307,6 +1309,8 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
+    // iconos de arriba: en color solo si están activados
+    if (AND) { try { $('lDnd').classList.toggle('on', !!AND.dndActivo()); $('lAir').classList.toggle('on', !!(AND.modoAvion && AND.modoAvion())); } catch {} }
     if (Date.now() % 60000 < 500 && AND?.micBluetooth?.()) AND.micMovil(); // que no grabe con el micro de los pinganillos
     // pinganillos puestos a mitad de noche: también se mira su batería
     if (VOZ_OK && cfg.avisoRonco && Date.now() % 30000 < 500) { const a = AND.auriculares(); if (a && live.auric === false) avisoBateria(); live.auric = a; }
