@@ -92,8 +92,14 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #cpGo{margin-top:18px}
 #cpGo:disabled{opacity:.6}
 .cplink{background:none;border:0;color:#C4B5FD;font-size:16px;padding:14px 0 4px;text-decoration:underline}
-.cplink.cpno{color:var(--muted);font-size:15px}
 .cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
+.cufila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.cufila span{flex:1;min-width:0;overflow-wrap:anywhere}
+.cufila small{display:block;font-size:12px;color:var(--muted)}
+.cufila .btn{padding:7px 12px;font-size:14px;flex:none}
+.cuform{padding:4px 0 12px;border-bottom:1px solid var(--line)}
+.cuform .cugo{margin-top:10px}
+#cuSalir{margin-top:4px}
 #cuBorForm .cpin{margin:8px 0}
 #ask{position:fixed;inset:0;z-index:30;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
@@ -795,15 +801,17 @@ body.pl-on .wrap{padding-bottom:190px}
   <form class="cpbox" id="cpForm" novalidate>
     <div class="cplogo">🌙 Amable Sleep</div>
     <h2 id="cpTit">Crea tu cuenta</h2>
-    <p class="note">Así tus noches quedan guardadas aunque cambies de móvil. Solo se guardan los números de cada noche, nunca las grabaciones.</p>
-    <label class="cplab" id="cpNomL">Tu nombre <small>(opcional)</small><input class="cpin" id="cpNom" autocomplete="given-name" maxlength="40"></label>
-    <label class="cplab">Email<input class="cpin" id="cpEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
-    <label class="cplab">Contraseña <small>(al menos 6 letras o números)</small>
+    <p class="note" id="cpSub">Así tus noches quedan guardadas aunque cambies de móvil. Solo se guardan los números de cada noche, nunca las grabaciones.</p>
+    <p class="note" id="cpRecTx" hidden></p>
+    <label class="cplab" id="cpNomL">Tu nombre <small>(con uno basta; así te llama Luna)</small><input class="cpin" id="cpNom" autocomplete="given-name" maxlength="40"></label>
+    <label class="cplab" id="cpEmailL">Email<input class="cpin" id="cpEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+    <label class="cplab" id="cpCodL" hidden>Código de 6 cifras <small>(mira tu correo)</small><input class="cpin" id="cpCod" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
+    <label class="cplab" id="cpPassL"><span id="cpPassTx">Contraseña</span> <small>(al menos 6 letras o números)</small>
       <span class="cppass"><input class="cpin" id="cpPass" type="password" autocomplete="new-password"><button type="button" id="cpVer" aria-label="Ver la contraseña">👁</button></span></label>
     <p class="cperr" id="cpErr" hidden></p>
     <button class="big" id="cpGo" type="submit"><span id="cpGoTx">Crear cuenta</span></button>
+    <button type="button" class="cplink" id="cpOlvido" hidden>¿Has olvidado tu contraseña?</button>
     <button type="button" class="cplink" id="cpCambia">Ya tengo cuenta: entrar</button>
-    <button type="button" class="cplink cpno" id="cpNo">Ahora no, seguir sin cuenta</button>
   </form>
 </div>
 <div id="ask" hidden>
@@ -892,7 +900,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.0'; // v9.0: cuentas con email y contraseña (crear cuenta, entrar, salir, borrar la cuenta); con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones) y se recuperan en otro móvil
+const VERSION = 'v9.1'; // v9.1: en Ajustes → Mi cuenta: cambiar nombre, email (con código) y contraseña; el nombre es obligatorio (Luna te llama por tu nombre); «¿Has olvidado tu contraseña?» con un código por email (bonito, como los de Metas); ya no se puede seguir sin cuenta
+// v9.0: // v9.0: cuentas con email y contraseña (crear cuenta, entrar, salir, borrar la cuenta); con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones) y se recuperan en otro móvil
 // v8.5: // v8.5: con la app 3.9, mientras la voz avisa por los pinganillos el volumen sube al menos a 3/4 y luego vuelve a como estaba
 // v8.4: // v8.4: aviso «Estás roncando» al minuto de roncar y, si sigues, cada 30 s; tras 30 s sin roncar vuelve a esperar 1 minuto
 // v8.3: // v8.3: en el monitoreo, «🎧 Avisa si ronco» si está activado (en gris si faltan los auriculares); el aviso «Estás roncando» salta tras 1 minuto roncando en los últimos 5 (y espera 5 min para repetir); texto más claro; bloque sin el emoji naranja
@@ -3095,7 +3104,7 @@ async function lunaPost(ruta, body, ms = 45000) {
 async function lunaContexto() {
   const ns = (await DB.all('noches')).filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 2 * 3600e3)
     .sort((a, b) => b.inicio - a.inicio).slice(0, 7);
-  return {pais, noches: ns.map(n => ({
+  return {nombre: sesion?.nombre || '', pais, noches: ns.map(n => ({
     fecha: new Date(n.inicio).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'short'}),
     acostarse: hhmm(n.inicio), levantarse: hhmm(n.fin), horas: Math.round((n.fin - n.inicio) / 36e5 * 10) / 10,
     minutosRoncando: Math.round((n.segRonquido || 0) / 60), ronquidos: n.ronquidos, voces: n.voces,
@@ -3209,7 +3218,7 @@ async function apiCuenta(ruta, body) {
   } catch { throw new Error('No se ha podido conectar. Mira si tienes internet y vuelve a probar.'); }
   const d = await r.json().catch(() => ({}));
   // la sesión ya no vale (caducada o cuenta borrada): se sale sin perder nada del móvil
-  if (r.status === 401 && sesion && (ruta === '/yo' || ruta.startsWith('/noches'))) { guardaSesion(null); toast('👤 Vuelve a entrar en tu cuenta (en Ajustes)'); }
+  if (r.status === 401 && sesion && (ruta === '/yo' || ruta === '/nombre' || ruta.startsWith('/noches'))) { guardaSesion(null); abreCuenta('entrar'); }
   if (!r.ok) throw new Error(d.error || 'Ahora no se puede. Prueba un poco más tarde.');
   return d;
 }
@@ -3249,78 +3258,135 @@ async function bajaNoches() {
 }
 function borraNocheCuenta(id) { if (sesion) apiCuenta('/noches/borrar', {ids: [id]}).catch(() => {}); }
 
-// Pantalla de crear cuenta / entrar
+// Pantalla de crear cuenta / entrar / poner contraseña nueva (sin cuenta no se puede usar la app)
+// Modos: 'registro', 'entrar', 'recuperar' (pide el código por email) y 'codigo' (código + contraseña nueva)
 let cpModo = 'registro';
 function cpPinta() {
-  const reg = cpModo === 'registro';
-  $('cpTit').textContent = reg ? 'Crea tu cuenta' : 'Entra en tu cuenta';
-  $('cpNomL').hidden = !reg;
-  $('cpPass').autocomplete = reg ? 'new-password' : 'current-password';
-  $('cpGoTx').textContent = reg ? 'Crear cuenta' : 'Entrar';
-  $('cpCambia').textContent = reg ? 'Ya tengo cuenta: entrar' : 'No tengo cuenta: crearla';
+  const m = cpModo, rec = m === 'recuperar' || m === 'codigo';
+  $('cpTit').textContent = {registro: 'Crea tu cuenta', entrar: 'Entra en tu cuenta', recuperar: 'Contraseña nueva', codigo: 'Contraseña nueva'}[m];
+  $('cpSub').hidden = rec;
+  $('cpRecTx').hidden = !rec;
+  $('cpRecTx').textContent = m === 'recuperar' ? 'Escribe el email de tu cuenta y te mandaremos un código para poner una contraseña nueva.'
+    : `Si ${$('cpEmail').value.trim() || 'ese email'} tiene cuenta, te acabamos de mandar un código. Puede tardar un minuto; mira también en «Spam».`;
+  $('cpNomL').hidden = m !== 'registro';
+  $('cpEmailL').hidden = m === 'codigo';
+  $('cpCodL').hidden = m !== 'codigo';
+  $('cpPassL').hidden = m === 'recuperar';
+  $('cpPassTx').textContent = m === 'codigo' ? 'Contraseña nueva' : 'Contraseña';
+  $('cpPass').autocomplete = m === 'entrar' ? 'current-password' : 'new-password';
+  $('cpGoTx').textContent = {registro: 'Crear cuenta', entrar: 'Entrar', recuperar: 'Enviarme un código', codigo: 'Guardar y entrar'}[m];
+  $('cpOlvido').hidden = m !== 'entrar';
+  $('cpCambia').textContent = m === 'registro' ? 'Ya tengo cuenta: entrar' : m === 'entrar' ? 'No tengo cuenta: crearla' : 'Volver a entrar';
   $('cpErr').hidden = true;
 }
-function abreCuenta(modo, desdeAjustes) {
+function abreCuenta(modo) {
   cpModo = modo || 'registro'; cpPinta();
-  $('cpNo').textContent = desdeAjustes ? 'Cancelar' : 'Ahora no, seguir sin cuenta';
   $('cuentaPanel').hidden = false;
 }
-$('cpCambia').onclick = () => { cpModo = cpModo === 'registro' ? 'entrar' : 'registro'; cpPinta(); };
+$('cpCambia').onclick = () => { cpModo = cpModo === 'registro' ? 'entrar' : cpModo === 'entrar' ? 'registro' : 'entrar'; cpPinta(); };
+$('cpOlvido').onclick = () => { cpModo = 'recuperar'; cpPinta(); $('cpEmail').focus(); };
 $('cpVer').onclick = () => { const p = $('cpPass'); p.type = p.type === 'password' ? 'text' : 'password'; };
-$('cpNo').onclick = () => {
-  $('cuentaPanel').hidden = true;
-  try { localStorage.setItem('ronquino-sincuenta', '1'); } catch {}
-};
+const cpBoton = {registro: ['Crear cuenta', 'Creando tu cuenta…'], entrar: ['Entrar', 'Entrando…'], recuperar: ['Enviarme un código', 'Enviando…'], codigo: ['Guardar y entrar', 'Guardando…']};
 $('cpForm').onsubmit = async e => {
   e.preventDefault();
-  const reg = cpModo === 'registro', email = $('cpEmail').value.trim(), pass = $('cpPass').value;
+  const m = cpModo, email = $('cpEmail').value.trim(), pass = $('cpPass').value, nombre = $('cpNom').value.trim();
   const err = t => { $('cpErr').textContent = t; $('cpErr').hidden = false; };
-  if (!email || !pass) return err('Escribe tu email y tu contraseña.');
-  if (reg && pass.length < 6) return err('La contraseña tiene que tener al menos 6 caracteres.');
-  $('cpGo').disabled = true; $('cpGoTx').textContent = reg ? 'Creando tu cuenta…' : 'Entrando…'; $('cpErr').hidden = true;
+  if (m === 'registro' && !nombre) return err('Escribe tu nombre (con uno basta).');
+  if (!email) return err('Escribe tu email.');
+  if (m === 'codigo' && $('cpCod').value.replace(/\D/g, '').length !== 6) return err('Escribe el código de 6 cifras que te ha llegado.');
+  if (m !== 'recuperar' && !pass) return err('Escribe tu contraseña.');
+  if ((m === 'registro' || m === 'codigo') && pass.length < 6) return err('La contraseña tiene que tener al menos 6 caracteres.');
+  $('cpGo').disabled = true; $('cpGoTx').textContent = cpBoton[m][1]; $('cpErr').hidden = true;
   try {
-    const d = await apiCuenta(reg ? '/registro' : '/entrar', reg ? {email, pass, nombre: $('cpNom').value.trim()} : {email, pass});
+    if (m === 'recuperar') { await apiCuenta('/recuperar', {email}); cpModo = 'codigo'; $('cpPass').value = ''; $('cpCod').value = ''; cpPinta(); $('cpCod').focus(); return; }
+    const d = m === 'registro' ? await apiCuenta('/registro', {email, pass, nombre})
+      : m === 'codigo' ? await apiCuenta('/recuperar/cambiar', {email, codigo: $('cpCod').value, nueva: pass})
+      : await apiCuenta('/entrar', {email, pass});
     guardaSesion({token: d.token, id: d.usuario.id, email: d.usuario.email, nombre: d.usuario.nombre});
-    $('cuentaPanel').hidden = true; $('cpPass').value = '';
-    let nuevas = 0; if (!reg) try { nuevas = await bajaNoches(); } catch {}
-    toast(reg ? '✅ Cuenta creada. Tus noches se guardarán también en tu cuenta' : `✅ Has entrado${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
+    $('cuentaPanel').hidden = true; $('cpPass').value = ''; $('cpCod').value = '';
+    let nuevas = 0; if (m !== 'registro') try { nuevas = await bajaNoches(); } catch {}
+    toast(m === 'registro' ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada`
+      : `✅ ${m === 'codigo' ? 'Contraseña nueva guardada' : `Hola de nuevo${d.usuario.nombre ? ', ' + d.usuario.nombre : ''}`}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
     renderHome();
   } catch (x) { err(x.message); }
-  finally { $('cpGo').disabled = false; $('cpGoTx').textContent = reg ? 'Crear cuenta' : 'Entrar'; }
+  finally { $('cpGo').disabled = false; $('cpGoTx').textContent = cpBoton[cpModo][0]; }
 };
-// En Ajustes: quién ha entrado, salir y borrar la cuenta
+// En Ajustes: tu nombre, email y contraseña (con «Cambiar»), salir y borrar la cuenta
+const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function pintaCuenta() {
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
   if (!sesion) {
-    b.innerHTML = `<p class="note" style="margin:6px 0 10px">No has entrado. Con una cuenta, tus noches quedan guardadas aunque cambies de móvil (solo los números de cada noche, nunca las grabaciones).</p>
-      <button class="btn wide" id="cuEntrar">👤 Entrar o crear cuenta</button>`;
-    $('cuEntrar').onclick = () => abreCuenta('entrar', true);
+    b.innerHTML = `<p class="note" style="margin:6px 0 10px">No has entrado en tu cuenta.</p><button class="btn wide" id="cuEntrar">👤 Entrar o crear cuenta</button>`;
+    $('cuEntrar').onclick = () => abreCuenta('entrar');
     return;
   }
-  b.innerHTML = `<p class="note" style="margin:6px 0 10px">Has entrado como <b></b>. Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
+  b.innerHTML = `
+    <div class="cufila"><span><small>Nombre</small>${escT(sesion.nombre) || '<i>sin nombre</i>'}</span><button type="button" class="btn" data-abre="nom">Cambiar</button></div>
+    <form class="cuform" id="cuF-nom" hidden><label class="cplab">Tu nombre <small>(con uno basta; así te llama Luna)</small><input class="cpin" name="nombre" maxlength="40" autocomplete="given-name" value="${escT(sesion.nombre)}"></label>
+      <p class="cperr" hidden></p><button class="btn wide cugo">Guardar</button></form>
+    <div class="cufila"><span><small>Email</small>${escT(sesion.email)}</span><button type="button" class="btn" data-abre="email">Cambiar</button></div>
+    <form class="cuform" id="cuF-email" hidden><label class="cplab">Email nuevo<input class="cpin" name="nuevo" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"></label>
+      <label class="cplab">Tu contraseña<input class="cpin" name="pass" type="password" autocomplete="current-password"></label>
+      <label class="cplab" hidden>Código de 6 cifras <small>(mira el correo del email nuevo)</small><input class="cpin" name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
+      <p class="cperr" hidden></p><button class="btn wide cugo">Enviarme un código</button></form>
+    <div class="cufila"><span><small>Contraseña</small>••••••••</span><button type="button" class="btn" data-abre="pass">Cambiar</button></div>
+    <form class="cuform" id="cuF-pass" hidden><label class="cplab">Contraseña actual<input class="cpin" name="actual" type="password" autocomplete="current-password"></label>
+      <label class="cplab">Contraseña nueva <small>(al menos 6 letras o números)</small><input class="cpin" name="nueva" type="password" autocomplete="new-password"></label>
+      <p class="cperr" hidden></p><button class="btn wide cugo">Guardar contraseña nueva</button></form>
+    <p class="note" style="margin:12px 0 10px">Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
     <button class="btn wide" id="cuSalir">Salir de la cuenta</button>
     <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
-    <form id="cuBorForm" hidden><p class="note">Se borrarán tu cuenta y las noches guardadas en ella. Las de este móvil se quedan. Escribe tu contraseña para confirmarlo:</p>
-      <input type="password" id="cuBorPass" autocomplete="current-password" class="cpin">
-      <p class="cperr" id="cuBorErr" hidden></p>
-      <button class="btn wide cubor" id="cuBorGo">Borrar mi cuenta para siempre</button></form>`;
-  b.querySelector('b').textContent = sesion.email;
+    <form class="cuform" id="cuF-bor" hidden><p class="note">Se borrarán tu cuenta y las noches guardadas en ella. Las de este móvil se quedan. Escribe tu contraseña para confirmarlo:</p>
+      <input class="cpin" name="pass" type="password" autocomplete="current-password">
+      <p class="cperr" hidden></p><button class="btn wide cubor cugo">Borrar mi cuenta para siempre</button></form>`;
+  // Solo un formulario abierto a la vez
+  const abre = id => b.querySelectorAll('.cuform').forEach(f => { f.hidden = f.id !== 'cuF-' + id || !f.hidden; if (!f.hidden) f.querySelector('input')?.focus(); });
+  b.querySelectorAll('[data-abre]').forEach(x => x.onclick = () => abre(x.dataset.abre));
+  $('cuBorrar').onclick = () => abre('bor');
+  // Envío común: botón «ocupado», error debajo
+  const envia = (id, fn) => {
+    const f = $('cuF-' + id), err = f.querySelector('.cperr'), go = f.querySelector('.cugo');
+    f.onsubmit = async e => {
+      e.preventDefault(); err.hidden = true; go.disabled = true;
+      try { await fn(f, t => { err.textContent = t; err.hidden = false; }); }
+      catch (x) { err.textContent = x.message; err.hidden = false; }
+      finally { go.disabled = false; }
+    };
+  };
+  envia('nom', async (f, mal) => {
+    const nombre = f.nombre.value.trim(); if (!nombre) return mal('Escribe tu nombre.');
+    const d = await apiCuenta('/nombre', {nombre});
+    guardaSesion({...sesion, nombre: d.usuario.nombre}); toast(`✅ ¡Hola, ${d.usuario.nombre}!`);
+  });
+  envia('email', async (f, mal) => {
+    const lCod = f.codigo.closest('label');
+    if (lCod.hidden) {
+      if (!f.nuevo.value.trim() || !f.pass.value) return mal('Escribe el email nuevo y tu contraseña.');
+      await apiCuenta('/email', {nuevo: f.nuevo.value.trim(), pass: f.pass.value});
+      lCod.hidden = false; f.nuevo.readOnly = true; f.pass.closest('label').hidden = true;
+      f.querySelector('.cugo').textContent = 'Confirmar el email nuevo'; f.codigo.focus();
+      toast('📧 Te hemos mandado un código al email nuevo');
+      return;
+    }
+    if (f.codigo.value.replace(/\D/g, '').length !== 6) return mal('Escribe el código de 6 cifras.');
+    const d = await apiCuenta('/email/cambiar', {codigo: f.codigo.value});
+    guardaSesion({...sesion, email: d.usuario.email}); toast('✅ Email cambiado');
+  });
+  envia('pass', async (f, mal) => {
+    if (!f.actual.value || f.nueva.value.length < 6) return mal('Escribe tu contraseña actual y una nueva de al menos 6 caracteres.');
+    await apiCuenta('/pass', {actual: f.actual.value, nueva: f.nueva.value});
+    pintaCuenta(); toast('✅ Contraseña cambiada');
+  });
+  envia('bor', async f => {
+    await apiCuenta('/cuenta/borrar', {pass: f.pass.value});
+    try { localStorage.removeItem(subKey()); } catch {}
+    guardaSesion(null); toast('🗑️ Tu cuenta se ha borrado'); abreCuenta('registro');
+  });
   $('cuSalir').onclick = async () => {
     if (await ask('¿Salir de la cuenta?', 'Tus noches siguen en este móvil y en tu cuenta. Puedes volver a entrar cuando quieras.', 'Salir', 'Cancelar') !== 'a') return;
-    guardaSesion(null); toast('👋 Has salido de tu cuenta');
-  };
-  $('cuBorrar').onclick = () => { $('cuBorForm').hidden = false; $('cuBorPass').focus(); };
-  $('cuBorForm').onsubmit = async e => {
-    e.preventDefault();
-    $('cuBorGo').disabled = true;
-    try {
-      await apiCuenta('/cuenta/borrar', {pass: $('cuBorPass').value});
-      try { localStorage.removeItem(subKey()); } catch {}
-      guardaSesion(null); toast('🗑️ Tu cuenta se ha borrado');
-    } catch (x) { $('cuBorErr').textContent = x.message; $('cuBorErr').hidden = false; }
-    finally { const g = $('cuBorGo'); if (g) g.disabled = false; }
+    guardaSesion(null); abreCuenta('entrar');
   };
 }
 pintaCuenta();
@@ -3476,9 +3542,8 @@ await DB.open();
 renderHome();
 IA.load();
 show('menu');
-// Primera vez: invitar a crear una cuenta (se puede seguir sin ella)
-{ let no = false; try { no = localStorage.getItem('ronquino-sincuenta') === '1'; } catch {}
-  if (!sesion && !no) abreCuenta('registro'); }
+// Sin cuenta no se puede usar: crear una o entrar
+if (!sesion) abreCuenta('registro');
 window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV, makeNoise, ALS, alCheck}; // para pruebas
 </script>
 </body>
