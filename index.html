@@ -197,6 +197,12 @@ details.lunadet>summary::-webkit-details-marker{display:none}
 details.lunadet>summary::after{content:"";margin-left:auto;flex:none;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #A78BFA}
 details.lunadet[open]>summary::after{border-top:0;border-bottom:10px solid #A78BFA}
 details.lunadet .moontip{margin-top:6px}
+details.instr{margin-top:14px}
+details.instr>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;cursor:pointer}
+details.instr>summary::-webkit-details-marker{display:none}
+details.instr>summary::after{content:"";margin-left:auto;flex:none;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #A78BFA}
+details.instr[open]>summary::after{border-top:0;border-bottom:11px solid #A78BFA}
+details.instr .tips,details.instr .steps{margin-top:10px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -427,27 +433,30 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" id="homeBack">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">😴 Monitorear mi sueño</h1>
 
-  <div class="card">
+  <div class="card" id="iaCard">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
+  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <ul class="tips">
-    <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la pantalla hacia abajo.</li>
+    <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:var(--snore)">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
-    <li>Solo se graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
+    <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
+    <li>🎧 Si usas pinganillos para el aviso «estás roncando», ponlos a cargar antes: <b>al 100 %</b> duran unas 4 horas de noche.</li>
     <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
   </ul>
+  </details>
 
-  <button class="btn wide" id="fileBtn" style="margin-top:16px">📂 Analizar una grabación (máx. ~1 hora)</button>
+  <button class="btn wide" id="fileBtn" style="margin-top:16px" hidden>📂 Analizar una grabación (máx. ~1 hora)</button>
   <input type="file" id="fileIn" accept="audio/*,video/*" hidden>
   <div class="card" id="fileCard" hidden>
     <div id="fileTxt">Analizando…</div>
     <div class="prog"><i id="fileProg"></i></div>
   </div>
 
-  <details class="hist card" id="histDet">
+  <details class="hist instr card" id="histDet">
     <summary>📚 Historial de grabaciones <small id="histN"></small></summary>
     <div id="nights"></div>
   </details>
@@ -580,14 +589,16 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="mask" hidden>
   <button class="back" id="maskBack">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">🎧 Dormir junto a alguien que ronca</h1>
-  <div class="card">
+  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
     <ol class="steps">
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
       <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
       <li>Sube el volumen poco a poco <b>solo hasta dejar de notar los ronquidos</b>. Cuanto más bajo, mejor para tus oídos.</li>
       <li>Activa <b>🌙 No molestar</b> para que no te despierten notificaciones. Si pones el modo avión, vuelve a encender el <b>Bluetooth</b> si tus auriculares son inalámbricos.</li>
+      <li>🔋 <b>Carga los pinganillos al 100 %</b> antes de acostarte: duran unas 4 horas de noche. Si no están llenos, la app te lo dice por ellos al empezar el sonido.</li>
+      <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (por ejemplo, a las 2 o 4 horas): así duran más los pinganillos y descansan tus oídos.</li>
     </ol>
-  </div>
+  </details>
   <div class="sounds" id="sounds"></div>
   <button class="playbig" id="playBtn">▶ Empezar el sonido</button>
   <div class="ntxt" id="ntxt"></div>
@@ -693,7 +704,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves. Con la pantalla <b>hacia arriba</b>, la app nota además cuándo se enciende la luz.</div></details>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la <b>pantalla hacia arriba</b>. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves. Con la pantalla hacia arriba, la app nota además cuándo se enciende la luz.</div></details>
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
@@ -740,7 +751,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.7'; // v5.7: «Monitorear mi sueño»; deslizar el dedo pasa de pantalla y atrás nunca saca de la app; 🎧 aviso de batería de los pinganillos (app 3.3)
+const VERSION = 'v5.8'; // v5.8: «Instrucciones de uso» plegadas (también en «Dormir junto a alguien que ronca», con la batería de los pinganillos); pantalla hacia arriba; fuera «Analizar una grabación» y el «Detector listo»
+// v5.7: // v5.7: «Monitorear mi sueño»; deslizar el dedo pasa de pantalla y atrás nunca saca de la app; 🎧 aviso de batería de los pinganillos (app 3.3)
 // v5.6: // v5.6: «Monitoreando» con tres puntos; avisos Grabando / Movimiento / Luz (luz: app 3.2); con luz y movimiento, cuenta atrás de 5 min y pantalla «¿Quieres detener el monitoreo del sueño?» (sí, continuar o pausar 1/2/5 min)
 // v5.5: // v5.5: 🎧 en las grabaciones, raya amarilla donde se dijo «estás roncando»; cuánto sirve el aviso (antes/después, dejó de roncar, se movió) en la noche y en Estadísticas
 // v5.4: // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
@@ -832,12 +844,13 @@ document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
 pintaAviso();
 // 🎧 Batería de los pinganillos (app 3.3): si no están casi llenos, se recuerda por los propios auriculares
 async function avisoBateria() {
-  if (!AND?.bateriaAuriculares || !AND.auriculares()) return;
+  if (!AND?.bateriaAuriculares || !AND?.auriculares?.()) return;
   let b = AND.bateriaAuriculares();
   if (b === -2) { AND.pedirBluetooth(); await new Promise(r => setTimeout(r, 8000)); b = AND.bateriaAuriculares(); }
   if (b < 0 || b >= 90) return;
   AND.decir(`Tus auriculares tienen un ${b} por ciento de batería. Recuerda que necesitan estar al cien por cien para que duren toda la noche.`);
   if (live.night) showWarn(`🎧 Pinganillos al ${b} %: cárgalos al 100 % para que duren toda la noche.`);
+  else toast(`🎧 Pinganillos al ${b} %: cárgalos al 100 %`);
 }
 // 3 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
 function avisoRonco(ev) {
@@ -1012,6 +1025,7 @@ function decide(sn, vo, br) {
 }
 function setIA(state, txt) {
   $('iaDot').className = 'dot ' + state; $('iaTxt').textContent = txt;
+  $('iaCard').hidden = state === 'ok'; // «listo» no hace falta decirlo: solo se avisa mientras carga o si falla
 }
 
 // ---------- Utilidades de audio ----------
@@ -2381,7 +2395,11 @@ $('maskBack').onclick = () => show('menu');
 $('goMask').onclick = () => { show('mask'); renderSounds(); renderNoise(); };
 $('goSnore').onclick = () => show('home');
 $('homeBack').onclick = () => show('menu');
-$('playBtn').onclick = () => playing() ? stopNoise() : startNoise().catch(e => alert('No se pudo reproducir: ' + e.message));
+$('playBtn').onclick = () => {
+  if (playing()) { stopNoise(); return; }
+  startNoise().catch(e => alert('No se pudo reproducir: ' + e.message));
+  setTimeout(avisoBateria, 2500); // con pinganillos: si no están llenos, se dice por ellos
+};
 $('vol').oninput = () => {
   noise.vol = +$('vol').value; clearInterval(noise.fadeT); noise.fadeT = null;
   try { noise.au.volume = noise.vol / 100; } catch {}
