@@ -79,7 +79,12 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #prep h2{margin:0 0 12px;font-size:20px}
 #cuentaPanel{position:fixed;inset:0;z-index:25;background:var(--bg);overflow-y:auto;padding:24px 16px}
 .cpbox{max-width:440px;margin:0 auto;display:flex;flex-direction:column}
-.cplogo{font-size:22px;font-weight:800;margin:8px 0 18px}
+.cplogo{display:flex;align-items:baseline;gap:8px;font-size:22px;font-weight:800;margin:4px 0 16px}
+.cpver{margin-left:auto;font-size:12px;font-weight:400;color:var(--dim)}
+.cptabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:6px}
+.cptabs button{flex:1;padding:12px 6px;border:0;border-radius:10px;background:none;color:var(--muted);font-size:16px;font-weight:700}
+.cptabs button.on{background:linear-gradient(135deg,#6D5BD0,#4338CA);color:#fff}
+.cpsub{margin:18px 0 0;text-align:center}
 .cpbox h2{margin:0 0 6px;font-size:24px}
 .cplab{display:block;margin:12px 0 0;font-size:15px;font-weight:600}
 .cplab small{font-weight:400;color:var(--muted)}
@@ -804,20 +809,21 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- PREGUNTA (guardar o borrar) -->
 <div id="cuentaPanel" hidden>
   <form class="cpbox" id="cpForm" novalidate>
-    <div class="cplogo">🌙 Amable Sleep</div>
-    <h2 id="cpTit">Crea tu cuenta</h2>
-    <p class="note" id="cpSub">Así tus noches quedan guardadas aunque cambies de móvil. Solo se guardan los números de cada noche, nunca las grabaciones.</p>
+    <div class="cplogo">🌙 Amable Sleep <span class="cpver" id="cpVer2"></span></div>
+    <div class="cptabs" id="cpTabs"><button type="button" data-m="registro">Crear cuenta</button><button type="button" data-m="entrar">Ya tengo cuenta</button></div>
+    <h2 id="cpTit" hidden>Contraseña nueva</h2>
     <p class="note" id="cpRecTx" hidden></p>
     <label class="cplab" id="cpNomL">Tu nombre <small>(con uno basta; así te llama Luna)</small><input class="cpin" id="cpNom" autocomplete="given-name" maxlength="40"></label>
     <label class="cplab" id="cpEmailL">Email<input class="cpin" id="cpEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
     <label class="cplab" id="cpCodL" hidden>Código de 6 cifras <small>(mira tu correo)</small><input class="cpin" id="cpCod" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
-    <label class="cplab" id="cpPassL"><span id="cpPassTx">Contraseña</span> <small>(al menos 6 letras o números)</small>
+    <label class="cplab" id="cpPassL"><span id="cpPassTx">Contraseña</span> <small id="cpPassAyuda">(al menos 6 letras o números)</small>
       <span class="cppass"><input class="cpin" id="cpPass" type="password" autocomplete="new-password"><button type="button" id="cpVer" aria-label="Ver la contraseña">👁</button></span></label>
     <p class="cperr" id="cpErr" hidden></p>
     <button class="big" id="cpGo" type="submit"><span id="cpGoTx">Crear cuenta</span></button>
     <div id="cpGoogleW"><div class="cpo" id="cpO" hidden><span>o</span></div><div id="cpGoogle"></div></div>
     <button type="button" class="cplink" id="cpOlvido" hidden>¿Has olvidado tu contraseña?</button>
-    <button type="button" class="cplink" id="cpCambia">Ya tengo cuenta: entrar</button>
+    <button type="button" class="cplink" id="cpCambia" hidden>Volver a entrar</button>
+    <p class="note cpsub" id="cpSub"></p>
   </form>
 </div>
 <div id="ask" hidden>
@@ -906,7 +912,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.3'; // v9.3: «Continuar con Google» encendido (pantalla de Google «Práctica Integral» publicada)
+const VERSION = 'v9.4'; // v9.4: pantalla de la cuenta con dos pestañas arriba («Crear cuenta» / «Ya tengo cuenta»), la explicación abajo y la versión visible
+// v9.3: // v9.3: «Continuar con Google» encendido (pantalla de Google «Práctica Integral» publicada)
 // v9.2: // v9.2: app 4.0; «Continuar con Google» preparado (se enciende con GOOGLE_LISTO) (en la web, el botón de Google; en la app 4.0, el selector de cuentas de Android); quien entra con Google puede poner contraseña en Ajustes
 // v9.1: // v9.1: en Ajustes → Mi cuenta: cambiar nombre, email (con código) y contraseña; el nombre es obligatorio (Luna te llama por tu nombre); «¿Has olvidado tu contraseña?» con un código por email (bonito, como los de Metas); ya no se puede seguir sin cuenta
 // v9.0: // v9.0: cuentas con email y contraseña (crear cuenta, entrar, salir, borrar la cuenta); con cuenta, los números de cada noche se guardan también en el servidor (nunca las grabaciones) y se recuperan en otro móvil
@@ -3271,8 +3278,12 @@ function borraNocheCuenta(id) { if (sesion) apiCuenta('/noches/borrar', {ids: [i
 let cpModo = 'registro';
 function cpPinta() {
   const m = cpModo, rec = m === 'recuperar' || m === 'codigo';
-  $('cpTit').textContent = {registro: 'Crea tu cuenta', entrar: 'Entra en tu cuenta', recuperar: 'Contraseña nueva', codigo: 'Contraseña nueva'}[m];
+  $('cpTabs').hidden = rec; $('cpTit').hidden = !rec;
+  $('cpTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   $('cpSub').hidden = rec;
+  $('cpSub').textContent = m === 'registro'
+    ? 'Crear tu cuenta es necesario para que tus noches queden guardadas aunque cambies de móvil. Solo se guardan los números de cada noche, nunca las grabaciones.'
+    : 'Al entrar recuperas las noches guardadas en tu cuenta. Las grabaciones nunca salen de tu móvil.';
   $('cpRecTx').hidden = !rec;
   $('cpRecTx').textContent = m === 'recuperar' ? 'Escribe el email de tu cuenta y te mandaremos un código para poner una contraseña nueva.'
     : `Si ${$('cpEmail').value.trim() || 'ese email'} tiene cuenta, te acabamos de mandar un código. Puede tardar un minuto; mira también en «Spam».`;
@@ -3281,18 +3292,21 @@ function cpPinta() {
   $('cpCodL').hidden = m !== 'codigo';
   $('cpPassL').hidden = m === 'recuperar';
   $('cpPassTx').textContent = m === 'codigo' ? 'Contraseña nueva' : 'Contraseña';
+  $('cpPassAyuda').hidden = m === 'entrar';
   $('cpPass').autocomplete = m === 'entrar' ? 'current-password' : 'new-password';
   $('cpGoTx').textContent = {registro: 'Crear cuenta', entrar: 'Entrar', recuperar: 'Enviarme un código', codigo: 'Guardar y entrar'}[m];
   $('cpOlvido').hidden = m !== 'entrar';
   $('cpGoogleW').hidden = rec;
-  $('cpCambia').textContent = m === 'registro' ? 'Ya tengo cuenta: entrar' : m === 'entrar' ? 'No tengo cuenta: crearla' : 'Volver a entrar';
+  $('cpCambia').hidden = !rec;
   $('cpErr').hidden = true;
 }
 function abreCuenta(modo) {
   cpModo = modo || 'registro'; cpPinta();
+  $('cpVer2').textContent = $('ver2').textContent; // «web v9.4 · app 4.0»: para saber si está al día
   $('cuentaPanel').hidden = false;
 }
-$('cpCambia').onclick = () => { cpModo = cpModo === 'registro' ? 'entrar' : cpModo === 'entrar' ? 'registro' : 'entrar'; cpPinta(); };
+$('cpCambia').onclick = () => { cpModo = 'entrar'; cpPinta(); };
+$('cpTabs').querySelectorAll('button').forEach(b => b.onclick = () => { cpModo = b.dataset.m; cpPinta(); });
 $('cpOlvido').onclick = () => { cpModo = 'recuperar'; cpPinta(); $('cpEmail').focus(); };
 $('cpVer').onclick = () => { const p = $('cpPass'); p.type = p.type === 'password' ? 'text' : 'password'; };
 const cpBoton = {registro: ['Crear cuenta', 'Creando tu cuenta…'], entrar: ['Entrar', 'Entrando…'], recuperar: ['Enviarme un código', 'Enviando…'], codigo: ['Guardar y entrar', 'Guardando…']};
