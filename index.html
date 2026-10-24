@@ -361,6 +361,7 @@ details.hist[open] summary{margin-bottom:10px}
 .counters{display:flex;gap:26px;justify-content:center;font-size:16px;margin-bottom:12px}
 .counters b{display:block;font-size:28px;font-weight:600}
 .c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
+.cico{width:22px;height:22px;vertical-align:-4px}
 .meter{position:relative;width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
 .meter::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#F8FAFCaa}
 .meter i{display:block;height:100%;width:0;background:#475569;transition:width .2s}
@@ -834,8 +835,8 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="counters">
-      <div class="c-snore"><b id="cSnore">0</b>😴 ronquidos</div>
-      <div class="c-voice"><b id="cVoice">0</b>🗣️ voces</div>
+      <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#A78BFA"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#C4B5FD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ronquidos</div>
+      <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#FBBF24"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round"/></svg> voces</div>
     </div>
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
@@ -851,7 +852,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.8'; // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
+const VERSION = 'v7.9'; // v7.9: en el monitoreo, cara de ronquido violeta y cabeza que habla amarilla (como sus números); el reloj de arena dice qué es
+// v7.8: // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
 // v7.7: // v7.7: botones del inicio en móvil: título en una línea a todo lo ancho y debajo icono + texto; «Dormir con quien ronca»
 // v7.6: // v7.6: «Probar detección» con guía de pruebas (ronquido fuerte/suave/con respiración, respirar, voz alta/baja, silencio) que se corrige sola; termina siempre a los 6 s (pitido) y el botón la para; «🎧 Auriculares» en la prueba y en el monitoreo; si el micrófono se para, se vuelve a encender solo
 // v7.5: // v7.5: en pantallas estrechas, el texto de los botones del inicio usa todo el ancho (también debajo del icono)
@@ -1403,7 +1405,7 @@ function vigilaDespertar(det) {
   $('fCuenta').hidden = !live.cuenta;
   if (live.cuenta) {
     const left = Math.max(0, Math.ceil((live.cuenta - ahora) / 1000));
-    $('fCuenta').textContent = `⏳ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+    $('fCuenta').textContent = `⏳ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} y te pregunto si terminas`; // hay luz y movimiento
     if (!left && $('finQ').hidden) { $('finQ').hidden = false; wake(); }
   }
 }
