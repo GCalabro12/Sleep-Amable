@@ -254,19 +254,26 @@ details.hist[open] summary{margin-bottom:10px}
 .choice.e{background:linear-gradient(135deg,#334155,#1E293B);box-shadow:0 8px 24px #33415544}
 #menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
-#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .8s}
+#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:76px 16px 14px;text-align:center;transition:opacity .8s;overflow-y:auto;overscroll-behavior:contain}
 #listen.on{display:flex}
-#listen .inner{transition:opacity 1.2s}
+#listen .inner{transition:opacity 1.2s;margin:auto 0;width:100%} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
 #listen.dim .inner{opacity:.07}
-.monit{font-size:20px;font-weight:700;color:#A78BFA;margin-bottom:6px;letter-spacing:.3px}
+.ltop{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:3;transition:opacity 1.2s}
+.lico{width:58px;height:50px;border-radius:16px;border:1px solid #1F2937;background:#0B1020;font-size:22px;color:#94A3B8;padding:0}
+.lico small{font-size:11px;margin-left:2px;vertical-align:middle}
+.lico.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
+.lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
+.lpanel .nat{margin-top:10px}
+#listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
+.monit{font-size:18px;font-weight:700;color:#A78BFA;margin-bottom:2px;letter-spacing:.3px}
 .tres{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
 .tres i{width:9px;height:9px;border-radius:50%;background:#A78BFA;opacity:.15;animation:2s linear infinite}
 .tres i:nth-child(1){animation-name:rq-p1}.tres i:nth-child(2){animation-name:rq-p2}.tres i:nth-child(3){animation-name:rq-p3}
 @keyframes rq-p1{0%,15%{opacity:.15}20%,90%{opacity:1}95%,100%{opacity:.15}}
 @keyframes rq-p2{0%,40%{opacity:.15}45%,90%{opacity:1}95%,100%{opacity:.15}}
 @keyframes rq-p3{0%,65%{opacity:.15}70%,90%{opacity:1}95%,100%{opacity:.15}}
-.flags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
-.flag{padding:5px 11px;border-radius:14px;font-size:14px;background:#0B1020;color:#475569;border:1px solid #1F2937}
+.flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
+.flag{padding:4px 9px;border-radius:14px;font-size:13px;background:#0B1020;color:#475569;border:1px solid #1F2937}
 .flag.on.g{background:#7F1D1D;color:#FECACA;border-color:#B91C1C}
 .flag.on.m{background:#0C4A6E;color:#BAE6FD;border-color:#0284C7}
 .flag.on.l{background:#713F12;color:#FDE68A;border-color:#CA8A04}
@@ -278,10 +285,10 @@ details.hist[open] summary{margin-bottom:10px}
 #finQ .fq2{width:100%;max-width:420px;padding:16px;border-radius:18px;border:1px solid #6D5BD0;background:#1E1B4B;color:#E0E7FF;font-size:19px;margin-bottom:16px}
 #finQ .fqp{display:flex;gap:8px;width:100%;max-width:420px}
 #finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
-.clock{font-size:64px;font-weight:200;letter-spacing:2px;color:#CBD5E1}
-.elapsed{color:var(--dim);margin-bottom:26px}
-.counters{display:flex;gap:26px;justify-content:center;font-size:20px;margin-bottom:24px}
-.counters b{display:block;font-size:34px;font-weight:600}
+.clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1}
+.elapsed{color:var(--dim);margin-bottom:12px;font-size:14px}
+.counters{display:flex;gap:26px;justify-content:center;font-size:16px;margin-bottom:12px}
+.counters b{display:block;font-size:28px;font-weight:600}
 .c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
 .meter{position:relative;width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
 .meter::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#F8FAFCaa}
@@ -290,12 +297,12 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px;font-size:13px;color:var(--dim)}
 .lsens button{background:#111827;border:1px solid #1F2937;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
-.lhint{font-size:12px;color:var(--dim);margin-bottom:10px}
-.mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:9px 16px;font-size:14px;margin-bottom:14px}
+.lhint{display:none}
+.mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
 .lcuna{font-size:14px;color:#C4B5FD;margin-bottom:12px}
 .lcuna button{margin-left:8px;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;padding:4px 10px;font-size:13px}
 .state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
-.last{font-size:14px;color:var(--muted);min-height:20px;margin-bottom:28px}
+.last{font-size:14px;color:var(--muted);min-height:18px;margin-bottom:12px}
 #stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
 /* Noche */
@@ -416,11 +423,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <a class="apkdl" id="apkDl" href="SleepAmable.apk" download="SleepAmable.apk">⬇️ Descargar Amable Sleep</a>
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
-  <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><defs><mask id="ic-luna"><rect width="100" height="100" fill="#fff"/><circle cx="66" cy="50" r="30" fill="#000"/></mask></defs><circle cx="46" cy="60" r="34" fill="#FDE68A" mask="url(#ic-luna)"/><path d="M19 62 q7 6 14 0" fill="none" stroke="#1E1B4B" stroke-width="4.5" stroke-linecap="round"/><circle cx="22" cy="73" r="4.5" fill="#FB7185" opacity=".6"/><path d="M14 40 Q34 18 56 30 Q66 12 84 12 Q68 24 60 38 Z" fill="#1E1B4B"/><path d="M12 42 Q34 24 58 34" fill="none" stroke="#EDE9FE" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="12" r="7" fill="#fff"/><path d="M72 58 h12 l-12 12 h12" fill="none" stroke="#C4B5FD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice a" id="goSnore"><span class="ic"><img class="icimg" src="luna/luna-saluda.png" alt=""></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
-  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic"><img class="icimg" src="luna/luna-saluda.png" alt=""></span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
+  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic"><img class="icimg" src="luna/luna-consejo.png" alt=""></span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span>Ajustes<small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
@@ -438,6 +445,10 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
+  <details class="instr card"><summary>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small></summary>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: si no hay, no dice nada (no despierta a nadie).</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
+  </details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
@@ -708,9 +719,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
-    <details class="pdet"><summary>🎧 Avisarme si ronco <small id="sAviso">no</small></summary><div class="pbody">
-      <div style="display:flex;align-items:center;gap:10px"><span class="avisoTx" style="flex:1">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares: si no hay, no dice nada (no despierta a nadie).</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
-      <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button></div></details>
     <details class="pdet" id="dCuna"><summary>🎵 Canción de cuna <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
     <p class="note" id="prepNote">Amable Sleep no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
@@ -729,6 +737,14 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- ESCUCHANDO -->
 <div id="listen">
+  <div class="ltop">
+    <button class="lico" id="lDnd" aria-label="No molestar">🌙<small>▾</small></button>
+    <button class="lico" id="lCuna" aria-label="Canción de cuna">🎵<small>▾</small></button>
+    <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
+  </div>
+  <div class="lpanel" id="pDnd" hidden></div>
+  <div class="lpanel" id="pCuna" hidden><b>🎵 Canción de cuna</b></div>
+  <div class="lpanel" id="pAir" hidden></div>
   <div class="inner">
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
@@ -751,7 +767,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.0'; // v6.0: cabecera con logo y «Amable Sleep» más grandes en una línea y las versiones una encima de otra; fuera «¿Qué necesitas esta noche?»; luna dormida con gorrito en «Monitorear mi sueño»
+const VERSION = 'v6.1'; // v6.1: pantalla de monitoreo más compacta (cabe sin deslizar y se ve «Monitoreando»); sin la hoja «Antes de dormir»: empieza directo; «Avisarme si ronco» en Monitorear mi sueño; en la pantalla de monitoreo, 🌙 No molestar, 🎵 canción de cuna y ✈️ modo avión arriba con desplegable; la luna de verdad en el botón
+// v6.0: // v6.0: cabecera con logo y «Amable Sleep» más grandes en una línea y las versiones una encima de otra; fuera «¿Qué necesitas esta noche?»; luna dormida con gorrito en «Monitorear mi sueño»
 // v5.9: // v5.9: la app siempre pregunta si hay versión nueva (antes podía tardar hasta 10 min en ver el aviso de actualizar)
 // v5.8: // v5.8: «Instrucciones de uso» plegadas (también en «Dormir junto a alguien que ronca», con la batería de los pinganillos); pantalla hacia arriba; fuera «Analizar una grabación» y el «Detector listo»
 // v5.7: // v5.7: «Monitorear mi sueño»; deslizar el dedo pasa de pantalla y atrás nunca saca de la app; 🎧 aviso de batería de los pinganillos (app 3.3)
@@ -1291,7 +1308,7 @@ document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
   if (auto !== true && !confirm('¿Fin del monitoreo de la noche? Verás el resumen.')) return;
-  live.parando = true; $('finQ').hidden = true;
+  live.parando = true; $('finQ').hidden = true; panel(null);
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
   clearInterval(live.timer); clearTimeout(live.dimT);
@@ -1383,16 +1400,26 @@ $('listen').addEventListener('pointerdown', e => {
   else wake();
 }, true);
 $('stopBtn').onclick = () => stopListening();
-$('startBtn').onclick = () => {
+$('startBtn').onclick = async () => {
+  // Los desplegables de arriba de la pantalla de monitoreo: «No molestar», canción de cuna y modo avión
+  $('pDnd').append($('liDnd')); $('pAir').append($('liAir')); $('pCuna').append($('cunaBody'));
   const ok = !!IA.clf;
   $('prepAir').className = ok ? 'ok' : 'no';
   $('prepAir').textContent = ok
     ? 'Puedes ponerlo: el detector de ronquidos ya está cargado y Amable Sleep funciona sin internet ni wifi. Eso sí, tampoco te entrarán llamadas.'
-    : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera a ver «Detector listo» arriba antes de ponerlo.';
-  $('prep').hidden = false;
+    : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera un poco antes de ponerlo.';
+  await startListening();
+  if (!live.night) return;
   renderCunas();
   if (AND) renderPrep();
 };
+function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
+  for (const x of ['pDnd', 'pCuna', 'pAir']) $(x).hidden = x !== id || !$(x).hidden;
+  if (!$('pCuna').hidden) renderCunas();
+}
+$('lDnd').onclick = () => panel('pDnd');
+$('lCuna').onclick = () => panel('pCuna');
+$('lAir').onclick = () => panel('pAir');
 $('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.restaurar(); };
 
 // ---------- App Android: «No molestar» y wifi de verdad ----------
@@ -1407,6 +1434,7 @@ function renderPrep() {
   $('liDnd').innerHTML = `<b>🌙 «No molestar»</b>: ninguna notificación ni llamada te despierta ni se cuela en las grabaciones. Las alarmas suenan según cómo lo tengas configurado.
     <button class="nat${on ? ' on' : ''}" id="dndBtn"${off ? ' disabled' : ''}>${btn}</button><div class="natTxt">${txt}</div>`;
   $('sDnd').textContent = on ? '✅' : '';
+  $('lDnd').classList.toggle('on', on);
   $('dndBtn').onclick = () => {
     if (AND.dndMio()) AND.setDnd(false);
     else if (!AND.hasDndAccess()) { dndPedido = true; AND.pedirDnd(); return; }
@@ -1438,7 +1466,7 @@ function renderPrep() {
 window.nativeVuelta = () => {
   if (finRefresh) setTimeout(finRefresh, 800);
   if (typeof renderPantallaCompleta === 'function') renderPantallaCompleta();
-  if (!AND || $('prep').hidden) return;
+  if (!AND || !live.night) return;
   if (dndPedido && AND.hasDndAccess() && !AND.dndActivo()) AND.setDnd(true);
   dndPedido = false;
   renderPrep();
@@ -1515,7 +1543,7 @@ function renderCunas() {
     $('cunaBody').innerHTML = 'Aún no hay canciones de cuna: las estamos haciendo con Suno y aparecerán aquí, cada una con su dibujito. Sonarán 5 minutos y se irán apagando en 5 segundos; mientras suenan no se graba.';
     return;
   }
-  $('cunaBody').innerHTML = '<div>Toca una para escucharla y elegirla (otro toque la para). Por la noche suena 5 minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div><div class="cunas"></div>';
+  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena 5 minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div><div class="cunas"></div>`;
   const box = $('cunaBody').querySelector('.cunas');
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
@@ -1523,6 +1551,12 @@ function renderCunas() {
     b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : ''}`;
     b.onclick = () => {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
+      if (live.night) { // monitoreando: suena ya y se cierra el desplegable
+        if (live.cuna) endCuna(true);
+        if (x.id && live.det) playCuna(x);
+        $('lCuna').classList.toggle('on', !!x.id); $('pCuna').hidden = true;
+        return;
+      }
       // Escuchar al elegir: suena la que tocas; si ya sonaba, se para
       if (sounding || !x.id) stopCunaPrev(); else playCunaPrev(x);
       renderCunas();
@@ -1564,7 +1598,7 @@ function endCuna(now) {
     const v0 = k.au.volume, t0 = Date.now();
     const f = setInterval(() => { const x = (Date.now() - t0) / 1000; k.au.volume = Math.max(0, v0 * (1 - x)); if (x >= 1) { clearInterval(f); stop(); } }, 50);
   } else stop();
-  live.cuna = null; $('lcuna').hidden = true;
+  live.cuna = null; $('lcuna').hidden = true; $('lCuna').classList.remove('on');
   if (live.det) live.det.muteUntil = live.det.samples / SR + 2;
   muteTick();
 }
