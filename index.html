@@ -761,13 +761,14 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
-    <button id="stopBtn">☀️ Fin monitoreo de la noche</button>
+    <button id="stopBtn">☀️ Fin monitoreo sueño</button>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v6.2'; // v6.2: versiones solo con el número (sin cortarse); «Avisarme si ronco» con «Necesita auriculares» y el texto del Bluetooth
+const VERSION = 'v6.3'; // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
+// v6.2: // v6.2: versiones solo con el número (sin cortarse); «Avisarme si ronco» con «Necesita auriculares» y el texto del Bluetooth
 // v6.1: // v6.1: pantalla de monitoreo más compacta (cabe sin deslizar y se ve «Monitoreando»); sin la hoja «Antes de dormir»: empieza directo; «Avisarme si ronco» en Monitorear mi sueño; en la pantalla de monitoreo, 🌙 No molestar, 🎵 canción de cuna y ✈️ modo avión arriba con desplegable; la luna de verdad en el botón
 // v6.0: // v6.0: cabecera con logo y «Amable Sleep» más grandes en una línea y las versiones una encima de otra; fuera «¿Qué necesitas esta noche?»; luna dormida con gorrito en «Monitorear mi sueño»
 // v5.9: // v5.9: la app siempre pregunta si hay versión nueva (antes podía tardar hasta 10 min en ver el aviso de actualizar)
@@ -779,7 +780,7 @@ const VERSION = 'v6.2'; // v6.2: versiones solo con el número (sin cortarse); �
 // v5.3: // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
 // v5.2: // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
 // v5.1: // v5.1: Alarmas, Estadísticas y Ajustes como botones en la pantalla de inicio; fuera la barra de abajo
-// v5.0: // v5.0: «Fin monitoreo de la noche»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
+// v5.0: // v5.0: «Fin monitoreo sueño»; movimientos con el acelerómetro (líneas azules en el gráfico) y avisos de voz «estás roncando» (líneas amarillas)
 // v4.9: // v4.9: «Reto para apagar la alarma»: las 3 opciones a la vista, cada una con ⓘ (qué es) e interruptor
 // v4.8: // v4.8: Ajustes en apartados plegables con triángulo ▼/▲; la prueba para apagar la alarma (cuentas, pasos o código) pasa a Ajustes y vale para todas las alarmas
 // v4.7: 💪 alarma reforzada (app 2.9): para apagarla, caminar 20 pasos, 3 cuentas o escanear un código de barras guardado
@@ -991,7 +992,10 @@ const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathi
   Door:'puerta',Knock:'golpe',Rain:'lluvia',Wind:'viento',Silence:'silencio',Alarm:'alarma','Mechanical fan':'ventilador',
   'Air conditioning':'aire acondicionado',Clock:'reloj',Tick:'tictac',Footsteps:'pasos',Animal:'animal',Bird:'pájaro',
   Inside:'ruido de casa','Inside, small room':'ruido de habitación','White noise':'ruido blanco',Hiccup:'hipo',
-  Snoring:'ronquido',Snort:'resoplido',Speech:'voz',Whispering:'susurro'};
+  Snoring:'ronquido',Snort:'resoplido',Speech:'voz',Whispering:'susurro',Voice:'voz baja',Conversation:'conversación',
+  'Male speech, man speaking':'voz de hombre','Female speech, woman speaking':'voz de mujer','Child speech, kid speaking':'voz de niño',
+  Laughter:'risa',Crying:'llanto','Baby cry, infant cry':'llanto de bebé',Sigh:'suspiro',Groan:'quejido',Yawn:'bostezo',
+  'Toilet flush':'cisterna',Water:'agua',Telephone:'teléfono',Ringtone:'tono de llamada',Vibration:'vibración'};
 const es = n => ES[n] || (n ? n.toLowerCase() : 'sonido');
 
 const IA = {
@@ -1195,7 +1199,7 @@ async function startListening() {
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
-    $('lastEv').textContent = `Último: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
+    $('lastEv').textContent = `Última grabación: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
     $('lstate').textContent = 'Escuchando…';
   });
   const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
@@ -1203,7 +1207,7 @@ async function startListening() {
     onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }});
   const rs = new Resampler(ctx.sampleRate);
   node.port.onmessage = m => det.push(rs.process(m.data));
-  stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo de la noche» para guardar.');
+  stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
 
   Object.assign(live, {stream, ctx, night, saver, det});
   movEmpezar(night);
@@ -1308,7 +1312,7 @@ document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
 
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
-  if (auto !== true && !confirm('¿Fin del monitoreo de la noche? Verás el resumen.')) return;
+  if (auto !== true && !confirm('¿Fin del monitoreo del sueño? Verás el resumen.')) return;
   live.parando = true; $('finQ').hidden = true; panel(null);
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
@@ -1428,7 +1432,7 @@ let dndPedido = false; // tocó «Activar» y fue a dar el permiso
 function renderPrep() {
   const acceso = AND.hasDndAccess(), activo = AND.dndActivo(), mio = AND.dndMio();
   let btn, txt, on = false, off = false;
-  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Fin monitoreo de la noche». Toca para quitarlo ya.'; }
+  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Fin monitoreo sueño». Toca para quitarlo ya.'; }
   else if (activo) { on = true; off = true; btn = '✅ Ya tienes «No molestar» puesto'; txt = 'Lo pusiste tú, así que Amable Sleep lo deja como está.'; }
   else if (!acceso) { btn = '🌙 Activar «No molestar»'; txt = 'La primera vez Android te pide permiso: busca <b>Amable Sleep</b> en la lista, actívalo y vuelve a la app.'; }
   else { btn = '🌙 Activar «No molestar»'; txt = 'Amable Sleep lo pone ahora y lo quita al terminar la noche.'; }
@@ -2898,7 +2902,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.3';
+const APK_ULTIMA = '3.4';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
