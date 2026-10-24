@@ -410,7 +410,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
   <p class="hello">¿Qué necesitas esta noche?</p>
-  <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Saber si ronco<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
@@ -425,7 +425,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- SABER SI RONCO -->
 <section id="home" hidden>
   <button class="back" id="homeBack">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">😴 Saber si ronco</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">😴 Monitorear mi sueño</h1>
 
   <div class="card">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
@@ -740,7 +740,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.6'; // v5.6: «Monitoreando» con tres puntos; avisos Grabando / Movimiento / Luz (luz: app 3.2); con luz y movimiento, cuenta atrás de 5 min y pantalla «¿Quieres detener el monitoreo del sueño?» (sí, continuar o pausar 1/2/5 min)
+const VERSION = 'v5.7'; // v5.7: «Monitorear mi sueño»; deslizar el dedo pasa de pantalla y atrás nunca saca de la app; 🎧 aviso de batería de los pinganillos (app 3.3)
+// v5.6: // v5.6: «Monitoreando» con tres puntos; avisos Grabando / Movimiento / Luz (luz: app 3.2); con luz y movimiento, cuenta atrás de 5 min y pantalla «¿Quieres detener el monitoreo del sueño?» (sí, continuar o pausar 1/2/5 min)
 // v5.5: // v5.5: 🎧 en las grabaciones, raya amarilla donde se dijo «estás roncando»; cuánto sirve el aviso (antes/después, dejó de roncar, se movió) en la noche y en Estadísticas
 // v5.4: // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
 // v5.3: // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
@@ -821,7 +822,7 @@ function pintaAviso() {
 for (const id of ['avisoRonco', 'avisoRonco2']) $(id).onchange = () => {
   cfg.avisoRonco = $(id).checked;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
-  if (cfg.avisoRonco) AND.prepararVoz();
+  if (cfg.avisoRonco) { AND.prepararVoz(); AND.pedirBluetooth?.(); }
   pintaAviso();
 };
 document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
@@ -829,6 +830,15 @@ document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
   if (!AND.decir(FRASE)) alert('🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie.');
 });
 pintaAviso();
+// 🎧 Batería de los pinganillos (app 3.3): si no están casi llenos, se recuerda por los propios auriculares
+async function avisoBateria() {
+  if (!AND?.bateriaAuriculares || !AND.auriculares()) return;
+  let b = AND.bateriaAuriculares();
+  if (b === -2) { AND.pedirBluetooth(); await new Promise(r => setTimeout(r, 8000)); b = AND.bateriaAuriculares(); }
+  if (b < 0 || b >= 90) return;
+  AND.decir(`Tus auriculares tienen un ${b} por ciento de batería. Recuerda que necesitan estar al cien por cien para que duren toda la noche.`);
+  if (live.night) showWarn(`🎧 Pinganillos al ${b} %: cárgalos al 100 % para que duren toda la noche.`);
+}
 // 3 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
 function avisoRonco(ev) {
   if (!VOZ_OK || !cfg.avisoRonco || ev.tipo !== 'ronquido' || ev.sn < .6) return;
@@ -1147,7 +1157,7 @@ async function startListening() {
 
   const night = newNight('micro');
   await DB.put('noches', night);
-  if (VOZ_OK && cfg.avisoRonco) AND.prepararVoz();
+  if (VOZ_OK && cfg.avisoRonco) { AND.prepararVoz(); setTimeout(avisoBateria, 3000); }
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
@@ -1181,6 +1191,8 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
+    // pinganillos puestos a mitad de noche: también se mira su batería
+    if (VOZ_OK && cfg.avisoRonco && Date.now() % 30000 < 500) { const a = AND.auriculares(); if (a && live.auric === false) avisoBateria(); live.auric = a; }
     // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
     // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
@@ -1427,7 +1439,7 @@ window.atrasNativo = () => {
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
   if (!$('luna').hidden) { show('utiles'); return true; }
   if (['home', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
-  return false;
+  return true; // en el inicio, «atrás» (o el gesto desde el borde) no saca de la app
 };
 $('prepGo').onclick = async () => {
   stopCunaPrev();
@@ -1723,7 +1735,7 @@ $('guardar').onchange = async () => {
   $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
   renderHome();
 };
-let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco» o a «Estadísticas», según de dónde se abrió
+let nightFrom = 'home'; // al volver de una noche: a «Monitorear mi sueño» o a «Estadísticas», según de dónde se abrió
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
@@ -2754,14 +2766,15 @@ function show(id) {
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
 // Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
-const ORDEN = ['menu', 'alarma', 'stats', 'ajustes'];
+const ORDEN = ['menu', 'home', 'mask', 'alarma', 'stats', 'utiles', 'ajustes'];
 let sw0 = null;
 document.addEventListener('touchstart', e => {
   const t = e.touches[0], el = e.target;
   sw0 = null;
-  if (e.touches.length !== 1 || $('tabs').hidden) return;
+  if (e.touches.length !== 1) return;
   // no en controles que ya se arrastran (barras, selectores, el gráfico…) ni con algo encima de la pantalla
-  if (el.closest('input, select, textarea, canvas, #pl, #listen, #prep, #ask, #wakeUp, #napScr, #splash')) return;
+  if (el.closest('input, select, textarea, canvas, #pl, #listen, #prep, #ask, #wakeUp, #napScr, #splash, #finQ, #tonoPick')) return;
+  if (!$('prep').hidden || !$('ask').hidden || !$('tonoPick').hidden || !$('finQ').hidden) return;
   sw0 = {x: t.clientX, y: t.clientY, t: Date.now()};
 }, {passive: true});
 document.addEventListener('touchend', e => {
@@ -2769,9 +2782,9 @@ document.addEventListener('touchend', e => {
   const t = e.changedTouches[0], dx = t.clientX - sw0.x, dy = t.clientY - sw0.y, dt = Date.now() - sw0.t;
   sw0 = null;
   if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5 || dt > 700) return;
-  const vis = ['menu', 'home', 'mask', 'alarma', 'stats', 'ajustes'].find(id => !$(id).hidden);
-  if (!vis) return;
-  const i = ORDEN.indexOf(['home', 'mask'].includes(vis) ? 'menu' : vis);
+  const vis = ORDEN.find(id => !$(id).hidden);
+  if (!vis) return; // dentro de una noche o de «Habla con Luna» no se desliza
+  const i = ORDEN.indexOf(vis);
   const j = i + (dx < 0 ? 1 : -1);
   if (j < 0 || j >= ORDEN.length) return;
   show(ORDEN[j]);
@@ -2830,7 +2843,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.2';
+const APK_ULTIMA = '3.3';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
