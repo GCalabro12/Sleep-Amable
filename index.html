@@ -204,6 +204,14 @@ details.instr>summary::-webkit-details-marker{display:none}
 details.instr>summary::after{content:"";margin-left:auto;flex:none;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #A78BFA}
 details.instr[open]>summary::after{border-top:0;border-bottom:11px solid #A78BFA}
 details.instr .tips,details.instr .steps{margin-top:10px}
+.retoal{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
+.retoal b{color:#FDE68A;font-weight:600}
+.retoal .rq{width:28px;height:28px;border-radius:50%;border:1px solid #6D5BD0;background:#1E1B4B;color:#C4B5FD;font-weight:700;padding:0;flex:none}
+.retoal .roff{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;color:var(--muted);font-size:13px}
+.retoopts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.retoopts button{text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);font-size:15px}
+.retoopts button.on{border-color:#A78BFA;background:#1E1B4B}
+.retoopts small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -589,7 +597,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary>⏰ Reto para apagar la alarma <small id="sRetoAj"></small></summary>
-    <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces el reto (mientras lo haces, el volumen baja). Posponer funciona igual. Vale para todas las alarmas. Si no activas ninguno, se apaga con el botón.</p>
+    <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces el reto (mientras lo haces, el volumen baja). Posponer funciona igual. Lo que elijas aquí se pone a todas las alarmas; luego puedes cambiarlo en cada una (en Alarmas, «Reto alarma ?»). Si no activas ninguno, se apaga con el botón.</p>
     <div id="retoList"></div>
     <p class="note" id="retoNo" hidden></p>
   </details>
@@ -767,7 +775,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.3'; // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
+const VERSION = 'v6.4'; // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
+// v6.3: // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
 // v6.2: // v6.2: versiones solo con el número (sin cortarse); «Avisarme si ronco» con «Necesita auriculares» y el texto del Bluetooth
 // v6.1: // v6.1: pantalla de monitoreo más compacta (cabe sin deslizar y se ve «Monitoreando»); sin la hoja «Antes de dormir»: empieza directo; «Avisarme si ronco» en Monitorear mi sueño; en la pantalla de monitoreo, 🌙 No molestar, 🎵 canción de cuna y ✈️ modo avión arriba con desplegable; la luna de verdad en el botón
 // v6.0: // v6.0: cabecera con logo y «Amable Sleep» más grandes en una línea y las versiones una encima de otra; fuera «¿Qué necesitas esta noche?»; luna dormida con gorrito en «Monitorear mi sueño»
@@ -2476,9 +2485,10 @@ try {
 if (ALS.reto === undefined) { const a = ALS.list.find(x => x.reto); ALS.reto = a?.reto || ''; ALS.cod = a?.cod || ''; }
 // Las alarmas de antes usaban canciones de cuna: pasan a «Amanecer»
 for (const al of [...ALS.list, ALS.siesta]) if (!TONOS.some(t => t.id === al.son)) al.son = 'amanecer';
+const retoDe = al => (al.reto !== undefined ? al.reto : ALS.reto) || '';
 const alSave = () => {
   try { localStorage.setItem('ronquino-alarmas', JSON.stringify(ALS)); } catch {}
-  if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub, reto: ALS.reto || '', cod: ALS.cod || ''}))));
+  if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub, reto: retoDe(a), cod: ALS.cod || ''}))));
 };
 const tonos = sel => TONOS.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${c.icon} ${c.name}</option>`).join('');
 const subidas = sel => SUBIDAS.map(([v, t]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${t}</option>`).join('');
@@ -2546,9 +2556,10 @@ function renderReto() {
       ${r.id === 'codigo' && ALS.cod ? `<div class="codrow" style="margin:0 0 8px">📷 Código guardado: …${ALS.cod.slice(-6).replace(/[<>&"]/g, '')}<button type="button" class="codcam">Cambiar</button></div>` : ''}`;
     d.querySelector('.info').onclick = () => { retoInfo = retoInfo === r.id ? null : r.id; renderReto(); };
     d.querySelector('input').onchange = ev => {
-      if (!ev.target.checked) { ALS.reto = ''; alSave(); renderReto(); return; }
-      if (r.id === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) ALS.reto = 'codigo'; alSave(); renderReto(); }); return; }
-      ALS.reto = r.id; alSave(); renderReto();
+      const todas = v => { ALS.reto = v; ALS.list.forEach(a => { a.reto = v; }); alSave(); renderReto(); renderAlarmas(); };
+      if (!ev.target.checked) { todas(''); return; }
+      if (r.id === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) todas('codigo'); else renderReto(); }); return; }
+      todas(r.id);
       toast(`⏰ Para apagar la alarma: ${r.corto}`);
     };
     d.querySelector('.codcam')?.addEventListener('click', () => pedirCodigo(ALS, () => { alSave(); renderReto(); }));
@@ -2566,6 +2577,24 @@ function pedirCodigo(al, done) {
   };
   AND.escanearCodigo();
 }
+// 🧩 Reto de cada alarma: «Reto alarma ?» abre los tres retos; si tiene uno, «Reto … activado» y «Desactivar»
+function pintaRetoAlarma(al, d) {
+  const r = RETOS.find(x => x.id === retoDe(al)), box = d.querySelector('.retoal'), opts = d.querySelector('.retoopts');
+  box.innerHTML = r
+    ? `<span>🧩 Reto <b>${r.id === 'codigo' ? '📷 código de barras' : r.id === 'pasos' ? '🚶 20 pasos' : '🧮 3 cuentas'}</b> activado</span><button type="button" class="rq" aria-label="Cambiar el reto">?</button><button type="button" class="roff">Desactivar</button>`
+    : `<span>🧩 Reto alarma</span><button type="button" class="rq" aria-label="Elegir un reto">?</button>${RETO_OK ? '' : '<small style="margin-left:auto">📲 solo en la app 2.9+</small>'}`;
+  opts.innerHTML = RETOS.map(x => `<button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}"${RETO_OK ? '' : ' disabled'}>${x.t}<small>${x.help}</small></button>`).join('');
+  box.querySelector('.rq').onclick = () => { opts.hidden = !opts.hidden; };
+  const off = box.querySelector('.roff');
+  if (off) off.onclick = () => { al.reto = ''; alSave(); pintaRetoAlarma(al, d); toast('🧩 Reto desactivado: se apaga con el botón'); };
+  opts.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const v = b.dataset.r;
+    const listo = () => { al.reto = v; alSave(); opts.hidden = true; pintaRetoAlarma(al, d); toast(`🧩 Reto activado: ${RETOS.find(x => x.id === v).corto}`); };
+    if (v === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) listo(); renderReto(); }); return; }
+    listo();
+  });
+}
+const avisoReto = al => { const r = RETOS.find(x => x.id === retoDe(al)); return r ? ` · 🧩 recuerda: reto ${r.id === 'codigo' ? 'código de barras' : r.corto} activado` : ''; };
 function renderAlarmas() {
   $('napMin').value = ALS.siesta.min; $('napSon').textContent = tonoTxt(ALS.siesta.son);
   napCard();
@@ -2575,18 +2604,20 @@ function renderAlarmas() {
     d.innerHTML = `<div class="altop"><label class="swt"><input type="checkbox"${al.on ? ' checked' : ''}><i></i></label>
         <input type="time" value="${al.hora}"><button class="aldel" title="Borrar">✕</button></div>
       <div class="algrid"><label><span class="lbl">Tono</span><button class="tonobtn son" type="button">${tonoTxt(al.son)}</button></label><label><span class="lbl">Subida volumen <button class="info" type="button" aria-label="¿Qué es?">i</button></span><select class="sub">${subidas(al.sub)}</select></label></div>
-      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>`;
+      <div class="alhelp" hidden>Es el tiempo que tarda la alarma en subir poco a poco: empieza casi en silencio y llega al volumen completo en ese tiempo. «De golpe» suena fuerte desde el principio.</div>
+      <div class="retoal"></div><div class="retoopts" hidden></div>`;
     const upd = () => { al.on = d.querySelector('.swt input').checked; al.hora = d.querySelector('input[type=time]').value || al.hora;
       al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
     // al activarla o cambiar la hora: cuánto falta para que suene
-    d.querySelectorAll('input, select').forEach(x => x.onchange = () => { upd(); if (al.on && x.tagName === 'INPUT') toast(`⏰ Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}`); });
+    d.querySelectorAll('input, select').forEach(x => x.onchange = () => { upd(); if (al.on && x.tagName === 'INPUT') toast(`⏰ Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}${avisoReto(al)}`); });
     d.querySelector('.aldel').onclick = () => { if (confirm('¿Borrar esta alarma?')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
     d.querySelector('.son').onclick = () => elegirTono(al.son, id => { al.son = id; al.fired = null; alSave(); renderAlarmas(); });
     d.querySelector('.info').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp'); h.hidden = !h.hidden; };
+    pintaRetoAlarma(al, d);
     $('alList').append(d);
   }
 }
-$('alAdd').onclick = () => { ALS.list.push({id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}); alSave(); renderAlarmas(); toast(`⏰ Sonará en ${faltaTxt(proxima('07:30') - Date.now())}`); };
+$('alAdd').onclick = () => { const al = {id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}; ALS.list.push(al); alSave(); renderAlarmas(); toast(`⏰ Sonará en ${faltaTxt(proxima('07:30') - Date.now())}${avisoReto(al)}`); };
 $('napMin').onchange = () => {
   ALS.siesta.min = +$('napMin').value; alSave();
   if (ALS.siesta.fin) { napParar(); napGo(); } // con la siesta en marcha: vuelve a contar con la duración nueva
