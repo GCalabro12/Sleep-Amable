@@ -177,7 +177,7 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 #lunaIn{flex:1;resize:none;background:transparent;color:#fff;border:0;outline:0;padding:9px 6px;font:inherit;font-size:17px;min-height:44px;max-height:140px}
 #lunaIn::placeholder{color:#C4B5FD}
 #lunaForm button{width:46px;height:44px;border-radius:14px;border:0;background:#6D5BD0;color:#fff;font-size:20px;flex:none}
-#lunaForm #lunaMic{background:#312E81}
+#lunaForm #lunaMic{background:#312E81;color:#E0E7FF;display:flex;align-items:center;justify-content:center}
 #lunaForm #lunaMic.on{background:#DC2626;animation:rq-pulso 1s ease-in-out infinite}
 @keyframes rq-pulso{50%{transform:scale(1.08)}}
 .lmsg.pensando{display:flex;align-items:center;gap:10px}
@@ -581,7 +581,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div id="lunaChat"></div>
   <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
   <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
-  <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="✍️ Escribe tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta">🎤</button><button type="submit" aria-label="Enviar">➤</button></form>
+  <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="Tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="submit" aria-label="Enviar">➤</button></form>
   <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
   <div class="note" id="lunaVozInfo" hidden>🗣️ Luna lee con la voz que tengas puesta en tu móvil, así responde al momento. <button class="btn wide" id="lunaVozCfg" style="margin-top:8px" hidden>⚙️ Cambiar la voz del móvil</button></div>
   <details class="instr card" id="lunaHistDet"><summary>📚 Historial de charlas con Luna <small id="lunaHistN" style="font-weight:400;color:var(--muted)"></small></summary><div id="lunaHistList"></div></details>
@@ -814,7 +814,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.8'; // v6.8: en el reto de cada alarma, cada opción con su «?» que explica en qué consiste
+const VERSION = 'v6.9'; // v6.9: dictado dentro de la app, sin la ventana de Google, con el texto apareciendo en la caja (app 3.8); micrófono sencillo; la voz no lee los emojis; la caja no se agranda; «¿Fin del monitoreo?» en una ventana de la app
+// v6.8: // v6.8: en el reto de cada alarma, cada opción con su «?» que explica en qué consiste
 // v6.7: // v6.7: «Historial de charlas con Luna» (cada vez que entras, charla nueva); sin «Luna pensando», solo tres puntitos; cara dormida naranja con gorrito en «Monitorear mi sueño»; mejor voz del móvil (app 3.7)
 // v6.6: // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
 // v6.5: // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
@@ -1368,7 +1369,11 @@ document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
 
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
-  if (auto !== true && !confirm('¿Fin del monitoreo del sueño? Verás el resumen.')) return;
+  if (auto !== true) {
+    $('askList').innerHTML = '';
+    if (await ask('☀️ ¿Fin del monitoreo del sueño?', 'Verás el resumen de la noche.', '☀️ Sí, terminar', '🌙 Seguir monitoreando') !== 'a') return;
+    if (!live.night || live.parando) return;
+  }
   live.parando = true; $('finQ').hidden = true; panel(null); prueba = false; $('pPrueba').hidden = true;
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
@@ -2854,12 +2859,15 @@ async function lunaContexto() {
 let lunaAu = null;
 function lunaCallar() { if (lunaAu) { lunaAu.pause(); lunaAu = null; } try { AND?.callar?.(); } catch {} try { if (!AND) speechSynthesis.cancel(); } catch {} }
 async function lunaAudio(texto) {
+  texto = sinEmojis(texto);
   try {
     const r = await lunaPost('/luna-voz', {texto}, 12000);
     return r.ok ? new Audio(URL.createObjectURL(await r.blob())) : null;
   } catch { return null; }
 }
+const sinEmojis = t => String(t).replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, '').replace(/\s+/g, ' ').trim();
 function vozMovil(texto, fin) {
+  texto = sinEmojis(texto);
   if (AND?.hablar) { AND.hablar(texto); setTimeout(fin, Math.min(40000, 1500 + texto.length * 65)); return true; }
   if (!AND && window.speechSynthesis) {
     const u = new SpeechSynthesisUtterance(texto); u.lang = 'es-ES';
@@ -2905,7 +2913,7 @@ let lunaOcupada = false;
 async function lunaEnviar(texto) {
   texto = String(texto || '').trim();
   if (!texto || lunaOcupada) return;
-  lunaOcupada = true; $('lunaIn').value = ''; $('lunaSugBox').hidden = true;
+  lunaOcupada = true; $('lunaIn').value = ''; $('lunaIn').style.height = ''; $('lunaSugBox').hidden = true;
   const historial = lunaHist.slice(-10);
   if (!lunaHist.length) { lunaHistT = Date.now(); try { localStorage.setItem('ronquino-luna-ini', String(lunaHistT)); } catch {} }
   lunaHist.push({de: 'yo', texto}); lunaGuarda(); lunaMsg('yo', texto, false);
@@ -2929,18 +2937,26 @@ async function lunaEnviar(texto) {
 // El botón de Utilidades sale en cuanto el servidor de Luna está listo (con su clave de Gemini puesta)
 fetch(LUNA_API[0] + '/', {signal: AbortSignal.timeout(10000)}).then(r => r.json()).then(d => { if (d.luna) $('goUtiles').hidden = false; }).catch(() => {});
 const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
+let dictBase = null; // lo que había escrito antes de dictar
 function ponDictado(t) {
   $('lunaMic').classList.remove('on');
-  if (!t) return;
-  $('lunaIn').value = ($('lunaIn').value ? $('lunaIn').value + ' ' : '') + t;
-  $('lunaIn').oninput(); $('lunaIn').focus();
+  const base = dictBase ?? $('lunaIn').value; dictBase = null;
+  $('lunaIn').value = t ? (base ? base + ' ' : '') + t : base;
+  $('lunaIn').oninput();
 }
+window.dictadoParcial = t => { // mientras hablas, el texto va saliendo en la caja
+  if (dictBase === null) dictBase = $('lunaIn').value;
+  $('lunaIn').value = (dictBase ? dictBase + ' ' : '') + t; $('lunaIn').oninput();
+};
 window.dictado = (t, err) => {
   ponDictado(t);
-  if (!t && err === 'sin-dictado') alert('Este móvil no tiene el dictado por voz de Google. Escribe la pregunta, por favor.');
+  if (!t && err === 'sin-dictado') toast('Este móvil no tiene dictado por voz: escribe la pregunta');
 };
 $('lunaMic').onclick = () => {
-  if (AND?.dictar) { $('lunaMic').classList.add('on'); AND.dictar(); return; }
+  if (AND?.dictar) {
+    if ($('lunaMic').classList.contains('on') && AND.pararDictado) { AND.pararDictado(); return; }
+    lunaCallar(); dictBase = $('lunaIn').value; $('lunaMic').classList.add('on'); AND.dictar(); return;
+  }
   if (AND) { alert('📲 Para dictar, actualiza la app Amable Sleep a la versión 3.1 (en Inicio).'); return; }
   if (!RecVoz) { alert('Este navegador no deja dictar. Escribe la pregunta, por favor.'); return; }
   const r = new RecVoz(); r.lang = 'es-ES'; r.interimResults = false;
@@ -3043,7 +3059,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.7';
+const APK_ULTIMA = '3.8';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
