@@ -239,6 +239,13 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .prok button{flex:1;min-width:120px;padding:12px;border-radius:14px;border:1px solid #334155;background:#0B1020;color:#E0E7FF;font-size:16px}
 .prok button.si{border-color:#16A34A}.prok button.no{border-color:#DC2626}
 .prhist{margin-top:14px}
+.prtoca{font-size:17px;margin:6px 0 8px}
+.prchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.prchips button{background:#111827;border:1px solid #334155;border-radius:14px;padding:6px 10px;color:#94A3B8;font-size:13px}
+.prchips button.on{border-color:#A78BFA;color:#E0E7FF;background:#1E1B4B}
+.prveredicto{font-size:17px;font-weight:700;margin:2px 0 8px}
+.prveredicto.si{color:#4ADE80}.prveredicto.no{color:#F87171}
+.flag.on.a{background:#1E3A8A;color:#BFDBFE;border-color:#3B82F6}
 .prhh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .prit{font-size:13px;padding:8px 10px;border-radius:10px;background:#0B1020;border:1px solid #1F2937;margin-bottom:6px}
 .prbar{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}
@@ -811,7 +818,8 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
     <div class="note" id="prMic"></div>
     <p class="prtxt">Pulsa el botón y ronca de mentira (o habla) durante <b>6 segundos</b>. Al acabar suena un pitido y te digo qué he oído.</p>
-    <button type="button" id="prGrab"><span id="prGrabTx">● Grabar 6 s</span></button>
+    <div id="prGuia"></div>
+    <button type="button" id="prGrab"><span id="prGrabTx">● Grabar</span></button>
     <div class="meter" style="width:80%;margin:10px auto"><i id="prLvl"></i></div>
     <div id="prRes" hidden></div>
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📤 Enviar</button></div><div id="prHist"></div></div>
@@ -829,7 +837,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button> <button class="mute" id="pruebaBtn">🧪 Probar detección</button>
     <div class="lcuna" id="lcuna" hidden></div>
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
@@ -838,7 +846,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.5'; // v7.5: en pantallas estrechas, el texto de los botones del inicio usa todo el ancho (también debajo del icono)
+const VERSION = 'v7.6'; // v7.6: «Probar detección» con guía de pruebas (ronquido fuerte/suave/con respiración, respirar, voz alta/baja, silencio) que se corrige sola; termina siempre a los 6 s (pitido) y el botón la para; «🎧 Auriculares» en la prueba y en el monitoreo; si el micrófono se para, se vuelve a encender solo
+// v7.5: // v7.5: en pantallas estrechas, el texto de los botones del inicio usa todo el ancho (también debajo del icono)
 // v7.4: // v7.4: en el monitoreo, 🌙 No molestar, 🎵 y ✈️ en gris si están apagados y en color si están activados
 // v7.3: // v7.3: el altavoz de las respuestas de Luna va fuera del recuadro, a su derecha
 // v7.2: // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
@@ -1292,10 +1301,10 @@ async function startListening() {
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
     onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }, onScore: pruebaScore, onResult: pruebaResult});
   const rs = new Resampler(ctx.sampleRate);
-  node.port.onmessage = m => { const x = rs.process(m.data); det.push(x); live.capt?.add(x); };
+  node.port.onmessage = m => { live.lastFrame = Date.now(); const x = rs.process(m.data); det.push(x); live.capt?.add(x); };
   stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
 
-  Object.assign(live, {stream, ctx, night, saver, det});
+  Object.assign(live, {stream, ctx, night, saver, det, src, lp1, lastFrame: Date.now()});
   movEmpezar(night);
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
@@ -1316,6 +1325,9 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
+    if (AND?.auriculares) { const au = !!AND.auriculares(); $('fAur').hidden = !au; $('fAur').classList.toggle('on', au); }
+    // el micrófono se ha parado (p. ej. al conectar los pinganillos): se vuelve a encender solo
+    if (Date.now() - (live.lastFrame || Date.now()) > 8000) { live.lastFrame = Date.now(); reiniciaMic(); }
     // iconos de arriba: en color solo si están activados
     if (AND) { try { $('lDnd').classList.toggle('on', !!AND.dndActivo()); $('lAir').classList.toggle('on', !!(AND.modoAvion && AND.modoAvion())); } catch {} }
     if (Date.now() % 60000 < 500 && AND?.micBluetooth?.()) AND.micMovil(); // que no grabe con el micro de los pinganillos
@@ -1399,6 +1411,24 @@ document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
   if (live.det) { live.det.mute(m * 60); muteTick(); }
   finQCerrar(m + 5);
 });
+
+// Vuelve a pedir el micrófono y lo conecta a la misma cadena (filtro → detector)
+async function reiniciaMic() {
+  if (!live.night || live.reiniciando) return;
+  live.reiniciando = true;
+  try {
+    const nuevo = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}});
+    if (!live.night) { nuevo.getTracks().forEach(t => t.stop()); return; }
+    const src2 = live.ctx.createMediaStreamSource(nuevo);
+    src2.connect(live.lp1); if (live.sonar?.an) src2.connect(live.sonar.an);
+    try { live.src.disconnect(); } catch {}
+    live.stream.getTracks().forEach(t => t.stop());
+    Object.assign(live, {stream: nuevo, src: src2, lastFrame: Date.now()});
+    if (live.ctx.state === 'suspended') live.ctx.resume();
+    showWarn('🎙️ El micrófono se había parado y lo he vuelto a encender.');
+  } catch (e) { showWarn('🎙️ El micrófono se ha parado. Toca «Fin monitoreo sueño» y vuelve a empezar.'); }
+  finally { live.reiniciando = false; }
+}
 
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
@@ -1529,15 +1559,18 @@ const PR_SEG = 6;
 $('pruebaBtn').onclick = () => {
   panel(null); prueba = true; $('pPrueba').hidden = false; $('prRes').hidden = true;
   if (live.det) { live.prMute = live.det.muteUntil; live.det.muteUntil = Infinity; } // mientras pruebas, la noche no graba
-  pintaMic(); pintaPruebas(); wake();
+  pintaMic(); pintaGuia(); pintaPruebas(); wake();
 };
 $('pruebaX').onclick = () => {
-  prueba = false; $('pPrueba').hidden = true; live.capt = null; $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar 6 s';
+  if (prCapt) { clearTimeout(prCapt.to); prCapt = null; }
+  prueba = false; $('pPrueba').hidden = true; live.capt = null; $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar';
   if (live.det && !live.cuna) live.det.muteUntil = live.det.samples / SR + 1;
 };
 function pintaMic() {
   const bt = AND?.micBluetooth?.();
-  $('prMic').textContent = AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil…' : '🎙️ Graba con el micrófono del móvil.') : '';
+  const au = AND?.auriculares?.();
+  $('prMic').textContent = (AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil… ' : '🎙️ Graba con el micrófono del móvil. ') : '')
+    + (AND?.auriculares ? (au ? '🎧 Auriculares conectados.' : 'Sin auriculares.') : '');
   if (bt) AND.micMovil?.();
 }
 function pruebaScore() {}
@@ -1546,47 +1579,83 @@ function pitido() {
   try { const c = live.ctx, o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = .25;
     o.connect(g).connect(c.destination); o.start(); g.gain.setTargetAtTime(0, c.currentTime + .18, .03); o.stop(c.currentTime + .35); } catch {}
 }
+// Guía de pruebas: qué hacer en cada una y qué debería decir la app (para saber sola si acierta)
+const PR_GUIA = [
+  {id: 'r-fuerte', t: '😴 Ronquido fuerte', esp: 'ronquido'},
+  {id: 'r-suave', t: '😴 Ronquido suave', esp: 'ronquido'},
+  {id: 'r-resp', t: '😴 Ronquido con su respiración (inspira roncando y espira)', esp: 'ronquido'},
+  {id: 'resp', t: '😮‍💨 Respirar fuerte, sin roncar', esp: 'otro'},
+  {id: 'voz-alta', t: '🗣️ Hablar en voz normal o alta', esp: 'voz'},
+  {id: 'voz-baja', t: '🗣️ Hablar en voz baja', esp: 'voz'},
+  {id: 'silencio', t: '🤫 Silencio: no hagas nada', esp: 'otro'},
+  {id: 'libre', t: '✋ Prueba libre (lo que quieras)', esp: null}
+];
+let prGuiaI = 0; try { prGuiaI = Math.min(PR_GUIA.length - 1, +localStorage.getItem('ronquino-prguia') || 0); } catch {}
+function pintaGuia() {
+  const g = PR_GUIA[prGuiaI];
+  $('prGuia').innerHTML = `<div class="note">Siéntate en la cama, con el móvil en la mesilla, como de noche.</div>
+    <div class="prtoca">${g.esp ? `Prueba ${prGuiaI + 1} de ${PR_GUIA.length - 1}` : 'Prueba libre'} · Haz: <b>${g.t}</b></div>
+    <div class="prchips">${PR_GUIA.map((x, i) => `<button type="button" data-i="${i}" class="${i === prGuiaI ? 'on' : ''}">${x.t.split(' (')[0]}</button>`).join('')}</div>`;
+  $('prGuia').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { prGuiaI = +b.dataset.i; try { localStorage.setItem('ronquino-prguia', String(prGuiaI)); } catch {} pintaGuia(); });
+}
+// Grabar 6 s (por reloj: aunque el micrófono se pare, a los 6 s termina). Otro toque al botón la para antes.
+let prCapt = null;
 $('prGrab').onclick = () => {
-  if (live.capt || !live.det) return;
+  if (prCapt) { prCapt.fin(); return; }
+  if (!live.det) return;
   $('prRes').hidden = true; $('prGrab').classList.add('on');
   const buf = new Float32Array(SR * PR_SEG); let n = 0;
   const t0 = Date.now();
+  const tick = setInterval(() => { $('prGrabTx').textContent = `● ${Math.max(1, Math.ceil(PR_SEG - (Date.now() - t0) / 1000))} s`; wake(); }, 200);
+  prCapt = {fin() {
+    clearInterval(tick); clearTimeout(prCapt.to); live.capt = null; prCapt = null; pitido();
+    analizaPrueba(buf.subarray(0, n));
+  }};
+  prCapt.to = setTimeout(() => prCapt?.fin(), PR_SEG * 1000 + 150);
+  $('prGrabTx').textContent = `● ${PR_SEG} s`;
   live.capt = {add(x) {
     for (let i = 0; i < x.length && n < buf.length; i++) buf[n++] = x[i];
     let s = 0; for (let i = 0; i < x.length; i++) s += x[i] * x[i];
     $('prLvl').style.width = Math.min(100, Math.sqrt(s / Math.max(1, x.length)) * 600) + '%';
-    $('prGrabTx').textContent = `⏺ ${Math.max(1, PR_SEG - Math.floor((Date.now() - t0) / 1000))} s`;
-    if (n >= buf.length) { live.capt = null; pitido(); analizaPrueba(buf); }
   }};
   wake();
 };
 function analizaPrueba(buf) {
-  $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar otra vez';
+  $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar';
+  if (buf.length < SR) { // casi no llegó sonido: el micrófono está parado
+    $('prRes').innerHTML = '<div class="prq">⚠️ No llega sonido del micrófono</div><div class="note">Lo vuelvo a encender. Espera 3 segundos y prueba otra vez. Si sigue igual, quita los auriculares bluetooth o cierra y abre la app.</div>';
+    $('prRes').hidden = false; reiniciaMic(); return;
+  }
   const sn = [], vo = [], br = [], tops = {};
-  for (let i = 0; i + SR <= buf.length; i += SR) {
-    const r = IA.scores(buf.subarray(i, i + SR));
+  for (let i = 0; i + SR * .5 <= buf.length; i += SR) {
+    const r = IA.scores(buf.subarray(i, Math.min(i + SR, buf.length)));
     sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0);
     if (r.top) tops[r.top] = (tops[r.top] || 0) + r.topS;
   }
   const tipo = decide(sn, vo, br), top = Object.entries(tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-  const x = {t: Date.now(), tipo, sn, vo, br, top, sens: cfg.sens, strict: cfg.strict, ok: null, real: null};
-  pruebas.unshift(x); pruebas = pruebas.slice(0, 60); guardaPruebas();
+  const g = PR_GUIA[prGuiaI];
+  const x = {t: Date.now(), tipo, sn, vo, br, top, sens: cfg.sens, strict: cfg.strict, prueba: g.t, esperado: g.esp,
+    ok: g.esp ? tipo === g.esp : null, real: g.esp || null, auric: !!AND?.auriculares?.()};
+  pruebas.unshift(x); pruebas = pruebas.slice(0, 80); guardaPruebas();
   const que = tipo === 'ronquido' ? '😴 RONQUIDO' : tipo === 'voz' ? '🗣️ VOZ' : `🔊 Otro sonido (${es(top)})`;
   const col = (v, c) => `<i style="height:${Math.max(2, pct(v))}%;background:${c}"></i>`;
   $('prRes').innerHTML = `<div class="prq">${que}</div>
+    ${g.esp ? `<div class="prveredicto ${x.ok ? 'si' : 'no'}">${x.ok ? '✅ Ha acertado' : `❌ Ha fallado: tenía que decir «${nomTipo(g.esp)}»`}</div>` : ''}
     <div class="note">Cada columna es 1 segundo: <span style="color:#A78BFA">■ ronquido</span> <span style="color:#FBBF24">■ voz</span> <span style="color:#38BDF8">■ respiración</span></div>
     <div class="prseg">${sn.map((v, i) => `<div>${col(v, '#A78BFA')}${col(vo[i], '#FBBF24')}${col(br[i], '#38BDF8')}</div>`).join('')}</div>
     <div class="note">Máximo: ronquido ${pct(Math.max(...sn))} % · voz ${pct(Math.max(...vo))} % · respiración ${pct(Math.max(...br))} %${top ? ` · se parece a: ${es(top)}` : ''}</div>
-    <div style="margin-top:10px;font-weight:600">¿Ha acertado?</div>
+    ${g.esp ? '' : `<div style="margin-top:10px;font-weight:600">¿Ha acertado?</div>
     <div class="prok"><button type="button" class="si" data-ok="1">✅ Correcto</button><button type="button" class="no" data-ok="0">❌ No correcto</button></div>
-    <div class="prok" id="prReal" hidden><span class="note" style="width:100%">¿Qué era de verdad?</span><button type="button" data-real="ronquido">😴 Ronquido</button><button type="button" data-real="voz">🗣️ Voz</button><button type="button" data-real="otro">🔊 Otra cosa</button></div>`;
+    <div class="prok" id="prReal" hidden><span class="note" style="width:100%">¿Qué era de verdad?</span><button type="button" data-real="ronquido">😴 Ronquido</button><button type="button" data-real="voz">🗣️ Voz</button><button type="button" data-real="otro">🔊 Otra cosa</button></div>`}`;
   $('prRes').hidden = false;
   $('prRes').querySelectorAll('[data-ok]').forEach(b => b.onclick = () => {
     x.ok = b.dataset.ok === '1'; if (x.ok) x.real = tipo; guardaPruebas(); pintaPruebas();
     $('prReal').hidden = x.ok; if (x.ok) toast('✅ Apuntado: ha acertado');
   });
   $('prRes').querySelectorAll('[data-real]').forEach(b => b.onclick = () => { x.real = b.dataset.real; guardaPruebas(); pintaPruebas(); $('prReal').hidden = true; toast('📋 Apuntado, gracias'); });
-  pintaPruebas(); wake();
+  // con la guía, la siguiente prueba ya queda elegida
+  if (g.esp && prGuiaI < PR_GUIA.length - 2) { prGuiaI++; try { localStorage.setItem('ronquino-prguia', String(prGuiaI)); } catch {} }
+  pintaGuia(); pintaPruebas(); wake();
 }
 function guardaPruebas() { try { localStorage.setItem('ronquino-pruebas', JSON.stringify(pruebas)); } catch {} }
 const nomTipo = t => t === 'ronquido' ? 'ronquido' : t === 'voz' ? 'voz' : 'otro';
@@ -1596,14 +1665,14 @@ function pintaPruebas() {
   $('prHist').innerHTML = pruebas.length ? '' : '<div class="note">Aún no hay pruebas.</div>';
   for (const p of pruebas.slice(0, 20)) {
     const d = document.createElement('div'); d.className = 'prit';
-    d.textContent = `${hhmm(p.t)} · dijo ${nomTipo(p.tipo)}${p.ok === true ? ' ✅' : p.ok === false ? ` ❌ (era ${p.real ? nomTipo(p.real) : '¿?'})` : ''} · ronquido ${pct(Math.max(...p.sn))} % · voz ${pct(Math.max(...p.vo))} % · resp. ${pct(Math.max(...p.br))} %`;
+    d.textContent = `${hhmm(p.t)} · ${p.prueba ? p.prueba.split(' (')[0] + ' → ' : ''}dijo ${nomTipo(p.tipo)}${p.ok === true ? ' ✅' : p.ok === false ? ` ❌ (era ${p.real ? nomTipo(p.real) : '¿?'})` : ''} · ronquido ${pct(Math.max(...p.sn))} % · voz ${pct(Math.max(...p.vo))} % · resp. ${pct(Math.max(...p.br))} %`;
     $('prHist').append(d);
   }
 }
 $('prEnviar').onclick = async () => {
   if (!pruebas.length) { toast('Aún no hay pruebas'); return; }
   const txt = `Pruebas de detección · Amable Sleep ${VERSION}\n` + pruebas.map(p =>
-    `${new Date(p.t).toLocaleString('es-ES')} | dijo ${nomTipo(p.tipo)} | ${p.ok === true ? 'CORRECTO' : p.ok === false ? 'MAL, era ' + (p.real || '¿?') : 'sin valorar'} | sens ${p.sens} exig ${p.strict} | ronquido ${p.sn.map(pct).join(' ')} | voz ${p.vo.map(pct).join(' ')} | resp ${p.br.map(pct).join(' ')} | top ${p.top || '-'}`).join('\n');
+    `${new Date(p.t).toLocaleString('es-ES')} | ${p.prueba || 'libre'} | dijo ${nomTipo(p.tipo)} | auriculares ${p.auric ? 'sí' : 'no'} | ${p.ok === true ? 'CORRECTO' : p.ok === false ? 'MAL, era ' + (p.real || '¿?') : 'sin valorar'} | sens ${p.sens} exig ${p.strict} | ronquido ${p.sn.map(pct).join(' ')} | voz ${p.vo.map(pct).join(' ')} | resp ${p.br.map(pct).join(' ')} | top ${p.top || '-'}`).join('\n');
   if (AND?.compartir) {
     const b64 = btoa(unescape(encodeURIComponent(txt)));
     if (!AND.compartir('pruebas-deteccion.txt', b64)) toast('No se pudo compartir');
