@@ -521,7 +521,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
@@ -650,7 +650,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary><span>🎧 Avisarme si ronco <small id="sAvisoAj"></small><small style="display:block;font-size:12px;margin-top:2px">Necesita auriculares</small></span></summary>
-    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth.</small></label>
+    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</small></label>
       <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
     <button class="btn wide avisoTest">▶ Probar la voz</button>
   </details>
@@ -855,7 +855,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v8.4'; // v8.4: aviso «Estás roncando» al minuto de roncar y, si sigues, cada 30 s; tras 30 s sin roncar vuelve a esperar 1 minuto
+const VERSION = 'v8.5'; // v8.5: con la app 3.9, mientras la voz avisa por los pinganillos el volumen sube al menos a 3/4 y luego vuelve a como estaba
+// v8.4: // v8.4: aviso «Estás roncando» al minuto de roncar y, si sigues, cada 30 s; tras 30 s sin roncar vuelve a esperar 1 minuto
 // v8.3: // v8.3: en el monitoreo, «🎧 Avisa si ronco» si está activado (en gris si faltan los auriculares); el aviso «Estás roncando» salta tras 1 minuto roncando en los últimos 5 (y espera 5 min para repetir); texto más claro; bloque sin el emoji naranja
 // v8.2: // v8.2: en el monitoreo, minutos de ronquido y de voces (no número de grabaciones); a la derecha de «Probar», el bloque que está grabando y cuánto le queda; el aviso «Estás roncando» con 2 ronquidos seguros en 5 min
 // v8.1: // v8.1: en cuanto te pones los pinganillos (con la app abierta) te dice su batería si no están casi llenos; si el móvil no deja leerla, lo avisa; la prueba enseña la batería
@@ -3272,7 +3273,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.8';
+const APK_ULTIMA = '3.9';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
