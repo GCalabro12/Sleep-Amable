@@ -224,6 +224,15 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .prbar em{width:40px;text-align:right;font-style:normal;color:#E0E7FF}
 .prres{padding:8px 10px;border-radius:10px;background:#0B1020;border:1px solid #1F2937;margin-bottom:6px;font-size:13px}
 .prres.r{border-color:#7C3AED}.prres.v{border-color:#CA8A04}.prres.x{opacity:.7}
+.lhist{border-top:1px solid var(--line);padding:10px 0}
+.lhist>button{width:100%;text-align:left;background:none;border:0;color:var(--text);font-size:15px;padding:0}
+.lhist>button small{display:block;color:var(--muted);font-size:12px}
+.lhist .lhmsgs{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.lhist .lmsg{font-size:14px;padding:8px 11px}
+.puntos3{display:inline-flex;gap:5px;padding:4px 2px}
+.puntos3 i{width:8px;height:8px;border-radius:50%;background:#C4B5FD;animation:rq-salta 1s infinite ease-in-out}
+.puntos3 i:nth-child(2){animation-delay:.15s}.puntos3 i:nth-child(3){animation-delay:.3s}
+@keyframes rq-salta{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -444,7 +453,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
-  <button class="choice a" id="goSnore"><span class="ic"><img class="icimg" src="luna/luna-saluda.png" alt=""></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
@@ -571,6 +580,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="✍️ Escribe tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta">🎤</button><button type="submit" aria-label="Enviar">➤</button></form>
   <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
   <div class="note" id="lunaVozInfo" hidden>🗣️ Luna lee con la voz que tengas puesta en tu móvil, así responde al momento. <button class="btn wide" id="lunaVozCfg" style="margin-top:8px" hidden>⚙️ Cambiar la voz del móvil</button></div>
+  <details class="instr card" id="lunaHistDet"><summary>📚 Historial de charlas con Luna <small id="lunaHistN" style="font-weight:400;color:var(--muted)"></small></summary><div id="lunaHistList"></div></details>
   <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
 </section>
 
@@ -800,7 +810,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.6'; // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
+const VERSION = 'v6.7'; // v6.7: «Historial de charlas con Luna» (cada vez que entras, charla nueva); sin «Luna pensando», solo tres puntitos; cara dormida naranja con gorrito en «Monitorear mi sueño»; mejor voz del móvil (app 3.7)
+// v6.6: // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
 // v6.5: // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
 // v6.4: // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
 // v6.3: // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
@@ -2794,6 +2805,32 @@ $('lunaVoz').onchange = () => { lunaVoz = $('lunaVoz').checked; try { localStora
 $('lunaVozCfg').onclick = () => AND?.ajustesVoz?.();
 pintaVozInfo();
 const lunaGuarda = () => { lunaHist = lunaHist.slice(-30); try { localStorage.setItem('ronquino-luna', JSON.stringify(lunaHist)); } catch {} };
+// Charlas anteriores: cada vez que se entra en «Habla con Luna» empieza una nueva y la de antes pasa al historial
+let lunaCharlas = []; try { lunaCharlas = JSON.parse(localStorage.getItem('ronquino-luna-charlas') || '[]'); } catch {}
+function lunaArchiva() {
+  if (!lunaHist.some(m => m.de === 'yo')) { lunaHist = []; lunaGuarda(); return; }
+  lunaCharlas.unshift({t: lunaHistT || Date.now(), msgs: lunaHist});
+  lunaCharlas = lunaCharlas.slice(0, 40);
+  try { localStorage.setItem('ronquino-luna-charlas', JSON.stringify(lunaCharlas)); } catch {}
+  lunaHist = []; lunaGuarda();
+}
+let lunaHistT = 0; try { lunaHistT = +localStorage.getItem('ronquino-luna-ini') || 0; } catch {}
+function pintaCharlas() {
+  $('lunaHistN').textContent = lunaCharlas.length ? `(${lunaCharlas.length})` : '';
+  $('lunaHistDet').hidden = !lunaCharlas.length;
+  $('lunaHistList').innerHTML = '';
+  for (const c of lunaCharlas) {
+    const d = document.createElement('div'); d.className = 'lhist';
+    const primera = (c.msgs.find(m => m.de === 'yo') || {}).texto || '';
+    const b = document.createElement('button'); b.type = 'button';
+    b.innerHTML = `<small>${new Date(c.t).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'short'})} · ${hhmm(c.t)}</small>`;
+    b.append(document.createTextNode('💬 ' + primera.slice(0, 80)));
+    const box = document.createElement('div'); box.className = 'lhmsgs'; box.hidden = true;
+    for (const m of c.msgs) { const x = document.createElement('div'); x.className = 'lmsg ' + m.de; x.textContent = m.texto; box.append(x); }
+    b.onclick = () => { box.hidden = !box.hidden; };
+    d.append(b, box); $('lunaHistList').append(d);
+  }
+}
 async function lunaPost(ruta, body, ms = 45000) {
   return fetch(LUNA_API[0] + ruta, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: AbortSignal.timeout(ms)});
 }
@@ -2857,16 +2894,17 @@ function lunaMsg(de, texto, voz, au) {
   $('lunaChat').append(d);
   return d;
 }
-function lunaAbrir() { lunaCallar(); lunaPinta(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
+function lunaAbrir() { lunaCallar(); lunaArchiva(); lunaPinta(); pintaCharlas(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }
 let lunaOcupada = false;
 async function lunaEnviar(texto) {
   texto = String(texto || '').trim();
   if (!texto || lunaOcupada) return;
   lunaOcupada = true; $('lunaIn').value = ''; $('lunaSugBox').hidden = true;
   const historial = lunaHist.slice(-10);
+  if (!lunaHist.length) { lunaHistT = Date.now(); try { localStorage.setItem('ronquino-luna-ini', String(lunaHistT)); } catch {} }
   lunaHist.push({de: 'yo', texto}); lunaGuarda(); lunaMsg('yo', texto, false);
   const pens = document.createElement('div'); pens.className = 'lmsg luna pensando';
-  pens.innerHTML = '<img class="lpens" src="luna/luna-consejo.png" alt=""><span>Luna está pensando<span class="puntos"></span></span>';
+  pens.innerHTML = '<span class="puntos3" aria-label="Escribiendo"><i></i><i></i><i></i></span>';
   $('lunaChat').append(pens);
   window.scrollTo(0, document.body.scrollHeight);
   let resp, ok = false;
@@ -2999,7 +3037,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.6';
+const APK_ULTIMA = '3.7';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
