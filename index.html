@@ -20,10 +20,10 @@
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
-header{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
-header .logo{width:40px;height:40px;flex:none}
-header h1{font-size:22px;margin:0;font-weight:700}
-header .ver{margin-left:auto;font-size:12px;color:var(--dim);white-space:nowrap}
+header{display:flex;align-items:center;gap:12px;margin:4px 0 22px}
+header .logo{width:68px;height:68px;flex:none}
+header h1{font-size:clamp(24px,7.6vw,34px);margin:0;font-weight:800;white-space:nowrap;line-height:1.1}
+header .ver{margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;font-size:11px;line-height:1.5;color:var(--dim);white-space:nowrap}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 .ia{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
@@ -191,6 +191,7 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .avcard b{color:#FDE047}
 .avcard .avl{font-size:14px;color:#E7E5E4;margin-top:4px}
 .choice .icimg{width:46px;height:auto;display:block}
+#goSnore .icimg{width:58px}
 details.lunadet{margin-top:10px}
 details.lunadet>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;padding:4px 0;color:#C4B5FD}
 details.lunadet>summary::-webkit-details-marker{display:none}
@@ -415,8 +416,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <a class="apkdl" id="apkDl" href="SleepAmable.apk" download="SleepAmable.apk">⬇️ Descargar Amable Sleep</a>
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
-  <p class="hello">¿Qué necesitas esta noche?</p>
-  <button class="choice a" id="goSnore"><span class="ic">😴</span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><defs><mask id="ic-luna"><rect width="100" height="100" fill="#fff"/><circle cx="66" cy="50" r="30" fill="#000"/></mask></defs><circle cx="46" cy="60" r="34" fill="#FDE68A" mask="url(#ic-luna)"/><path d="M19 62 q7 6 14 0" fill="none" stroke="#1E1B4B" stroke-width="4.5" stroke-linecap="round"/><circle cx="22" cy="73" r="4.5" fill="#FB7185" opacity=".6"/><path d="M14 40 Q34 18 56 30 Q66 12 84 12 Q68 24 60 38 Z" fill="#1E1B4B"/><path d="M12 42 Q34 24 58 34" fill="none" stroke="#EDE9FE" stroke-width="7" stroke-linecap="round"/><circle cx="86" cy="12" r="7" fill="#fff"/><path d="M72 58 h12 l-12 12 h12" fill="none" stroke="#C4B5FD" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
@@ -751,7 +751,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.9'; // v5.9: la app siempre pregunta si hay versión nueva (antes podía tardar hasta 10 min en ver el aviso de actualizar)
+const VERSION = 'v6.0'; // v6.0: cabecera con logo y «Amable Sleep» más grandes en una línea y las versiones una encima de otra; fuera «¿Qué necesitas esta noche?»; luna dormida con gorrito en «Monitorear mi sueño»
+// v5.9: // v5.9: la app siempre pregunta si hay versión nueva (antes podía tardar hasta 10 min en ver el aviso de actualizar)
 // v5.8: // v5.8: «Instrucciones de uso» plegadas (también en «Dormir junto a alguien que ronca», con la batería de los pinganillos); pantalla hacia arriba; fuera «Analizar una grabación» y el «Detector listo»
 // v5.7: // v5.7: «Monitorear mi sueño»; deslizar el dedo pasa de pantalla y atrás nunca saca de la app; 🎧 aviso de batería de los pinganillos (app 3.3)
 // v5.6: // v5.6: «Monitoreando» con tres puntos; avisos Grabando / Movimiento / Luz (luz: app 3.2); con luz y movimiento, cuenta atrás de 5 min y pantalla «¿Quieres detener el monitoreo del sueño?» (sí, continuar o pausar 1/2/5 min)
@@ -2865,7 +2866,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 const APK_ULTIMA = '3.3';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
-  $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
+  $('ver').innerHTML = `<span>web ${VERSION}</span><span>app ${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
 if (AND && parseFloat(AND.version()) < parseFloat(APK_ULTIMA)) {
   // App instalada más vieja: invitar a actualizar (la 1.6 aún se llamaba RonquiNo y no abre descargas)
   $('tipApk').remove();
