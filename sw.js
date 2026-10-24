@@ -1,5 +1,5 @@
 // Amable Sleep — funciona sin conexión. Subir CACHE con cada versión.
-const CACHE = 'sleepamable-v5.8';
+const CACHE = 'sleepamable-v5.9';
 const CORE = ['./', './index.html', './logo.svg', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './luna/luna-saluda.png', './luna/luna-consejo.png', './luna/luna-aplaude.png'];
 // La IA (MediaPipe + modelo YAMNet) se guarda la primera vez que se descarga
 const IA_HOSTS = ['cdn.jsdelivr.net', 'storage.googleapis.com'];
@@ -31,7 +31,8 @@ self.addEventListener('fetch', e => {
   }
   if (u.pathname.endsWith('.apk')) return; // el APK se descarga directo, sin guardarlo
   if (u.origin !== location.origin || !u.pathname.startsWith(new URL('./', self.registration.scope).pathname)) return;
-  e.respondWith(fetch(r).then(res => { // primero la red (para recibir versiones nuevas), si no hay, la copia
+  // primero la red, preguntando siempre si hay versión nueva (sin fiarse de la caché de 10 min del servidor); si no hay red, la copia
+  e.respondWith(fetch(r, {cache: 'no-cache'}).then(res => {
     if (res.ok && !u.search) caches.open(CACHE).then(c => c.put(r, res.clone()));
     return res;
   }).catch(() => caches.match(r, {ignoreSearch: true}).then(hit => hit || caches.match('./index.html'))));
