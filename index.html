@@ -251,6 +251,26 @@ details.hist[open] summary{margin-bottom:10px}
 #listen.on{display:flex}
 #listen .inner{transition:opacity 1.2s}
 #listen.dim .inner{opacity:.07}
+.monit{font-size:20px;font-weight:700;color:#A78BFA;margin-bottom:6px;letter-spacing:.3px}
+.tres{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
+.tres i{width:9px;height:9px;border-radius:50%;background:#A78BFA;opacity:.15;animation:2s linear infinite}
+.tres i:nth-child(1){animation-name:rq-p1}.tres i:nth-child(2){animation-name:rq-p2}.tres i:nth-child(3){animation-name:rq-p3}
+@keyframes rq-p1{0%,15%{opacity:.15}20%,90%{opacity:1}95%,100%{opacity:.15}}
+@keyframes rq-p2{0%,40%{opacity:.15}45%,90%{opacity:1}95%,100%{opacity:.15}}
+@keyframes rq-p3{0%,65%{opacity:.15}70%,90%{opacity:1}95%,100%{opacity:.15}}
+.flags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
+.flag{padding:5px 11px;border-radius:14px;font-size:14px;background:#0B1020;color:#475569;border:1px solid #1F2937}
+.flag.on.g{background:#7F1D1D;color:#FECACA;border-color:#B91C1C}
+.flag.on.m{background:#0C4A6E;color:#BAE6FD;border-color:#0284C7}
+.flag.on.l{background:#713F12;color:#FDE68A;border-color:#CA8A04}
+.flag.cuenta{background:#1E1B4B;color:#E0E7FF;border-color:#6D5BD0}
+#finQ{position:fixed;inset:0;z-index:40;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+#finQ h2{font-size:27px;margin:0 0 8px;color:#FDE68A}
+#finQ p{color:#CBD5E1;font-size:16px;margin:0 0 22px}
+#finQ .big{width:100%;max-width:420px;margin:0 0 12px}
+#finQ .fq2{width:100%;max-width:420px;padding:16px;border-radius:18px;border:1px solid #6D5BD0;background:#1E1B4B;color:#E0E7FF;font-size:19px;margin-bottom:16px}
+#finQ .fqp{display:flex;gap:8px;width:100%;max-width:420px}
+#finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
 .clock{font-size:64px;font-weight:200;letter-spacing:2px;color:#CBD5E1}
 .elapsed{color:var(--dim);margin-bottom:26px}
 .counters{display:flex;gap:26px;justify-content:center;font-size:20px;margin-bottom:24px}
@@ -673,7 +693,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves.</div></details>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la pantalla hacia abajo. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves. Con la pantalla <b>hacia arriba</b>, la app nota además cuándo se enciende la luz.</div></details>
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
@@ -687,9 +707,19 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 </div>
 
+<!-- ¿TERMINAR? (luz + movimiento durante 5 min) -->
+<div id="finQ" hidden>
+  <h2>🌅 ¿Quieres detener el monitoreo del sueño?</h2>
+  <p>Hay luz y movimiento desde hace un rato: parece que ya te has levantado.</p>
+  <button class="big" id="fqSi">☀️ Sí, terminar la noche</button>
+  <button class="fq2" id="fqNo">🌙 Continuar monitoreando</button>
+  <div class="fqp"><button data-m="1">❚❚ Pausar 1 min</button><button data-m="2">❚❚ 2 min</button><button data-m="5">❚❚ 5 min</button></div>
+</div>
+
 <!-- ESCUCHANDO -->
 <div id="listen">
   <div class="inner">
+    <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="counters">
@@ -701,6 +731,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
     <div class="lcuna" id="lcuna" hidden></div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <button id="stopBtn">☀️ Fin monitoreo de la noche</button>
@@ -709,7 +740,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v5.5'; // v5.5: 🎧 en las grabaciones, raya amarilla donde se dijo «estás roncando»; cuánto sirve el aviso (antes/después, dejó de roncar, se movió) en la noche y en Estadísticas
+const VERSION = 'v5.6'; // v5.6: «Monitoreando» con tres puntos; avisos Grabando / Movimiento / Luz (luz: app 3.2); con luz y movimiento, cuenta atrás de 5 min y pantalla «¿Quieres detener el monitoreo del sueño?» (sí, continuar o pausar 1/2/5 min)
+// v5.5: // v5.5: 🎧 en las grabaciones, raya amarilla donde se dijo «estás roncando»; cuánto sirve el aviso (antes/después, dejó de roncar, se movió) en la noche y en Estadísticas
 // v5.4: // v5.4: con «Leer en voz alta», la luna pensando y luego texto y voz a la vez (si la voz de Gemini no llega, la del móvil); Luna con gorrito en el botón de Utilidades; 🎤 dictar la pregunta a Luna (app 3.1); «Sugerencias de preguntas» en gris y la caja de escribir más destacada
 // v5.3: // v5.3: en Estadísticas, consejos de la luna plegables y «Mis noches» (las más nuevas arriba); en Ajustes, cuántas noches guardar y «Compartir» (activado de entrada); el texto de la luna ocupa también el hueco de debajo; 🧰 Utilidades con «🌙 Habla con Luna» (consejos de sueño con IA, mirando tus noches; voz opcional)
 // v5.2: // v5.2: botón «Empezar a monitorear el sueño»; 📡 sonar (opcional): detecta si te mueves con el móvil en la mesilla, con un pitido muy agudo y su eco
@@ -1148,6 +1180,7 @@ async function startListening() {
     muteTick();
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
+    vigilaDespertar(det);
     // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
     // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
@@ -1171,7 +1204,7 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
 // 🛏️ Movimiento: con el móvil sobre el colchón, el acelerómetro nota cuándo te mueves o te das la vuelta.
 // Se apunta el segundo de la noche (como mucho una marca cada 20 s). Tocar la pantalla no cuenta.
 let movToque = 0;
-function marcaMov(night, t) { night.mov ||= []; if (!night.mov.length || t - night.mov.at(-1) >= 20) night.mov.push(t); }
+function marcaMov(night, t) { live.ultMov = Date.now(); night.mov ||= []; if (!night.mov.length || t - night.mov.at(-1) >= 20) night.mov.push(t); }
 function movEmpezar(night) {
   night.mov ||= [];
   let g = null, pico = 0, seg = 0;
@@ -1189,10 +1222,48 @@ function movEmpezar(night) {
 }
 $('listen').addEventListener('pointerdown', () => { movToque = Date.now(); }, true);
 
+// 🌅 ¿Se ha levantado? Luz encendida (sensor de luz, app Android 3.2) + movimiento → cuenta atrás de 5 minutos
+// y luego la pantalla «¿Quieres detener el monitoreo del sueño?». Si la luz se apaga, la cuenta se anula.
+const DESPERTAR_SEG = 5 * 60;
+function vigilaDespertar(det) {
+  const ahora = Date.now();
+  $('fGrab').classList.toggle('on', !!det.ev && !(det.muteUntil > det.samples / SR));
+  $('fMov').classList.toggle('on', ahora - (live.ultMov || 0) < 8000);
+  const lux = AND?.luz ? AND.luz() : -1;
+  $('fLuz').hidden = lux < 0;
+  let luz = false;
+  if (lux >= 0) {
+    live.luzMin = Math.min(live.luzMin ?? lux, lux);
+    luz = lux > Math.max(15, live.luzMin * 4);
+    if (luz) live.ultLuz = ahora;
+  }
+  $('fLuz').classList.toggle('on', luz);
+  const mov = ahora - (live.ultMov || 0) < 60e3;
+  if (!live.cuenta && luz && mov && ahora > (live.noPreguntar || 0)) live.cuenta = ahora + DESPERTAR_SEG * 1000;
+  if (live.cuenta && ahora - (live.ultLuz || 0) > 20e3) live.cuenta = null; // se apagó la luz: vuelve a dormir
+  $('fCuenta').hidden = !live.cuenta;
+  if (live.cuenta) {
+    const left = Math.max(0, Math.ceil((live.cuenta - ahora) / 1000));
+    $('fCuenta').textContent = `⏳ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+    if (!left && $('finQ').hidden) { $('finQ').hidden = false; wake(); }
+  }
+}
+function finQCerrar(minSinPreguntar) {
+  $('finQ').hidden = true; live.cuenta = null;
+  live.noPreguntar = Date.now() + minSinPreguntar * 60e3;
+}
+$('fqSi').onclick = () => { $('finQ').hidden = true; stopListening(true); };
+$('fqNo').onclick = () => finQCerrar(30);
+document.querySelectorAll('#finQ .fqp button').forEach(b => b.onclick = () => {
+  const m = +b.dataset.m;
+  if (live.det) { live.det.mute(m * 60); muteTick(); }
+  finQCerrar(m + 5);
+});
+
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
   if (auto !== true && !confirm('¿Fin del monitoreo de la noche? Verás el resumen.')) return;
-  live.parando = true;
+  live.parando = true; $('finQ').hidden = true;
   if (live.mov) removeEventListener('devicemotion', live.mov);
   live.sonar?.stop();
   clearInterval(live.timer); clearTimeout(live.dimT);
@@ -1347,6 +1418,7 @@ window.nativeVuelta = () => {
 // Botón «atrás» de Android: cierra la hoja o vuelve al menú; en el menú, la app se va al fondo
 window.atrasNativo = () => {
   if ($('splash')) return false;
+  if (!$('finQ').hidden) { $('fqNo').onclick(); return true; }
   if (live.night) return true; // escuchando: no se sale sin «Terminar la noche»
   if (nap || alWake) return true; // siesta o alarma sonando: se usan sus botones
   if (!$('tonoPick').hidden) { $('tonoClose').onclick(); return true; }
@@ -2758,7 +2830,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.1';
+const APK_ULTIMA = '3.2';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').textContent = $('ver2').textContent = `web ${VERSION} · app ${app}`; }
