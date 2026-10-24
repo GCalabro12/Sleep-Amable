@@ -211,6 +211,10 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .retoal .roff{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;color:var(--muted);font-size:13px}
 .retoopts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .retoopts button{text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);font-size:15px}
+.retoopts .ropt{display:flex;gap:8px;align-items:center}
+.retoopts .ropt button[data-r]{flex:1}
+.retoopts .rinfo{width:34px;height:34px;flex:none;border-radius:50%;border:1px solid #6D5BD0;background:#1E1B4B;color:#C4B5FD;font-weight:700;padding:0;text-align:center}
+.retoopts .rhelp{font-size:13px;color:var(--muted);background:var(--card2);border-radius:10px;padding:8px 10px}
 .retoopts button.on{border-color:#A78BFA;background:#1E1B4B}
 .retoopts small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .lunabar{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px 18px 8px 10px;border-radius:999px;border:1px solid #6D5BD0;background:linear-gradient(90deg,#312E81,#1E1B4B);color:#E0E7FF;font-size:18px;font-weight:700;margin:0 0 16px;box-shadow:0 6px 18px #4338ca44}
@@ -810,7 +814,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.7'; // v6.7: «Historial de charlas con Luna» (cada vez que entras, charla nueva); sin «Luna pensando», solo tres puntitos; cara dormida naranja con gorrito en «Monitorear mi sueño»; mejor voz del móvil (app 3.7)
+const VERSION = 'v6.8'; // v6.8: en el reto de cada alarma, cada opción con su «?» que explica en qué consiste
+// v6.7: // v6.7: «Historial de charlas con Luna» (cada vez que entras, charla nueva); sin «Luna pensando», solo tres puntitos; cara dormida naranja con gorrito en «Monitorear mi sueño»; mejor voz del móvil (app 3.7)
 // v6.6: // v6.6: hoja de noche corta solo con «Borrarla» (sin «era una prueba»); 🧪 «Probar detección» en el monitoreo (qué oye la IA en directo y qué decide en cada sonido); con pinganillos, se vuelve al micrófono del móvil (app 3.6)
 // v6.5: // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
 // v6.4: // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
@@ -2657,9 +2662,10 @@ function pintaRetoAlarma(al, d) {
     ? `<span>🧩 Reto activado <b>${r.t.split(' ')[0]}</b></span><button type="button" class="rbtn">Cambiar</button>`
     : `<span>🧩 Reto alarma</span><button type="button" class="rbtn"${RETO_OK ? '' : ' disabled'}>Activar</button>`;
   const lista = r ? [...RETOS, {id: '', t: '🚫 Sin reto (se apaga con el botón)'}] : RETOS;
-  opts.innerHTML = lista.map(x => `<button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>`).join('');
+  opts.innerHTML = lista.map(x => `<div class="ropt"><button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>${x.help ? '<button type="button" class="rinfo" aria-label="¿En qué consiste?">?</button>' : ''}</div>${x.help ? `<div class="rhelp" hidden>${x.help}</div>` : ''}`).join('');
+  opts.querySelectorAll('.rinfo').forEach(b => b.onclick = () => { const h = b.parentNode.nextElementSibling; h.hidden = !h.hidden; });
   box.querySelector('.rbtn').onclick = () => { opts.hidden = !opts.hidden; };
-  opts.querySelectorAll('button').forEach(b => b.onclick = () => {
+  opts.querySelectorAll('button[data-r]').forEach(b => b.onclick = () => {
     const v = b.dataset.r;
     const listo = () => { al.reto = v; alSave(); opts.hidden = true; pintaRetoAlarma(al, d);
       toast(v ? `🧩 Reto activado: ${RETOS.find(x => x.id === v).corto}` : '🧩 Sin reto: se apaga con el botón'); };
