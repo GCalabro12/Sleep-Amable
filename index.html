@@ -852,7 +852,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v8.0'; // v8.0: la cuenta atrás de «¿terminas?» (luz + movimiento) ya no se ve: funciona por dentro
+const VERSION = 'v8.1'; // v8.1: en cuanto te pones los pinganillos (con la app abierta) te dice su batería si no están casi llenos; si el móvil no deja leerla, lo avisa; la prueba enseña la batería
+// v8.0: // v8.0: la cuenta atrás de «¿terminas?» (luz + movimiento) ya no se ve: funciona por dentro
 // v7.9: // v7.9: en el monitoreo, cara de ronquido violeta y cabeza que habla amarilla (como sus números); el reloj de arena dice qué es
 // v7.8: // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
 // v7.7: // v7.7: botones del inicio en móvil: título en una línea a todo lo ancho y debajo icono + texto; «Dormir con quien ronca»
@@ -970,11 +971,19 @@ async function avisoBateria() {
   if (!AND?.bateriaAuriculares || !AND?.auriculares?.()) return;
   let b = AND.bateriaAuriculares();
   if (b === -2) { AND.pedirBluetooth(); await new Promise(r => setTimeout(r, 8000)); b = AND.bateriaAuriculares(); }
-  if (b < 0 || b >= 90) return;
+  if (b < 0) { toast('🎧 Tu móvil no deja leer la batería de estos auriculares'); return; }
+  if (b >= 95) return; // casi llenos: no hace falta avisar
   AND.decir(`Tus auriculares tienen un ${b} por ciento de batería. Recuerda que necesitan estar al cien por cien para que duren toda la noche.`);
   if (live.night) showWarn(`🎧 Pinganillos al ${b} %: cárgalos al 100 % para que duren toda la noche.`);
   else toast(`🎧 Pinganillos al ${b} %: cárgalos al 100 %`);
 }
+// En cuanto se conectan los pinganillos (con la app abierta, en cualquier pantalla): batería por los propios auriculares
+let auricAntes = false;
+if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
+  let a = false; try { a = !!AND.auriculares(); } catch {}
+  if (a && !auricAntes) setTimeout(avisoBateria, 2500); // da tiempo a que el bluetooth informe de la batería
+  auricAntes = a;
+}, 3000);
 // 3 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
 function avisoRonco(ev) {
   if (!VOZ_OK || !cfg.avisoRonco || ev.tipo !== 'ronquido' || ev.sn < .6) return;
@@ -1300,7 +1309,7 @@ async function startListening() {
 
   const night = newNight('micro');
   await DB.put('noches', night);
-  if (VOZ_OK && cfg.avisoRonco) { AND.prepararVoz(); setTimeout(avisoBateria, 3000); }
+  if (VOZ_OK && cfg.avisoRonco) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
@@ -1342,7 +1351,7 @@ async function startListening() {
     if (AND) { try { $('lDnd').classList.toggle('on', !!AND.dndActivo()); $('lAir').classList.toggle('on', !!(AND.modoAvion && AND.modoAvion())); } catch {} }
     if (Date.now() % 60000 < 500 && AND?.micBluetooth?.()) AND.micMovil(); // que no grabe con el micro de los pinganillos
     // pinganillos puestos a mitad de noche: también se mira su batería
-    if (VOZ_OK && cfg.avisoRonco && Date.now() % 30000 < 500) { const a = AND.auriculares(); if (a && live.auric === false) avisoBateria(); live.auric = a; }
+
     // Seguridad: una noche nunca dura más de 13 h. Si se olvida terminarla, se termina sola
     // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
@@ -1580,7 +1589,7 @@ function pintaMic() {
   const bt = AND?.micBluetooth?.();
   const au = AND?.auriculares?.();
   $('prMic').textContent = (AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil… ' : '🎙️ Graba con el micrófono del móvil. ') : '')
-    + (AND?.auriculares ? (au ? '🎧 Auriculares conectados.' : 'Sin auriculares.') : '');
+    + (AND?.auriculares ? (au ? '🎧 Auriculares conectados' + (AND.bateriaAuriculares ? (b => b >= 0 ? ` (batería ${b} %).` : ' (no se puede leer su batería).')(AND.bateriaAuriculares()) : '.') : 'Sin auriculares.') : '');
   if (bt) AND.micMovil?.();
 }
 function pruebaScore() {}
