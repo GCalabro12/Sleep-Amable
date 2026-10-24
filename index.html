@@ -204,7 +204,8 @@ details.instr>summary::-webkit-details-marker{display:none}
 details.instr>summary::after{content:"";margin-left:auto;flex:none;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #A78BFA}
 details.instr[open]>summary::after{border-top:0;border-bottom:11px solid #A78BFA}
 details.instr .tips,details.instr .steps{margin-top:10px}
-.retoal{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
+.retoal{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;color:var(--muted);white-space:nowrap}
+.retoal .rbtn{margin-left:auto;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:12px;padding:6px 14px;color:#C4B5FD;font-size:14px}
 .retoal b{color:#FDE68A;font-weight:600}
 .retoal .rq{width:28px;height:28px;border-radius:50%;border:1px solid #6D5BD0;background:#1E1B4B;color:#C4B5FD;font-weight:700;padding:0;flex:none}
 .retoal .roff{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;color:var(--muted);font-size:13px}
@@ -212,6 +213,10 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .retoopts button{text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);font-size:15px}
 .retoopts button.on{border-color:#A78BFA;background:#1E1B4B}
 .retoopts small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.lunabar{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px 18px 8px 10px;border-radius:999px;border:1px solid #6D5BD0;background:linear-gradient(90deg,#312E81,#1E1B4B);color:#E0E7FF;font-size:18px;font-weight:700;margin:0 0 16px;box-shadow:0 6px 18px #4338ca44}
+.lunabar img{width:44px;height:auto;flex:none}
+.lunabar small{display:block;font-size:13px;font-weight:400;color:#C4B5FD}
+.lunabar b{margin-left:auto;font-size:28px;color:#A78BFA;font-weight:400}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
@@ -431,11 +436,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <a class="apkdl" id="apkDl" href="SleepAmable.apk" download="SleepAmable.apk">⬇️ Descargar Amable Sleep</a>
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
+  <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><img class="icimg" src="luna/luna-saluda.png" alt=""></span><span>Monitorear mi sueño<small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span>Dormir junto a alguien que ronca<small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span>Alarmas y siesta<small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span>Estadísticas<small>Tus noches y la media de tu país</small></span></button>
-  <button class="choice sm f" data-go="utiles" id="goUtiles" hidden><span class="ic"><img class="icimg" src="luna/luna-consejo.png" alt=""></span><span>Utilidades<small>Habla con Luna: consejos para dormir mejor</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span>Ajustes<small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
@@ -551,13 +556,14 @@ body.pl-on .wrap{padding-bottom:190px}
 </section>
 
 <section id="luna" hidden>
-  <button class="back" data-go="utiles">← Utilidades</button>
+  <button class="back" data-go="menu">← Inicio</button>
   <div class="lunahead"><img src="luna/luna-consejo.png" alt=""><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
   <div id="lunaChat"></div>
   <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
   <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
   <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="✍️ Escribe tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta">🎤</button><button type="submit" aria-label="Enviar">➤</button></form>
   <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
+  <div class="note" id="lunaVozInfo" hidden>🗣️ Luna lee con la voz que tengas puesta en tu móvil, así responde al momento. <button class="btn wide" id="lunaVozCfg" style="margin-top:8px" hidden>⚙️ Cambiar la voz del móvil</button></div>
   <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
 </section>
 
@@ -775,7 +781,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v6.4'; // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
+const VERSION = 'v6.5'; // v6.5: reto de cada alarma en un renglón («Reto activado · Cambiar» / «Reto alarma · Activar»); pestaña «Habla con Luna» en el inicio; Luna habla al momento con la voz del móvil (botón para cambiarla, app 3.5)
+// v6.4: // v6.4: cada alarma con su «Reto alarma ?» (desplegable con los 3 retos) o «Reto … activado · Desactivar»; el aviso «Sonará en…» recuerda el reto; Ajustes pone el mismo reto a todas
 // v6.3: // v6.3: «Fin monitoreo sueño»; «Última grabación: …» con los sonidos en español (voz baja, risa…); la pantalla de monitoreo se ve encima del bloqueo (app 3.4)
 // v6.2: // v6.2: versiones solo con el número (sin cortarse); «Avisarme si ronco» con «Necesita auriculares» y el texto del Bluetooth
 // v6.1: // v6.1: pantalla de monitoreo más compacta (cabe sin deslizar y se ve «Monitoreando»); sin la hoja «Antes de dormir»: empieza directo; «Avisarme si ronco» en Monitorear mi sueño; en la pantalla de monitoreo, 🌙 No molestar, 🎵 canción de cuna y ✈️ modo avión arriba con desplegable; la luna de verdad en el botón
@@ -1495,7 +1502,7 @@ window.atrasNativo = () => {
   if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
-  if (!$('luna').hidden) { show('utiles'); return true; }
+  if (!$('luna').hidden) { show('menu'); return true; }
   if (['home', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
   return true; // en el inicio, «atrás» (o el gesto desde el borde) no saca de la app
 };
@@ -2577,19 +2584,19 @@ function pedirCodigo(al, done) {
   };
   AND.escanearCodigo();
 }
-// 🧩 Reto de cada alarma: «Reto alarma ?» abre los tres retos; si tiene uno, «Reto … activado» y «Desactivar»
+// 🧩 Reto de cada alarma, en un renglón: «Reto activado · Cambiar» o «Reto alarma · Activar»; el botón abre las opciones debajo
 function pintaRetoAlarma(al, d) {
   const r = RETOS.find(x => x.id === retoDe(al)), box = d.querySelector('.retoal'), opts = d.querySelector('.retoopts');
   box.innerHTML = r
-    ? `<span>🧩 Reto <b>${r.id === 'codigo' ? '📷 código de barras' : r.id === 'pasos' ? '🚶 20 pasos' : '🧮 3 cuentas'}</b> activado</span><button type="button" class="rq" aria-label="Cambiar el reto">?</button><button type="button" class="roff">Desactivar</button>`
-    : `<span>🧩 Reto alarma</span><button type="button" class="rq" aria-label="Elegir un reto">?</button>${RETO_OK ? '' : '<small style="margin-left:auto">📲 solo en la app 2.9+</small>'}`;
-  opts.innerHTML = RETOS.map(x => `<button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}"${RETO_OK ? '' : ' disabled'}>${x.t}<small>${x.help}</small></button>`).join('');
-  box.querySelector('.rq').onclick = () => { opts.hidden = !opts.hidden; };
-  const off = box.querySelector('.roff');
-  if (off) off.onclick = () => { al.reto = ''; alSave(); pintaRetoAlarma(al, d); toast('🧩 Reto desactivado: se apaga con el botón'); };
+    ? `<span>🧩 Reto activado <b>${r.t.split(' ')[0]}</b></span><button type="button" class="rbtn">Cambiar</button>`
+    : `<span>🧩 Reto alarma</span><button type="button" class="rbtn"${RETO_OK ? '' : ' disabled'}>Activar</button>`;
+  const lista = r ? [...RETOS, {id: '', t: '🚫 Sin reto (se apaga con el botón)'}] : RETOS;
+  opts.innerHTML = lista.map(x => `<button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>`).join('');
+  box.querySelector('.rbtn').onclick = () => { opts.hidden = !opts.hidden; };
   opts.querySelectorAll('button').forEach(b => b.onclick = () => {
     const v = b.dataset.r;
-    const listo = () => { al.reto = v; alSave(); opts.hidden = true; pintaRetoAlarma(al, d); toast(`🧩 Reto activado: ${RETOS.find(x => x.id === v).corto}`); };
+    const listo = () => { al.reto = v; alSave(); opts.hidden = true; pintaRetoAlarma(al, d);
+      toast(v ? `🧩 Reto activado: ${RETOS.find(x => x.id === v).corto}` : '🧩 Sin reto: se apaga con el botón'); };
     if (v === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) listo(); renderReto(); }); return; }
     listo();
   });
@@ -2727,7 +2734,10 @@ let lunaHist = [];
 try { lunaHist = JSON.parse(localStorage.getItem('ronquino-luna') || '[]'); } catch {}
 let lunaVoz = false; try { lunaVoz = localStorage.getItem('ronquino-luna-voz') === '1'; } catch {}
 $('lunaVoz').checked = lunaVoz;
-$('lunaVoz').onchange = () => { lunaVoz = $('lunaVoz').checked; try { localStorage.setItem('ronquino-luna-voz', lunaVoz ? '1' : '0'); } catch {} };
+const pintaVozInfo = () => { $('lunaVozInfo').hidden = !lunaVoz; $('lunaVozCfg').hidden = !AND?.ajustesVoz; };
+$('lunaVoz').onchange = () => { lunaVoz = $('lunaVoz').checked; try { localStorage.setItem('ronquino-luna-voz', lunaVoz ? '1' : '0'); } catch {} pintaVozInfo(); };
+$('lunaVozCfg').onclick = () => AND?.ajustesVoz?.();
+pintaVozInfo();
 const lunaGuarda = () => { lunaHist = lunaHist.slice(-30); try { localStorage.setItem('ronquino-luna', JSON.stringify(lunaHist)); } catch {} };
 async function lunaPost(ruta, body, ms = 45000) {
   return fetch(LUNA_API[0] + ruta, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), signal: AbortSignal.timeout(ms)});
@@ -2763,8 +2773,10 @@ function vozMovil(texto, fin) {
 async function lunaOir(texto, btn, au) {
   lunaCallar();
   const fin = () => { if (btn) btn.textContent = '🔊 Escuchar'; };
+  // Primero la voz del móvil: es instantánea (la de Gemini solo si el móvil no tiene voz, p. ej. app vieja)
+  if (vozMovil(texto, fin)) { if (btn) btn.textContent = '■ Parar'; return; }
   if (btn) btn.textContent = '⏳';
-  if (au === undefined) au = await lunaAudio(texto); // null = ya se probó la voz de Gemini y no llegó
+  if (au === undefined) au = await lunaAudio(texto);
   if (au) {
     lunaAu = au; au.onended = fin;
     try { await au.play(); if (btn) btn.textContent = '■ Parar'; return; } catch {}
@@ -2811,8 +2823,7 @@ async function lunaEnviar(texto) {
     if (d.quedan != null) { $('lunaQuedan').hidden = false; $('lunaQuedan').textContent = d.quedan ? `Hoy te ${d.quedan === 1 ? 'queda 1 pregunta' : `quedan ${d.quedan} preguntas`} a Luna.` : 'Por hoy no quedan más preguntas a Luna: mañana tienes 3 más.'; }
   } catch { resp = 'No consigo conectarme. Revisa que tengas internet y vuelve a probar.'; }
   // Con «Leer en voz alta»: la luna sigue pensando hasta tener la voz, y luego salen el texto y el sonido a la vez
-  const au = ok && lunaVoz ? await lunaAudio(resp) : null;
-  pens.remove(); lunaMsg('luna', resp, ok && lunaVoz, au);
+  pens.remove(); lunaMsg('luna', resp, ok && lunaVoz);
   window.scrollTo(0, document.body.scrollHeight);
   lunaOcupada = false;
 }
@@ -2856,7 +2867,7 @@ function show(id) {
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
 // Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
-const ORDEN = ['menu', 'home', 'mask', 'alarma', 'stats', 'utiles', 'ajustes'];
+const ORDEN = ['menu', 'home', 'mask', 'alarma', 'stats', 'ajustes'];
 let sw0 = null;
 document.addEventListener('touchstart', e => {
   const t = e.touches[0], el = e.target;
@@ -2933,7 +2944,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '3.4';
+const APK_ULTIMA = '3.5';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
