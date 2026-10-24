@@ -335,7 +335,10 @@ details.hist[open] summary{margin-bottom:10px}
 .lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
-#pruebaBtn{display:block;margin:0 auto 10px;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
+#pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
+.prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+#bloque{flex:1;text-align:left;font-size:14px;color:#94A3B8;line-height:1.3}
+#bloque.on{color:#FCA5A5}
 .monit{font-size:18px;font-weight:700;color:#A78BFA;margin-bottom:2px;letter-spacing:.3px}
 .tres{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
 .tres i{width:9px;height:9px;border-radius:50%;background:#A78BFA;opacity:.15;animation:2s linear infinite}
@@ -518,7 +521,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Si roncas seguro 2 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
@@ -647,7 +650,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary><span>🎧 Avisarme si ronco <small id="sAvisoAj"></small><small style="display:block;font-size:12px;margin-top:2px">Necesita auriculares</small></span></summary>
-    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Si roncas seguro 3 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</small></label>
+    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Si roncas seguro 2 veces en 5 minutos, una voz te dice «Estás roncando, cambia de posición». Solo suena por los auriculares Bluetooth.</small></label>
       <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
     <button class="btn wide avisoTest">▶ Probar la voz</button>
   </details>
@@ -830,13 +833,13 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <button type="button" id="pruebaBtn">🧪 Probar detección</button>
+    <div class="prfila"><button type="button" id="pruebaBtn">🧪 Probar detección</button><span id="bloque">Esperando un sonido…</span></div>
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="counters">
-      <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#A78BFA"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#C4B5FD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ronquidos</div>
-      <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#FBBF24"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round"/></svg> voces</div>
+      <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#A78BFA"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#C4B5FD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
+      <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#FBBF24"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round"/></svg> min de voces</div>
     </div>
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
@@ -852,7 +855,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v8.1'; // v8.1: en cuanto te pones los pinganillos (con la app abierta) te dice su batería si no están casi llenos; si el móvil no deja leerla, lo avisa; la prueba enseña la batería
+const VERSION = 'v8.2'; // v8.2: en el monitoreo, minutos de ronquido y de voces (no número de grabaciones); a la derecha de «Probar», el bloque que está grabando y cuánto le queda; el aviso «Estás roncando» con 2 ronquidos seguros en 5 min
+// v8.1: // v8.1: en cuanto te pones los pinganillos (con la app abierta) te dice su batería si no están casi llenos; si el móvil no deja leerla, lo avisa; la prueba enseña la batería
 // v8.0: // v8.0: la cuenta atrás de «¿terminas?» (luz + movimiento) ya no se ve: funciona por dentro
 // v7.9: // v7.9: en el monitoreo, cara de ronquido violeta y cabeza que habla amarilla (como sus números); el reloj de arena dice qué es
 // v7.8: // v7.8: «Probar detección» arriba del todo y en rojo; «Enviar» copia el texto para pegarlo en WhatsApp; si eliges lo mismo que dijo, cuenta como acierto
@@ -984,12 +988,12 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
   if (a && !auricAntes) setTimeout(avisoBateria, 2500); // da tiempo a que el bluetooth informe de la batería
   auricAntes = a;
 }, 3000);
-// 3 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
+// 2 ronquidos seguros (≥ 60 %) en 5 minutos → «Estás roncando». Después vuelve a contar desde cero.
 function avisoRonco(ev) {
   if (!VOZ_OK || !cfg.avisoRonco || ev.tipo !== 'ronquido' || ev.sn < .6) return;
   const now = Date.now(), A = live.aviso || (live.aviso = {seguros: []});
   A.seguros = A.seguros.filter(t => now - t < 5 * 60e3); A.seguros.push(now);
-  if (A.seguros.length < 3) return;
+  if (A.seguros.length < 2) return;
   A.seguros = [];
   if (AND.decir(FRASE)) {
     live.night.avisos = (live.night.avisos || 0) + 1;
@@ -1271,6 +1275,7 @@ function makeSaver(night, onChange) {
   return {
     event(ev) {
       if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
+      if (ev.tipo === 'voz') night.segVoz = (night.segVoz || 0) + ev.dur;
       else if (ev.tipo === 'voz') night.voces++; else night.otros++;
       const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio)};
       chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
@@ -1312,7 +1317,7 @@ async function startListening() {
   if (VOZ_OK && cfg.avisoRonco) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
-    $('cSnore').textContent = night.ronquidos; $('cVoice').textContent = night.voces;
+    $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
     $('lastEv').textContent = `Última grabación: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
     $('lstate').textContent = 'Escuchando…';
   });
@@ -1327,7 +1332,7 @@ async function startListening() {
   movEmpezar(night);
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
-  $('cSnore').textContent = 0; $('cVoice').textContent = 0; $('lastEv').textContent = ''; $('lwarn').hidden = true;
+  $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on');
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
@@ -1344,6 +1349,9 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
+    { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
+      $('bloque').classList.toggle('on', en);
+      $('bloque').textContent = en ? `⏺ Grabando bloque: ${mmss(e.blocks.length * BLK / SR)} · quedan ${mmss(Math.max(0, det.maxSec - e.blocks.length * BLK / SR))}` : (det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : 'Esperando un sonido…'); }
     if (AND?.auriculares) { const au = !!AND.auriculares(); $('fAur').hidden = !au; $('fAur').classList.toggle('on', au); }
     // el micrófono se ha parado (p. ej. al conectar los pinganillos): se vuelve a encender solo
     if (Date.now() - (live.lastFrame || Date.now()) > 8000) { live.lastFrame = Date.now(); reiniciaMic(); }
@@ -1449,6 +1457,7 @@ async function reiniciaMic() {
   finally { live.reiniciando = false; }
 }
 
+const mmss = s => `${Math.floor((s || 0) / 60)}:${String(Math.floor((s || 0) % 60)).padStart(2, '0')}`;
 async function stopListening(auto) {
   if (!live.night || live.parando) return;
   if (auto !== true) {
