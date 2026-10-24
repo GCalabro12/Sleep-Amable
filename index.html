@@ -301,6 +301,12 @@ details.hist[open] summary{margin-bottom:10px}
 .choice.a{background:linear-gradient(135deg,#6D5BD0,#4338CA);box-shadow:0 8px 24px #4338ca55}
 .choice.b{background:linear-gradient(135deg,#0F766E,#155E75);box-shadow:0 8px 24px #0f766e44}
 .choice.sm{padding:16px 18px;font-size:19px;margin-bottom:12px}
+/* Pantallas estrechas: si el texto no cabe en una línea, ocupa todo el ancho del botón (también debajo del icono) */
+@media (max-width:480px){
+  .choice{display:flow-root}
+  .choice .ic{float:left;margin:2px 14px 4px 0}
+  .choice small{margin-top:6px}
+}
 .choice.sm .ic{font-size:32px}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
 .choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
@@ -832,7 +838,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v7.4'; // v7.4: en el monitoreo, 🌙 No molestar, 🎵 y ✈️ en gris si están apagados y en color si están activados
+const VERSION = 'v7.5'; // v7.5: en pantallas estrechas, el texto de los botones del inicio usa todo el ancho (también debajo del icono)
+// v7.4: // v7.4: en el monitoreo, 🌙 No molestar, 🎵 y ✈️ en gris si están apagados y en color si están activados
 // v7.3: // v7.3: el altavoz de las respuestas de Luna va fuera del recuadro, a su derecha
 // v7.2: // v7.2: «Habla con Luna» siempre se abre arriba (también cuando el móvil intenta mantener la posición al cargar)
 // v7.1: // v7.1: en las respuestas de Luna, un altavoz sencillo a la derecha (sin «Escuchar»)
