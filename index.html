@@ -134,6 +134,9 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .alrapBody .arow.off input[type=time]{opacity:.5}
 .alrapBody .acc{display:flex;gap:8px;margin-top:10px}
 .alrapBody .acc .btn{flex:1;font-size:14px}
+.aprnum{display:flex;gap:8px;justify-content:space-between}
+.aprnum span{flex:1;text-align:center;background:var(--card2);border-radius:12px;padding:8px 4px;font-size:13px;color:var(--muted)}
+.aprnum b{display:block;font-size:20px;color:var(--text)}
 .cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
 .cufila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .cufila span{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -835,6 +838,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note" style="margin:6px 0 10px">Elige el color de fondo. La pantalla de la noche (monitoreo) sigue siempre en negro, para que no moleste.</p>
     <div class="temas" id="temas"></div>
   </details>
+  <details class="card ajd">
+    <summary>🧠 Lo que ha aprendido la IA <small id="sApr"></small></summary>
+    <div id="aprBody"></div>
+  </details>
   <details class="card ajd" id="novDet">
     <summary>🆕 Novedades <small id="sNov"></small></summary>
     <div id="novList"></div>
@@ -1132,7 +1139,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.2'; // v12.2: el aviso «estás roncando» solo salta si la IA está muy segura (85 % o más); en el reproductor, «¿Acierta?» ✅ / ❌ para valorar cada grabación; Alarma y música sin bordes, con líneas violetas de lado a lado; música: sin «sonando» ni nombre arriba, el icono de la que suena es ■; bienvenida al crear la cuenta: 2 casillas obligatorias (datos y privacidad) y los permisos (micrófono necesario); política de privacidad; en pantallas estrechas «Alarma y música dormir»
+const VERSION = 'v12.3'; // v12.3: la IA aprende de tus valoraciones (huella de cada sonido + 5 vecinos más parecidos); tarjeta «🧠 Lo que ha aprendido la IA» en Ajustes
+// v12.2: // v12.2: el aviso «estás roncando» solo salta si la IA está muy segura (85 % o más); en el reproductor, «¿Acierta?» ✅ / ❌ para valorar cada grabación; Alarma y música sin bordes, con líneas violetas de lado a lado; música: sin «sonando» ni nombre arriba, el icono de la que suena es ■; bienvenida al crear la cuenta: 2 casillas obligatorias (datos y privacidad) y los permisos (micrófono necesario); política de privacidad; en pantallas estrechas «Alarma y música dormir»
 // v12.1: // v12.1: Aprende sin «Si te queda una duda, pregúntame» (cada ficha ya tiene su botón); «Alarma y música para dormir»: arriba «🎵 Música para dormir» plegable (sin monitorear); línea gruesa entre siesta y alarmas y fina entre alarmas; sin la luna de abajo
 // v12.0: // v12.0: tocar un punto de la línea de ronquido enseña sus minutos; Dormir con quien ronca: «Sonidos neutros» plegable que suenan 5 s al tocarlos, «Apagar después de» en un renglón, sin YouTube
 // v11.9: // v11.9: línea de ronquido con día de la semana y número (ma 24) y el mes debajo; recuadros de Estadísticas con el número arriba, la unidad pequeña debajo (horas, min) y el texto abajo del todo
@@ -1318,7 +1326,8 @@ function avisoTick(det, dt) {
   if (!VOZ_OK || !cfg.avisoRonco || !live.night) return;
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
   const e = det.ev;
-  const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR) && decide(e.sn, e.vo, e.br) === 'ronquido' && Math.max(...e.sn) >= AVISO_SEGURO;
+  const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR) && decide(e.sn, e.vo, e.br) === 'ronquido' && Math.max(...e.sn) >= AVISO_SEGURO
+    && (APR.decide(huellaMedia(e))?.tipo ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa
   if (ronca) { A.ronc += dt; A.sil = 0; }
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
   if (A.ronc < (A.insiste ? AVISO_SIGUE : AVISO_PRIMERO)) return;
@@ -1551,9 +1560,11 @@ const IA = {
   // Devuelve la probabilidad de ronquido y de voz de un trozo de audio
   scores(f) {
     if (this.clf) {
-      let sn = 0, vo = 0, br = 0, top = null, topS = 0;
+      let sn = 0, vo = 0, br = 0, top = null, topS = 0, vec = null;
       for (const r of this.clf.classify(f, SR)) for (const c of r.classifications[0].categories) {
         const n = c.categoryName, s = c.score;
+        vec ||= new Float32Array(r.classifications[0].categories.length);
+        if (c.index < vec.length && s > vec[c.index]) vec[c.index] = s; // huella: lo que oyó de cada tipo de sonido
         if (SNORE.has(n)) sn = Math.max(sn, s);
         else if (VOICE.has(n)) vo = Math.max(vo, s);
         else {
@@ -1561,7 +1572,7 @@ const IA = {
           if (n !== 'Silence' && s > topS) { topS = s; top = n; }
         }
       }
-      return {sn, vo, br, top, topS, est:false};
+      return {sn, vo, br, top, topS, est:false, vec};
     }
     // Básico: los ronquidos son graves (mucha energía < 400 Hz) y la voz cruza más veces el cero
     let y = 0, lo = 0, tot = 0, zc = 0;
@@ -1669,6 +1680,7 @@ class Detector {
   classify(blocks) {
     const e = this.ev, r = IA.scores(concat(blocks));
     e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.est = e.est || r.est;
+    if (r.vec) { e.vsum ||= new Float32Array(r.vec.length); for (let i = 0; i < r.vec.length; i++) e.vsum[i] += r.vec[i]; e.vn = (e.vn || 0) + 1; }
     this.onScore?.(r);
     if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
   }
@@ -1678,14 +1690,73 @@ class Detector {
     if (e.loud < 2 || !e.sn.length) return; // un golpe suelto: se ignora
     const max = a => Math.max(...a), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
     const snMax = max(e.sn), voMax = max(e.vo);
-    const tipo = decide(e.sn, e.vo, e.br);
+    let tipo = decide(e.sn, e.vo, e.br), aprendido = false;
+    const vec = huellaMedia(e), ap = APR.decide(vec); // 🧠 lo que has enseñado manda si está claro
+    if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; }
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-    this.onResult?.({tipo, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
+    this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
-    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), top, peak: e.peak, est: e.est, audio});
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), top, peak: e.peak, est: e.est, audio, vec, aprendido});
   }
   flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
+}
+
+// ---------- 🧠 La IA aprende de tus valoraciones ----------
+// Cada grabación nueva guarda su «huella»: lo que la IA oyó de los 521 tipos de sonido que conoce.
+// Cuando confirmas (✅) o corriges (❌ o tocando la etiqueta) una grabación, su huella se guarda como ejemplo tuyo.
+// Con 8 ejemplos o más, cada sonido nuevo se compara con los 5 más parecidos (k vecinos); si casi todos dicen lo mismo
+// y se parecen mucho, manda lo aprendido: así se corrige con tus propios ronquidos, tu voz y los ruidos de tu casa.
+const APR = {
+  ej: [], MIN: 8, MAX: 300,
+  carga() { try { this.ej = JSON.parse(localStorage.getItem('ronquino-aprendido') || '[]'); } catch { this.ej = []; } },
+  guarda() { try { localStorage.setItem('ronquino-aprendido', JSON.stringify(this.ej)); } catch {} },
+  // Huella compacta: los 40 tipos de sonido con más puntuación, como [[índice, valor], …]
+  huella(vec) {
+    const l = []; for (let i = 0; i < vec.length; i++) if (vec[i] > .005) l.push([i, Math.round(vec[i] * 1000) / 1000]);
+    return l.sort((a, b) => b[1] - a[1]).slice(0, 40);
+  },
+  parecido(a, b) { // coseno entre dos huellas
+    const m = new Map(a); let ab = 0, aa = 0, bb = 0;
+    for (const [, v] of a) aa += v * v;
+    for (const [i, v] of b) { bb += v * v; if (m.has(i)) ab += m.get(i) * v; }
+    return aa && bb ? ab / Math.sqrt(aa * bb) : 0;
+  },
+  apunta(e, tipo) { // e: la grabación (con su huella e.vec); tipo: lo que era de verdad
+    if (!e.vec || !e.vec.length) return false;
+    this.ej = this.ej.filter(x => x.id !== e.id);
+    this.ej.push({id: e.id, t: tipo, v: this.huella(e.vec)});
+    if (this.ej.length > this.MAX) this.ej.splice(0, this.ej.length - this.MAX);
+    this.guarda(); pintaAprendido(); return true;
+  },
+  activo() { return this.ej.length >= this.MIN && new Set(this.ej.map(x => x.t)).size >= 2; },
+  // ¿Qué dicen tus ejemplos de este sonido? null si no está claro
+  decide(vec) {
+    if (!vec || !this.activo()) return null;
+    const h = this.huella(vec);
+    const vec5 = this.ej.map(x => ({t: x.t, s: this.parecido(h, x.v)})).sort((a, b) => b.s - a.s).slice(0, 5);
+    if (!vec5.length || vec5[0].s < .75) return null; // no se parece lo bastante a nada tuyo
+    const votos = {}; let tot = 0;
+    for (const x of vec5) { votos[x.t] = (votos[x.t] || 0) + x.s; tot += x.s; }
+    const [tipo, v] = Object.entries(votos).sort((a, b) => b[1] - a[1])[0];
+    return v / tot >= .7 ? {tipo, conf: v / tot} : null;
+  }
+};
+APR.carga();
+// Media de las huellas de cada segundo de una grabación (o de la que está en marcha)
+const huellaMedia = e => e && e.vsum && e.vn ? Float32Array.from(e.vsum, x => Math.round(x / e.vn * 1000) / 1000) : null;
+function pintaAprendido() {
+  const box = $('aprBody'); if (!box) return;
+  const n = APR.ej.length, c = t => APR.ej.filter(x => x.t === t).length;
+  $('sApr').textContent = APR.activo() ? '· activo' : `· ${n} de ${APR.MIN}`;
+  box.innerHTML = `<p class="note" style="margin:6px 0 10px">Cuando escuchas una grabación y dices si la IA acierta (✅ / ❌), aprende de tus ronquidos, tu voz y los ruidos de tu casa. Aprende de las grabaciones hechas desde la versión 12.3.</p>
+    <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
+    <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
+    ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
+  if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
+    if (!await confirma('¿Olvidar todo lo que la IA ha aprendido de tus valoraciones?', 'Olvidar')) return;
+    APR.ej = []; APR.guarda(); pintaAprendido(); toast('🧠 Olvidado');
+  };
 }
 
 // ---------- Guardar sonidos de una noche ----------
@@ -1699,7 +1770,8 @@ function makeSaver(night, onChange) {
       if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
       if (ev.tipo === 'voz') night.segVoz = (night.segVoz || 0) + ev.dur;
       else if (ev.tipo === 'voz') night.voces++; else night.otros++;
-      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio)};
+      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio),
+        ...(ev.vec ? {vec: ev.vec} : {}), ...(ev.aprendido ? {aprendido: true} : {})};
       chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
       onChange?.(ev);
     },
@@ -2937,7 +3009,7 @@ function renderList() {
     // ▶ grande a la izquierda (lo que más se usa); arriba la hora (sin segundos), la etiqueta y lo segura que está la IA;
     // abajo, en pequeño, la duración y las acciones
     d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
-      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button></div>
+      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
       <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -2975,8 +3047,9 @@ function renderList() {
       renderStats();
     };
     d.querySelector('.tag').onclick = async () => {
-      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true;
+      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+      APR.apunta(e, e.tipo);
     };
     d.querySelector('.del').onclick = async () => {
       if (!await confirma('¿Borrar esta grabación?', '🗑️ Borrar')) return;
@@ -3153,13 +3226,13 @@ function pintaValorar(e) {
   const box = $('plVal'); box.hidden = !e; if (!e) return;
   if (e.val === 'ok' || e.fix) { box.innerHTML = e.fix ? `<b>✏️ Corregida: ${tagTxt(e)}</b>` : '<b>✅ Confirmada: la IA acertó</b>'; return; }
   box.innerHTML = `¿Acierta? <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
-  $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); toast('✅ Apuntado: la IA acertó'); };
+  $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
   $('plNo').onclick = () => {
     box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : '🔊 Otro ruido'}</button>`).join('');
     box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
-      e.tipo = b.dataset.t; e.fix = true; e.val = 'no';
+      e.tipo = b.dataset.t; e.fix = true; e.val = 'no'; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
-      toast('✏️ Corregida, gracias');
+      APR.apunta(e, e.tipo); toast('✏️ Corregida, gracias: la IA aprende de esto');
     });
   };
 }
@@ -4353,6 +4426,7 @@ $('bvEmpezar').onclick = () => {
 // Al volver de los ajustes de Android, la lista se pone al día
 { const antes = window.nativeVuelta; window.nativeVuelta = () => { antes?.(); if (!$('bienvenida').hidden && !$('bv2').hidden) pintaPermisos(); }; }
 
+pintaAprendido();
 // 🎨 Fondo de la app (Ajustes): cambia los colores base; la pantalla de la noche (#listen) sigue en negro
 const TEMAS = {
   noche: {n: 'Noche', bg: '#0B1020', card: '#141B2E', card2: '#1B2440', line: '#26304D'},
@@ -4375,6 +4449,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.3', '25 oct 2026', ['🧠 La IA aprende de tus valoraciones (✅ / ❌) para acertar mejor con tus ronquidos', 'En Ajustes: «Lo que ha aprendido la IA»']],
   ['v12.2', '25 oct 2026', ['Bienvenida al crear la cuenta: tu permiso para guardar tus datos y los permisos del móvil', 'Nueva política de privacidad', 'El aviso «estás roncando» solo salta si la IA está muy segura', 'Al escuchar una grabación: «¿Acierta?» ✅ / ❌']],
   ['v12.1', '25 oct 2026', ['«Alarma y música para dormir»: música para dormirte sin monitorear, plegada arriba', 'Líneas que separan la siesta y cada alarma']],
   ['v12.0', '25 oct 2026', ['Línea de ronquido: toca un punto para ver sus minutos', 'Dormir con quien ronca: «Sonidos neutros» que se oyen 5 segundos al tocarlos']],
@@ -4442,7 +4517,7 @@ IA.load();
 show('menu');
 // Sin cuenta no se puede usar: crear una o entrar
 if (!sesion) abreCuenta('registro');
-window.__EN = {IA, Detector, DB, SR, noise, joinWavs, CUNAS, TLV, makeNoise, ALS, alCheck}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, TLV, makeNoise, ALS, alCheck}; // para pruebas
 </script>
 </body>
 </html>
