@@ -87,6 +87,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .tslide li{font-size:17px;line-height:1.45;color:#CBD5E1;margin:0 0 14px}
 .tslide li b{color:#fff}
 .tvid{width:min(56vw,30vh,260px);aspect-ratio:1;object-fit:cover;border-radius:28px;box-shadow:0 18px 50px #4338ca66}
+.tdibujo{width:min(70vw,32vh,300px);height:auto;aspect-ratio:1;border-radius:24px;display:block;margin:0 auto;box-shadow:0 14px 40px #00000066}
 .tluna{width:min(46vw,26vh,200px);height:auto;aspect-ratio:1;object-fit:contain;display:block;margin:0 auto}
 .tpie{padding:8px 22px 22px;max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center}
 .tdots{display:flex;gap:8px;margin-bottom:14px}
@@ -729,6 +730,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
+  <img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla" style="display:block;width:100%;max-width:340px;margin:12px auto 4px;border-radius:18px">
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
@@ -1081,7 +1083,7 @@ body.pl-on .wrap{padding-bottom:190px}
       </ul>
     </div>
     <div class="tslide">
-      <img class="tluna" src="luna/luna-aplaude.png" alt="">
+      <video class="tluna" src="luna/luna-aplaude.webm" poster="luna/luna-aplaude.png" autoplay loop muted playsinline></video>
       <h2>Duerme mejor</h2>
       <ul>
         <li>🎵 Música para dormirte y sonidos que tapan los ronquidos de quien duerme a tu lado.</li>
@@ -1090,9 +1092,18 @@ body.pl-on .wrap{padding-bottom:190px}
         <li>🔒 Tus grabaciones <b>nunca salen de tu móvil</b>.</li>
       </ul>
     </div>
+    <div class="tslide">
+      <img class="tdibujo" src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla">
+      <h2>Así de fácil</h2>
+      <ul>
+        <li>📱 Deja el móvil en la <b>mesilla</b>, cerca de tu cabeza, <b>enchufado</b> y boca arriba.</li>
+        <li>🌙 Toca <b>«Empezar a monitorear»</b> y duérmete. La pantalla se queda casi negra.</li>
+        <li>☀️ Por la mañana, toca <b>«Fin monitoreo sueño»</b> y mira cómo has dormido.</li>
+      </ul>
+    </div>
   </div>
   <div class="tpie">
-    <div class="tdots" id="tDots"><i></i><i></i><i></i></div>
+    <div class="tdots" id="tDots"><i></i><i></i><i></i><i></i></div>
     <button class="big" id="tSig" type="button">Siguiente</button>
     <button class="cplink" id="tSaltar" type="button">Saltar</button>
   </div>
@@ -1206,7 +1217,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.7'; // v12.7: curva «Sueño tranquilo o inquieto» (estimación con movimientos y ruidos) en cada noche, con rato tranquilo e inquieto y a qué hora te dormiste
+const VERSION = 'v12.8'; // v12.8: Luna aplaudiendo se mueve; dibujo de cómo dejar el móvil en la mesilla (presentación e instrucciones de Saber si ronco)
+// v12.7: // v12.7: curva «Sueño tranquilo o inquieto» (estimación con movimientos y ruidos) en cada noche, con rato tranquilo e inquieto y a qué hora te dormiste
 // v12.6: // v12.6: recorrido de bienvenida la primera vez (3 pantallas con lo que hace la app); se puede volver a ver en Ajustes → Novedades
 // v12.5: // v12.5: sin compartir ni descargar grabaciones (solo corazón y papelera)
 // v12.4: // v12.4: grabaciones con iconos clásicos sin recuadro (corazón, compartir, papelera); el aviso amarillo ya no se monta encima; el reproductor enseña la onda del sonido que avanza
@@ -2607,7 +2619,8 @@ $('pais').value = pais;
 $('pais').onchange = () => { pais = $('pais').value; try { localStorage.setItem('ronquino-pais', pais); } catch {} renderHome(); sincronizaPais(); };
 // La luna que da los consejos (ilustración hecha con Gemini: saluda / consejo / aplaude)
 // Luna dando consejos se mueve (vídeo con fondo transparente; si el navegador no lo sabe poner, queda la imagen quieta)
-const luna = (k, wave) => k === 'consejo' ? '<video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video>'
+const luna = (k, wave) => k === 'aplaude' ? '<video class="lunavid" src="luna/luna-aplaude.webm" poster="luna/luna-aplaude.png" autoplay loop muted playsinline></video>'
+  : k === 'consejo' ? '<video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video>'
   : `<img src="luna/luna-${k}.png" alt=""${wave ? ' class="wave"' : ''}>`;
 const LUNA_SVG_OLD = `<svg viewBox="0 0 120 120" aria-hidden="true"><defs><mask id="lunaM"><rect width="120" height="120" fill="#fff"/><circle cx="76" cy="40" r="34" fill="#000"/></mask></defs>
   <circle cx="58" cy="62" r="42" fill="#FDE68A" mask="url(#lunaM)"/>
@@ -4626,6 +4639,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.8', '25 oct 2026', ['Luna aplaude cuando tus noches van bien', 'Dibujo de cómo dejar el móvil en la mesilla']],
   ['v12.7', '25 oct 2026', ['Cada noche: curva de sueño tranquilo o inquieto (estimación) y a qué hora te dormiste']],
   ['v12.6', '25 oct 2026', ['Presentación de bienvenida la primera vez (y en Ajustes → Novedades)']],
   ['v12.5', '25 oct 2026', ['Las grabaciones ya no se comparten ni se descargan: solo favorita y borrar']],
