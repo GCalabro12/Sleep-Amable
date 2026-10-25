@@ -1269,7 +1269,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.4'; // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
+const VERSION = 'v13.5'; // v13.5: en cada grabación, «41 % probable de ser» + la etiqueta (el % más pegado al número)
+// v13.4: // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
 // v13.3: // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
 // v13.2: // v13.2: «🌊 Medir también el sueño profundo» (sí / no) en Saber si ronco y Reducir ronquidos: con «sí» se abre el dibujo y lo que hay que hacer; la curva de la noche solo sale si estaba activado
 // v13.1: // v13.1: dibujo de dónde poner el móvil en el colchón (en una esquina, junto a la almohada), al lado del de la mesilla, en la presentación y en las instrucciones
@@ -3261,7 +3262,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -4799,6 +4800,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.5', '25 oct 2026', ['En cada grabación: «41 % probable de ser 😴 Ronquido»']],
   ['v13.4', '25 oct 2026', ['🧱 El sueño profundo y ligero, en bloques, con los ciclos de unos 90 minutos numerados', 'Te dice si te despertaste en sueño ligero o profundo', 'En horizontal: la noche ocupa todo el ancho y el reproductor, 2 filas (play más pequeño, «¿Acierta?» a la derecha)']],
   ['v13.3', '25 oct 2026', ['«Duermo solo» más compacto', 'Los títulos de los desplegables, en un renglón entero', 'Sueño profundo y ligero: la explicación sale al tocar la ⓘ; debajo, a qué hora dormiste y despertaste']],
   ['v13.2', '25 oct 2026', ['🌊 «Medir también el sueño profundo» en Saber si ronco y Reducir ronquidos: dices que sí y te explica dónde poner el móvil', 'Toca Horas, Ronquido, Regularidad o Calma en la puntuación de la noche y te explica qué significa']],
