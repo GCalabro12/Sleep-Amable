@@ -1040,7 +1040,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.2'; // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
+const VERSION = 'v11.3'; // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
+// v11.2: // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
 // v11.1: // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
 // v11.0: // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
 // v10.9: // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
@@ -2778,7 +2779,7 @@ function renderList() {
     // ▶ grande a la izquierda (lo que más se usa); arriba la hora (sin segundos), la etiqueta y lo segura que está la IA;
     // abajo, en pequeño, la duración y las acciones
     d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
-      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % seguro</span>` : ''}</div>
+      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button></div>
       <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -4016,6 +4017,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.3', '25 oct 2026', ['En cada grabación: «33 % probable» y después lo que es (ronquido, voz…)']],
   ['v11.2', '25 oct 2026', ['Tarjeta de la mañana con la puntuación de tu noche', 'Línea con tus minutos roncando de las últimas noches', 'Etiquetas de la noche (alcohol, cena fuerte… y una tuya) para ver qué te hace roncar más']],
   ['v11.1', '25 oct 2026', ['Grabaciones más claras: ▶ grande a la izquierda, la hora sin segundos y «Ronquido · 33 % seguro»']],
   ['v11.0', '25 oct 2026', ['Nuevo en Ajustes: «Fondo de la app» con 6 colores']],
