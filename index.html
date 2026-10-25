@@ -575,25 +575,27 @@ details.hist[open] summary{margin-bottom:10px}
 .tile{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
 .tile b{display:block;font-size:24px;white-space:nowrap}
 .tile b.long{font-size:19px;line-height:29px}
-.tile span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile{min-width:0;padding:10px 3px}
+.tile span{display:block;font-size:12px;line-height:1.3;color:var(--muted);margin-top:2px}
+.tile{min-width:0;padding:10px 4px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
 canvas{width:100%;height:90px;display:block}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
+@media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}}
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
 .chip.on{background:#312E81;border-color:#4338CA}
-.ev{position:relative;display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 46px 10px 10px;margin-bottom:8px}
-.ev .play.big{flex:none;width:54px;height:54px;border-radius:50%;border:0;background:linear-gradient(135deg,#7C3AED,#4338CA);color:#fff;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 0 4px;box-shadow:0 4px 14px #4338ca66}
+.ev{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:8px 8px 6px 12px;margin-bottom:6px}
+.ev .play.big{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:linear-gradient(135deg,#7C3AED,#4338CA);color:#fff;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 0 4px;box-shadow:0 4px 14px #4338ca66}
 .ev.playing .play.big{background:linear-gradient(135deg,#F59E0B,#B45309);padding-left:0}
 .evbody{flex:1;min-width:0}
-.ev .bot{display:flex;align-items:center;gap:8px;margin-top:8px}
+.ev .bot{display:flex;align-items:center;gap:10px;margin-top:6px}
+.ev .bot .t{font-size:17px}
 .plval{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0 8px;font-size:14px;color:var(--muted)}
 .plval button{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:6px 12px;color:var(--text);font-size:14px}
 .plval button.si{border-color:#16A34A} .plval button.no{border-color:#DC2626}
@@ -606,7 +608,8 @@ canvas{width:100%;height:90px;display:block}
 .pick{width:26px;height:26px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:7px;border:2px solid #64748B;background:transparent;color:#fff;font-size:16px;font-weight:800;line-height:1}
 .pick.on{background:#6D5BD0;border-color:#6D5BD0}
 .pick{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-.ev > .pick{position:absolute;top:10px;right:10px}
+.ev .acts .pick{margin-left:6px;padding:0;border:2px solid #64748B;width:26px;height:26px;color:#fff}
+.ev .acts .pick.on{background:#6D5BD0;border-color:#6D5BD0}
 .selbar{position:sticky;top:var(--tlh, 0px);z-index:5;display:flex;align-items:center;gap:10px;background:var(--bg);padding:8px 0 8px 2px;margin-bottom:4px;font-size:14px;color:var(--muted)}
 .selbar .selacts{margin-left:auto;display:flex;gap:6px}
 .selbar .selacts button{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:14px;color:var(--text)}
@@ -620,7 +623,7 @@ canvas{width:100%;height:90px;display:block}
 .ev .acts{margin-left:auto;display:flex;gap:6px}
 .ev .acts button,.ev .acts a{display:inline-flex;background:none;border:0;padding:6px;color:#A5B4FC;text-decoration:none}
 .ev .acts svg{width:23px;height:23px}
-.ev .acts{gap:10px}
+.ev .acts{gap:4px;align-items:center}
 .ev .bot .meta{white-space:nowrap}
 .avnote{font-size:13px;color:#FDE047;margin-top:6px}
 .ev audio{width:100%;margin-top:8px;height:36px}
@@ -982,17 +985,17 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
   <div id="nScore"></div>
-  <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <div class="tiles">
-    <div class="tile s"><b id="tSnore">0</b><span>grabaciones/ronquidos</span></div>
-    <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
-    <div class="tile v"><b id="tVoice">0</b><span>grabaciones/voz</span></div>
+    <button class="tile s" type="button" data-exp="ronq"><b id="tSnore">0</b><span>grabaciones de ronquidos</span></button>
+    <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando en total</span></button>
+    <button class="tile v" type="button" data-exp="voz"><b id="tVoice">0</b><span>grabaciones de voz</span></button>
   </div>
+  <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard" id="avCard" hidden></details>
   <div class="card" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
   <div class="chips" id="chips"></div>
   <div class="selbar" id="selbar">
@@ -1219,7 +1222,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.9'; // v12.9: la curva se llama «Sueño profundo y ligero» (estimado por tus movimientos, como Sleep Cycle o Sleep as Android); para medirlo mejor, el móvil sobre el colchón
+const VERSION = 'v13.0'; // v13.0: los 3 recuadros de la noche suben encima de «¿Algo especial?», con el texto entero en dos renglones y una explicación al tocarlos; la pantalla de la noche se puede girar en horizontal (APK 4.1)
+//   y las grabaciones, más compactas: arriba «NN % probable» y la etiqueta; abajo ▶ pequeño, la hora, ♡, 🗑 y el cuadradito
+// v12.9: // v12.9: la curva se llama «Sueño profundo y ligero» (estimado por tus movimientos, como Sleep Cycle o Sleep as Android); para medirlo mejor, el móvil sobre el colchón
 // v12.8: // v12.8: Luna aplaudiendo se mueve; dibujo de cómo dejar el móvil en la mesilla (presentación e instrucciones de Saber si ronco)
 // v12.7: // v12.7: curva «Sueño tranquilo o inquieto» (estimación con movimientos y ruidos) en cada noche, con rato tranquilo e inquieto y a qué hora te dormiste
 // v12.6: // v12.6: recorrido de bienvenida la primera vez (3 pantallas con lo que hace la app); se puede volver a ver en Ajustes → Novedades
@@ -2951,7 +2956,6 @@ async function openNight(id) {
   renderStats(); drawTimeline(total); renderList();
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
   const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
-  requestAnimationFrame(() => document.querySelectorAll('#night .tile span').forEach(fitLine)); // cada texto en un renglón
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
   $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
   pintaCalma(n, curEvs);
@@ -3073,7 +3077,7 @@ function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   $('tSnore').textContent = s.length;
   const minR = Math.round(s.reduce((a, e) => a + e.dur, 0) / 60);
-  $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${minR % 60} min` : `${minR} min`;
+  $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${String(minR % 60).padStart(2, '0')}` : minR;
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
   renderAvisoNoche();
@@ -3087,6 +3091,14 @@ function renderStats() {
     $('chips').append(b);
   }
 }
+
+// Recuadros de la noche: al tocarlos explican qué cuentan
+const EXP_TILE = {
+  ronq: 'Cuántas grabaciones guardó la IA porque oyó un ronquido. Cada grabación junta los ronquidos seguidos: una puede durar unos segundos o varios minutos.',
+  min: 'El tiempo que estuviste roncando esta noche: la suma de lo que duran todas las grabaciones de ronquidos.',
+  voz: 'Cuántas grabaciones guardó la IA porque oyó una voz: alguien hablando, la tele o tú hablando en sueños.'
+};
+document.querySelectorAll('#night .tile').forEach(t => t.onclick = () => aviso(EXP_TILE[t.dataset.exp]));
 function drawTimeline(total) {
   if (total != null) curTotal = Math.max(total, 60);
   tlClamp();
@@ -3150,11 +3162,9 @@ function renderList() {
     for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
-    // ▶ grande a la izquierda (lo que más se usa); arriba la hora (sin segundos), la etiqueta y lo segura que está la IA;
-    // abajo, en pequeño, la duración y las acciones
-    d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
-      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
-      <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
+    // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
+      <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
@@ -3181,7 +3191,7 @@ function renderList() {
       if (sel.has(e.id)) sel.delete(e.id); else { sel.add(e.id); lastPick = e.id; }
       renderSel();
     };
-    d.append(pk);
+    d.querySelector('.acts').append(pk);
     d.querySelector('.play').onclick = () => PL.list[PL.i] === e ? plToggle() : plPlay(PL.list.indexOf(e));
     d.querySelector('.fav').onclick = async () => {
       e.fav = !e.fav;
@@ -3217,7 +3227,7 @@ function renderSel() {
   const n = curList.filter(e => sel.has(e.id)).length, all = n && n === curList.length;
   document.querySelectorAll('#evList .ev').forEach(d => {
     const on = sel.has(d._ev.id); d.classList.toggle('sel', on);
-    const pk = d.querySelector(':scope > .pick'); pk.classList.toggle('on', on); pk.textContent = on ? '✓' : '';
+    const pk = d.querySelector('.acts .pick'); pk.classList.toggle('on', on); pk.textContent = on ? '✓' : '';
   });
   $('selAll').classList.toggle('on', n > 0); $('selAll').textContent = all ? '✓' : n ? '–' : '';
   $('selTxt').textContent = n ? (n === 1 ? '1 seleccionada' : n + ' seleccionadas') : 'Seleccionar todas';
@@ -4392,6 +4402,7 @@ function show(id) {
   if (id === 'stats') renderHome();
   if (id === 'stats') $('misDet').ontoggle = () => requestAnimationFrame(() => document.querySelectorAll('#nights2 .when').forEach(fitLine));
   if (id === 'luna') lunaAbrir();
+  try { if (AND && typeof AND.girar === 'function') AND.girar(id === 'night'); } catch {} // 📱 solo la noche se gira en horizontal
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
@@ -4642,6 +4653,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.0', '25 oct 2026', ['Los recuadros de la noche suben arriba, con el texto entero; tócalos y te explican qué cuentan', 'Grabaciones más compactas: arriba lo segura que está la IA y la etiqueta; abajo ▶, la hora y los botones', '📱 Gira el móvil en la noche para ver el gráfico en grande (app Android 4.1)']],
   ['v12.9', '25 oct 2026', ['La curva de la noche ahora es «Sueño profundo y ligero» (estimado)', 'Para medirlo mejor: el móvil sobre el colchón, en una esquina junto a la almohada (no debajo)']],
   ['v12.8', '25 oct 2026', ['Luna aplaude cuando tus noches van bien', 'Dibujo de cómo dejar el móvil en la mesilla']],
   ['v12.7', '25 oct 2026', ['Cada noche: curva de sueño tranquilo o inquieto (estimación) y a qué hora te dormiste']],
@@ -4689,7 +4701,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '4.0';
+const APK_ULTIMA = '4.1';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
