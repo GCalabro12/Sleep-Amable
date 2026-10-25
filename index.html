@@ -887,7 +887,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
     <div class="tile v"><b id="tVoice">0</b><span>grabaciones/voz</span></div>
   </div>
-  <div class="card avcard" id="avCard" hidden></div>
+  <details class="instr card avcard" id="avCard" hidden></details>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar</span></div>
@@ -1051,7 +1051,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.5'; // v11.5: recuadros de la noche en dos renglones («grabaciones/ronquidos», «grabaciones/voz»); «¿Algo especial esta noche?» plegable y plegado al abrir la noche
+const VERSION = 'v11.6'; // v11.6: avisos «estás roncando» de la noche plegados y con la hora sin segundos
+// v11.5: // v11.5: recuadros de la noche en dos renglones («grabaciones/ronquidos», «grabaciones/voz»); «¿Algo especial esta noche?» plegable y plegado al abrir la noche
 // v11.4: // v11.4: «⏰ Alarma para despertarte» desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca
 // v11.3: // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
 // v11.2: // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
@@ -2702,7 +2703,9 @@ function textoEfecto(fx) {
 function renderAvisoNoche() {
   const fx = efectoAvisos(cur, curEvs);
   $('avCard').hidden = !fx.length;
-  if (fx.length) $('avCard').innerHTML = `<div>🎧 <b>${fx.length} ${fx.length === 1 ? 'aviso' : 'avisos'} «estás roncando»</b> esta noche (${fx.map(x => evTime(cur, x.t)).join(', ')})</div>` + textoEfecto(fx);
+  $('avCard').open = false; // plegado: se abre al tocarlo
+  if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
+    <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>` + textoEfecto(fx);
 }
 async function renderAvisoStats(ns) {
   const con = ns.filter(n => (n.avisoT || []).length).slice(0, 30);
@@ -2785,7 +2788,7 @@ function renderList() {
   // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
   const avisos = ['todos', 'ronquido'].includes(filter) ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
   const usados = new Set();
-  const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🟡 ${evTime(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
+  const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🟡 ${evHora(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
   for (const e of list) {
     for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
@@ -4054,6 +4057,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.6', '25 oct 2026', ['Los avisos «estás roncando» de cada noche salen plegados y sin segundos']],
   ['v11.5', '25 oct 2026', ['«¿Algo especial esta noche?» se pliega', 'Recuadros de la noche más cortos: «grabaciones/ronquidos»']],
   ['v11.4', '25 oct 2026', ['«⏰ Alarma para despertarte» en Saber si ronco, Reducir ronquidos y Dormir con quien ronca']],
   ['v11.3', '25 oct 2026', ['En cada grabación: «33 % probable» y después lo que es (ronquido, voz…)']],
