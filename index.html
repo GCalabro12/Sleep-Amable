@@ -479,7 +479,12 @@ canvas{width:100%;height:90px;display:block}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
 .chip.on{background:#312E81;border-color:#4338CA}
-.ev{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 46px 10px 12px;margin-bottom:8px}
+.ev{position:relative;display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:10px 46px 10px 10px;margin-bottom:8px}
+.ev .play.big{flex:none;width:54px;height:54px;border-radius:50%;border:0;background:linear-gradient(135deg,#7C3AED,#4338CA);color:#fff;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 0 4px;box-shadow:0 4px 14px #4338ca66}
+.ev.playing .play.big{background:linear-gradient(135deg,#F59E0B,#B45309);padding-left:0}
+.evbody{flex:1;min-width:0}
+.ev .bot{display:flex;align-items:center;gap:8px;margin-top:8px}
+.ev .conf{font-size:13px;color:#C4B5FD;white-space:nowrap}
 .ev.sel{background:#1E1B4B}
 .ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
 .ev .acts .fav{color:#94A3B8}
@@ -996,7 +1001,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.0'; // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
+const VERSION = 'v11.1'; // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
+// v11.0: // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
 // v10.9: // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
 // v10.8: // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
 // v10.7: // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
@@ -2250,6 +2256,8 @@ const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.f
   return h ? `${h} h ${m} min` : m ? `${m} min` : `${s} s`; };
 const clockOff = s => { s = Math.round(s); return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES') : clockOff(off);
+// En la lista: solo horas y minutos (los segundos confundían)
+const evHora = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : clockOff(off);
 const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
   : (d => `Noche ${d.toLocaleDateString('es-ES', {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '')} ${d.getFullYear()}`)(new Date(n.inicio - 6 * 3600e3));
 
@@ -2615,9 +2623,12 @@ function renderList() {
     for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
-    d.innerHTML = `<div class="top"><span class="t">${evTime(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>
-      <span class="meta">${Math.round(e.dur)} s${conf != null && !e.fix ? ` · ${Math.round(conf * 100)}%` : ''}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
-      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><button class="play" title="Escuchar">▶</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div>`;
+    // ▶ grande a la izquierda (lo que más se usa); arriba la hora (sin segundos), la etiqueta y lo segura que está la IA;
+    // abajo, en pequeño, la duración y las acciones
+    d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
+      <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span><button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % seguro</span>` : ''}</div>
+      <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
+      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
     if (AND) { // en la app Android no hay descargas: se comparte (WhatsApp, correo, Drive…)
@@ -3853,6 +3864,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.1', '25 oct 2026', ['Grabaciones más claras: ▶ grande a la izquierda, la hora sin segundos y «Ronquido · 33 % seguro»']],
   ['v11.0', '25 oct 2026', ['Nuevo en Ajustes: «Fondo de la app» con 6 colores']],
   ['v10.9', '25 oct 2026', ['«Duermo solo»: texto más claro']],
   ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma (y ahí puedes escanear otro código)', 'Monitoreo más limpio: sin el texto «Grabando un sonido»']],
