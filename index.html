@@ -111,14 +111,15 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .cuform .cugo{margin-top:10px}
 #cuSalir{margin-top:4px}
 #cuBorForm .cpin{margin:8px 0}
-#ask{position:fixed;inset:0;z-index:30;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+#ask{position:fixed;inset:0;z-index:70;background:#000b;display:flex;align-items:flex-end;justify-content:center}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
 #ask h2{margin:0 0 6px;font-size:20px}
 #ask .finrow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
 #ask .finrow span{flex:1}
 #ask .finrow button{background:#312E81;border:0;color:#E0E7FF;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
 #ask .finrow.ok{color:#86EFAC}
-#ask p{color:var(--muted);font-size:15px;margin:0 0 16px}
+#ask p{color:var(--muted);font-size:15px;margin:0 0 16px;white-space:pre-line}
+#ask.solo p{color:var(--text);font-size:17px;line-height:1.45}
 #prep .steps li{margin:10px 0}
 .pdet{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--card2)}
 .pdet summary{padding:13px 14px;cursor:pointer;font-weight:600;font-size:15px}
@@ -369,6 +370,16 @@ details.hist[open] summary{margin-bottom:10px}
 .lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
 .lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
+#pCuna{top:72px;left:0;right:0;bottom:0;max-height:none;border-radius:20px 20px 0 0;background:#0B1020;padding:16px 16px 28px;font-size:15px}
+.pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
+.pchead button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px}
+.cuctl{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:15px;color:#E0E7FF}
+.cuctl>span:first-child{flex:none;min-width:96px}
+.cuctl input[type=range]{flex:1;accent-color:#8B5CF6}
+.cumin{display:flex;gap:8px;flex:1}
+.cumin button{flex:1;padding:9px 0;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:15px}
+.cumin button.on{border-color:#A78BFA;background:#312E81;color:#fff}
+#pCuna .cunas{margin-top:14px}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
@@ -410,8 +421,10 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
-.lcuna{font-size:14px;color:#C4B5FD;margin-bottom:12px}
-.lcuna button{margin-left:8px;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;padding:4px 10px;font-size:13px}
+.lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin-bottom:12px;white-space:nowrap}
+.lcuna:not([hidden]){display:flex}
+.lcuna .cuname{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lcuna button{flex:none;width:40px;height:34px;padding:0;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;font-size:14px}
 .state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
 .last{font-size:14px;color:var(--muted);min-height:18px;margin-bottom:12px}
 #stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
@@ -855,7 +868,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
-    <details class="pdet" id="dCuna"><summary>🎵 Canción de cuna <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
+    <details class="pdet" id="dCuna"><summary>🎵 Música para dormir <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
     <p class="note" id="prepNote">Amable Sleep no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
     <button class="btn wide" id="prepNo">Cancelar</button>
@@ -875,11 +888,11 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="listen">
   <div class="ltop">
     <button class="lico" id="lDnd" aria-label="No molestar">🌙<small>▾</small></button>
-    <button class="lico" id="lCuna" aria-label="Canción de cuna">🎵<small>▾</small></button>
+    <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
     <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden></div>
-  <div class="lpanel" id="pCuna" hidden><b>🎵 Canción de cuna</b></div>
+  <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
   <div class="lpanel" id="pAir" hidden></div>
   <div id="pPrueba" hidden>
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
@@ -914,7 +927,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.7'; // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
+const VERSION = 'v9.8'; // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
+// v9.7: // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
 // v9.6: // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
 // v9.5: // v9.5: el gerente (sus emails, rol «admin» en la base de datos) ve «Probar detección» y el resumen de cuentas y países; el país se guarda en la cuenta
 // v9.4: // v9.4: pantalla de la cuenta con dos pestañas arriba («Crear cuenta» / «Ya tengo cuenta»), la explicación abajo y la versión visible
@@ -1615,12 +1629,29 @@ function todoComoAntes() {
 // Hoja con dos botones; devuelve 'a' (botón grande) o 'b'
 function ask(title, text, a, b) {
   $('askT').textContent = title; $('askP').textContent = text; $('askA').textContent = a; $('askB').textContent = b;
+  $('askT').hidden = false; $('askP').hidden = !text; $('askB').hidden = false; $('ask').classList.remove('solo');
   $('ask').hidden = false;
   return new Promise(res => {
     $('askA').onclick = () => { $('ask').hidden = true; res('a'); };
     $('askB').onclick = () => { $('ask').hidden = true; res('b'); };
   });
 }
+
+// Avisos y preguntas con el diseño de la app (nunca las ventanas grises del sistema, que parecen de fuera)
+function aviso(texto, boton = 'Entendido') {
+  $('askList').innerHTML = ''; $('askT').hidden = true; $('askP').hidden = false; $('askP').textContent = texto;
+  $('askA').textContent = boton; $('askB').hidden = true; $('ask').classList.add('solo'); $('ask').hidden = false;
+  return new Promise(res => { $('askA').onclick = () => { $('ask').hidden = true; res(); }; });
+}
+function confirma(texto, si = 'Sí', no = 'Cancelar') {
+  $('askList').innerHTML = ''; $('askT').hidden = true; $('askP').hidden = false; $('askP').textContent = texto;
+  $('askA').textContent = si; $('askB').textContent = no; $('askB').hidden = false; $('ask').classList.add('solo'); $('ask').hidden = false;
+  return new Promise(res => {
+    $('askA').onclick = () => { $('ask').hidden = true; res(true); };
+    $('askB').onclick = () => { $('ask').hidden = true; res(false); };
+  });
+}
+window.alert = t => { aviso(String(t)); };
 
 async function keepAwake() {
   if (AND) return; // en la app Android la pantalla se queda encendida sola
@@ -1660,6 +1691,7 @@ function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
 }
 $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
+$('pCunaX').onclick = () => panel(null);
 $('lAir').onclick = () => panel('pAir');
 // 🧪 Probar detección (pantalla completa): graba 6 s con el micrófono de la noche, pita y dice qué ha oído.
 // Debajo: «Correcto / No correcto» y el historial, que se puede enviar (para ajustar la detección).
@@ -1867,16 +1899,16 @@ function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
   if (live.cuna) {
-    const k = live.cuna, left = Math.max(0, CUNA_SEG - k.played);
-    $('lstate').textContent = k.paused ? '❚❚ Canción en pausa: prueba la sensibilidad (no se graba)'
-      : `🎵 Sin grabar mientras suena la canción · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
+    const k = live.cuna, left = Math.max(0, cunaSeg() - k.played);
+    $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
+      : `🎵 Sin grabar mientras suena la música · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
   }
   else if (rem > 0) $('lstate').textContent = `❚❚ Sin grabar: ${Math.ceil(rem)} s`;
   else if ($('lstate').textContent.startsWith('❚❚') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
 }
 
-// ---------- Canciones de cuna (hechas con Suno) ----------
-// Archivos en cuna/. Cada una suena 5 minutos (se repite si es más corta) y se apaga en 5 segundos.
+// ---------- Música para dormir (antes «canciones de cuna»; hechas con Suno) ----------
+// Archivos en cuna/. Cada una suena los minutos elegidos (5, 10 o 15; se repite si es más corta) y se apaga en 5 segundos.
 // Mientras suena no se graba; al acabar empieza la escucha normal.
 const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canciones de cuna – Amable Sleep»)
   {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3'},
@@ -1890,7 +1922,11 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
   {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador'},
   {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora'}
 ];
-const CUNA_SEG = 300, CUNA_FADE = 5;
+const CUNA_FADE = 5;
+let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
+try { const m = +localStorage.getItem('ronquino-cunamin'); if ([5, 10, 15].includes(m)) cunaMin = m; } catch {}
+try { const v = localStorage.getItem('ronquino-cunavol'); if (v !== null) cunaVol = Math.min(1, Math.max(.05, +v)); } catch {}
+const cunaSeg = () => cunaMin * 60;
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
 const cunaSel = () => CUNAS.find(c => c.id === cunaId) || null;
 // Escuchar una canción de cuna en la lista, antes de elegirla
@@ -1898,7 +1934,7 @@ let cunaPrev = null; // {id, au}
 function playCunaPrev(x) {
   stopCunaPrev();
   const au = new Audio(x.file || (noise.urls[x.noise] ||= makeNoise(x.noise)));
-  au.loop = true; au.volume = .7; au.play().catch(() => {});
+  au.loop = true; au.volume = cunaVol; au.play().catch(() => {});
   cunaPrev = {id: x.id, au};
 }
 function stopCunaPrev() {
@@ -1910,10 +1946,22 @@ function renderCunas() {
   const c = cunaSel();
   $('sCuna').textContent = c ? `${c.icon} ${c.name}` : 'ninguna';
   if (!CUNAS.length) {
-    $('cunaBody').innerHTML = 'Aún no hay canciones de cuna: las estamos haciendo con Suno y aparecerán aquí, cada una con su dibujito. Sonarán 5 minutos y se irán apagando en 5 segundos; mientras suenan no se graba.';
+    $('cunaBody').innerHTML = 'Aún no hay música para dormir: la estamos haciendo con Suno y aparecerá aquí.';
     return;
   }
-  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena 5 minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div><div class="cunas"></div>`;
+  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena ${cunaMin} minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div>
+    <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
+    <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
+    <div class="cunas"></div>`;
+  $('cunaVolIn').oninput = e => {
+    cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
+    if (cunaPrev) cunaPrev.au.volume = cunaVol;
+    if (live.cuna && live.cuna.played < cunaSeg() - CUNA_FADE) live.cuna.au.volume = cunaVol;
+  };
+  $('cunaBody').querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
+    cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
+    renderCunas(); muteTick();
+  });
   const box = $('cunaBody').querySelector('.cunas');
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
@@ -1924,7 +1972,8 @@ function renderCunas() {
       if (live.night) { // monitoreando: suena ya y se cierra el desplegable
         if (live.cuna) endCuna(true);
         if (x.id && live.det) playCuna(x);
-        $('lCuna').classList.toggle('on', !!x.id); $('pCuna').hidden = true;
+        $('lCuna').classList.toggle('on', !!x.id);
+        renderCunas(); // se queda abierta para poder ajustar el volumen mientras suena
         return;
       }
       // Escuchar al elegir: suena la que tocas; si ya sonaba, se para
@@ -1935,18 +1984,18 @@ function renderCunas() {
   }
 }
 function playCuna(c) {
-  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = .7;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = cunaVol;
   au.play().catch(() => {});
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
   live.det.muteUntil = Infinity;
   $('lcuna').hidden = false;
-  $('lcuna').innerHTML = `🎵 ${c.icon} ${c.name} <button id="cunaPause">❚❚ Pausar</button><button id="cunaStop">■ Parar</button>`;
+  $('lcuna').innerHTML = `<span class="cuname">🎵 ${c.icon} ${c.name}</span><button id="cunaPause" aria-label="Pausar">❚❚</button><button id="cunaStop" aria-label="Parar">■</button>`;
   // Pausar: la canción se queda donde está (y su cuenta de 5 minutos también) para probar la sensibilidad; «Seguir» la reanuda
   $('cunaPause').onclick = () => {
     const k = live.cuna; if (!k) return;
     k.paused = !k.paused;
     if (k.paused) k.au.pause(); else k.au.play().catch(() => {});
-    $('cunaPause').textContent = k.paused ? '▶ Seguir' : '❚❚ Pausar';
+    $('cunaPause').textContent = k.paused ? '▶' : '❚❚'; $('cunaPause').setAttribute('aria-label', k.paused ? 'Seguir' : 'Pausar');
     muteTick();
   };
   $('cunaStop').onclick = () => endCuna(true);
@@ -1955,8 +2004,8 @@ function playCuna(c) {
     if (!k.paused) k.played += (now - k.last) / 1000;
     k.last = now;
     const t = k.played;
-    if (t >= CUNA_SEG - CUNA_FADE) au.volume = Math.max(0, .7 * (CUNA_SEG - t) / CUNA_FADE);
-    if (t >= CUNA_SEG) endCuna();
+    if (t >= cunaSeg() - CUNA_FADE) au.volume = Math.max(0, cunaVol * (cunaSeg() - t) / CUNA_FADE);
+    if (t >= cunaSeg()) endCuna();
   }, 100);
   muteTick();
 }
@@ -1978,7 +2027,7 @@ $('fileBtn').onclick = () => $('fileIn').click();
 $('fileIn').onchange = async () => {
   const file = $('fileIn').files[0]; $('fileIn').value = '';
   if (!file) return;
-  if (file.size > 120e6 && !confirm('El archivo es muy grande y el móvil podría quedarse sin memoria. ¿Probar igualmente?')) return;
+  if (file.size > 120e6 && !await confirma('El archivo es muy grande y el móvil podría quedarse sin memoria. ¿Probar igualmente?', 'Probar igualmente')) return;
   $('fileCard').hidden = false; $('fileTxt').textContent = 'Leyendo «' + file.name + '»…'; $('fileProg').style.width = '0';
   try {
     const ab = await file.arrayBuffer();
@@ -2152,7 +2201,7 @@ async function podar(ns) {
 $('guardar').onchange = async () => {
   const nuevo = +$('guardar').value;
   const ns = await DB.all('noches'), sobran = nuevo ? Math.max(0, ns.length - nuevo) : 0;
-  if (sobran && !confirm(`Se borrarán ${sobran === 1 ? 'la noche más antigua' : `las ${sobran} noches más antiguas`}, con sus grabaciones. ¿Seguro?`)) { $('guardar').value = String(guardar); return; }
+  if (sobran && !await confirma(`Se borrarán ${sobran === 1 ? 'la noche más antigua' : `las ${sobran} noches más antiguas`}, con sus grabaciones. ¿Seguro?`, '🗑️ Borrarlas')) { $('guardar').value = String(guardar); return; }
   guardar = nuevo; try { localStorage.setItem('ronquino-guardar', String(guardar)); } catch {}
   $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
   renderHome();
@@ -2424,7 +2473,7 @@ function renderList() {
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
     };
     d.querySelector('.del').onclick = async () => {
-      if (!confirm('¿Borrar esta grabación?')) return;
+      if (!await confirma('¿Borrar esta grabación?', '🗑️ Borrar')) return;
       await DB.tx('eventos', 'readwrite', st => st.delete(e.id));
       curEvs = curEvs.filter(x => x !== e); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
     };
@@ -2470,7 +2519,7 @@ $('selAll').onclick = () => {
 };
 $('selDel').onclick = async () => {
   const evs = curList.filter(e => sel.has(e.id)); if (!evs.length) return;
-  if (!confirm(evs.length === 1 ? '¿Borrar esta grabación?' : `¿Borrar estas ${evs.length} grabaciones?`)) return;
+  if (!await confirma(evs.length === 1 ? '¿Borrar esta grabación?' : `¿Borrar estas ${evs.length} grabaciones?`, '🗑️ Borrar')) return;
   await DB.tx('eventos', 'readwrite', st => { evs.forEach(e => st.delete(e.id)); });
   curEvs = curEvs.filter(e => !sel.has(e.id)); sel.clear();
   await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
@@ -2519,7 +2568,7 @@ async function recount() {
 $('reNight').onclick = async () => {
   if (!IA.clf) return alert('El detector con IA aún no está listo. Espera a ver «Detector listo» (hace falta internet la primera vez).');
   const evs = curEvs.filter(e => !e.fix); if (!evs.length) return alert('No hay grabaciones que revisar.');
-  if (!confirm(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`)) return;
+  if (!await confirma(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`, 'Revisar')) return;
   plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
   const antes = {ronquido: 0, voz: 0, otro: 0}, cambios = {};
   for (let k = 0; k < evs.length; k++) {
@@ -2634,7 +2683,7 @@ $('plSpd').onclick = () => {
   plRender();
 };
 $('delNight').onclick = async () => {
-  if (!confirm('¿Borrar esta noche y todas sus grabaciones?')) return;
+  if (!await confirma('¿Borrar esta noche y todas sus grabaciones?', '🗑️ Borrar')) return;
   await DB.delNight(cur.id); borraNocheCuenta(cur.id); $('backBtn').onclick();
 };
 addEventListener('resize', () => { if (!$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } });
@@ -2928,8 +2977,8 @@ function renderReto() {
   $('retoNo').hidden = RETO_OK;
   $('retoNo').textContent = AND ? '📲 Necesita la app Android 2.9 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android.';
 }
-function pedirCodigo(al, done) {
-  if (!confirm('📷 Escanea ahora el código de barras de algo que esté lejos de la cama: la pasta de dientes, el champú, el bote del café…\n\nCuando suene la alarma tendrás que ir hasta él y escanearlo para apagarla.')) return done(false);
+async function pedirCodigo(al, done) {
+  if (!await confirma('📷 Escanea ahora el código de barras de algo que esté lejos de la cama: la pasta de dientes, el champú, el bote del café…\n\nCuando suene la alarma tendrás que ir hasta él y escanearlo para apagarla.', '📷 Escanear')) return done(false);
   window.codigoEscaneado = (v, err) => {
     window.codigoEscaneado = null;
     if (v) { al.cod = v; toast('📷 Código guardado'); done(true); }
@@ -2971,7 +3020,7 @@ function renderAlarmas() {
       al.sub = +d.querySelector('.sub').value; al.fired = null; al.snooze = null; alSave(); d.className = 'alcard' + (al.on ? '' : ' off'); };
     // al activarla o cambiar la hora: cuánto falta para que suene
     d.querySelectorAll('input, select').forEach(x => x.onchange = () => { upd(); if (al.on && x.tagName === 'INPUT') toast(`⏰ Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}${avisoReto(al)}`); });
-    d.querySelector('.aldel').onclick = () => { if (confirm('¿Borrar esta alarma?')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
+    d.querySelector('.aldel').onclick = async () => { if (await confirma('¿Borrar esta alarma?', '🗑️ Borrar')) { ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); } };
     d.querySelector('.son').onclick = () => elegirTono(al.son, id => { al.son = id; al.fired = null; alSave(); renderAlarmas(); });
     d.querySelector('.info').onclick = ev => { ev.preventDefault(); const h = d.querySelector('.alhelp'); h.hidden = !h.hidden; };
     pintaRetoAlarma(al, d);
@@ -3078,7 +3127,7 @@ function napEnd() {
   AND?.ruido(false);
   nap = null; $('napScr').hidden = true;
 }
-$('napCancel').onclick = () => { if (confirm('¿Cancelar la siesta?')) napParar(); };
+$('napCancel').onclick = async () => { if (await confirma('¿Cancelar la siesta?', 'Sí, cancelarla', 'No')) napParar(); };
 
 // ---------- 🌙 Habla con Luna (IA de Gemini a través del servidor propio de Amable Sleep) ----------
 // Servidor: «Worker Cloudflare/amable-sleep-api.js» (3 preguntas al día gratis)
