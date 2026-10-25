@@ -927,7 +927,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note" style="margin:6px 0 10px">Elige el color de fondo. La pantalla de la noche (monitoreo) sigue siempre en negro, para que no moleste.</p>
     <div class="temas" id="temas"></div>
   </details>
-  <details class="card ajd">
+  <details class="card ajd" id="aprDet" hidden>
     <summary>🧠 Lo que ha aprendido la IA <small id="sApr"></small></summary>
     <div id="aprBody"></div>
   </details>
@@ -1294,7 +1294,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v14.2'; // v14.2 + APK 4.2 (Android 16 para Google Play; «Recomendar» abre el menú de compartir del móvil): en Ajustes, «🌐 Amable Sleep Web y compartir»: el enlace a la web y un botón para recomendar la app
+const VERSION = 'v14.3'; // v14.3: «🧠 Lo que ha aprendido la IA» solo se ve en la cuenta del gerente (la IA sigue aprendiendo para todos)
+// v14.2: // v14.2 + APK 4.2 (Android 16 para Google Play; «Recomendar» abre el menú de compartir del móvil): en Ajustes, «🌐 Amable Sleep Web y compartir»: el enlace a la web y un botón para recomendar la app
 // v14.1: // v14.1: WhatsApp de soporte (+34 658 82 57 99) en Ayuda y soporte
 // v14.0: // v14.0: consejo de quitar relojes con tictac y aparatos ruidosos; micrófono de Luna en verde al escuchar; «🆘 Ayuda y soporte» en Ajustes (email con el asunto ya puesto)
 // v13.9: // v13.9: «Duermo solo» pasa a llamarse «Aviso por altavoz o auricular»; debajo dice por dónde sale ahora
@@ -4456,6 +4457,7 @@ window.googleNativo = (token, error) => {
 const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function pintaCuenta() {
   $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el gerente
+  $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el gerente
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
@@ -4857,6 +4859,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.3', '25 oct 2026', ['«Lo que ha aprendido la IA» queda solo para el gerente de la app']],
   ['v14.2', '25 oct 2026', ['🌐 En Ajustes: el enlace a Amable Sleep Web y un botón para recomendar la app', '📱 App Android 4.2: preparada para Google Play (Android 16)']],
   ['v14.1', '25 oct 2026', ['💬 Soporte también por WhatsApp, en Ajustes → Ayuda y soporte']],
   ['v14.0', '25 oct 2026', ['Consejo: quita los relojes con tictac y los aparatos que hagan ruido', 'Luna: el micrófono se pone verde mientras te escucha', '🆘 Ayuda y soporte en Ajustes']],
