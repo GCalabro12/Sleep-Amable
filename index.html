@@ -438,6 +438,7 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .calma .lim{stroke:#334155;stroke-dasharray:3 4}
 .calma text{fill:#64748B;font-size:11px}
 .calma .et{fill:#94A3B8;font-size:10.5px}
+.calma .cic{fill:#C4B5FD;font-size:10px;font-weight:700}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
 .calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
 .calmadatos b{display:block;font-size:16px;color:var(--text)}
@@ -602,7 +603,7 @@ canvas{width:100%;height:90px;display:block}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
-@media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}}
+@media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}.wrap:has(#night:not([hidden])){max-width:none}} /* en horizontal, la noche usa todo el ancho */
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
@@ -619,6 +620,8 @@ canvas{width:100%;height:90px;display:block}
 .plval button{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:6px 12px;color:var(--text);font-size:14px}
 .plval button.si{border-color:#16A34A} .plval button.no{border-color:#DC2626}
 .plval b{color:#86EFAC}
+.plvTag{display:none}
+@media (orientation:landscape) and (max-height:600px){.plvTag{display:inline}}
 .ev .conf{font-size:13px;color:#C4B5FD;white-space:nowrap}
 .ev.sel{background:#1E1B4B}
 .ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
@@ -660,7 +663,24 @@ canvas{width:100%;height:90px;display:block}
 #pl .ctl .pp{width:60px;height:60px;background:linear-gradient(135deg,#6D5BD0,#4338CA);font-size:24px;box-shadow:0 6px 18px #4338ca55}
 #pl .ctl .bst{grid-column:1;justify-self:start;white-space:nowrap;width:auto;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:19px;font-size:14px;font-weight:700;background:var(--card2)}
 #pl .ctl .bst.on{border-color:#A78BFA;color:#C4B5FD}
+@media (orientation:landscape) and (max-height:600px){
+  /* En horizontal, el reproductor en 2 filas: «1 de 81» + la onda; y los botones con «¿Acierta?» entre ⏭ y la velocidad */
+  #pl{padding:4px 16px calc(6px + env(safe-area-inset-bottom))}
+  #pl .in{max-width:none;display:grid;grid-template-columns:auto auto auto auto 1fr auto;grid-template-areas:"now bar bar bar bar bar" "bst prev pp next val spd";align-items:center;column-gap:12px;row-gap:2px}
+  #pl .ctl{display:contents}
+  #pl .now{grid-area:now;text-align:left;max-width:40vw;font-size:14px}
+  #pl .now .plnTag{display:none}
+  #pl .plvQ{flex-basis:100%;text-align:center}
+  #pl .plval button{padding:4px 12px}
+  #pl .bar{grid-area:bar;margin-top:0}
+  #plWave{height:30px}
+  #pl .plval{grid-area:val;margin:0;justify-content:center}
+  #pl .ctl button{width:40px;height:40px;font-size:20px}
+  #pl .ctl #plPrev{grid-area:prev} #pl .ctl #plNext{grid-area:next}
+  #pl .ctl .pp{grid-area:pp;width:44px;height:44px;font-size:18px;box-shadow:none}
+}
 #pl .ctl .spd{grid-column:5;justify-self:end;width:auto;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:19px;font-size:15px;font-weight:700;background:var(--card2)}
+@media (orientation:landscape) and (max-height:600px){#pl .ctl .bst{grid-area:bst;height:34px} #pl .ctl .spd{grid-area:spd;height:34px}}
 body.pl-on .wrap{padding-bottom:190px}
 .prog{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:10px}
 .prog i{display:block;height:100%;width:0;background:#6D5BD0}
@@ -1249,7 +1269,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.3'; // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
+const VERSION = 'v13.4'; // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
+// v13.3: // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
 // v13.2: // v13.2: «🌊 Medir también el sueño profundo» (sí / no) en Saber si ronco y Reducir ronquidos: con «sí» se abre el dibujo y lo que hay que hacer; la curva de la noche solo sale si estaba activado
 // v13.1: // v13.1: dibujo de dónde poner el móvil en el colchón (en una esquina, junto a la almohada), al lado del de la mesilla, en la presentación y en las instrucciones
 // v13.0: // v13.0: los 3 recuadros de la noche suben encima de «¿Algo especial?», con el texto entero en dos renglones y una explicación al tocarlos; la pantalla de la noche se puede girar en horizontal (APK 4.1)
@@ -2804,7 +2825,9 @@ function curvaCalma(n, evs) {
   for (let b = 0; b + 2 < B; b++) if (v[b] < .25 && v[b + 1] < .25 && v[b + 2] < .25) { dormido = b; break; }
   for (let b = B - 1; b >= 2; b--) if (v[b] < .25 && v[b - 1] < .25 && v[b - 2] < .25) { despierto = b + 1; break; }
   const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
-  return {v, ini, B, dormido: dormido == null ? null : ini + dormido * 300e3, despierto: despierto == null ? null : Math.min(fin, ini + despierto * 300e3),
+  // En bloques: profundo (poco movimiento), ligero, despierto (mucho movimiento, o antes de dormirte y después de despertar)
+  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || x >= .6 ? 2 : x >= .25 ? 1 : 0);
+  return {v, niv, ini, fin, B, dB: dormido, dormido: dormido == null ? null : ini + dormido * 300e3, despierto: despierto == null ? null : Math.min(fin, ini + despierto * 300e3),
     tranq, inq, conMov: (n.mov || []).length > 0};
 }
 function pintaCalma(n, evs) {
@@ -2817,26 +2840,52 @@ function pintaCalma(n, evs) {
     return;
   }
   box.hidden = !c || n.fuente !== 'micro' || !pidio; if (box.hidden) return;
-  const W = 320, H = 110, pl = 6, pr = 6, pt = 8, pb = 22, w = W - pl - pr, h = H - pt - pb;
-  const x = b => pl + w * (b + .5) / c.B, y = val => pt + h * (1 - val);
-  const linea = c.v.map((val, b) => `${x(b).toFixed(1)},${y(val).toFixed(1)}`).join(' ');
-  const area = `${x(0).toFixed(1)},${pt + h} ${linea} ${x(c.B - 1).toFixed(1)},${pt + h}`;
+  // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
+  const W = 320, H = 132, pl = 58, pr = 6, pt = 16, fila = 26, w = W - pl - pr, hB = fila * 3;
+  const x = b => pl + w * b / c.B;
+  const COL = ['#6366F1', '#A78BFA', '#FBBF24'], FIL = ['Profundo', 'Ligero', 'Despierto'];
+  const yF = k => pt + (2 - k) * fila; // fila del nivel k
+  const bloques = [];
+  for (let b = 0; b < c.B;) {
+    let e = b; while (e + 1 < c.B && c.niv[e + 1] === c.niv[b]) e++;
+    bloques.push(`<rect x="${x(b).toFixed(1)}" y="${yF(c.niv[b]) + 3}" width="${Math.max(1.5, x(e + 1) - x(b) - .6).toFixed(1)}" height="${fila - 6}" rx="3" fill="${COL[c.niv[b]]}"/>`);
+    b = e + 1;
+  }
+  // ciclos de unos 90 minutos (18 tramos de 5 min) desde que te dormiste
+  const c0 = c.dB ?? 0, ciclos = [];
+  for (let k = 0, b = c0; b < c.B; k++, b += 18) {
+    const b2 = Math.min(c.B, b + 18);
+    ciclos.push(`<rect x="${x(b).toFixed(1)}" y="${pt - 2}" width="${(x(b2) - x(b)).toFixed(1)}" height="${hB + 4}" fill="${k % 2 ? '#ffffff0d' : '#ffffff05'}"/>`
+      + (b > c0 ? `<line x1="${x(b).toFixed(1)}" x2="${x(b).toFixed(1)}" y1="${pt - 2}" y2="${pt + hB + 2}" class="lim"/>` : '')
+      + (x(b2) - x(b) > 14 ? `<text x="${((x(b) + x(b2)) / 2).toFixed(1)}" y="${pt - 5}" text-anchor="middle" class="cic">${k + 1}</text>` : ''));
+  }
+  const nCiclos = Math.round((c.B - c0) / 18 * 10) / 10;
   // marcas de hora cada 1 o 2 horas
   const marcas = []; const paso = c.B * 5 > 420 ? 120 : 60;
   const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
-  for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 6}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
+  for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 8}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
   const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
+  const min = k => c.niv.filter(z => z === k).length * 5;
+  const hm3 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')}` : `${mi} min`; // corto: caben 3 en fila
+  // ¿En qué te despertaste? Lo de 20 a 5 minutos antes del final (los últimos minutos ya son moverte para levantarte)
+  const fin5 = c.niv.slice(Math.max(0, c.B - 4), Math.max(1, c.B - 1)), prof = fin5.filter(z => z === 0).length > fin5.length / 2;
+  const finCiclos = []; for (let b = c0 + 18; b <= c.B + 6; b += 18) finCiclos.push(c.ini + b * 300e3);
+  const cerca = finCiclos.filter(t => Math.abs(t - c.fin) <= 60 * 60e3).map(hhmm);
+  const despTxt = prof
+    ? `😵 <b>Te despertaste en sueño profundo</b>: por eso puedes notarte espeso al levantarte.${cerca.length ? ` Tus ciclos acababan hacia las <b>${cerca.join('</b> y las <b>')}</b>: despertar cerca de esas horas suele costar menos.` : ''}`
+    : '👍 <b>Te despertaste en sueño ligero</b>: es el mejor momento para despertar.';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span>🌊 Sueño profundo y ligero <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
-    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Es una estimación, como la de otras apps de sueño; las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
-    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de sueño profundo y ligero">
-      <defs><linearGradient id="gCalma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24" stop-opacity=".55"/><stop offset=".55" stop-color="#A78BFA" stop-opacity=".35"/><stop offset="1" stop-color="#4338CA" stop-opacity=".15"/></linearGradient></defs>
-      <line x1="${pl}" x2="${W - pr}" y1="${y(.25)}" y2="${y(.25)}" class="lim"/>
-      <text x="${pl + 2}" y="${pt + 9}" class="et">Ligero</text><text x="${pl + 2}" y="${pt + h - 3}" class="et">Profundo</text>
-      <polygon points="${area}" fill="url(#gCalma)"/><polyline points="${linea}" class="lin"/>
+    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 minutos</b>, contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y vuelves. Es una aproximación: cada ciclo dura entre 70 y 120 minutos, y las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
+    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero y despierto a lo largo de la noche, en bloques">
+      ${ciclos.join('')}
+      ${[2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
+      ${bloques.join('')}
       ${marcas.join('')}
     </svg>
-    <div class="calmadatos"><span>🌙 Profundo <b>${hm2(c.tranq)}</b></span><span>🌀 Ligero o despierto <b>${hm2(c.inq)}</b></span></div>
-    <div class="calmadatos"><span>😴 Dormiste a las <b>${hhmm(n.inicio)}</b></span><span>☀️ Despertaste a las <b>${hhmm(n.fin)}</b></span></div>`;
+    <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
+    <div class="calmadatos"><span>🌙 Profundo <b>${hm3(min(0))}</b></span><span>🌀 Ligero <b>${hm3(min(1))}</b></span><span>👁️ Despierto <b>${hm3(min(2))}</b></span></div>
+    <div class="calmadatos"><span>😴 Dormiste a las <b>${hhmm(n.inicio)}</b></span><span>☀️ Despertaste a las <b>${hhmm(n.fin)}</b></span></div>
+    <div class="stnote" style="margin-top:8px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
   $('calmaInfo').onclick = () => { const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
 }
@@ -3466,7 +3515,8 @@ function plToggle() {
 function pintaValorar(e) {
   const box = $('plVal'); box.hidden = !e; if (!e) return;
   if (e.val === 'ok' || e.fix) { box.innerHTML = e.fix ? `<b>✏️ Corregida: ${tagTxt(e)}</b>` : '<b>✅ Confirmada: la IA acertó</b>'; return; }
-  box.innerHTML = `¿Acierta? <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
+  // en horizontal se ve aquí la etiqueta («🗣️ Voz ¿Acierta?») y debajo Sí / No
+  box.innerHTML = `<span class="plvQ"><span class="plvTag">${tagTxt(e)} · </span>¿Acierta?</span> <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
   $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
   $('plNo').onclick = () => {
     box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : '🔊 Otro ruido'}</button>`).join('');
@@ -3480,8 +3530,11 @@ function pintaValorar(e) {
 function plRender() {
   const e = PL.list[PL.i], on = !!e && !PL.au.paused;
   pintaValorar(e);
-  $('plNow').textContent = e ? `${tagTxt(e)} · ${evTime(cur, e.off)} · ${PL.i + 1} de ${PL.list.length}`
-    : `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
+  // en horizontal solo se ve «1 de 81» (a la izquierda de la onda): la etiqueta y la hora se esconden
+  const pn = $('plNow'); pn.textContent = '';
+  if (e) { const a = document.createElement('span'), b = document.createElement('span'); a.className = 'plnTag';
+    a.textContent = `${tagTxt(e)} · ${evTime(cur, e.off)} · `; b.textContent = `${PL.i + 1} de ${PL.list.length}`; pn.append(a, b); }
+  else pn.textContent = `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
   $('plPP').textContent = on ? '❚❚' : '▶';
   $('plSpd').textContent = String(PL.speed).replace('.', ',') + '×';
   $('plBst').textContent = '🔊 ' + (PL.boost === 1 ? '1×' : '×' + PL.boost);
@@ -4746,6 +4799,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.4', '25 oct 2026', ['🧱 El sueño profundo y ligero, en bloques, con los ciclos de unos 90 minutos numerados', 'Te dice si te despertaste en sueño ligero o profundo', 'En horizontal: la noche ocupa todo el ancho y el reproductor, 2 filas (play más pequeño, «¿Acierta?» a la derecha)']],
   ['v13.3', '25 oct 2026', ['«Duermo solo» más compacto', 'Los títulos de los desplegables, en un renglón entero', 'Sueño profundo y ligero: la explicación sale al tocar la ⓘ; debajo, a qué hora dormiste y despertaste']],
   ['v13.2', '25 oct 2026', ['🌊 «Medir también el sueño profundo» en Saber si ronco y Reducir ronquidos: dices que sí y te explica dónde poner el móvil', 'Toca Horas, Ronquido, Regularidad o Calma en la puntuación de la noche y te explica qué significa']],
   ['v13.1', '25 oct 2026', ['Dibujo de dónde poner el móvil: en la mesilla o en el colchón, junto a la almohada']],
