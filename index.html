@@ -188,6 +188,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 .refz{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
 .refz select{width:100%;margin-top:3px}
 .codrow{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:var(--text)}
+.codrow .codcam{margin-left:auto;background:#111827;border:1px solid #334155;border-radius:10px;padding:5px 10px;color:#C4B5FD;font-size:13px}
 .codrow button{margin-left:auto;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;color:#C4B5FD}
 details.ajd>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;cursor:pointer;padding:2px 0}
 details.ajd>summary::-webkit-details-marker{display:none}
@@ -986,7 +987,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.8'; // v10.8: «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
+const VERSION = 'v10.8'; // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
 // v10.7: // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
 // v10.6: // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
 // v10.5: // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
@@ -1579,11 +1580,10 @@ async function startListening() {
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
-    $('lstate').textContent = 'Escuchando…';
   });
   const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
-    onStart: () => { $('lstate').textContent = 'Grabando un sonido…'; }, onScore: pruebaScore, onResult: pruebaResult});
+    onStart: () => {}, onScore: pruebaScore, onResult: pruebaResult});
   const rs = new Resampler(ctx.sampleRate);
   node.port.onmessage = m => { live.lastFrame = Date.now(); const x = rs.process(m.data); det.push(x); live.capt?.add(x); };
   stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
@@ -1604,7 +1604,7 @@ async function startListening() {
     $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
-    if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = 'Escuchando…';
+    if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = '';
     muteTick();
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
@@ -2077,7 +2077,7 @@ function muteTick() {
     $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
       : `🎵 Sin grabar mientras suena la música · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
   }
-  else if ($('lstate').textContent.startsWith('❚❚') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
+  else if ($('lstate').textContent.startsWith('❚❚') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = '';
 }
 
 // ---------- Música para dormir (antes «canciones de cuna»; hechas con Suno) ----------
@@ -3166,7 +3166,10 @@ function pintaRetoAlarma(al, d) {
     ? `<span>🧩 Reto activado <b>${r.t.split(' ')[0]}</b></span><button type="button" class="rbtn">Cambiar</button>`
     : `<span>🧩 Reto alarma</span><button type="button" class="rbtn"${RETO_OK ? '' : ' disabled'}>Activar</button>`;
   const lista = r ? [...RETOS, {id: '', t: '🚫 Sin reto (se apaga con el botón)'}] : RETOS;
-  opts.innerHTML = lista.map(x => `<div class="ropt"><button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>${x.help ? '<button type="button" class="rinfo" aria-label="¿En qué consiste?">?</button>' : ''}</div>${x.help ? `<div class="rhelp" hidden>${x.help}</div>` : ''}`).join('');
+  opts.innerHTML = lista.map(x => `<div class="ropt"><button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>${x.help ? '<button type="button" class="rinfo" aria-label="¿En qué consiste?">?</button>' : ''}</div>${x.help ? `<div class="rhelp" hidden>${x.help}</div>` : ''}`
+    // el código de barras guardado (vale para todas las alarmas) y la opción de escanear otro
+    + (x.id === 'codigo' && ALS.cod ? `<div class="codrow" style="margin:0 0 8px">📷 Código guardado: …${ALS.cod.slice(-6).replace(/[<>&"]/g, '')}<button type="button" class="codcam">Escanear otro</button></div>` : '')).join('');
+  opts.querySelector('.codcam')?.addEventListener('click', () => pedirCodigo(ALS, ok => { if (ok) { alSave(); renderAlarmas(); } }));
   opts.querySelectorAll('.rinfo').forEach(b => b.onclick = () => { const h = b.parentNode.nextElementSibling; h.hidden = !h.hidden; });
   box.querySelector('.rbtn').onclick = () => { opts.hidden = !opts.hidden; };
   opts.querySelectorAll('button[data-r]').forEach(b => b.onclick = () => {
@@ -3819,7 +3822,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
-  ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma']],
+  ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma (y ahí puedes escanear otro código)', 'Monitoreo más limpio: sin el texto «Grabando un sonido»']],
   ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
   ['v10.6', '25 oct 2026', ['Siesta: el nombre a la izquierda y el interruptor a la derecha']],
   ['v10.5', '25 oct 2026', ['Reducir ronquidos: botón para empezar la noche con el aviso y el mensaje', '«Duermo solo»: sin auriculares, la voz suena por el altavoz', 'Las partes del mensaje se pliegan']],
