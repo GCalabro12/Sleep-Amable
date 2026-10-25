@@ -447,6 +447,7 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
 .calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
 .calmadatos b{display:block;font-size:16px;color:var(--text)}
+.calmadatos.tresdat span i{display:block;font-style:normal;font-size:16px;line-height:1.3}
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;min-width:0}
 .stbox b{display:block;font-size:22px;line-height:1.1;white-space:nowrap}
@@ -1277,7 +1278,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.7'; // v13.7: colores como sus emojis: ronquido 😴 amarillo, voz 🗣️ azul; el aviso «estás roncando» pasa a rosa con 🎧 (antes amarillo, se confundía) y el movimiento a verde
+const VERSION = 'v13.8'; // v13.8: «Dormiste a las … y despertaste a las …» como texto; los 3 recuadros del sueño igual de ordenados (icono / nombre / cifra)
+// v13.7: // v13.7: colores como sus emojis: ronquido 😴 amarillo, voz 🗣️ azul; el aviso «estás roncando» pasa a rosa con 🎧 (antes amarillo, se confundía) y el movimiento a verde
 // v13.6: // v13.6: el aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1) con la IA por encima del 80 % (antes 85 %), contando minutos y no grabaciones, y se explica en «Avisos» de la noche; títulos de la noche en un renglón
 // v13.5: // v13.5: en cada grabación, «41 % probable de ser» + la etiqueta (el % más pegado al número)
 // v13.4: // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
@@ -2894,9 +2896,9 @@ function pintaCalma(n, evs) {
       ${marcas.join('')}
     </svg>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
-    <div class="calmadatos"><span>🌙 Profundo <b>${hm3(min(0))}</b></span><span>🌀 Ligero <b>${hm3(min(1))}</b></span><span>👁️ Despierto <b>${hm3(min(2))}</b></span></div>
-    <div class="calmadatos"><span>😴 Dormiste a las <b>${hhmm(n.inicio)}</b></span><span>☀️ Despertaste a las <b>${hhmm(n.fin)}</b></span></div>
-    <div class="stnote" style="margin-top:8px">${despTxt}</div>`;
+    <div class="calmadatos tresdat"><span><i>🌙</i>Profundo<b>${hm3(min(0))}</b></span><span><i>🌀</i>Ligero<b>${hm3(min(1))}</b></span><span><i>👁️</i>Despierto<b>${hm3(min(2))}</b></span></div>
+    <div class="stnote" style="margin-top:8px">Dormiste a las <b>${hhmm(n.inicio)}</b> y despertaste a las <b>${hhmm(n.fin)}</b>.</div>
+    <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
   $('calmaInfo').onclick = () => { const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
 }
@@ -4813,6 +4815,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.8', '25 oct 2026', ['Sueño: «Dormiste a las … y despertaste a las …» en texto, y los 3 recuadros bien alineados']],
   ['v13.7', '25 oct 2026', ['Colores como sus emojis: 😴 ronquido en amarillo, 🗣️ voz en azul', 'El aviso «estás roncando» ahora es rosa con 🎧, para no confundirlo con la voz; el movimiento, verde', 'En la pantalla de monitoreo ya no se selecciona texto al dejar el dedo apretado']],
   ['v13.6', '25 oct 2026', ['El aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1), con la IA por encima del 80 %', 'En la noche, «Avisos» explica cuándo salta', 'Títulos de la noche en un solo renglón', '«Calma» pasa a «Movimiento»: «22 mov.» (toca para ver qué es)']],
   ['v13.5', '25 oct 2026', ['En cada grabación: «41 % probable de ser 😴 Ronquido»']],
