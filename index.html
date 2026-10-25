@@ -16,7 +16,8 @@
   --text:#E2E8F0; --muted:#94A3B8; --dim:#64748B;
   --snore:#A78BFA; --voice:#FBBF24; --other:#64748B; --ok:#4ADE80; --bad:#F87171;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} /* sin el recuadro azul de Android al tocar */
+button:focus:not(:focus-visible){outline:none}
 html,body{margin:0;overflow-anchor:none;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
@@ -426,6 +427,9 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button{background:#111827;border:1px solid #1F2937;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
+.mutefila{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 8px}
+.mutefila .mute{margin:0}
+#muteRest{font-size:15px;font-weight:700;color:#FBBF24;white-space:nowrap;font-variant-numeric:tabular-nums}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
 .lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin:-4px 0 12px;white-space:nowrap;width:100%;flex:none}
 .lcuna:not([hidden]){display:flex}
@@ -941,7 +945,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <button class="mute" id="muteBtn">❚❚ No grabar +30 s</button>
+    <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
@@ -951,7 +955,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.1'; // v10.1: «No grabar +30 s» (antes +5 s) y el botón enseña lo que queda sin grabar
+const VERSION = 'v10.2'; // v10.2: «Avisa si ronco · falta auriculares»; «Sin grabar m:ss» a la derecha de «No grabar +30 s», en el mismo renglón; sin el recuadro azul de Android al tocar
+// v10.1: // v10.1: «No grabar +30 s» (antes +5 s) y el botón enseña lo que queda sin grabar
 // v10.0: // v10.0: la música que suena (con ❚❚ y ■) justo debajo de los iconos de arriba; nueva sección «Reducir ronquidos» en Inicio: «Avisarme si ronco» y «Un mensaje en la noche» (cada cierto tiempo o a horas fijas, y junto al aviso de ronquido si cae a ±15 min)
 // v9.9: // v9.9: monitoreo sin la línea «Última grabación»; «Fin monitoreo sueño» con borde morado
 // v9.8: // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
@@ -1544,7 +1549,7 @@ async function startListening() {
       $('bloque').textContent = en ? `● Grabando bloque: ${mmss(e.blocks.length * BLK / SR)} · quedan ${mmss(Math.max(0, det.maxSec - e.blocks.length * BLK / SR))}` : (det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : 'Esperando un sonido…'); }
     if (AND?.auriculares) { // con «Avisarme si ronco»: «Avisa si ronco» (en color si hay auriculares); si no, solo «Auriculares» cuando estén puestos
       const au = !!AND.auriculares(), av = VOZ_OK && cfg.avisoRonco;
-      $('fAur').textContent = av ? (au ? '🎧 Avisa si ronco' : '🎧 Avisa si ronco · sin auriculares') : '🎧 Auriculares';
+      $('fAur').textContent = av ? (au ? '🎧 Avisa si ronco' : '🎧 Avisa si ronco · falta auriculares') : '🎧 Auriculares';
       $('fAur').hidden = !av && !au; $('fAur').classList.toggle('on', au);
     }
     // el micrófono se ha parado (p. ej. al conectar los pinganillos): se vuelve a encender solo
@@ -1995,15 +2000,15 @@ $('muteBtn').onclick = () => { if (live.det) { live.det.mute(30); muteTick(); } 
 function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
-  // El propio botón dice cuánto falta (cada toque suma 30 s)
-  $('muteBtn').textContent = rem > 0 && isFinite(rem) && !live.cuna
-    ? `❚❚ Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')} · +30 s` : '❚❚ No grabar +30 s';
+  // A la derecha del botón, lo que falta (cada toque suma 30 s)
+  const sinGrabar = rem > 0 && isFinite(rem) && !live.cuna;
+  $('muteRest').hidden = !sinGrabar;
+  if (sinGrabar) $('muteRest').textContent = `Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')}`;
   if (live.cuna) {
     const k = live.cuna, left = Math.max(0, cunaSeg() - k.played);
     $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
       : `🎵 Sin grabar mientras suena la música · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
   }
-  else if (rem > 0) $('lstate').textContent = `❚❚ Sin grabar: ${Math.ceil(rem)} s`;
   else if ($('lstate').textContent.startsWith('❚❚') || $('lstate').textContent.startsWith('🎵')) $('lstate').textContent = 'Escuchando…';
 }
 
