@@ -936,7 +936,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note" style="margin:8px 0 10px">¿Algo no funciona o tienes una duda? Escríbenos y te ayudamos. El email ya lleva puesto que es de Amable Sleep y la versión que tienes.</p>
     <a class="btn wide" id="ayudaMail" href="#" style="display:block;text-align:center;text-decoration:none;color:var(--text)">✉️ Escribir a soporte</a>
     <a class="btn wide" id="ayudaWa" href="#" hidden style="display:block;text-align:center;text-decoration:none;margin-top:8px;color:var(--text)">💬 Escribir por WhatsApp</a>
-    <p class="note" style="margin:10px 0 0">Email: <b>info@practicaintegral.club</b></p>
+    <p class="note" style="margin:10px 0 0">Email: <b>info@practicaintegral.club</b> · WhatsApp: <b>+34 658 82 57 99</b></p>
   </details>
   <details class="card ajd" id="novDet">
     <summary>🆕 Novedades <small id="sNov"></small></summary>
@@ -1287,7 +1287,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v14.0'; // v14.0: consejo de quitar relojes con tictac y aparatos ruidosos; micrófono de Luna en verde al escuchar; «🆘 Ayuda y soporte» en Ajustes (email con el asunto ya puesto)
+const VERSION = 'v14.1'; // v14.1: WhatsApp de soporte (+34 658 82 57 99) en Ayuda y soporte
+// v14.0: // v14.0: consejo de quitar relojes con tictac y aparatos ruidosos; micrófono de Luna en verde al escuchar; «🆘 Ayuda y soporte» en Ajustes (email con el asunto ya puesto)
 // v13.9: // v13.9: «Duermo solo» pasa a llamarse «Aviso por altavoz o auricular»; debajo dice por dónde sale ahora
 // v13.8: // v13.8: «Dormiste a las … y despertaste a las …» como texto; los 3 recuadros del sueño igual de ordenados (icono / nombre / cifra)
 // v13.7: // v13.7: colores como sus emojis: ronquido 😴 amarillo, voz 🗣️ azul; el aviso «estás roncando» pasa a rosa con 🎧 (antes amarillo, se confundía) y el movimiento a verde
@@ -4806,7 +4807,7 @@ function abreTour(alAcabar) {
 }
 
 // 🆘 Ayuda y soporte: email (y WhatsApp cuando haya número) con el asunto y la versión ya puestos
-const SOPORTE = {email: 'info@practicaintegral.club', wa: ''}; // wa: número con prefijo, sin «+» (p. ej. 34600000000)
+const SOPORTE = {email: 'info@practicaintegral.club', wa: '34658825799'}; // wa: número con prefijo, sin «+» (p. ej. 34600000000)
 function pintaAyuda() {
   let ver = 'web ' + VERSION; try { if (AND) ver += ' · app ' + AND.version(); } catch {}
   const cuerpo = `Hola, os escribo por Amable Sleep.\n\nMe pasa esto:\n\n\n— Versión: ${ver}`;
@@ -4837,6 +4838,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.1', '25 oct 2026', ['💬 Soporte también por WhatsApp, en Ajustes → Ayuda y soporte']],
   ['v14.0', '25 oct 2026', ['Consejo: quita los relojes con tictac y los aparatos que hagan ruido', 'Luna: el micrófono se pone verde mientras te escucha', '🆘 Ayuda y soporte en Ajustes']],
   ['v13.9', '25 oct 2026', ['«Duermo solo» ahora se llama «Aviso por altavoz o auricular», y dice por dónde sale']],
   ['v13.8', '25 oct 2026', ['Sueño: «Dormiste a las … y despertaste a las …» en texto, y los 3 recuadros bien alineados']],
