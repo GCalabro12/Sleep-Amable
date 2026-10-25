@@ -970,7 +970,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="selbar" id="selbar">
     <button class="pick" id="selAll" aria-label="Seleccionar todas"></button>
     <span id="selTxt">Seleccionar todas</span>
-    <span class="selacts" id="selActs" hidden><button id="selShare">⤴ Compartir</button><button class="del" id="selDel">🗑️ Borrar</button></span>
+    <span class="selacts" id="selActs" hidden><button id="selShare" hidden>⤴ Compartir</button><button class="del" id="selDel">🗑️ Borrar</button></span>
   </div>
   <div id="evList"></div>
   <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
@@ -1144,7 +1144,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.4'; // v12.4: grabaciones con iconos clásicos sin recuadro (corazón, compartir, papelera); el aviso amarillo ya no se monta encima; el reproductor enseña la onda del sonido que avanza
+const VERSION = 'v12.5'; // v12.5: sin compartir ni descargar grabaciones (solo corazón y papelera)
+// v12.4: // v12.4: grabaciones con iconos clásicos sin recuadro (corazón, compartir, papelera); el aviso amarillo ya no se monta encima; el reproductor enseña la onda del sonido que avanza
 // v12.3: // v12.3: la IA aprende de tus valoraciones (huella de cada sonido + 5 vecinos más parecidos); tarjeta «🧠 Lo que ha aprendido la IA» en Ajustes
 // v12.2: // v12.2: el aviso «estás roncando» solo salta si la IA está muy segura (85 % o más); en el reproductor, «¿Acierta?» ✅ / ❌ para valorar cada grabación; Alarma y música sin bordes, con líneas violetas de lado a lado; música: sin «sonando» ni nombre arriba, el icono de la que suena es ■; bienvenida al crear la cuenta: 2 casillas obligatorias (datos y privacidad) y los permisos (micrófono necesario); política de privacidad; en pantallas estrechas «Alarma y música dormir»
 // v12.1: // v12.1: Aprende sin «Si te queda una duda, pregúntame» (cada ficha ya tiene su botón); «Alarma y música para dormir»: arriba «🎵 Música para dormir» plegable (sin monitorear); línea gruesa entre siesta y alarmas y fina entre alarmas; sin la luna de abajo
@@ -3021,7 +3022,7 @@ function renderList() {
     d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
       <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
       <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
-      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" title="Descargar" aria-label="Descargar">${ICO_BAJAR}</a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
+      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
     if (AND) { // en la app Android no hay descargas: se comparte (WhatsApp, correo, Drive…)
@@ -4497,7 +4498,8 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
-  ['v12.4', '25 oct 2026', ['Grabaciones más bonitas: corazón, compartir y papelera sin recuadros', 'El reproductor enseña la onda del sonido']],
+  ['v12.5', '25 oct 2026', ['Las grabaciones ya no se comparten ni se descargan: solo favorita y borrar']],
+  ['v12.4', '25 oct 2026', ['Grabaciones más bonitas: corazón y papelera sin recuadros', 'El reproductor enseña la onda del sonido']],
   ['v12.3', '25 oct 2026', ['🧠 La IA aprende de tus valoraciones (✅ / ❌) para acertar mejor con tus ronquidos', 'En Ajustes: «Lo que ha aprendido la IA»']],
   ['v12.2', '25 oct 2026', ['Bienvenida al crear la cuenta: tu permiso para guardar tus datos y los permisos del móvil', 'Nueva política de privacidad', 'El aviso «estás roncando» solo salta si la IA está muy segura', 'Al escuchar una grabación: «¿Acierta?» ✅ / ❌']],
   ['v12.1', '25 oct 2026', ['«Alarma y música para dormir»: música para dormirte sin monitorear, plegada arriba', 'Líneas que separan la siesta y cada alarma']],
