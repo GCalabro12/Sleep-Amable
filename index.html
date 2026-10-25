@@ -103,6 +103,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #cpGoogle.ocupado{opacity:.5;pointer-events:none}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:999px;border:1px solid #DADCE0;background:#fff;color:#1F1F1F;font-size:16px;font-weight:600}
 .cplink{background:none;border:0;color:#C4B5FD;font-size:16px;padding:14px 0 4px;text-decoration:underline}
+#novList .nov{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+#novList .nov:last-child{border-bottom:0}
+#novList .nov b{display:block;color:var(--text);font-size:15px;margin-bottom:3px}
+#novList .nov ul{margin:0;padding-left:18px}
 .cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
 .cufila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .cufila span{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -576,7 +580,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarmas y siesta</b><small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
-  <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Detector, aviso por auriculares y reto de la alarma</small></span></button>
+  <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector, reto de la alarma y novedades</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
@@ -720,11 +724,9 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="btn wide" id="sonarTest">▶ Probar el sonar (10 s)</button>
     <p class="note" id="sonarRes" hidden></p>
   </details>
-  <details class="card ajd">
-    <summary><span>🎧 Avisarme si ronco <small id="sAvisoAj"></small><small style="display:block;font-size:12px;margin-top:2px">Necesita auriculares</small></span></summary>
-    <div class="row"><label for="avisoRonco">Activado<small class="avisoTx">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</small></label>
-      <label class="swt"><input type="checkbox" id="avisoRonco"><i></i></label></div>
-    <button class="btn wide avisoTest">▶ Probar la voz</button>
+  <details class="card ajd" id="novDet">
+    <summary>🆕 Novedades <small id="sNov"></small></summary>
+    <div id="novList"></div>
   </details>
   <details class="card ajd">
     <summary>💾 Noches guardadas <small id="sGuardar"></small></summary>
@@ -984,7 +986,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.6'; // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
+const VERSION = 'v10.7'; // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
+// v10.6: // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
 // v10.5: // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
 // v10.4: // v10.4: «sí / no» a la derecha, junto al triángulo; instrucciones de Monitorear sin lo de los pinganillos (va en Reducir ronquidos); historial de grabaciones también en Reducir ronquidos
 // v10.3: // v10.3: «Grabando…» justo debajo de la barra morada; monitoreo separado con líneas por temas; deslizar a la derecha vuelve atrás y a la izquierda ya no salta a la sección siguiente
@@ -1108,15 +1111,14 @@ function decirNoche(texto) {
 }
 const SIN_VOZ = '🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie. Si duermes solo, activa «Duermo solo» en Reducir ronquidos.';
 function pintaAviso() {
-  for (const id of ['avisoRonco', 'avisoRonco2']) { $(id).checked = VOZ_OK && !!cfg.avisoRonco; $(id).disabled = !VOZ_OK; }
+  for (const id of ['avisoRonco2']) { $(id).checked = VOZ_OK && !!cfg.avisoRonco; $(id).disabled = !VOZ_OK; }
   $('sAviso').textContent = VOZ_OK && cfg.avisoRonco ? 'sí' : 'no'; $('sAviso').classList.toggle('si', $('sAviso').textContent === 'sí');
-  $('sAvisoAj').textContent = '· ' + $('sAviso').textContent;
   if (!VOZ_OK) document.querySelectorAll('.avisoTx').forEach(x => x.textContent = AND
     ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.'
     : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.');
   document.querySelectorAll('.avisoTest').forEach(b => b.hidden = !VOZ_OK);
 }
-for (const id of ['avisoRonco', 'avisoRonco2']) $(id).onchange = () => {
+for (const id of ['avisoRonco2']) $(id).onchange = () => {
   cfg.avisoRonco = $(id).checked;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
   if (cfg.avisoRonco) { AND.prepararVoz(); AND.pedirBluetooth?.(); }
@@ -3813,6 +3815,26 @@ function runSplash() {
 runSplash();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
 
+
+// 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
+const NOVEDADES = [
+  ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
+  ['v10.6', '25 oct 2026', ['Siesta: el nombre a la izquierda y el interruptor a la derecha']],
+  ['v10.5', '25 oct 2026', ['Reducir ronquidos: botón para empezar la noche con el aviso y el mensaje', '«Duermo solo»: sin auriculares, la voz suena por el altavoz', 'Las partes del mensaje se pliegan']],
+  ['v10.4', '25 oct 2026', ['Historial de grabaciones también en Reducir ronquidos']],
+  ['v10.3', '25 oct 2026', ['Monitoreo más ordenado, con líneas por temas', 'Deslizar a la derecha vuelve al inicio']],
+  ['v10.2', '25 oct 2026', ['«No grabar» suma 30 segundos y enseña lo que queda']],
+  ['v10.0', '25 oct 2026', ['Nueva sección «Reducir ronquidos» con un mensaje en la noche (agua, baño, medicina…)']],
+  ['v9.8', '25 oct 2026', ['«Música para dormir» con volumen y minutos', 'Avisos con el diseño de la app']],
+  ['v9.6', '24 oct 2026', ['Luna te saluda al abrir la app y se mueve al darte consejos']],
+  ['v9.3', '24 oct 2026', ['Entrar con Google']],
+  ['v9.1', '24 oct 2026', ['Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes']],
+  ['v9.0', '24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil']]
+];
+{
+  $('sNov').textContent = '· ' + VERSION;
+  $('novList').innerHTML = NOVEDADES.map(([v, f, l]) => `<div class="nov"><b>${v} · ${f}</b><ul>${l.map(x => `<li>${x}</li>`).join('')}</ul></div>`).join('');
+}
 // ---------- Arranque ----------
 if (!window.isSecureContext || !navigator.mediaDevices) {
   setIA('bad', 'Abre la app desde su enlace https:// para poder usar el micrófono');
