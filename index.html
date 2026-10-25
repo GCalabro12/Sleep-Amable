@@ -111,6 +111,12 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .temas button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:13px}
 .temas button.on{border-color:#A78BFA;box-shadow:0 0 0 2px #A78BFA55}
 .temas i{width:38px;height:38px;border-radius:50%;border:2px solid #ffffff33;display:block}
+.alrap{margin-top:14px}
+.alrapBody .arow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.alrapBody .arow input[type=time]{flex:1;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:20px;font-weight:700}
+.alrapBody .arow.off input[type=time]{opacity:.5}
+.alrapBody .acc{display:flex;gap:8px;margin-top:10px}
+.alrapBody .acc .btn{flex:1;font-size:14px}
 .cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
 .cufila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .cufila span{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -641,6 +647,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
@@ -805,6 +812,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 style="font-size:21px;margin:0 0 6px">🛌 Reducir ronquidos</h1>
   <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz suena por los auriculares Bluetooth, para no despertar a nadie (🎧 cárgalos antes: <b>al 100 %</b> duran unas 4 horas). Si duermes solo, también puede sonar por el altavoz.</p>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <div class="card" style="margin-top:14px"><div style="font-weight:600;font-size:16px">🛏️ Duermo solo</div><div class="row" style="margin:6px 0 0"><label for="altavoz">Activado<small>El mensaje sale por el altavoz del móvil.</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
@@ -836,6 +844,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="mask" hidden>
   <button class="back" id="maskBack">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca</h1>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
     <ol class="steps">
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
@@ -1040,7 +1049,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.3'; // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
+const VERSION = 'v11.4'; // v11.4: «⏰ Alarma para despertarte» desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca
+// v11.3: // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
 // v11.2: // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
 // v11.1: // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
 // v11.0: // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
@@ -3377,6 +3387,29 @@ function renderAlarmas() {
     pintaRetoAlarma(al, d);
     $('alList').append(d);
   }
+  if (typeof pintaAlarmasRapidas === 'function') pintaAlarmasRapidas();
+}
+
+// ⏰ Alarma para despertarte, desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca:
+// encender o apagar, cambiar la hora y añadir una nueva sin ir a Alarmas (tono, subida y reto, en Alarmas)
+function pintaAlarmasRapidas() {
+  const act = ALS.list.filter(a => a.on).map(a => a.hora).sort();
+  document.querySelectorAll('[data-alsum]').forEach(x => { x.textContent = act.length ? act[0] : 'no'; x.classList.toggle('si', !!act.length); });
+  document.querySelectorAll('.alrapBody').forEach(box => {
+    box.innerHTML = (ALS.list.length ? '' : '<p class="note" style="margin:6px 0">Aún no tienes alarmas.</p>')
+      + ALS.list.map((a, k) => `<div class="arow${a.on ? '' : ' off'}"><label class="swt"><input type="checkbox" data-k="${k}"${a.on ? ' checked' : ''}><i></i></label><input type="time" data-k="${k}" value="${a.hora}"></div>`).join('')
+      + `<div class="acc"><button type="button" class="btn" data-add>＋ Añadir alarma</button><button type="button" class="btn" data-mas>Tono y reto ›</button></div>`;
+    box.querySelectorAll('input[type=checkbox]').forEach(x => x.onchange = () => {
+      const a = ALS.list[+x.dataset.k]; a.on = x.checked; a.fired = null; a.snooze = null; alSave(); renderAlarmas();
+      if (a.on) toast(`⏰ Sonará en ${faltaTxt(proxima(a.hora) - Date.now())}${avisoReto(a)}`);
+    });
+    box.querySelectorAll('input[type=time]').forEach(x => x.onchange = () => {
+      const a = ALS.list[+x.dataset.k]; if (!x.value) return; a.hora = x.value; a.fired = null; a.snooze = null; alSave(); renderAlarmas();
+      if (a.on) toast(`⏰ Sonará en ${faltaTxt(proxima(a.hora) - Date.now())}${avisoReto(a)}`);
+    });
+    box.querySelector('[data-add]').onclick = () => $('alAdd').onclick();
+    box.querySelector('[data-mas]').onclick = () => show('alarma');
+  });
 }
 $('alAdd').onclick = () => { const al = {id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}; ALS.list.push(al); alSave(); renderAlarmas(); toast(`⏰ Sonará en ${faltaTxt(proxima('07:30') - Date.now())}${avisoReto(al)}`); };
 $('napMin').onchange = () => {
@@ -4017,6 +4050,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.4', '25 oct 2026', ['«⏰ Alarma para despertarte» en Saber si ronco, Reducir ronquidos y Dormir con quien ronca']],
   ['v11.3', '25 oct 2026', ['En cada grabación: «33 % probable» y después lo que es (ronquido, voz…)']],
   ['v11.2', '25 oct 2026', ['Tarjeta de la mañana con la puntuación de tu noche', 'Línea con tus minutos roncando de las últimas noches', 'Etiquetas de la noche (alcohol, cena fuerte… y una tuya) para ver qué te hace roncar más']],
   ['v11.1', '25 oct 2026', ['Grabaciones más claras: ▶ grande a la izquierda, la hora sin segundos y «Ronquido · 33 % seguro»']],
