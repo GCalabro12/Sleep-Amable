@@ -356,6 +356,9 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .lronq .lin{fill:none;stroke:#A78BFA;stroke-width:2.5;stroke-linejoin:round}
 .lronq .pt{stroke:var(--card);stroke-width:2}
 .lronq .dnum{fill:#CBD5E1;font-weight:700}
+.lronq .toque{fill:transparent;cursor:pointer}
+.lronq .pt.sel{r:7;stroke:#fff}
+.ltoque{text-align:center;font-size:15px;font-weight:600;color:#E0E7FF;margin:8px 0 2px;min-height:22px}
 .lmes{text-align:center;font-size:13px;color:#CBD5E1;text-transform:capitalize;margin-top:-2px}
 .lronq .pt.ok{fill:#4ADE80} .lronq .pt.mid{fill:#FBBF24} .lronq .pt.bad{fill:#F87171}
 .etqcard{margin-top:12px}
@@ -874,7 +877,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="mask" hidden>
   <button class="back" id="maskBack">← Inicio</button>
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca<button type="button" class="hinfo" aria-label="Información">i</button></h1>
-  <div class="hbox" hidden>Si duermes al lado de alguien que ronca: sonidos suaves (ruido marrón, lluvia…) que tapan los ronquidos por los auriculares. Elige cuándo se apaga el sonido para cuidar tus oídos y la batería.</div>
+  <div class="hbox" hidden>Si duermes al lado de alguien que ronca: sonidos suaves (ruido marrón, lluvia…) que tapan los ronquidos por los auriculares.</div>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
     <ol class="steps">
@@ -886,17 +889,19 @@ body.pl-on .wrap{padding-bottom:190px}
       <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (por ejemplo, a las 2 o 4 horas): así duran más los pinganillos y descansan tus oídos.</li>
     </ol>
   </details>
-  <div class="sounds" id="sounds"></div>
+  <details class="instr card" id="sndDet"><summary><span>🌊 Sonidos neutros<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca uno para oírlo 5 segundos</small></span><b class="estado si" id="sndSel"></b></summary>
+    <div class="sounds" id="sounds"></div>
+  </details>
   <button class="playbig" id="playBtn">▶ Empezar el sonido</button>
   <div class="ntxt" id="ntxt"></div>
   <div class="card" style="margin-top:12px">
     <div class="row" style="margin-top:0"><label for="vol">🔈 Volumen</label><span id="volTxt"></span></div>
     <input type="range" id="vol" min="1" max="100" step="1">
-    <div class="row"><label for="tmr">⏲️ Apagar después de<small>Se apaga poco a poco, sin despertarte</small></label>
-      <select id="tmr"><option value="0">Nunca (toda la noche)</option><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select></div>
+    <div class="row" style="flex-wrap:wrap"><label for="tmr">⏲️ Apagar después de</label>
+      <select id="tmr"><option value="0">Nunca (toda la noche)</option><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select><small style="flex-basis:100%;margin-top:-4px">Se apaga poco a poco, sin despertarte.</small></div>
   </div>
   <p class="note">Funciona sin internet y con la pantalla apagada. En iPhone el volumen se ajusta con los botones del móvil.</p>
-  <details class="cfg card">
+  <details class="cfg card" hidden><!-- quitado a petición de Gustavo; se deja para no romper el código -->
     <summary>▶️ ¿Prefieres tu vídeo de YouTube?</summary>
     <input type="url" id="ytUrl" placeholder="Pega aquí el enlace del vídeo">
     <button class="btn wide" id="ytBtn">Abrir mi vídeo</button>
@@ -1080,7 +1085,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.9'; // v11.9: línea de ronquido con día de la semana y número (ma 24) y el mes debajo; recuadros de Estadísticas con el número arriba, la unidad pequeña debajo (horas, min) y el texto abajo del todo
+const VERSION = 'v12.0'; // v12.0: tocar un punto de la línea de ronquido enseña sus minutos; Dormir con quien ronca: «Sonidos neutros» plegable que suenan 5 s al tocarlos, «Apagar después de» en un renglón, sin YouTube
+// v11.9: // v11.9: línea de ronquido con día de la semana y número (ma 24) y el mes debajo; recuadros de Estadísticas con el número arriba, la unidad pequeña debajo (horas, min) y el texto abajo del todo
 // v11.8: // v11.8: ⓘ junto al título de cada sección con su explicación (plegada); Reducir ronquidos explica auriculares o altavoz; altavoz moderno en «Leer las respuestas en voz alta»
 // v11.7: // v11.7: nueva sección «📚 Aprende sobre el sueño» con 8 fichas (consejo, fuente y «Pregúntale a Luna»)
 // v11.6: // v11.6: avisos «estás roncando» de la noche plegados y con la hora sin segundos
@@ -2427,9 +2433,10 @@ function lineaRonquido(ok) {
   return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutos roncando de las últimas noches">
     ${marcas.map(m => `<line x1="${pl}" x2="${W - pr}" y1="${y(m)}" y2="${y(m)}" class="rej"/><text x="${pl - 6}" y="${y(m) + 4}" text-anchor="end">${m}</text>`).join('')}
     <polyline points="${pts}" class="lin"/>
-    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><text x="${x(i)}" y="${H - 20}" text-anchor="middle">${dia(ns[i])}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${fecha(ns[i]).getDate()}</text>`).join('')}
+    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><circle cx="${x(i)}" cy="${y(m)}" r="14" class="toque" data-i="${i}" data-t="${fecha(ns[i]).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}: ${Math.round(m)} min roncando"/><text x="${x(i)}" y="${H - 20}" text-anchor="middle">${dia(ns[i])}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${fecha(ns[i]).getDate()}</text>`).join('')}
   </svg>
   <div class="lmes">${meses}</div>
+  <div class="ltoque" id="lToque">👆 Toca un punto para ver sus minutos</div>
   <div class="stnote">Minutos roncando cada noche. Lo bueno es que la línea baje hacia 0. ${v.at(-1) <= v[0] ? '👍 Vas a mejor que al principio.' : 'Esta última noche roncaste más que al principio.'}</div>`;
 }
 // 🏷️ Etiquetas de la noche: un toque para marcar lo que pudo influir; hay una que escribes tú
@@ -2489,6 +2496,10 @@ function renderStatsHome(ns) {
   $('mananaCard').hidden = !ok.length;
   if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Tu última noche');
   $('lineaBody').innerHTML = lineaRonquido(ok);
+  $('lineaBody').querySelectorAll('.toque').forEach(c => c.onclick = () => {
+    $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
+    $('lToque').textContent = c.dataset.t.charAt(0).toUpperCase() + c.dataset.t.slice(1);
+  });
   $('efeBody').innerHTML = efectoEtiquetas(ns.filter(nocheValida).slice(0, 60));
   if (!ok.length) {
     comunidad(ok, 0, 0, 0); renderAvisoStats(ns);
@@ -3093,7 +3104,7 @@ addEventListener('resize', () => { if (!$('night').hidden) { drawTimeline(timeli
 const SOUNDS = [
   {id:'marron', e:'🟤', n:'Marrón', d:'el mejor para ronquidos'},
   {id:'rosa', e:'🌸', n:'Rosa', d:'suave y equilibrado'},
-  {id:'blanco', e:'⚪', n:'Blanco suave', d:'como el de YouTube'},
+  {id:'blanco', e:'⚪', n:'Blanco suave', d:'suave y uniforme'},
   {id:'lluvia', e:'🌧️', n:'Lluvia', d:'lluvia constante'},
   {id:'olas', e:'🌊', n:'Olas', d:'mar en calma'},
   {id:'ventilador', e:'🌀', n:'Ventilador', d:'zumbido suave'},
@@ -3196,12 +3207,28 @@ try {
 if (!SOUNDS.some(x => x.id === noise.id)) noise.id = 'marron';
 const saveNoise = () => { try { localStorage.setItem('ronquino-ruido', JSON.stringify({id: noise.id, vol: noise.vol, tmr: $('tmr').value, yt: $('ytUrl').value})); } catch {} };
 const playing = () => !noise.au.paused;
+// Al tocar un sonido sin que esté sonando la noche, se oye 5 segundos (y se apaga solo)
+let sndPrev = null;
+function paraPrevio() {
+  if (!sndPrev) return;
+  const au = sndPrev.au, v0 = au.volume, t0 = Date.now(); clearTimeout(sndPrev.t); sndPrev = null;
+  const f = setInterval(() => { const k = (Date.now() - t0) / 400; au.volume = Math.max(0, v0 * (1 - k)); if (k >= 1) { clearInterval(f); au.pause(); } }, 40);
+}
 function renderSounds() {
   $('sounds').innerHTML = '';
+  const sel = SOUNDS.find(x => x.id === noise.id);
+  $('sndSel').textContent = sel ? `${sel.e} ${sel.n}` : '';
   for (const x of SOUNDS) {
     const b = document.createElement('button'); b.className = 'snd' + (noise.id === x.id ? ' on' : '');
     b.innerHTML = `<b>${x.e}</b>${x.n}<small>${x.d}</small>`;
-    b.onclick = () => { noise.id = x.id; saveNoise(); renderSounds(); if (playing()) startNoise(true); };
+    b.onclick = () => {
+      noise.id = x.id; saveNoise(); renderSounds();
+      if (playing()) { startNoise(true); return; }
+      paraPrevio();
+      const au = new Audio(noise.urls[x.id] ||= makeNoise(x.id)); au.loop = true; au.volume = Math.max(.05, noise.vol / 100);
+      au.play().catch(() => {});
+      sndPrev = {au, t: setTimeout(paraPrevio, 5000)};
+    };
     $('sounds').append(b);
   }
 }
@@ -3215,6 +3242,7 @@ function fadeTo(target, ms, then) { // sube o baja el volumen poco a poco
   }, 100);
 }
 async function startNoise(swap) {
+  paraPrevio();
   clearInterval(noise.fadeT); noise.fadeT = null;
   const url = noise.urls[noise.id] ||= makeNoise(noise.id);
   if (noise.au.src !== url) noise.au.src = url;
@@ -4170,6 +4198,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.0', '25 oct 2026', ['Línea de ronquido: toca un punto para ver sus minutos', 'Dormir con quien ronca: «Sonidos neutros» que se oyen 5 segundos al tocarlos']],
   ['v11.9', '25 oct 2026', ['Estadísticas: recuadros más ordenados (número, unidad y texto abajo)', 'La línea de ronquido enseña el día (ma 24) y el mes']],
   ['v11.8', '25 oct 2026', ['Botón ⓘ junto al título de cada sección con su explicación', 'Altavoz moderno en «Leer las respuestas en voz alta»']],
   ['v11.7', '25 oct 2026', ['Nueva sección «📚 Aprende sobre el sueño» con 8 fichas']],
