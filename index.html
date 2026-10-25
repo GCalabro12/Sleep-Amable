@@ -370,6 +370,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
+#pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px}
 #bloque{flex:1;text-align:left;font-size:14px;color:#94A3B8;line-height:1.3}
@@ -891,7 +892,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <div class="prfila"><button type="button" id="pruebaBtn">🧪 Probar detección</button><span id="bloque">Esperando un sonido…</span></div>
+    <div class="prfila"><button type="button" id="pruebaBtn" hidden>🧪 Probar detección<small>solo administrador</small></button><span id="bloque">Esperando un sonido…</span></div>
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
@@ -913,7 +914,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.6'; // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
+const VERSION = 'v9.7'; // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
+// v9.6: // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
 // v9.5: // v9.5: el gerente (sus emails, rol «admin» en la base de datos) ve «Probar detección» y el resumen de cuentas y países; el país se guarda en la cuenta
 // v9.4: // v9.4: pantalla de la cuenta con dos pestañas arriba («Crear cuenta» / «Ya tengo cuenta»), la explicación abajo y la versión visible
 // v9.3: // v9.3: «Continuar con Google» encendido (pantalla de Google «Práctica Integral» publicada)
