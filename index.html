@@ -14,7 +14,7 @@
 :root{
   --bg:#0B1020; --card:#141B2E; --card2:#1B2440; --line:#26304D;
   --text:#E2E8F0; --muted:#94A3B8; --dim:#64748B;
-  --snore:#A78BFA; --voice:#FBBF24; --other:#64748B; --ok:#4ADE80; --bad:#F87171;
+  --snore:#FBBF24; --voice:#60A5FA; --other:#64748B; --ok:#4ADE80; --bad:#F87171;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent} /* sin el recuadro azul de Android al tocar */
 button:focus:not(:focus-visible){outline:none}
@@ -218,8 +218,8 @@ body.tabs-on .wrap{padding-bottom:84px}
 #wakeSnooze button{background:#312E81;color:#E0E7FF} #wakeOff{background:#FDE68A;color:#1E1B4B}
 .alcard{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
 #alList .alcard+.alcard{margin-top:22px}
-#alList .alcard+.alcard::before{content:'';position:absolute;left:-18px;right:-18px;top:-17px;height:2px;background:var(--snore);opacity:.55} /* entre alarma y alarma */
-.sepgrueso{height:5px;background:var(--snore);margin:6px -16px 18px} /* entre música, siesta y alarmas: de lado a lado del móvil */
+#alList .alcard+.alcard::before{content:'';position:absolute;left:-18px;right:-18px;top:-17px;height:2px;background:#A78BFA;opacity:.55} /* entre alarma y alarma */
+.sepgrueso{height:5px;background:#A78BFA;margin:6px -16px 18px} /* entre música, siesta y alarmas: de lado a lado del móvil */
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
 .alcard.off{opacity:.55}
 .alcard .altop{display:flex;align-items:center;gap:10px}
@@ -290,11 +290,11 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .lpens{width:54px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
 .puntos::after{content:'';animation:rq-puntos 1.2s steps(1) infinite}
 @keyframes rq-puntos{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
-.ev.avisado{border-right:5px solid #FDE047}
-.avnote{margin-top:6px;font-size:13px;color:#FDE047}
-.avrow{border:1px dashed #FDE047;color:#FDE047;border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:14px}
-.avcard{border-color:#854D0E;background:#1C1917}
-.avcard b{color:#FDE047}
+.ev.avisado{border-right:5px solid #F472B6}
+.avnote{margin-top:6px;font-size:13px;color:#F472B6}
+.avrow{border:1px dashed #F472B6;color:#F472B6;border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:14px}
+.avcard{border-color:#831843;background:#1E141B}
+.avcard b{color:#F472B6}
 .avcard .avl{font-size:14px;color:#E7E5E4;margin-top:4px}
 .choice .icimg{width:46px;height:auto;display:block}
 #goSnore .icimg{width:58px}
@@ -604,6 +604,9 @@ details.hist[open] summary{margin-bottom:10px}
 .tile{min-width:0;padding:10px 4px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
+/* sin seleccionar texto al dejar el dedo apretado: pantalla de monitoreo y recuadros de la noche */
+#listen,#listen *,.tile,.mp,.manana,.calmadatos,.tiles,details>summary,.ev .top,.ev .bot{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#listen input,#listen textarea{-webkit-user-select:text;user-select:text}
 canvas{width:100%;height:90px;display:block}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
@@ -652,7 +655,7 @@ canvas{width:100%;height:90px;display:block}
 .ev .acts svg{width:23px;height:23px}
 .ev .acts{gap:4px;align-items:center}
 .ev .bot .meta{white-space:nowrap}
-.avnote{font-size:13px;color:#FDE047;margin-top:6px}
+.avnote{font-size:13px;color:#F472B6;margin-top:6px}
 .ev audio{width:100%;margin-top:8px;height:36px}
 .ev.playing{outline:2px solid #A78BFA;outline-offset:1px}
 /* Reproductor fijo de la noche */
@@ -786,7 +789,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
     <li>🌊 ¿Quieres medir también tu <b>sueño profundo y ligero</b>? Actívalo arriba, en <b>«Medir también el sueño profundo»</b>.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
-    <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:var(--snore)">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
+    <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:#A78BFA">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
@@ -1044,7 +1047,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
   <div class="chips" id="chips"></div>
   <div class="selbar" id="selbar">
@@ -1274,7 +1277,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.6'; // v13.6: el aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1) con la IA por encima del 80 % (antes 85 %), contando minutos y no grabaciones, y se explica en «Avisos» de la noche; títulos de la noche en un renglón
+const VERSION = 'v13.7'; // v13.7: colores como sus emojis: ronquido 😴 amarillo, voz 🗣️ azul; el aviso «estás roncando» pasa a rosa con 🎧 (antes amarillo, se confundía) y el movimiento a verde
+// v13.6: // v13.6: el aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1) con la IA por encima del 80 % (antes 85 %), contando minutos y no grabaciones, y se explica en «Avisos» de la noche; títulos de la noche en un renglón
 // v13.5: // v13.5: en cada grabación, «41 % probable de ser» + la etiqueta (el % más pegado al número)
 // v13.4: // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
 // v13.3: // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
@@ -2338,8 +2342,8 @@ function analizaPrueba(buf) {
   const col = (v, c) => `<i style="height:${Math.max(2, pct(v))}%;background:${c}"></i>`;
   $('prRes').innerHTML = `<div class="prq">${que}</div>
     ${g.esp ? `<div class="prveredicto ${x.ok ? 'si' : 'no'}">${x.ok ? '✅ Ha acertado' : `❌ Ha fallado: tenía que decir «${nomTipo(g.esp)}»`}</div>` : ''}
-    <div class="note">Cada columna es 1 segundo: <span style="color:#A78BFA">■ ronquido</span> <span style="color:#FBBF24">■ voz</span> <span style="color:#38BDF8">■ respiración</span></div>
-    <div class="prseg">${sn.map((v, i) => `<div>${col(v, '#A78BFA')}${col(vo[i], '#FBBF24')}${col(br[i], '#38BDF8')}</div>`).join('')}</div>
+    <div class="note">Cada columna es 1 segundo: <span style="color:#FBBF24">■ ronquido</span> <span style="color:#60A5FA">■ voz</span> <span style="color:#38BDF8">■ respiración</span></div>
+    <div class="prseg">${sn.map((v, i) => `<div>${col(v, '#FBBF24')}${col(vo[i], '#60A5FA')}${col(br[i], '#38BDF8')}</div>`).join('')}</div>
     <div class="note">Máximo: ronquido ${pct(Math.max(...sn))} % · voz ${pct(Math.max(...vo))} % · respiración ${pct(Math.max(...br))} %${top ? ` · se parece a: ${es(top)}` : ''}</div>
     ${g.esp ? '' : `<div style="margin-top:10px;font-weight:600">¿Ha acertado?</div>
     <div class="prok"><button type="button" class="si" data-ok="1">✅ Correcto</button><button type="button" class="no" data-ok="0">❌ No correcto</button></div>
@@ -2850,7 +2854,7 @@ function pintaCalma(n, evs) {
   // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
   const W = 320, H = 132, pl = 58, pr = 6, pt = 16, fila = 26, w = W - pl - pr, hB = fila * 3;
   const x = b => pl + w * b / c.B;
-  const COL = ['#6366F1', '#A78BFA', '#FBBF24'], FIL = ['Profundo', 'Ligero', 'Despierto'];
+  const COL = ['#6366F1', '#A78BFA', '#FB923C'], FIL = ['Profundo', 'Ligero', 'Despierto'];
   const yF = k => pt + (2 - k) * fila; // fila del nivel k
   const bloques = [];
   for (let b = 0; b < c.B;) {
@@ -3224,16 +3228,16 @@ function drawTimeline(total) {
     });
   }
   // 🛏️ movimientos (azul) y avisos de voz «estás roncando» (amarillo): líneas de abajo arriba
-  g.fillStyle = '#38BDF8';
+  g.fillStyle = '#34D399';
   for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x, top, Math.max(1.5 * dpr, 1), base - top); }
-  g.fillStyle = '#FDE047';
+  g.fillStyle = '#F472B6';
   for (const t of cur.avisoT || []) {
     const x = X(t); if (x < -4 * dpr || x > W) continue;
     g.fillRect(x - dpr, top, 2 * dpr, base - top);
     g.beginPath(); g.arc(x, base - 4 * dpr, 4 * dpr, 0, 7); g.fill();
   }
   $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
-  const col = {ronquido: '#A78BFA', voz: '#FBBF24', otro: '#64748B'};
+  const col = {ronquido: '#FBBF24', voz: '#60A5FA', otro: '#64748B'};
   for (const e of curEvs) {
     const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
     if (x + w < 0 || x > W) continue;
@@ -3265,7 +3269,7 @@ function renderList() {
   // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
   const avisos = ['todos', 'ronquido'].includes(filter) ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
   const usados = new Set();
-  const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🟡 ${evHora(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
+  const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🎧 ${evHora(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
   for (const e of list) {
     for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
@@ -3322,7 +3326,7 @@ function renderList() {
     if (suyos.length) {
       d.classList.add('avisado');
       const nota = document.createElement('div'); nota.className = 'avnote';
-      nota.textContent = `🟡 Al acabar se dijo «estás roncando» (${evHora(cur, suyos[0])})`;
+      nota.textContent = `🎧 Al acabar se dijo «estás roncando» (${evHora(cur, suyos[0])})`;
       d.querySelector('.evbody').append(nota); suyos.forEach(t => usados.add(t));
     }
     $('evList').append(d);
@@ -4809,6 +4813,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.7', '25 oct 2026', ['Colores como sus emojis: 😴 ronquido en amarillo, 🗣️ voz en azul', 'El aviso «estás roncando» ahora es rosa con 🎧, para no confundirlo con la voz; el movimiento, verde', 'En la pantalla de monitoreo ya no se selecciona texto al dejar el dedo apretado']],
   ['v13.6', '25 oct 2026', ['El aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1), con la IA por encima del 80 %', 'En la noche, «Avisos» explica cuándo salta', 'Títulos de la noche en un solo renglón', '«Calma» pasa a «Movimiento»: «22 mov.» (toca para ver qué es)']],
   ['v13.5', '25 oct 2026', ['En cada grabación: «41 % probable de ser 😴 Ronquido»']],
   ['v13.4', '25 oct 2026', ['🧱 El sueño profundo y ligero, en bloques, con los ciclos de unos 90 minutos numerados', 'Te dice si te despertaste en sueño ligero o profundo', 'En horizontal: la noche ocupa todo el ancho y el reproductor, 2 filas (play más pequeño, «¿Acierta?» a la derecha)']],
