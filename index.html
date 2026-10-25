@@ -320,6 +320,12 @@ details.subdet .cpin{margin-top:8px}
 summary .estado{margin-left:auto;flex:none;font-size:15px;font-weight:700;padding:3px 12px;border-radius:999px;background:#1F2937;color:#94A3B8}
 summary .estado.si{background:#14532D;color:#86EFAC}
 details.instr>summary:has(.estado:not([hidden]))::after{margin-left:0}
+/* Títulos de los desplegables en un renglón entero: si no caben con el sí/no y el triángulo, estos bajan a la derecha */
+details.instr>summary,details.ajd>summary{flex-wrap:wrap;row-gap:4px}
+summary.dos>span:first-child{flex-basis:100%}
+summary.dos>span:first-child:has(small){display:contents} /* el subtítulo pequeño baja y el sí/no se pone a su lado */
+details.hist>summary>small{margin-left:auto;flex:none;font-weight:400;color:var(--muted)}
+details.hist>summary:has(>small)::after{margin-left:0}
 details.instr .tips,details.instr .steps{margin-top:10px}
 .retoal{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;color:var(--muted);white-space:nowrap}
 .retoal .rbtn{margin-left:auto;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:12px;padding:6px 14px;color:#C4B5FD;font-size:14px}
@@ -769,7 +775,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <details class="hist instr card" id="histDet">
-    <summary>📚 Historial de grabaciones <small id="histN"></small></summary>
+    <summary><span>📚 Historial de grabaciones</span><small id="histN"></small></summary>
     <div id="nights"></div>
   </details>
 
@@ -934,7 +940,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card profrap"><summary><span>🌊 Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <div class="card" style="margin-top:14px"><div style="font-weight:600;font-size:16px">🛏️ Duermo solo</div><div class="row" style="margin:6px 0 0"><label for="altavoz">Activado<small>El mensaje sale por el altavoz del móvil.</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
+  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">🛏️ Duermo solo</span><small>Aviso y mensaje por el altavoz del móvil</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando (y la IA está muy segura, al 85 % o más), una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
@@ -956,7 +962,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="btn wide" id="msgTest" style="margin-top:12px">▶ Probar el mensaje</button>
   </details>
   <details class="hist instr card">
-    <summary>📚 Historial de grabaciones <small id="histN3"></small></summary>
+    <summary><span>📚 Historial de grabaciones</span><small id="histN3"></small></summary>
     <div id="nights3"></div>
   </details>
 </section>
@@ -1243,7 +1249,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.2'; // v13.2: «🌊 Medir también el sueño profundo» (sí / no) en Saber si ronco y Reducir ronquidos: con «sí» se abre el dibujo y lo que hay que hacer; la curva de la noche solo sale si estaba activado
+const VERSION = 'v13.3'; // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
+// v13.2: // v13.2: «🌊 Medir también el sueño profundo» (sí / no) en Saber si ronco y Reducir ronquidos: con «sí» se abre el dibujo y lo que hay que hacer; la curva de la noche solo sale si estaba activado
 // v13.1: // v13.1: dibujo de dónde poner el móvil en el colchón (en una esquina, junto a la almohada), al lado del de la mesilla, en la presentación y en las instrucciones
 // v13.0: // v13.0: los 3 recuadros de la noche suben encima de «¿Algo especial?», con el texto entero en dos renglones y una explicación al tocarlos; la pantalla de la noche se puede girar en horizontal (APK 4.1)
 //   y las grabaciones, más compactas: arriba «NN % probable» y la etiqueta; abajo ▶ pequeño, la hora, ♡, 🗑 y el cuadradito
@@ -2819,7 +2826,8 @@ function pintaCalma(n, evs) {
   const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
   for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 6}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
   const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
-  box.innerHTML = `<div class="calmatit">🌊 Sueño profundo y ligero <small>estimado</small></div>
+  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span>🌊 Sueño profundo y ligero <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
+    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Es una estimación, como la de otras apps de sueño; las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de sueño profundo y ligero">
       <defs><linearGradient id="gCalma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24" stop-opacity=".55"/><stop offset=".55" stop-color="#A78BFA" stop-opacity=".35"/><stop offset="1" stop-color="#4338CA" stop-opacity=".15"/></linearGradient></defs>
       <line x1="${pl}" x2="${W - pr}" y1="${y(.25)}" y2="${y(.25)}" class="lim"/>
@@ -2828,8 +2836,9 @@ function pintaCalma(n, evs) {
       ${marcas.join('')}
     </svg>
     <div class="calmadatos"><span>🌙 Profundo <b>${hm2(c.tranq)}</b></span><span>🌀 Ligero o despierto <b>${hm2(c.inq)}</b></span></div>
-    ${c.dormido ? `<div class="stnote">Te dormiste hacia las <b>${hhmm(c.dormido)}</b>${c.despierto ? ` y te despertaste hacia las <b>${hhmm(c.despierto)}</b>` : ''}.</div>` : ''}
-    <div class="stnote">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Es una estimación, como la de otras apps de sueño; las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>`;
+    <div class="calmadatos"><span>😴 Dormiste a las <b>${hhmm(n.inicio)}</b></span><span>☀️ Despertaste a las <b>${hhmm(n.fin)}</b></span></div>`;
+  // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
+  $('calmaInfo').onclick = () => { const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
 }
 
 function renderStatsHome(ns) {
@@ -3876,6 +3885,24 @@ function renderAlarmas() {
   if (typeof pintaAlarmasRapidas === 'function') pintaAlarmasRapidas();
 }
 
+// Títulos de los desplegables: en un solo renglón si caben junto al sí/no y el triángulo; si no, el título se queda
+// el renglón entero y el sí/no y el triángulo bajan a la derecha (mejor renglones enteros que el título partido)
+function ajustaTitulos() {
+  document.querySelectorAll('details.instr>summary, details.ajd>summary').forEach(s => {
+    const t = s.firstElementChild;
+    if (!t || t.tagName !== 'SPAN' || !s.offsetParent) return;
+    s.classList.remove('dos');
+    const ws = t.style.whiteSpace, fs = t.style.flexShrink;
+    t.style.whiteSpace = 'nowrap'; t.style.flexShrink = '0';
+    const otros = [...s.children].filter(x => x !== t && !x.hidden && x.offsetParent);
+    const necesita = t.scrollWidth + otros.reduce((a, x) => a + x.getBoundingClientRect().width + 8, 0) + 24;
+    t.style.whiteSpace = ws; t.style.flexShrink = fs;
+    if (necesita > s.clientWidth) s.classList.add('dos');
+  });
+}
+addEventListener('resize', () => ajustaTitulos());
+document.fonts?.ready.then(() => ajustaTitulos());
+
 // 🌊 Medir también el sueño profundo (en Saber si ronco y en Reducir ronquidos). Con «sí», la noche guarda su curva
 // de sueño profundo y ligero, que sale de los movimientos: con el móvil sobre el colchón o con el sonar en la mesilla.
 const PROF_DESDE = new Date(2026, 9, 25, 18, 0).getTime(); // las noches de antes tenían la curva siempre
@@ -4467,6 +4494,7 @@ function show(id) {
   if (id === 'stats') renderHome();
   if (id === 'stats') $('misDet').ontoggle = () => requestAnimationFrame(() => document.querySelectorAll('#nights2 .when').forEach(fitLine));
   if (id === 'luna') lunaAbrir();
+  requestAnimationFrame(ajustaTitulos);
   try { if (AND && typeof AND.girar === 'function') AND.girar(id === 'night'); } catch {} // 📱 solo la noche se gira en horizontal
   window.scrollTo(0, 0);
 }
@@ -4718,6 +4746,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.3', '25 oct 2026', ['«Duermo solo» más compacto', 'Los títulos de los desplegables, en un renglón entero', 'Sueño profundo y ligero: la explicación sale al tocar la ⓘ; debajo, a qué hora dormiste y despertaste']],
   ['v13.2', '25 oct 2026', ['🌊 «Medir también el sueño profundo» en Saber si ronco y Reducir ronquidos: dices que sí y te explica dónde poner el móvil', 'Toca Horas, Ronquido, Regularidad o Calma en la puntuación de la noche y te explica qué significa']],
   ['v13.1', '25 oct 2026', ['Dibujo de dónde poner el móvil: en la mesilla o en el colchón, junto a la almohada']],
   ['v13.0', '25 oct 2026', ['Los recuadros de la noche suben arriba, con el texto entero; tócalos y te explican qué cuentan', 'Grabaciones más compactas: arriba lo segura que está la IA y la etiqueta; abajo ▶, la hora y los botones', '📱 Gira el móvil en la noche para ver el gráfico en grande (app Android 4.1)']],
