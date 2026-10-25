@@ -575,12 +575,12 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="apkno" id="apkNo">Ahora no</button>
   </div>
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
-  <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Monitorear mi sueño</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarmas y siesta</b><small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
-  <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector, reto de la alarma y novedades</small></span></button>
+  <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector y novedades</small></span></button>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
@@ -590,7 +590,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- SABER SI RONCO -->
 <section id="home" hidden>
   <button class="back" id="homeBack">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">😴 Monitorear mi sueño</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">😴 Saber si ronco</h1>
 
   <div class="card" id="iaCard">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
@@ -738,7 +738,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="row"><label for="shareOn">Compartir de forma anónima<small>Solo se envían números de cada noche (horas, a qué hora te acuestas y te levantas, minutos roncando) y tu país. Nunca grabaciones, nombres ni correos. Con ellos se calcula la media de tu país (en Estadísticas).</small></label>
       <label class="swt"><input type="checkbox" id="shareOn"><i></i></label></div>
   </details>
-  <details class="card ajd">
+  <details class="card ajd" hidden><!-- el reto se elige en cada alarma («Reto alarma ?»); el código de aquí sigue sirviendo de valor por defecto -->
     <summary>⏰ Reto para apagar la alarma <small id="sRetoAj"></small></summary>
     <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces el reto (mientras lo haces, el volumen baja). Posponer funciona igual. Lo que elijas aquí se pone a todas las alarmas; luego puedes cambiarlo en cada una (en Alarmas, «Reto alarma ?»). Si no activas ninguno, se apaga con el botón.</p>
     <div id="retoList"></div>
@@ -986,7 +986,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.7'; // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
+const VERSION = 'v10.8'; // v10.8: «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
+// v10.7: // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
 // v10.6: // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
 // v10.5: // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
 // v10.4: // v10.4: «sí / no» a la derecha, junto al triángulo; instrucciones de Monitorear sin lo de los pinganillos (va en Reducir ronquidos); historial de grabaciones también en Reducir ronquidos
@@ -2378,7 +2379,7 @@ $('guardar').onchange = async () => {
   $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
   renderHome();
 };
-let nightFrom = 'home'; // al volver de una noche: a «Monitorear mi sueño», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
+let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
@@ -3818,6 +3819,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma']],
   ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
   ['v10.6', '25 oct 2026', ['Siesta: el nombre a la izquierda y el interruptor a la derecha']],
   ['v10.5', '25 oct 2026', ['Reducir ronquidos: botón para empezar la noche con el aviso y el mensaje', '«Duermo solo»: sin auriculares, la voz suena por el altavoz', 'Las partes del mensaje se pliegan']],
