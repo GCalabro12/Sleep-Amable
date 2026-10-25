@@ -380,6 +380,12 @@ details.hist[open] summary{margin-bottom:10px}
 .cumin button{flex:1;padding:9px 0;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:15px}
 .cumin button.on{border-color:#A78BFA;background:#312E81;color:#fff}
 #pCuna .cunas{margin-top:14px}
+.msgsug{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.msgsug button{background:#111827;border:1px solid #334155;border-radius:14px;padding:6px 10px;color:#C4B5FD;font-size:13px}
+#msgDet .cumin button{font-size:14px;padding:9px 4px}
+.msghora{display:flex;align-items:center;gap:8px;margin:8px 0}
+.msghora input{flex:1;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-size:17px}
+.msghora button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#FCA5A5}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
@@ -421,7 +427,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
-.lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin-bottom:12px;white-space:nowrap}
+.lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin:-4px 0 12px;white-space:nowrap;width:100%;flex:none}
 .lcuna:not([hidden]){display:flex}
 .lcuna .cuname{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .lcuna button{flex:none;width:40px;height:34px;padding:0;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;font-size:14px}
@@ -549,6 +555,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Monitorear mi sueño</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarmas y siesta</b><small>Despierta poco a poco, con tu tono</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
@@ -569,10 +576,6 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
-  <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
-    <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
-  </details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
@@ -724,6 +727,27 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note" id="retoNo" hidden></p>
   </details>
   <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · <span id="dondeSe">todo se guarda en este móvil</span></p>
+</section>
+
+<!-- REDUCIR RONQUIDOS -->
+<section id="reducir" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
+  <h1 style="font-size:21px;margin:0 0 6px">🛌 Reducir ronquidos</h1>
+  <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz solo suena por los auriculares Bluetooth, para no despertar a nadie.</p>
+  <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
+  </details>
+  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche <small id="sMsg" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
+    <div class="row"><label for="msgOn">Activado<small id="msgTxInfo">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina…</small></label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
+    <label class="cplab">Qué te digo<input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua"></label>
+    <div class="msgsug" id="msgSug"></div>
+    <div class="cuctl"><span>⏰ Cuándo</span><div class="cumin" id="msgModo"><button type="button" data-v="cada">Cada cierto tiempo</button><button type="button" data-v="horas">A horas fijas</button></div></div>
+    <div class="cuctl" id="msgCada"><span>Cada</span><div class="cumin"><button type="button" data-h="1">1 h</button><button type="button" data-h="2">2 h</button><button type="button" data-h="3">3 h</button><button type="button" data-h="4">4 h</button></div></div>
+    <div id="msgHoras"></div>
+    <div class="row"><label for="msgJunto">Juntarlo con el aviso de ronquido<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora del mensaje, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
+    <button class="btn wide" id="msgTest">▶ Probar el mensaje</button>
+  </details>
 </section>
 
 <!-- ALGUIEN RONCA A MI LADO -->
@@ -894,6 +918,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="lpanel" id="pDnd" hidden></div>
   <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
   <div class="lpanel" id="pAir" hidden></div>
+  <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
     <div class="note" id="prMic"></div>
@@ -917,7 +942,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
-    <div class="lcuna" id="lcuna" hidden></div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
@@ -927,7 +951,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.9'; // v9.9: monitoreo sin la línea «Última grabación»; «Fin monitoreo sueño» con borde morado
+const VERSION = 'v10.0'; // v10.0: la música que suena (con ❚❚ y ■) justo debajo de los iconos de arriba; nueva sección «Reducir ronquidos» en Inicio: «Avisarme si ronco» y «Un mensaje en la noche» (cada cierto tiempo o a horas fijas, y junto al aviso de ronquido si cae a ±15 min)
+// v9.9: // v9.9: monitoreo sin la línea «Última grabación»; «Fin monitoreo sueño» con borde morado
 // v9.8: // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
 // v9.7: // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
 // v9.6: // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
@@ -1087,12 +1112,83 @@ function avisoTick(det, dt) {
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
   if (A.ronc < (A.insiste ? AVISO_SIGUE : AVISO_PRIMERO)) return;
   A.ronc = 0; A.insiste = true;
-  if (AND.decir(FRASE)) {
+  const tm = msgConAviso(); // ¿toca también el mensaje de la noche? va en el mismo aviso
+  if (AND.decir(tm == null ? FRASE : FRASE + ' ' + MSG.texto.trim())) {
+    if (tm != null) msgDicho(tm);
     const now = Date.now();
     live.night.avisos = (live.night.avisos || 0) + 1;
     (live.night.avisoT ||= []).push(Math.round((now - live.night.inicio) / 1000));
     $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(now)}`;
   }
+}
+
+// 💬 Un mensaje en la noche (Reducir ronquidos): la voz te dice tu mensaje por los auriculares mientras monitoreas,
+// cada cierto tiempo desde que empiezas o a horas fijas. Con «Juntarlo», si te aviso de que roncas a ±15 min
+// de la hora del mensaje, va en el mismo aviso; si no roncas, se dice 15 minutos después de su hora.
+const MSG_SUG = ['Bebe un poco de agua', 'Si lo necesitas, levántate al baño', 'Toma tu medicina', 'Duerme de lado', 'Respira despacio y vuelve a dormirte'];
+let MSG = {on: false, texto: '', modo: 'cada', cada: 2, horas: ['03:00'], junto: true};
+try { Object.assign(MSG, JSON.parse(localStorage.getItem('ronquino-mensaje') || '{}')); } catch {}
+const msgGuarda = () => { try { localStorage.setItem('ronquino-mensaje', JSON.stringify(MSG)); } catch {} };
+function pintaMsg() {
+  $('msgOn').checked = VOZ_OK && MSG.on; $('msgOn').disabled = !VOZ_OK;
+  $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no';
+  if (!VOZ_OK) $('msgTxInfo').textContent = AND ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.';
+  if (document.activeElement !== $('msgTx')) $('msgTx').value = MSG.texto;
+  $('msgSug').innerHTML = MSG_SUG.map(t => `<button type="button">${t}</button>`).join('');
+  $('msgSug').querySelectorAll('button').forEach(b => b.onclick = () => { MSG.texto = b.textContent; msgGuarda(); pintaMsg(); });
+  $('msgModo').querySelectorAll('button').forEach(b => { b.classList.toggle('on', b.dataset.v === MSG.modo); b.onclick = () => { MSG.modo = b.dataset.v; msgGuarda(); pintaMsg(); }; });
+  $('msgCada').hidden = MSG.modo !== 'cada';
+  $('msgCada').querySelectorAll('button').forEach(b => { b.classList.toggle('on', +b.dataset.h === MSG.cada); b.onclick = () => { MSG.cada = +b.dataset.h; msgGuarda(); pintaMsg(); }; });
+  const H = $('msgHoras'); H.hidden = MSG.modo !== 'horas';
+  H.innerHTML = MSG.horas.map((h, k) => `<div class="msghora"><input type="time" value="${h}" data-k="${k}">${MSG.horas.length > 1 ? `<button type="button" data-q="${k}" aria-label="Quitar">✕</button>` : ''}</div>`).join('')
+    + (MSG.horas.length < 4 ? '<button type="button" class="btn wide" id="msgMas">＋ Añadir otra hora</button>' : '');
+  H.querySelectorAll('input').forEach(x => x.onchange = () => { if (x.value) { MSG.horas[+x.dataset.k] = x.value; msgGuarda(); } });
+  H.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { MSG.horas.splice(+b.dataset.q, 1); msgGuarda(); pintaMsg(); });
+  if ($('msgMas')) $('msgMas').onclick = () => { MSG.horas.push('05:00'); msgGuarda(); pintaMsg(); };
+  $('msgJunto').checked = !!MSG.junto;
+  $('msgTest').hidden = !VOZ_OK;
+}
+$('msgOn').onchange = () => { MSG.on = $('msgOn').checked; msgGuarda(); if (MSG.on) { AND.prepararVoz(); AND.pedirBluetooth?.(); } pintaMsg(); };
+$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; };
+$('msgJunto').onchange = () => { MSG.junto = $('msgJunto').checked; msgGuarda(); };
+$('msgTest').onclick = () => {
+  if (!MSG.texto.trim()) { aviso('Escribe primero qué quieres que te diga, o toca una de las sugerencias.'); return; }
+  AND.prepararVoz();
+  if (!AND.decir(MSG.texto.trim())) aviso('🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie.');
+};
+pintaMsg();
+// Horas del mensaje en esta noche (en milisegundos), hasta 14 horas después de empezar
+function msgPlan(n) {
+  const out = [];
+  if (MSG.modo === 'cada') for (let t = n.inicio + MSG.cada * 3600e3; t < n.inicio + 14 * 3600e3; t += MSG.cada * 3600e3) out.push(t);
+  else for (const h of MSG.horas) {
+    const [hh, mm] = h.split(':').map(Number), d = new Date(n.inicio); d.setHours(hh, mm, 0, 0);
+    out.push(d.getTime() <= n.inicio ? d.getTime() + 864e5 : d.getTime());
+  }
+  return out.sort((a, b) => a - b);
+}
+const msgActivo = () => VOZ_OK && MSG.on && !!MSG.texto.trim() && !!live.night;
+function msgDicho(t) {
+  live.msg.dichos.add(t);
+  live.night.mensajes = (live.night.mensajes || 0) + 1;
+  $('lastEv').textContent = `💬 Te he dicho tu mensaje a las ${hhmm(Date.now())}`;
+}
+// Cada medio segundo mientras se monitorea
+function msgTick() {
+  if (!msgActivo()) return;
+  const M = live.msg || (live.msg = {dichos: new Set(), plan: msgPlan(live.night)});
+  const now = Date.now(), espera = MSG.junto && cfg.avisoRonco ? 15 * 60e3 : 0;
+  const t = M.plan.find(t => !M.dichos.has(t) && now >= t + espera);
+  if (t == null) return;
+  if (AND.decir(MSG.texto.trim())) msgDicho(t);
+  else if (now > t + espera + 30 * 60e3) M.dichos.add(t); // sin auriculares: se intenta durante media hora y se deja
+}
+// Al decir «Estás roncando»: el mensaje que caiga a ±15 min va en el mismo aviso
+function msgConAviso() {
+  if (!msgActivo() || !MSG.junto) return null;
+  const M = live.msg || (live.msg = {dichos: new Set(), plan: msgPlan(live.night)});
+  const now = Date.now(), t = M.plan.find(t => !M.dichos.has(t) && Math.abs(now - t) <= 15 * 60e3);
+  return t == null ? null : t;
 }
 
 // 📡 Sonar: el altavoz emite un tono de 19 kHz y el micrófono escucha su eco. Si algo se mueve cerca,
@@ -1407,7 +1503,7 @@ async function startListening() {
 
   const night = newNight('micro');
   await DB.put('noches', night);
-  if (VOZ_OK && cfg.avisoRonco) AND.prepararVoz();
+  if (VOZ_OK && (cfg.avisoRonco || MSG.on)) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
@@ -1441,7 +1537,7 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
-    avisoTick(det, .5);
+    avisoTick(det, .5); msgTick();
     { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
       $('bloque').classList.toggle('on', en);
       $('bloque').textContent = en ? `● Grabando bloque: ${mmss(e.blocks.length * BLK / SR)} · quedan ${mmss(Math.max(0, det.maxSec - e.blocks.length * BLK / SR))}` : (det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : 'Esperando un sonido…'); }
@@ -1884,7 +1980,7 @@ window.atrasNativo = () => {
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
   if (!$('luna').hidden) { show('menu'); return true; }
-  if (['home', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
+  if (['home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
   return true; // en el inicio, «atrás» (o el gesto desde el borde) no saca de la app
 };
 $('prepGo').onclick = async () => {
@@ -3563,7 +3659,7 @@ $('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').sty
 
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
-  for (const x of ['menu', 'home', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna']) $(x).hidden = x !== id;
+  for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna']) $(x).hidden = x !== id;
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
   $('tabs').hidden = true;
   document.body.classList.remove('tabs-on');
@@ -3575,7 +3671,7 @@ function show(id) {
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
 // Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
-const ORDEN = ['menu', 'home', 'mask', 'alarma', 'stats', 'ajustes'];
+const ORDEN = ['menu', 'home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes'];
 let sw0 = null;
 document.addEventListener('touchstart', e => {
   const t = e.touches[0], el = e.target;
