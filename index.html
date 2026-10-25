@@ -355,6 +355,8 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .lronq text{fill:#64748B;font-size:11px}
 .lronq .lin{fill:none;stroke:#A78BFA;stroke-width:2.5;stroke-linejoin:round}
 .lronq .pt{stroke:var(--card);stroke-width:2}
+.lronq .dnum{fill:#CBD5E1;font-weight:700}
+.lmes{text-align:center;font-size:13px;color:#CBD5E1;text-transform:capitalize;margin-top:-2px}
 .lronq .pt.ok{fill:#4ADE80} .lronq .pt.mid{fill:#FBBF24} .lronq .pt.bad{fill:#F87171}
 .etqcard{margin-top:12px}
 .etqtit{font-weight:600;font-size:15px}
@@ -369,9 +371,11 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .efe.bad{border-left-color:#F87171} .efe.ok{border-left-color:#4ADE80}
 .efe small{color:var(--muted)}
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center}
-.stbox b{display:block;font-size:20px}
-.stbox span{font-size:11px;color:var(--muted)}
+.stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;min-width:0}
+.stbox b{display:block;font-size:22px;line-height:1.1;white-space:nowrap}
+.stbox i{font-style:normal;font-size:13px;font-weight:700;line-height:1.2;opacity:.85}
+.stbox.ok i{color:#86EFAC} .stbox.mid i{color:var(--voice)} .stbox.bad i{color:#FCA5A5}
+.stbox span{margin-top:auto;padding-top:6px;font-size:11px;line-height:1.2;color:var(--muted)} /* el texto, abajo del todo en los tres */
 .stbox.ok b{color:#86EFAC} .stbox.mid b{color:var(--voice)} .stbox.bad b{color:#FCA5A5}
 .moontip{display:flow-root;background:#1E1B4B;border:1px solid #312E81;border-radius:16px;padding:12px;margin-top:10px}
 .moontip svg{width:74px;height:74px;flex:none;animation:rq-float 3s ease-in-out infinite}
@@ -1076,7 +1080,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.8'; // v11.8: ⓘ junto al título de cada sección con su explicación (plegada); Reducir ronquidos explica auriculares o altavoz; altavoz moderno en «Leer las respuestas en voz alta»
+const VERSION = 'v11.9'; // v11.9: línea de ronquido con día de la semana y número (ma 24) y el mes debajo; recuadros de Estadísticas con el número arriba, la unidad pequeña debajo (horas, min) y el texto abajo del todo
+// v11.8: // v11.8: ⓘ junto al título de cada sección con su explicación (plegada); Reducir ronquidos explica auriculares o altavoz; altavoz moderno en «Leer las respuestas en voz alta»
 // v11.7: // v11.7: nueva sección «📚 Aprende sobre el sueño» con 8 fichas (consejo, fuente y «Pregúntale a Luna»)
 // v11.6: // v11.6: avisos «estás roncando» de la noche plegados y con la hora sin segundos
 // v11.5: // v11.5: recuadros de la noche en dos renglones («grabaciones/ronquidos», «grabaciones/voz»); «¿Algo especial esta noche?» plegable y plegado al abrir la noche
@@ -2409,19 +2414,22 @@ function tarjetaManana(n, prev, titulo) {
 }
 // 📉 Minutos roncando de las últimas noches (hasta 14): lo bueno es que la línea baje hacia 0
 function lineaRonquido(ok) {
-  const ns = ok.slice(0, 14).reverse();
+  const ns = ok.slice(0, 14).sort((a, b) => a.inicio - b.inicio); // de la más antigua (izquierda) a la última
   if (ns.length < 2) return '<div class="stnote">En cuanto tengas 2 noches de más de 3 horas, aquí verás la línea de tus minutos roncando.</div>';
-  const W = 320, H = 130, pl = 30, pr = 8, pt = 10, pb = 24;
+  const W = 320, H = 146, pl = 30, pr = 8, pt = 10, pb = 38;
   const v = ns.map(n => (n.segRonquido || 0) / 60), max = Math.max(10, ...v);
   const x = i => pl + (W - pl - pr) * (ns.length === 1 ? .5 : i / (ns.length - 1)), y = m => pt + (H - pt - pb) * (1 - m / max);
   const pts = v.map((m, i) => `${x(i).toFixed(1)},${y(m).toFixed(1)}`).join(' ');
-  const dia = n => new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'short'}).replace('.', '').slice(0, 2);
+  const fecha = n => new Date(n.inicio - 6 * 3600e3); // la noche cuenta para el día en que empezó
+  const dia = n => fecha(n).toLocaleDateString('es-ES', {weekday: 'short'}).replace('.', '').slice(0, 2);
+  const meses = [...new Set(ns.map(n => fecha(n).toLocaleDateString('es-ES', {month: 'long'})))].join(' – ');
   const marcas = [0, Math.round(max / 2), Math.round(max)];
   return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutos roncando de las últimas noches">
     ${marcas.map(m => `<line x1="${pl}" x2="${W - pr}" y1="${y(m)}" y2="${y(m)}" class="rej"/><text x="${pl - 6}" y="${y(m) + 4}" text-anchor="end">${m}</text>`).join('')}
     <polyline points="${pts}" class="lin"/>
-    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><text x="${x(i)}" y="${H - 6}" text-anchor="middle">${dia(ns[i])}</text>`).join('')}
+    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><text x="${x(i)}" y="${H - 20}" text-anchor="middle">${dia(ns[i])}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${fecha(ns[i]).getDate()}</text>`).join('')}
   </svg>
+  <div class="lmes">${meses}</div>
   <div class="stnote">Minutos roncando cada noche. Lo bueno es que la línea baje hacia 0. ${v.at(-1) <= v[0] ? '👍 Vas a mejor que al principio.' : 'Esta última noche roncaste más que al principio.'}</div>`;
 }
 // 🏷️ Etiquetas de la noche: un toque para marcar lo que pudo influir; hay una que escribes tú
@@ -2495,9 +2503,9 @@ function renderStatsHome(ns) {
   const snMin = ok.reduce((a, n) => a + (n.segRonquido || 0), 0) / 60, snPorHora = snMin / horas.reduce((a, b) => a + b, 0);
   const cls = (v, good, mid) => v == null ? '' : v <= good ? 'ok' : v <= mid ? 'mid' : 'bad';
   $('statBody').innerHTML = `<div class="stgrid">
-      <div class="stbox ${media >= 7 ? 'ok' : media >= 6 ? 'mid' : 'bad'}"><b>${media.toFixed(1).replace('.', ',')} h</b><span>de media por noche</span></div>
-      <div class="stbox ${cls(desv, 30, 60)}"><b>${desv == null ? '—' : '± ' + desv + ' min'}</b><span>regularidad de horarios</span></div>
-      <div class="stbox ${cls(snPorHora, 3, 10)}"><b>${snPorHora.toFixed(1).replace('.', ',')} min</b><span>roncando por hora</span></div>
+      <div class="stbox ${media >= 7 ? 'ok' : media >= 6 ? 'mid' : 'bad'}"><b>${media.toFixed(1).replace('.', ',')}</b><i>horas</i><span>de media por noche</span></div>
+      <div class="stbox ${cls(desv, 30, 60)}"><b>${desv == null ? '—' : '± ' + desv}</b><i>${desv == null ? '&nbsp;' : 'min'}</i><span>regularidad de horarios</span></div>
+      <div class="stbox ${cls(snPorHora, 3, 10)}"><b>${snPorHora.toFixed(1).replace('.', ',')}</b><i>min</i><span>roncando por hora</span></div>
     </div>
     <div class="strow"><span>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></span><span>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></span></div>
     <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>🌙 Consejos de la luna</summary>
@@ -2553,9 +2561,9 @@ async function comunidad(ok, media, snPorHora, acuMedia) {
   const mh = v('horas') / noches, macu = v('acostar') / noches, mron = v('ronquido') / v('horas');
   const dif = (a, b, u) => { const x = a - b; return Math.abs(x) < .05 ? 'igual que la media' : `${x > 0 ? '+' : '−'}${Math.abs(x).toFixed(1).replace('.', ',')} ${u} que la media`; };
   $('paisBody').innerHTML = `🌍 <b>Media de ${pais}</b> (${personas} personas, ${noches} noches):
-    <div class="stgrid"><div class="stbox"><b>${mh.toFixed(1).replace('.', ',')} h</b><span>por noche</span></div>
-      <div class="stbox"><b>${hm(macu + 720)}</b><span>se acuestan</span></div>
-      <div class="stbox"><b>${mron.toFixed(1).replace('.', ',')} min</b><span>roncando por hora</span></div></div>
+    <div class="stgrid"><div class="stbox"><b>${mh.toFixed(1).replace('.', ',')}</b><i>horas</i><span>por noche</span></div>
+      <div class="stbox"><b>${hm(macu + 720)}</b><i>h</i><span>se acuestan</span></div>
+      <div class="stbox"><b>${mron.toFixed(1).replace('.', ',')}</b><i>min</i><span>roncando por hora</span></div></div>
     ${ok.length ? `Tú: ${dif(media, mh, 'h')} de sueño · ${dif(snPorHora, mron, 'min/h')} de ronquido.` : ''}`;
 }
 // Consejos sencillos de la luna (no sustituyen al médico)
@@ -4162,6 +4170,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.9', '25 oct 2026', ['Estadísticas: recuadros más ordenados (número, unidad y texto abajo)', 'La línea de ronquido enseña el día (ma 24) y el mes']],
   ['v11.8', '25 oct 2026', ['Botón ⓘ junto al título de cada sección con su explicación', 'Altavoz moderno en «Leer las respuestas en voz alta»']],
   ['v11.7', '25 oct 2026', ['Nueva sección «📚 Aprende sobre el sueño» con 8 fichas']],
   ['v11.6', '25 oct 2026', ['Los avisos «estás roncando» de cada noche salen plegados y sin segundos']],
