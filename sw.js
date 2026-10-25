@@ -1,5 +1,5 @@
 // Amable Sleep — funciona sin conexión. Subir CACHE con cada versión.
-const CACHE = 'sleepamable-v12.6';
+const CACHE = 'sleepamable-v12.7';
 const CORE = ['./', './index.html', './logo.svg', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './luna/luna-saluda.png', './luna/luna-consejo.png', './luna/luna-aplaude.png', './luna/luna-consejo.webm', './luna/luna-saluda.mp4'];
 // La IA (MediaPipe + modelo YAMNet) se guarda la primera vez que se descarga
 const IA_HOSTS = ['cdn.jsdelivr.net', 'storage.googleapis.com'];

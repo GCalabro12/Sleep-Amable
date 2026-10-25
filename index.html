@@ -411,6 +411,16 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .efe{font-size:15px;padding:9px 10px;border-radius:12px;background:var(--card2);margin-top:8px;border-left:4px solid #64748B}
 .efe.bad{border-left-color:#F87171} .efe.ok{border-left-color:#4ADE80}
 .efe small{color:var(--muted)}
+.calmatit{font-weight:600}
+.calmatit small{font-weight:400;font-size:12px;color:var(--muted);margin-left:4px}
+.calma{width:100%;height:auto;margin-top:8px}
+.calma .lin{fill:none;stroke:#C4B5FD;stroke-width:2;stroke-linejoin:round}
+.calma .lim{stroke:#334155;stroke-dasharray:3 4}
+.calma text{fill:#64748B;font-size:11px}
+.calma .et{fill:#94A3B8;font-size:10.5px}
+.calmadatos{display:flex;gap:8px;margin-top:6px}
+.calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
+.calmadatos b{display:block;font-size:16px;color:var(--text)}
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;min-width:0}
 .stbox b{display:block;font-size:22px;line-height:1.1;white-space:nowrap}
@@ -976,6 +986,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile v"><b id="tVoice">0</b><span>grabaciones/voz</span></div>
   </div>
   <details class="instr card avcard" id="avCard" hidden></details>
+  <div class="card" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#38BDF8;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#FDE047;border-radius:50%"></i>voz: «estás roncando»</span><span>🤏 pellizca para ampliar</span></div>
@@ -1195,7 +1206,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.6'; // v12.6: recorrido de bienvenida la primera vez (3 pantallas con lo que hace la app); se puede volver a ver en Ajustes → Novedades
+const VERSION = 'v12.7'; // v12.7: curva «Sueño tranquilo o inquieto» (estimación con movimientos y ruidos) en cada noche, con rato tranquilo e inquieto y a qué hora te dormiste
+// v12.6: // v12.6: recorrido de bienvenida la primera vez (3 pantallas con lo que hace la app); se puede volver a ver en Ajustes → Novedades
 // v12.5: // v12.5: sin compartir ni descargar grabaciones (solo corazón y papelera)
 // v12.4: // v12.4: grabaciones con iconos clásicos sin recuadro (corazón, compartir, papelera); el aviso amarillo ya no se monta encima; el reproductor enseña la onda del sonido que avanza
 // v12.3: // v12.3: la IA aprende de tus valoraciones (huella de cada sonido + 5 vecinos más parecidos); tarjeta «🧠 Lo que ha aprendido la IA» en Ajustes
@@ -2715,6 +2727,58 @@ function efectoEtiquetas(validas) {
   }).join('');
 }
 
+// ---------- 🌊 Sueño tranquilo o inquieto (estimación) ----------
+// Por tramos de 5 minutos: movimientos (acelerómetro o sonar), ruidos que no son ronquido (voces, golpes…) y el volumen
+// por encima de lo normal de esa noche. Mucho de eso = sueño inquieto (o despierto); nada = sueño tranquilo.
+// No son fases del sueño medidas por un médico: los móviles distinguen bien dormido / despierto, pero no las fases.
+function curvaCalma(n, evs) {
+  const ini = n.inicio, fin = n.fin || (n.inicio + (n.timeline?.length || 0) * 60e3), totMin = (fin - ini) / 60e3;
+  if (totMin < 30) return null;
+  const B = Math.ceil(totMin / 5), mv = new Array(B).fill(0), ru = new Array(B).fill(0), vo = new Array(B).fill(0);
+  for (const t of n.mov || []) { const b = Math.floor(t / 300); if (b >= 0 && b < B) mv[b]++; }
+  for (const e of evs) if (e.tipo !== 'ronquido') {
+    for (let t = e.off; t < e.off + e.dur; t += 30) { const b = Math.floor(t / 300); if (b >= 0 && b < B) ru[b] += 30; }
+  }
+  const tl = n.timeline || [], ord = [...tl].sort((a, b) => a - b), med = ord.length ? ord[Math.floor(ord.length / 2)] : 0;
+  for (let b = 0; b < B; b++) {
+    const tr = tl.slice(b * 5, b * 5 + 5); if (tr.length) vo[b] = Math.max(0, tr.reduce((s, x) => s + x, 0) / tr.length - med);
+  }
+  const bruto = mv.map((m, b) => Math.min(1, (m * 3 + ru[b] / 20 + vo[b] * .3) / 6));
+  const suave = a => a.map((x, b) => (a[b - 1] ?? x) * .25 + x * .5 + (a[b + 1] ?? x) * .25);
+  const v = suave(suave(bruto)); // suavizada (dos pasadas) para que se lea como una curva
+  // Se durmió: el primer momento con 15 minutos seguidos de calma; se despertó: el último
+  let dormido = null, despierto = null;
+  for (let b = 0; b + 2 < B; b++) if (v[b] < .25 && v[b + 1] < .25 && v[b + 2] < .25) { dormido = b; break; }
+  for (let b = B - 1; b >= 2; b--) if (v[b] < .25 && v[b - 1] < .25 && v[b - 2] < .25) { despierto = b + 1; break; }
+  const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
+  return {v, ini, B, dormido: dormido == null ? null : ini + dormido * 300e3, despierto: despierto == null ? null : Math.min(fin, ini + despierto * 300e3),
+    tranq, inq, conMov: (n.mov || []).length > 0};
+}
+function pintaCalma(n, evs) {
+  const box = $('calmaCard'), c = curvaCalma(n, evs);
+  box.hidden = !c || n.fuente !== 'micro'; if (box.hidden) return;
+  const W = 320, H = 110, pl = 6, pr = 6, pt = 8, pb = 22, w = W - pl - pr, h = H - pt - pb;
+  const x = b => pl + w * (b + .5) / c.B, y = val => pt + h * (1 - val);
+  const linea = c.v.map((val, b) => `${x(b).toFixed(1)},${y(val).toFixed(1)}`).join(' ');
+  const area = `${x(0).toFixed(1)},${pt + h} ${linea} ${x(c.B - 1).toFixed(1)},${pt + h}`;
+  // marcas de hora cada 1 o 2 horas
+  const marcas = []; const paso = c.B * 5 > 420 ? 120 : 60;
+  const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
+  for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 6}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
+  const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
+  box.innerHTML = `<div class="calmatit">🌊 Sueño tranquilo o inquieto <small>estimación</small></div>
+    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de sueño tranquilo o inquieto">
+      <defs><linearGradient id="gCalma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24" stop-opacity=".55"/><stop offset=".55" stop-color="#A78BFA" stop-opacity=".35"/><stop offset="1" stop-color="#4338CA" stop-opacity=".15"/></linearGradient></defs>
+      <line x1="${pl}" x2="${W - pr}" y1="${y(.25)}" y2="${y(.25)}" class="lim"/>
+      <text x="${pl + 2}" y="${pt + 9}" class="et">Inquieto</text><text x="${pl + 2}" y="${pt + h - 3}" class="et">Tranquilo</text>
+      <polygon points="${area}" fill="url(#gCalma)"/><polyline points="${linea}" class="lin"/>
+      ${marcas.join('')}
+    </svg>
+    <div class="calmadatos"><span>😌 Tranquilo <b>${hm2(c.tranq)}</b></span><span>🌀 Inquieto <b>${hm2(c.inq)}</b></span></div>
+    ${c.dormido ? `<div class="stnote">Te dormiste hacia las <b>${hhmm(c.dormido)}</b>${c.despierto ? ` y te despertaste hacia las <b>${hhmm(c.despierto)}</b>` : ''}.</div>` : ''}
+    <div class="stnote">Sale de tus movimientos y de los ruidos de la noche. No son las fases del sueño que mide un médico.${c.conMov ? '' : ' Para afinarla, deja el móvil sobre el colchón o activa el 📡 sonar en Ajustes.'}</div>`;
+}
+
 function renderStatsHome(ns) {
   // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan). Las últimas 14.
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
@@ -2874,6 +2938,7 @@ async function openNight(id) {
   requestAnimationFrame(() => document.querySelectorAll('#night .tile span').forEach(fitLine)); // cada texto en un renglón
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
   $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
+  pintaCalma(n, curEvs);
   requestAnimationFrame(tlSticky);
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
@@ -4561,6 +4626,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.7', '25 oct 2026', ['Cada noche: curva de sueño tranquilo o inquieto (estimación) y a qué hora te dormiste']],
   ['v12.6', '25 oct 2026', ['Presentación de bienvenida la primera vez (y en Ajustes → Novedades)']],
   ['v12.5', '25 oct 2026', ['Las grabaciones ya no se comparten ni se descargan: solo favorita y borrar']],
   ['v12.4', '25 oct 2026', ['Grabaciones más bonitas: corazón y papelera sin recuadros', 'El reproductor enseña la onda del sonido']],
