@@ -642,7 +642,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas y siesta</h1>
   <div class="card">
-    <div style="display:flex;align-items:center;gap:10px"><label class="swt"><input type="checkbox" id="napOn"><i></i></label><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span></div>
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)">
       <label>Tono<button class="tonobtn" id="napSon" type="button"></button></label>
       <label>Duración<select id="napMin" style="width:100%;margin-top:3px"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
@@ -984,7 +984,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.5'; // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
+const VERSION = 'v10.6'; // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
+// v10.5: // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
 // v10.4: // v10.4: «sí / no» a la derecha, junto al triángulo; instrucciones de Monitorear sin lo de los pinganillos (va en Reducir ronquidos); historial de grabaciones también en Reducir ronquidos
 // v10.3: // v10.3: «Grabando…» justo debajo de la barra morada; monitoreo separado con líneas por temas; deslizar a la derecha vuelve atrás y a la izquierda ya no salta a la sección siguiente
 // v10.2: // v10.2: «Avisa si ronco · falta auriculares»; «Sin grabar m:ss» a la derecha de «No grabar +30 s», en el mismo renglón; sin el recuadro azul de Android al tocar
