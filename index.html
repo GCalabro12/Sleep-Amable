@@ -417,6 +417,18 @@ details.hist[open] summary{margin-bottom:10px}
 .choice.sm .ic{font-size:32px}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
 .choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
+.htit{display:flex;align-items:center;gap:10px}
+.hinfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
+.hinfo.on{background:#312E81;color:#fff}
+.hbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.5;color:var(--muted);margin:-4px 0 14px}
+.icoalt{display:inline-flex;width:20px;height:20px;vertical-align:-4px;margin-right:6px;color:#C4B5FD}
+.icoalt svg{width:20px;height:20px}
+.choice.g{background:linear-gradient(135deg,#0E7490,#155E75);box-shadow:0 8px 24px #0e749044}
+.ficha p{font-size:15px;line-height:1.5;color:var(--text);margin:10px 0 0}
+.fprueba{margin-top:12px;padding:10px 12px;border-radius:12px;background:#14532D55;border:1px solid #166534;font-size:15px}
+.ffuente{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.ffuente a{color:#A5B4FC}
+.fluna{margin-top:12px}
 .choice.e{background:linear-gradient(135deg,#334155,#1E293B);box-shadow:0 8px 24px #33415544}
 #menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
@@ -631,6 +643,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarmas y siesta</b><small>Despierta poco a poco, con tu tono</small></span></button>
+  <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector y novedades</small></span></button>
   <div class="sellos">
@@ -642,7 +655,8 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- SABER SI RONCO -->
 <section id="home" hidden>
   <button class="back" id="homeBack">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">😴 Saber si ronco</h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">😴 Saber si ronco<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <div class="hbox" hidden>Graba la noche y la IA detecta tus ronquidos y las voces. Por la mañana verás la puntuación de tu noche, el gráfico y las grabaciones para escucharlas. Las grabaciones se quedan en tu móvil.</div>
 
   <div class="card" id="iaCard">
     <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
@@ -747,12 +761,13 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <section id="luna" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <div class="lunahead"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div><h1>🌙 Habla con Luna</h1><small>Consejos para dormir mejor y roncar menos, mirando tus noches</small></div></div>
+  <div class="lunahead"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div style="flex:1"><h1 class="htit">🌙 Habla con Luna<button type="button" class="hinfo" aria-label="Información">i</button></h1></div></div>
+  <div class="hbox" hidden>Luna es una inteligencia artificial que te da consejos para dormir mejor y roncar menos, mirando tus noches. Puedes hacerle 3 preguntas al día. Luna no es un médico: ante algo que te preocupe, consulta con tu médico.</div>
   <div id="lunaChat"></div>
   <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
   <p class="note" id="lunaQuedan" hidden style="margin:0 0 6px"></p>
   <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="Tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="submit" aria-label="Enviar">➤</button></form>
-  <div class="row" style="margin-top:10px"><label for="lunaVoz">🔊 Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
+  <div class="row" style="margin-top:10px"><label for="lunaVoz"><span class="icoalt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
   <div class="note" id="lunaVozInfo" hidden>🗣️ Luna lee con la voz que tengas puesta en tu móvil, así responde al momento. <button class="btn wide" id="lunaVozCfg" style="margin-top:8px" hidden>⚙️ Cambiar la voz del móvil</button></div>
   <details class="instr card" id="lunaHistDet"><summary>📚 Historial de charlas con Luna <small id="lunaHistN" style="font-weight:400;color:var(--muted)"></small></summary><div id="lunaHistList"></div></details>
   <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
@@ -808,11 +823,20 @@ body.pl-on .wrap{padding-bottom:190px}
   <p class="note" style="text-align:center">Amable Sleep <span id="ver2"></span> · <span id="dondeSe">todo se guarda en este móvil</span></p>
 </section>
 
+<!-- APRENDE SOBRE EL SUEÑO -->
+<section id="aprende" hidden>
+  <button class="back" data-go="menu">← Inicio</button>
+  <h1 style="font-size:21px;margin:0 0 12px">📚 Aprende sobre el sueño</h1>
+  <div class="moontip" style="margin:0 0 14px"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble"><p>Fichas cortas, de un minuto, para entender tu sueño y tus ronquidos. Cada una trae algo que probar esta semana. Si te queda una duda, pregúntame.</p></div></div>
+  <div id="fichas"></div>
+  <p class="note">Información general, no sustituye a tu médico. Si te preocupa algo de tu sueño, consúltalo.</p>
+</section>
+
 <!-- REDUCIR RONQUIDOS -->
 <section id="reducir" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 6px">🛌 Reducir ronquidos</h1>
-  <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz suena por los auriculares Bluetooth, para no despertar a nadie (🎧 cárgalos antes: <b>al 100 %</b> duran unas 4 horas). Si duermes solo, también puede sonar por el altavoz.</p>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Reducir ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Duermo solo» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <div class="card" style="margin-top:14px"><div style="font-weight:600;font-size:16px">🛏️ Duermo solo</div><div class="row" style="margin:6px 0 0"><label for="altavoz">Activado<small>El mensaje sale por el altavoz del móvil.</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
@@ -845,7 +869,8 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ALGUIEN RONCA A MI LADO -->
 <section id="mask" hidden>
   <button class="back" id="maskBack">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca</h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <div class="hbox" hidden>Si duermes al lado de alguien que ronca: sonidos suaves (ruido marrón, lluvia…) que tapan los ronquidos por los auriculares. Elige cuándo se apaga el sonido para cuidar tus oídos y la batería.</div>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
     <ol class="steps">
@@ -1051,7 +1076,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.6'; // v11.6: avisos «estás roncando» de la noche plegados y con la hora sin segundos
+const VERSION = 'v11.8'; // v11.8: ⓘ junto al título de cada sección con su explicación (plegada); Reducir ronquidos explica auriculares o altavoz; altavoz moderno en «Leer las respuestas en voz alta»
+// v11.7: // v11.7: nueva sección «📚 Aprende sobre el sueño» con 8 fichas (consejo, fuente y «Pregúntale a Luna»)
+// v11.6: // v11.6: avisos «estás roncando» de la noche plegados y con la hora sin segundos
 // v11.5: // v11.5: recuadros de la noche en dos renglones («grabaciones/ronquidos», «grabaciones/voz»); «¿Algo especial esta noche?» plegable y plegado al abrir la noche
 // v11.4: // v11.4: «⏰ Alarma para despertarte» desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca
 // v11.3: // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
@@ -2126,7 +2153,7 @@ window.atrasNativo = () => {
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
   if (!$('luna').hidden) { show('menu'); return true; }
-  if (['home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes', 'utiles'].some(x => !$(x).hidden)) { show('menu'); return true; }
+  if (['home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes', 'utiles', 'aprende'].some(x => !$(x).hidden)) { show('menu'); return true; }
   return true; // en el inicio, «atrás» (o el gesto desde el borde) no saca de la app
 };
 $('prepGo').onclick = async () => {
@@ -3954,7 +3981,7 @@ $('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').sty
 
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
-  for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna']) $(x).hidden = x !== id;
+  for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna', 'aprende']) $(x).hidden = x !== id;
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
   $('tabs').hidden = true;
   document.body.classList.remove('tabs-on');
@@ -4035,6 +4062,84 @@ runSplash();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
 
 
+// ---------- 📚 Aprende sobre el sueño: fichas cortas (un minuto), con un consejo, su fuente y «Pregúntale a Luna» ----------
+const FICHAS = [
+  {ic: '😴', t: 'Por qué roncamos',
+   p: ['Al dormir, los músculos de la garganta se relajan y el paso del aire se estrecha. El aire hace vibrar el paladar blando y la campanilla: eso es el ronquido.',
+       'Se ronca más durmiendo boca arriba, después de beber alcohol, con la nariz tapada, con kilos de más y al hacerse mayor.',
+       'Roncar de vez en cuando es muy normal. Lo que conviene vigilar es roncar fuerte casi todas las noches.'],
+   prueba: 'Esta semana, duerme de lado y deja el alcohol por la noche. Mira en Estadísticas si bajan tus minutos roncando.',
+   f: ['NHS (sistema de salud del Reino Unido): Snoring', 'https://www.nhs.uk/conditions/snoring/'],
+   q: '¿Por qué ronco y qué puedo hacer para roncar menos?'},
+  {ic: '⚠️', t: 'Ronquido o apnea: cuándo ir al médico',
+   p: ['La apnea del sueño es cuando la respiración se para unos segundos, muchas veces cada noche. Suele venir con ronquidos fuertes.',
+       'Señales de aviso: ronquido fuerte casi cada noche, pausas al respirar o ahogos que nota quien duerme contigo, mucho sueño durante el día, dolor de cabeza al despertar o tensión alta.',
+       'Si tienes varias, coméntalo con tu médico. La apnea se confirma con un estudio del sueño y tiene tratamiento.'],
+   prueba: 'Si alguien duerme contigo, pregúntale si alguna vez te nota parar de respirar.',
+   f: ['NHS: Obstructive sleep apnoea', 'https://www.nhs.uk/conditions/obstructive-sleep-apnoea/'],
+   q: '¿Cómo sé si mi ronquido puede ser apnea del sueño?'},
+  {ic: '🌙', t: 'Las fases del sueño',
+   p: ['El sueño va por ciclos de unos 90 minutos. En cada uno pasamos por sueño ligero, sueño profundo y sueño REM (cuando más se sueña).',
+       'En una noche hacemos de 4 a 6 ciclos. El sueño profundo, el que más repara el cuerpo, abunda al principio de la noche; el REM, hacia la mañana.',
+       'Despertarse un poco entre ciclos es normal; casi nunca lo recordamos.'],
+   prueba: 'Si te despiertas de madrugada, no mires el reloj: respira despacio y deja que llegue el siguiente ciclo.',
+   f: ['Sleep Foundation: Stages of Sleep', 'https://www.sleepfoundation.org/stages-of-sleep'],
+   q: '¿Qué son las fases del sueño y por qué me despierto de madrugada?'},
+  {ic: '🕒', t: 'Cuántas horas dormir',
+   p: ['Los adultos necesitan de 7 a 9 horas. A partir de los 65 años suelen bastar de 7 a 8.',
+       'Tan importante como las horas es la regularidad: acostarse y levantarse cada día a la misma hora, también el fin de semana.',
+       'Dormir poco muchas noches seguidas se nota en el humor, la memoria y las defensas.'],
+   prueba: 'Elige una hora fija para levantarte y mantenla 7 días seguidos.',
+   f: ['Sleep Foundation: How Much Sleep Do We Really Need?', 'https://www.sleepfoundation.org/how-sleep-works/how-much-sleep-do-we-really-need'],
+   q: '¿Cuántas horas debería dormir yo y cómo ser más regular?'},
+  {ic: '☀️', t: 'La siesta buena',
+   p: ['Una siesta corta, de 20 a 30 minutos, despeja y no estropea la noche.',
+       'Si es más larga, entras en sueño profundo: te levantas aturdido y luego cuesta más dormir por la noche.',
+       'Mejor antes de las 4 de la tarde.'],
+   prueba: 'Usa la siesta de la app con 20 o 25 minutos.',
+   f: ['Sleep Foundation: Napping', 'https://www.sleepfoundation.org/sleep-hygiene/napping'],
+   q: '¿Cómo es una buena siesta?'},
+  {ic: '💡', t: 'La luz y las pantallas',
+   p: ['La luz pone en hora nuestro reloj interno. La luz del día por la mañana ayuda a dormir mejor por la noche.',
+       'Por la noche, la luz fuerte y las pantallas retrasan la melatonina, la hormona que nos da sueño.',
+       'Un dormitorio oscuro, fresco (unos 18 °C) y silencioso ayuda mucho.'],
+   prueba: 'Sal 15 minutos a la luz por la mañana y deja el móvil y la tele 30 minutos antes de acostarte.',
+   f: ['Sleep Foundation: Light and Sleep', 'https://www.sleepfoundation.org/bedroom-environment/light-and-sleep'],
+   q: '¿Cómo me afectan la luz y las pantallas al dormir?'},
+  {ic: '☕', t: 'El café y el alcohol',
+   p: ['El efecto del café dura muchas horas: a las 5 o 6 horas, aún queda la mitad en el cuerpo. Por eso, mejor nada de café desde la tarde.',
+       'El alcohol da sueño al principio, pero rompe el sueño a mitad de la noche.',
+       'Además, el alcohol relaja los músculos de la garganta y hace roncar más.'],
+   prueba: 'Marca la etiqueta 🍷 «Alcohol» las noches que bebas y mira en Estadísticas cuánto más roncas.',
+   f: ['Sleep Foundation: Alcohol and Sleep', 'https://www.sleepfoundation.org/nutrition/alcohol-and-sleep'],
+   q: '¿Cómo afectan el café y el alcohol a mi sueño y a mis ronquidos?'},
+  {ic: '🛌', t: 'Dormir de lado',
+   p: ['Boca arriba, la lengua y el paladar caen hacia atrás y estrechan el paso del aire. De lado, el aire pasa mejor y se ronca menos.',
+       'Truco: una almohada detrás de la espalda, o una pelota de tenis cosida en la espalda del pijama, para no darte la vuelta.',
+       'Elevar un poco la cabecera de la cama también ayuda.'],
+   prueba: 'Activa en Reducir ronquidos el aviso «estás roncando»: te recordará cambiar de postura.',
+   f: ['Sleep Foundation: How to Stop Snoring', 'https://www.sleepfoundation.org/snoring/how-to-stop-snoring'],
+   q: '¿Cómo puedo acostumbrarme a dormir de lado?'}
+];
+function pintaAprende() {
+  $('fichas').innerHTML = FICHAS.map((x, k) => `<details class="instr card ficha"><summary><span>${x.ic} ${x.t}</span></summary>
+    ${x.p.map(t => `<p>${t}</p>`).join('')}
+    <div class="fprueba">✅ <b>Prueba esto:</b> ${x.prueba}</div>
+    <div class="ffuente">Fuente: <a href="${x.f[1]}" target="_blank" rel="noopener">${x.f[0]}</a></div>
+    <button type="button" class="btn wide fluna" data-k="${k}">🌙 Pregúntale a Luna</button></details>`).join('');
+  $('fichas').querySelectorAll('.fluna').forEach(b => b.onclick = () => {
+    show('luna');
+    setTimeout(() => { $('lunaIn').value = FICHAS[+b.dataset.k].q; $('lunaIn').oninput?.(); $('lunaIn').focus(); }, 300);
+  });
+}
+pintaAprende();
+
+// ⓘ junto al título de cada sección: abre o cierra su explicación
+document.querySelectorAll('.hinfo').forEach(b => b.onclick = () => {
+  const sec = b.closest('section'), box = sec.querySelector('.hbox');
+  box.hidden = !box.hidden; b.classList.toggle('on', !box.hidden);
+});
+
 // 🎨 Fondo de la app (Ajustes): cambia los colores base; la pantalla de la noche (#listen) sigue en negro
 const TEMAS = {
   noche: {n: 'Noche', bg: '#0B1020', card: '#141B2E', card2: '#1B2440', line: '#26304D'},
@@ -4057,6 +4162,8 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.8', '25 oct 2026', ['Botón ⓘ junto al título de cada sección con su explicación', 'Altavoz moderno en «Leer las respuestas en voz alta»']],
+  ['v11.7', '25 oct 2026', ['Nueva sección «📚 Aprende sobre el sueño» con 8 fichas']],
   ['v11.6', '25 oct 2026', ['Los avisos «estás roncando» de cada noche salen plegados y sin segundos']],
   ['v11.5', '25 oct 2026', ['«¿Algo especial esta noche?» se pliega', 'Recuadros de la noche más cortos: «grabaciones/ronquidos»']],
   ['v11.4', '25 oct 2026', ['«⏰ Alarma para despertarte» en Saber si ronco, Reducir ronquidos y Dormir con quien ronca']],
