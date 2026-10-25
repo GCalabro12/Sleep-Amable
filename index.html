@@ -941,7 +941,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <button class="mute" id="muteBtn">❚❚ No grabar +5 s</button>
+    <button class="mute" id="muteBtn">❚❚ No grabar +30 s</button>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
@@ -951,7 +951,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.0'; // v10.0: la música que suena (con ❚❚ y ■) justo debajo de los iconos de arriba; nueva sección «Reducir ronquidos» en Inicio: «Avisarme si ronco» y «Un mensaje en la noche» (cada cierto tiempo o a horas fijas, y junto al aviso de ronquido si cae a ±15 min)
+const VERSION = 'v10.1'; // v10.1: «No grabar +30 s» (antes +5 s) y el botón enseña lo que queda sin grabar
+// v10.0: // v10.0: la música que suena (con ❚❚ y ■) justo debajo de los iconos de arriba; nueva sección «Reducir ronquidos» en Inicio: «Avisarme si ronco» y «Un mensaje en la noche» (cada cierto tiempo o a horas fijas, y junto al aviso de ronquido si cae a ±15 min)
 // v9.9: // v9.9: monitoreo sin la línea «Última grabación»; «Fin monitoreo sueño» con borde morado
 // v9.8: // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
 // v9.7: // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
@@ -1989,11 +1990,14 @@ $('prepGo').onclick = async () => {
   await startListening();
   const c = cunaSel(); if (c && live.det) playCuna(c);
 };
-$('muteBtn').onclick = () => { if (live.det) { live.det.mute(5); muteTick(); } };
+$('muteBtn').onclick = () => { if (live.det) { live.det.mute(30); muteTick(); } };
 // Texto de «sin grabar» en la pantalla negra (lo llama también el reloj de cada medio segundo)
 function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
+  // El propio botón dice cuánto falta (cada toque suma 30 s)
+  $('muteBtn').textContent = rem > 0 && isFinite(rem) && !live.cuna
+    ? `❚❚ Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')} · +30 s` : '❚❚ No grabar +30 s';
   if (live.cuna) {
     const k = live.cuna, left = Math.max(0, cunaSeg() - k.played);
     $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
