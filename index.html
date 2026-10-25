@@ -754,7 +754,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 style="font-size:21px;margin:0 0 6px">🛌 Reducir ronquidos</h1>
   <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz suena por los auriculares Bluetooth, para no despertar a nadie (🎧 cárgalos antes: <b>al 100 %</b> duran unas 4 horas). Si duermes solo, también puede sonar por el altavoz.</p>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
-  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz">🛏️ Duermo solo<small>Si no llevas auriculares, el aviso y el mensaje suenan por el altavoz del móvil.</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;font-size:16px">🛏️ Duermo solo</div><div class="row" style="margin:6px 0 0"><label for="altavoz">Activado<small>El mensaje sale por el altavoz del móvil.</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
@@ -987,7 +987,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.8'; // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
+const VERSION = 'v10.9'; // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
+// v10.8: // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
 // v10.7: // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
 // v10.6: // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
 // v10.5: // v10.5: en «Un mensaje en la noche», «Qué te digo», «Cuándo» y «Juntarlo» se pliegan; Reducir ronquidos con botón para empezar (monitoreo + aviso y mensaje) y «Duermo solo»: sin auriculares, la voz suena por el altavoz
@@ -3822,6 +3823,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v10.9', '25 oct 2026', ['«Duermo solo»: texto más claro']],
   ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma (y ahí puedes escanear otro código)', 'Monitoreo más limpio: sin el texto «Grabando un sonido»']],
   ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
   ['v10.6', '25 oct 2026', ['Siesta: el nombre a la izquierda y el interruptor a la derecha']],
