@@ -243,6 +243,10 @@ details.instr>summary{list-style:none;display:flex;align-items:center;gap:8px;fo
 details.instr>summary::-webkit-details-marker{display:none}
 details.instr>summary::after{content:"";margin-left:auto;flex:none;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #A78BFA}
 details.instr[open]>summary::after{border-top:0;border-bottom:11px solid #A78BFA}
+/* «sí / no» a la derecha, junto al triángulo */
+summary .estado{margin-left:auto;flex:none;font-size:15px;font-weight:700;padding:3px 12px;border-radius:999px;background:#1F2937;color:#94A3B8}
+summary .estado.si{background:#14532D;color:#86EFAC}
+details.instr>summary:has(.estado)::after{margin-left:0}
 details.instr .tips,details.instr .steps{margin-top:10px}
 .retoal{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;color:var(--muted);white-space:nowrap}
 .retoal .rbtn{margin-left:auto;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:12px;padding:6px 14px;color:#C4B5FD;font-size:14px}
@@ -588,8 +592,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:var(--snore)">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
-    <li>🎧 Si usas pinganillos para el aviso «estás roncando», ponlos a cargar antes: <b>al 100 %</b> duran unas 4 horas de noche.</li>
-    <li>Todo se guarda en este móvil. Nada se sube a internet.</li>
+    <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
   </details>
 
@@ -739,12 +742,12 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="reducir" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 6px">🛌 Reducir ronquidos</h1>
-  <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz solo suena por los auriculares Bluetooth, para no despertar a nadie.</p>
-  <details class="instr card"><summary><span>🎧 Avisarme si ronco <small id="sAviso" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
+  <p class="note" style="margin:0 0 12px">Funciona mientras monitoreas la noche. La voz solo suena por los auriculares Bluetooth, para no despertar a nadie. 🎧 Ponlos a cargar antes: <b>al 100 %</b> duran unas 4 horas de noche.</p>
+  <details class="instr card"><summary><span>🎧 Avisarme si ronco<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
-  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche <small id="sMsg" style="font-weight:400;color:var(--muted)">no</small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span></summary>
+  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sMsg">no</b></summary>
     <div class="row"><label for="msgOn">Activado<small id="msgTxInfo">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina…</small></label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
     <label class="cplab">Qué te digo<input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua"></label>
     <div class="msgsug" id="msgSug"></div>
@@ -753,6 +756,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="msgHoras"></div>
     <div class="row"><label for="msgJunto">Juntarlo con el aviso de ronquido<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora del mensaje, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
     <button class="btn wide" id="msgTest">▶ Probar el mensaje</button>
+  </details>
+  <details class="hist instr card">
+    <summary>📚 Historial de grabaciones <small id="histN3"></small></summary>
+    <div id="nights3"></div>
   </details>
 </section>
 
@@ -962,7 +969,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.3'; // v10.3: «Grabando…» justo debajo de la barra morada; monitoreo separado con líneas por temas; deslizar a la derecha vuelve atrás y a la izquierda ya no salta a la sección siguiente
+const VERSION = 'v10.4'; // v10.4: «sí / no» a la derecha, junto al triángulo; instrucciones de Monitorear sin lo de los pinganillos (va en Reducir ronquidos); historial de grabaciones también en Reducir ronquidos
+// v10.3: // v10.3: «Grabando…» justo debajo de la barra morada; monitoreo separado con líneas por temas; deslizar a la derecha vuelve atrás y a la izquierda ya no salta a la sección siguiente
 // v10.2: // v10.2: «Avisa si ronco · falta auriculares»; «Sin grabar m:ss» a la derecha de «No grabar +30 s», en el mismo renglón; sin el recuadro azul de Android al tocar
 // v10.1: // v10.1: «No grabar +30 s» (antes +5 s) y el botón enseña lo que queda sin grabar
 // v10.0: // v10.0: la música que suena (con ❚❚ y ■) justo debajo de los iconos de arriba; nueva sección «Reducir ronquidos» en Inicio: «Avisarme si ronco» y «Un mensaje en la noche» (cada cierto tiempo o a horas fijas, y junto al aviso de ronquido si cae a ±15 min)
@@ -1076,7 +1084,7 @@ for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => 
 const VOZ_OK = !!(AND && AND.decir), FRASE = 'Estás roncando. Cambia de posición.';
 function pintaAviso() {
   for (const id of ['avisoRonco', 'avisoRonco2']) { $(id).checked = VOZ_OK && !!cfg.avisoRonco; $(id).disabled = !VOZ_OK; }
-  $('sAviso').textContent = VOZ_OK && cfg.avisoRonco ? 'sí' : 'no';
+  $('sAviso').textContent = VOZ_OK && cfg.avisoRonco ? 'sí' : 'no'; $('sAviso').classList.toggle('si', $('sAviso').textContent === 'sí');
   $('sAvisoAj').textContent = '· ' + $('sAviso').textContent;
   if (!VOZ_OK) document.querySelectorAll('.avisoTx').forEach(x => x.textContent = AND
     ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.'
@@ -1145,7 +1153,7 @@ try { Object.assign(MSG, JSON.parse(localStorage.getItem('ronquino-mensaje') || 
 const msgGuarda = () => { try { localStorage.setItem('ronquino-mensaje', JSON.stringify(MSG)); } catch {} };
 function pintaMsg() {
   $('msgOn').checked = VOZ_OK && MSG.on; $('msgOn').disabled = !VOZ_OK;
-  $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no';
+  $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí');
   if (!VOZ_OK) $('msgTxInfo').textContent = AND ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.';
   if (document.activeElement !== $('msgTx')) $('msgTx').value = MSG.texto;
   $('msgSug').innerHTML = MSG_SUG.map(t => `<button type="button">${t}</button>`).join('');
@@ -1163,7 +1171,7 @@ function pintaMsg() {
   $('msgTest').hidden = !VOZ_OK;
 }
 $('msgOn').onchange = () => { MSG.on = $('msgOn').checked; msgGuarda(); if (MSG.on) { AND.prepararVoz(); AND.pedirBluetooth?.(); } pintaMsg(); };
-$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; };
+$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí'); };
 $('msgJunto').onchange = () => { MSG.junto = $('msgJunto').checked; msgGuarda(); };
 $('msgTest').onclick = () => {
   if (!MSG.texto.trim()) { aviso('Escribe primero qué quieres que te diga, o toca una de las sugerencias.'); return; }
@@ -2319,13 +2327,13 @@ $('guardar').onchange = async () => {
   $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
   renderHome();
 };
-let nightFrom = 'home'; // al volver de una noche: a «Monitorear mi sueño» o a «Estadísticas», según de dónde se abrió
+let nightFrom = 'home'; // al volver de una noche: a «Monitorear mi sueño», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
-  $('histN').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
+  $('histN').textContent = $('histN3').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
   $('misN').textContent = ns.length ? `(${ns.length})` : '';
-  for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats']]) {
+  for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats'], ['nights3', 'reducir']]) {
     $(lista).innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
     for (const n of ns) {
       const b = document.createElement('button'); b.className = 'night';
@@ -2337,7 +2345,7 @@ async function renderHome() {
       $(lista).append(b);
     }
   }
-  requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when').forEach(fitLine));
+  requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when, #nights3 .when').forEach(fitLine));
   subeNoches(); // con cuenta: sube las noches nuevas o cambiadas
 }
 
