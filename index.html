@@ -507,7 +507,9 @@ details.hist[open] summary{margin-bottom:10px}
 .tile{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
 .tile b{display:block;font-size:24px;white-space:nowrap}
 .tile b.long{font-size:19px;line-height:29px}
-.tile span{font-size:12px;color:var(--muted)}
+.tile span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile{min-width:0;padding:10px 3px}
+.tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
 canvas{width:100%;height:90px;display:block}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
@@ -879,11 +881,11 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
   <div id="nScore"></div>
-  <div class="card etqcard" id="nTags"></div>
+  <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <div class="tiles">
-    <div class="tile s"><b id="tSnore">0</b><span>grabaciones con ronquido</span></div>
+    <div class="tile s"><b id="tSnore">0</b><span>grabaciones/ronquidos</span></div>
     <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
-    <div class="tile v"><b id="tVoice">0</b><span>grabaciones con voz</span></div>
+    <div class="tile v"><b id="tVoice">0</b><span>grabaciones/voz</span></div>
   </div>
   <div class="card avcard" id="avCard" hidden></div>
   <div class="card tlcard" id="tlCard">
@@ -1049,7 +1051,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.4'; // v11.4: «⏰ Alarma para despertarte» desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca
+const VERSION = 'v11.5'; // v11.5: recuadros de la noche en dos renglones («grabaciones/ronquidos», «grabaciones/voz»); «¿Algo especial esta noche?» plegable y plegado al abrir la noche
+// v11.4: // v11.4: «⏰ Alarma para despertarte» desplegable en Saber si ronco, Reducir ronquidos y Dormir con quien ronca
 // v11.3: // v11.3: en cada grabación, «33 % probable» delante de la etiqueta
 // v11.2: // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
 // v11.1: // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
@@ -2406,8 +2409,8 @@ function pintaEtiquetas(n) {
   const box = $('nTags'); if (!box) return;
   if (n.fuente !== 'micro') { box.innerHTML = ''; return; }
   const sel = new Set(n.tags || []);
-  box.innerHTML = `<div class="etqtit">🏷️ ¿Algo especial esta noche? <small>Toca lo que pasó: así verás qué te hace roncar más</small></div>
-    <div class="etqs">${todasEtiq().map(e => `<button type="button" data-e="${e.id.replace(/"/g, '&quot;')}" class="${sel.has(e.id) ? 'on' : ''}">${e.t.replace(/</g, '&lt;')}</button>`).join('')}<button type="button" class="mas" id="etqMas">＋ Otra</button></div>
+  $('nTagsN').textContent = sel.size ? String(sel.size) : 'no'; $('nTagsN').classList.toggle('si', !!sel.size);
+  box.innerHTML = `<div class="etqs">${todasEtiq().map(e => `<button type="button" data-e="${e.id.replace(/"/g, '&quot;')}" class="${sel.has(e.id) ? 'on' : ''}">${e.t.replace(/</g, '&lt;')}</button>`).join('')}<button type="button" class="mas" id="etqMas">＋ Otra</button></div>
     <form id="etqForm" hidden><input class="cpin" id="etqIn" maxlength="24" placeholder="Por ejemplo: ventana abierta"><button class="btn">Añadir</button></form>`;
   box.querySelectorAll('[data-e]').forEach(b => b.onclick = async () => {
     const id = b.dataset.e, t = new Set(n.tags || []);
@@ -2595,8 +2598,9 @@ async function openNight(id) {
   renderStats(); drawTimeline(total); renderList();
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
   const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
+  requestAnimationFrame(() => document.querySelectorAll('#night .tile span').forEach(fitLine)); // cada texto en un renglón
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
-  $('nTags').hidden = n.fuente !== 'micro'; pintaEtiquetas(n);
+  $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
   requestAnimationFrame(tlSticky);
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
@@ -4050,6 +4054,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.5', '25 oct 2026', ['«¿Algo especial esta noche?» se pliega', 'Recuadros de la noche más cortos: «grabaciones/ronquidos»']],
   ['v11.4', '25 oct 2026', ['«⏰ Alarma para despertarte» en Saber si ronco, Reducir ronquidos y Dormir con quien ronca']],
   ['v11.3', '25 oct 2026', ['En cada grabación: «33 % probable» y después lo que es (ronquido, voz…)']],
   ['v11.2', '25 oct 2026', ['Tarjeta de la mañana con la puntuación de tu noche', 'Línea con tus minutos roncando de las últimas noches', 'Etiquetas de la noche (alcohol, cena fuerte… y una tuya) para ver qué te hace roncar más']],
