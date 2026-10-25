@@ -427,7 +427,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lcuna button{flex:none;width:40px;height:34px;padding:0;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;font-size:14px}
 .state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:28px}
 .last{font-size:14px;color:var(--muted);min-height:18px;margin-bottom:12px}
-#stopBtn{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
+#stopBtn{background:#111827;border:1.5px solid #6D5BD0;color:#C4B5FD;padding:12px 26px;border-radius:14px}
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
 /* Noche */
 .back{background:none;border:0;color:var(--muted);padding:6px 0;margin-bottom:6px}
@@ -927,7 +927,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v9.8'; // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
+const VERSION = 'v9.9'; // v9.9: monitoreo sin la línea «Última grabación»; «Fin monitoreo sueño» con borde morado
+// v9.8: // v9.8: sin ventanas del sistema («La página … indica»): avisos y preguntas con el diseño de la app; «Música para dormir» (antes «canción de cuna»): a pantalla completa bajo los iconos, con volumen y minutos (5, 10 o 15); lo que suena, en un solo renglón con ❚❚ y ■
 // v9.7: // v9.7: «Probar detección» lleva dentro, en pequeño, «solo administrador»
 // v9.6: // v9.6: bienvenida con el vídeo de Luna saludando; Luna dando consejos se mueve (vídeo con fondo transparente)
 // v9.5: // v9.5: el gerente (sus emails, rol «admin» en la base de datos) ve «Probar detección» y el resumen de cuentas y países; el país se guarda en la cuenta
@@ -1410,7 +1411,6 @@ async function startListening() {
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
-    $('lastEv').textContent = `Última grabación: ${ev.tipo === 'ronquido' ? '😴 ronquido' : ev.tipo === 'voz' ? '🗣️ voz' : '🔊 ' + es(ev.top)} a las ${hhmm(night.inicio + ev.off * 1000)}`;
     $('lstate').textContent = 'Escuchando…';
   });
   const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
