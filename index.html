@@ -733,6 +733,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla" style="display:block;width:100%;max-width:340px;margin:12px auto 4px;border-radius:18px">
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
+    <li>🌊 Para medir también tu <b>sueño profundo y ligero</b>, déjalo <b>sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes: nota cuándo te mueves. <b>Debajo de la almohada no</b>: enchufado se calienta y el micro oye peor. En la mesilla, activa el 📡 sonar en Ajustes.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:var(--snore)">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
@@ -1099,6 +1100,7 @@ body.pl-on .wrap{padding-bottom:190px}
         <li>📱 Deja el móvil en la <b>mesilla</b>, cerca de tu cabeza, <b>enchufado</b> y boca arriba.</li>
         <li>🌙 Toca <b>«Empezar a monitorear»</b> y duérmete. La pantalla se queda casi negra.</li>
         <li>☀️ Por la mañana, toca <b>«Fin monitoreo sueño»</b> y mira cómo has dormido.</li>
+        <li>🌊 ¿Quieres saber también tu <b>sueño profundo y ligero</b>? Deja el móvil <b>sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes. Debajo de la almohada no: se calienta y oye peor.</li>
       </ul>
     </div>
   </div>
@@ -1149,7 +1151,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la <b>pantalla hacia arriba</b>. Si lo dejas <b>sobre el colchón</b> (o activas el 📡 sonar en Ajustes), también verás en el gráfico cuándo te mueves. Con la pantalla hacia arriba, la app nota además cuándo se enciende la luz.</div></details>
+    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la <b>pantalla hacia arriba</b>. Si lo dejas <b>sobre el colchón, en una esquina junto a la almohada</b> (nunca debajo: se calienta y oye peor), o activas el 📡 sonar en Ajustes, también verás en el gráfico cuándo te mueves. Con la pantalla hacia arriba, la app nota además cuándo se enciende la luz.</div></details>
     <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
     <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
     <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
@@ -1217,7 +1219,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.8'; // v12.8: Luna aplaudiendo se mueve; dibujo de cómo dejar el móvil en la mesilla (presentación e instrucciones de Saber si ronco)
+const VERSION = 'v12.9'; // v12.9: la curva se llama «Sueño profundo y ligero» (estimado por tus movimientos, como Sleep Cycle o Sleep as Android); para medirlo mejor, el móvil sobre el colchón
+// v12.8: // v12.8: Luna aplaudiendo se mueve; dibujo de cómo dejar el móvil en la mesilla (presentación e instrucciones de Saber si ronco)
 // v12.7: // v12.7: curva «Sueño tranquilo o inquieto» (estimación con movimientos y ruidos) en cada noche, con rato tranquilo e inquieto y a qué hora te dormiste
 // v12.6: // v12.6: recorrido de bienvenida la primera vez (3 pantallas con lo que hace la app); se puede volver a ver en Ajustes → Novedades
 // v12.5: // v12.5: sin compartir ni descargar grabaciones (solo corazón y papelera)
@@ -2740,7 +2743,7 @@ function efectoEtiquetas(validas) {
   }).join('');
 }
 
-// ---------- 🌊 Sueño tranquilo o inquieto (estimación) ----------
+// ---------- 🌊 Sueño profundo y ligero (estimado por movimientos y ruidos, como hacen Sleep Cycle o Sleep as Android) ----------
 // Por tramos de 5 minutos: movimientos (acelerómetro o sonar), ruidos que no son ronquido (voces, golpes…) y el volumen
 // por encima de lo normal de esa noche. Mucho de eso = sueño inquieto (o despierto); nada = sueño tranquilo.
 // No son fases del sueño medidas por un médico: los móviles distinguen bien dormido / despierto, pero no las fases.
@@ -2779,17 +2782,17 @@ function pintaCalma(n, evs) {
   const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
   for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 6}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
   const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
-  box.innerHTML = `<div class="calmatit">🌊 Sueño tranquilo o inquieto <small>estimación</small></div>
-    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de sueño tranquilo o inquieto">
+  box.innerHTML = `<div class="calmatit">🌊 Sueño profundo y ligero <small>estimado</small></div>
+    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de sueño profundo y ligero">
       <defs><linearGradient id="gCalma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24" stop-opacity=".55"/><stop offset=".55" stop-color="#A78BFA" stop-opacity=".35"/><stop offset="1" stop-color="#4338CA" stop-opacity=".15"/></linearGradient></defs>
       <line x1="${pl}" x2="${W - pr}" y1="${y(.25)}" y2="${y(.25)}" class="lim"/>
-      <text x="${pl + 2}" y="${pt + 9}" class="et">Inquieto</text><text x="${pl + 2}" y="${pt + h - 3}" class="et">Tranquilo</text>
+      <text x="${pl + 2}" y="${pt + 9}" class="et">Ligero</text><text x="${pl + 2}" y="${pt + h - 3}" class="et">Profundo</text>
       <polygon points="${area}" fill="url(#gCalma)"/><polyline points="${linea}" class="lin"/>
       ${marcas.join('')}
     </svg>
-    <div class="calmadatos"><span>😌 Tranquilo <b>${hm2(c.tranq)}</b></span><span>🌀 Inquieto <b>${hm2(c.inq)}</b></span></div>
+    <div class="calmadatos"><span>🌙 Profundo <b>${hm2(c.tranq)}</b></span><span>🌀 Ligero o despierto <b>${hm2(c.inq)}</b></span></div>
     ${c.dormido ? `<div class="stnote">Te dormiste hacia las <b>${hhmm(c.dormido)}</b>${c.despierto ? ` y te despertaste hacia las <b>${hhmm(c.despierto)}</b>` : ''}.</div>` : ''}
-    <div class="stnote">Sale de tus movimientos y de los ruidos de la noche. No son las fases del sueño que mide un médico.${c.conMov ? '' : ' Para afinarla, deja el móvil sobre el colchón o activa el 📡 sonar en Ajustes.'}</div>`;
+    <div class="stnote">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Es una estimación, como la de otras apps de sueño; las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>`;
 }
 
 function renderStatsHome(ns) {
@@ -4639,6 +4642,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.9', '25 oct 2026', ['La curva de la noche ahora es «Sueño profundo y ligero» (estimado)', 'Para medirlo mejor: el móvil sobre el colchón, en una esquina junto a la almohada (no debajo)']],
   ['v12.8', '25 oct 2026', ['Luna aplaude cuando tus noches van bien', 'Dibujo de cómo dejar el móvil en la mesilla']],
   ['v12.7', '25 oct 2026', ['Cada noche: curva de sueño tranquilo o inquieto (estimación) y a qué hora te dormiste']],
   ['v12.6', '25 oct 2026', ['Presentación de bienvenida la primera vez (y en Ajustes → Novedades)']],
