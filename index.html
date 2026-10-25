@@ -284,7 +284,8 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 #lunaIn::placeholder{color:#C4B5FD}
 #lunaForm button{width:46px;height:44px;border-radius:14px;border:0;background:#6D5BD0;color:#fff;font-size:20px;flex:none}
 #lunaForm #lunaMic{background:#312E81;color:#E0E7FF;display:flex;align-items:center;justify-content:center}
-#lunaForm #lunaMic.on{background:#DC2626;animation:rq-pulso 1s ease-in-out infinite}
+#lunaForm #lunaMic.on{background:#16A34A;animation:rq-pulso 1s ease-in-out infinite}
+#lunaForm:has(#lunaMic.on){border-color:#22C55E;box-shadow:0 0 0 4px #22c55e2e} /* verde: te está escuchando */
 @keyframes rq-pulso{50%{transform:scale(1.08)}}
 .lmsg.pensando{display:flex;align-items:center;gap:10px}
 .lpens{width:54px;height:auto;flex:none;animation:rq-float 3s ease-in-out infinite}
@@ -789,6 +790,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
     <li>🌊 ¿Quieres medir también tu <b>sueño profundo y ligero</b>? Actívalo arriba, en <b>«Medir también el sueño profundo»</b>.</li>
+    <li>🔇 Quita de la habitación los <b>relojes con tictac</b> y apaga los <b>aparatos que hagan ruido</b>: sus sonidos se mezclan con tus ronquidos y la IA se confunde.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:#A78BFA">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
@@ -928,6 +930,13 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="card ajd">
     <summary>🧠 Lo que ha aprendido la IA <small id="sApr"></small></summary>
     <div id="aprBody"></div>
+  </details>
+  <details class="card ajd" id="ayudaDet">
+    <summary><span>🆘 Ayuda y soporte</span></summary>
+    <p class="note" style="margin:8px 0 10px">¿Algo no funciona o tienes una duda? Escríbenos y te ayudamos. El email ya lleva puesto que es de Amable Sleep y la versión que tienes.</p>
+    <a class="btn wide" id="ayudaMail" href="#" style="display:block;text-align:center;text-decoration:none;color:var(--text)">✉️ Escribir a soporte</a>
+    <a class="btn wide" id="ayudaWa" href="#" hidden style="display:block;text-align:center;text-decoration:none;margin-top:8px;color:var(--text)">💬 Escribir por WhatsApp</a>
+    <p class="note" style="margin:10px 0 0">Email: <b>info@practicaintegral.club</b></p>
   </details>
   <details class="card ajd" id="novDet">
     <summary>🆕 Novedades <small id="sNov"></small></summary>
@@ -1278,7 +1287,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.9'; // v13.9: «Duermo solo» pasa a llamarse «Aviso por altavoz o auricular»; debajo dice por dónde sale ahora
+const VERSION = 'v14.0'; // v14.0: consejo de quitar relojes con tictac y aparatos ruidosos; micrófono de Luna en verde al escuchar; «🆘 Ayuda y soporte» en Ajustes (email con el asunto ya puesto)
+// v13.9: // v13.9: «Duermo solo» pasa a llamarse «Aviso por altavoz o auricular»; debajo dice por dónde sale ahora
 // v13.8: // v13.8: «Dormiste a las … y despertaste a las …» como texto; los 3 recuadros del sueño igual de ordenados (icono / nombre / cifra)
 // v13.7: // v13.7: colores como sus emojis: ronquido 😴 amarillo, voz 🗣️ azul; el aviso «estás roncando» pasa a rosa con 🎧 (antes amarillo, se confundía) y el movimiento a verde
 // v13.6: // v13.6: el aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1) con la IA por encima del 80 % (antes 85 %), contando minutos y no grabaciones, y se explica en «Avisos» de la noche; títulos de la noche en un renglón
@@ -4795,6 +4805,16 @@ function abreTour(alAcabar) {
   $('tSaltar').onclick = fin;
 }
 
+// 🆘 Ayuda y soporte: email (y WhatsApp cuando haya número) con el asunto y la versión ya puestos
+const SOPORTE = {email: 'info@practicaintegral.club', wa: ''}; // wa: número con prefijo, sin «+» (p. ej. 34600000000)
+function pintaAyuda() {
+  let ver = 'web ' + VERSION; try { if (AND) ver += ' · app ' + AND.version(); } catch {}
+  const cuerpo = `Hola, os escribo por Amable Sleep.\n\nMe pasa esto:\n\n\n— Versión: ${ver}`;
+  $('ayudaMail').href = `mailto:${SOPORTE.email}?subject=${encodeURIComponent('Amable Sleep · Ayuda')}&body=${encodeURIComponent(cuerpo)}`;
+  $('ayudaWa').hidden = !SOPORTE.wa; $('ayudaWa').style.display = SOPORTE.wa ? 'block' : 'none'; // (el display del estilo ganaba a hidden)
+  if (SOPORTE.wa) $('ayudaWa').href = `https://wa.me/${SOPORTE.wa}?text=${encodeURIComponent('Hola, os escribo por Amable Sleep (' + ver + '). Me pasa esto: ')}`;
+}
+
 // 🎨 Fondo de la app (Ajustes): cambia los colores base; la pantalla de la noche (#listen) sigue en negro
 const TEMAS = {
   noche: {n: 'Noche', bg: '#0B1020', card: '#141B2E', card2: '#1B2440', line: '#26304D'},
@@ -4817,6 +4837,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.0', '25 oct 2026', ['Consejo: quita los relojes con tictac y los aparatos que hagan ruido', 'Luna: el micrófono se pone verde mientras te escucha', '🆘 Ayuda y soporte en Ajustes']],
   ['v13.9', '25 oct 2026', ['«Duermo solo» ahora se llama «Aviso por altavoz o auricular», y dice por dónde sale']],
   ['v13.8', '25 oct 2026', ['Sueño: «Dormiste a las … y despertaste a las …» en texto, y los 3 recuadros bien alineados']],
   ['v13.7', '25 oct 2026', ['Colores como sus emojis: 😴 ronquido en amarillo, 🗣️ voz en azul', 'El aviso «estás roncando» ahora es rosa con 🎧, para no confundirlo con la voz; el movimiento, verde', 'En la pantalla de monitoreo ya no se selecciona texto al dejar el dedo apretado']],
@@ -4866,6 +4887,7 @@ const NOVEDADES = [
   $('sNov').textContent = '· ' + VERSION;
   $('novList').insertAdjacentHTML('beforebegin', '<button class="btn wide" id="verTour" style="margin:4px 0 8px">🎬 Ver otra vez la presentación</button>');
   $('verTour').onclick = () => abreTour();
+  pintaAyuda();
   $('novList').innerHTML = NOVEDADES.map(([v, f, l]) => `<div class="nov"><b>${v} · ${f}</b><ul>${l.map(x => `<li>${x}</li>`).join('')}</ul></div>`).join('');
 }
 // ---------- Arranque ----------
