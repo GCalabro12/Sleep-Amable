@@ -322,8 +322,13 @@ summary .estado.si{background:#14532D;color:#86EFAC}
 details.instr>summary:has(.estado:not([hidden]))::after{margin-left:0}
 /* Títulos de los desplegables en un renglón entero: si no caben con el sí/no y el triángulo, estos bajan a la derecha */
 details.instr>summary,details.ajd>summary{flex-wrap:wrap;row-gap:4px}
-summary.dos>span:first-child{flex-basis:100%}
-summary.dos>span:first-child:has(small){display:contents} /* el subtítulo pequeño baja y el sí/no se pone a su lado */
+details.instr>summary>span:first-child,details.ajd>summary>span:first-child{flex:1 1 0;min-width:0} /* si cabe, comparte renglón con el sí/no */
+details.instr>summary.dos>span:first-child,details.ajd>summary.dos>span:first-child{flex:1 1 100%}
+/* con subtítulo pequeño: el sí/no y el triángulo se ponen a su altura, a la derecha */
+summary.dos:has(>span>small){position:relative}
+summary.dos>span:first-child>small{padding-right:84px}
+summary.dos:has(>span>small)>.estado{position:absolute;right:24px;bottom:-3px}
+details>summary.dos:has(>span>small)::after{position:absolute;right:0;bottom:6px}
 details.hist>summary>small{margin-left:auto;flex:none;font-weight:400;color:var(--muted)}
 details.hist>summary:has(>small)::after{margin-left:0}
 details.instr .tips,details.instr .steps{margin-top:10px}
@@ -962,7 +967,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card profrap"><summary><span>🌊 Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
   <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">🛏️ Duermo solo</span><small>Aviso y mensaje por el altavoz del móvil</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas 1 minuto roncando (y la IA está muy segura, al 85 % o más), una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
   <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sMsg">no</b></summary>
@@ -1269,7 +1274,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v13.5'; // v13.5: en cada grabación, «41 % probable de ser» + la etiqueta (el % más pegado al número)
+const VERSION = 'v13.6'; // v13.6: el aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1) con la IA por encima del 80 % (antes 85 %), contando minutos y no grabaciones, y se explica en «Avisos» de la noche; títulos de la noche en un renglón
+// v13.5: // v13.5: en cada grabación, «41 % probable de ser» + la etiqueta (el % más pegado al número)
 // v13.4: // v13.4: el sueño profundo y ligero, en bloques (despierto / ligero / profundo) como los relojes de sueño, con los ciclos de unos 90 min numerados y si te despertaste en sueño ligero o profundo
 // v13.3: // v13.3: curva de sueño: ⓘ con la explicación y «Dormiste a las / Despertaste a las» (inicio y fin del monitoreo); «Duermo solo» en un renglón con su interruptor; los títulos de los desplegables ocupan el renglón entero (el sí/no y el triángulo bajan un poco cuando no caben)
 // v13.2: // v13.2: «🌊 Medir también el sueño profundo» (sí / no) en Saber si ronco y Reducir ronquidos: con «sí» se abre el dibujo y lo que hay que hacer; la curva de la noche solo sale si estaba activado
@@ -1460,10 +1466,10 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
   auricAntes = a;
 }, 3000);
 // «Estás roncando» (se mira cada medio segundo mientras se monitorea):
-// 1.º aviso cuando llevas 1 minuto roncando; si sigues, otro cada 30 segundos de ronquido;
+// 1.º aviso cuando llevas 2 minutos roncando (v13.6; antes 1); si sigues, otro cada 30 segundos de ronquido;
 // con 30 segundos seguidos sin roncar se vuelve a empezar (otra vez 1 minuto para el primer aviso).
-const AVISO_PRIMERO = 60, AVISO_SIGUE = 30, AVISO_PAUSA = 30;
-const AVISO_SEGURO = .85; // solo cuenta como ronquido para avisar si la IA está segura al 85 % o más (para no despertarte sin motivo)
+const AVISO_PRIMERO = 120, AVISO_SIGUE = 30, AVISO_PAUSA = 30;
+const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 function avisoTick(det, dt) {
   if (!VOZ_OK || !cfg.avisoRonco || !live.night) return;
@@ -2714,7 +2720,7 @@ function puntuacion(n, prev) {
   }
   if (n.mov) {
     const m = n.mov.length;
-    partes.push({k: 'calma', t: '🏃 Calma', v: `${m} ${m === 1 ? 'movimiento' : 'movimientos'}`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
+    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
   }
   const pesos = partes.reduce((a, p) => a + p.peso, 0);
   return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
@@ -3050,7 +3056,7 @@ async function openNight(id) {
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
   $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
   pintaCalma(n, curEvs);
-  requestAnimationFrame(tlSticky);
+  requestAnimationFrame(tlSticky); requestAnimationFrame(ajustaTitulos); // títulos de la noche en un renglón
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
 function tlSticky() { document.documentElement.style.setProperty('--tlh', $('tlCard').offsetHeight + 'px'); plHead(); }
@@ -3153,8 +3159,11 @@ function renderAvisoNoche() {
   $('avCard').hidden = !fx.length;
   $('avCard').open = false; // plegado: se abre al tocarlo
   if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
-    <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>` + textoEfecto(fx);
+    <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>` + textoEfecto(fx)
+    + `<div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido. Cuentan los minutos que roncas, no el número de grabaciones. Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar.${cur.inicio < AVISO2_DESDE ? ' Esta noche aún saltaba al minuto y con el 85 %.' : ''}</div>`;
+  requestAnimationFrame(ajustaTitulos);
 }
+const AVISO2_DESDE = new Date(2026, 9, 25, 19, 0).getTime(); // desde la v13.6, 2 minutos (antes 1)
 async function renderAvisoStats(ns) {
   const con = ns.filter(n => (n.avisoT || []).length).slice(0, 30);
   if (!con.length) { $('avStats').hidden = true; return; }
@@ -3946,11 +3955,11 @@ function ajustaTitulos() {
     const t = s.firstElementChild;
     if (!t || t.tagName !== 'SPAN' || !s.offsetParent) return;
     s.classList.remove('dos');
-    const ws = t.style.whiteSpace, fs = t.style.flexShrink;
-    t.style.whiteSpace = 'nowrap'; t.style.flexShrink = '0';
+    const ws = t.style.whiteSpace, fs = t.style.flex, sub = t.querySelector('small'), sd = sub?.style.display;
+    t.style.whiteSpace = 'nowrap'; t.style.flex = '0 0 auto'; if (sub) sub.style.display = 'none'; // se mide solo el título (el subtítulo va debajo)
     const otros = [...s.children].filter(x => x !== t && !x.hidden && x.offsetParent);
     const necesita = t.scrollWidth + otros.reduce((a, x) => a + x.getBoundingClientRect().width + 8, 0) + 24;
-    t.style.whiteSpace = ws; t.style.flexShrink = fs;
+    t.style.whiteSpace = ws; t.style.flex = fs; if (sub) sub.style.display = sd;
     if (necesita > s.clientWidth) s.classList.add('dos');
   });
 }
@@ -4800,6 +4809,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v13.6', '25 oct 2026', ['El aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1), con la IA por encima del 80 %', 'En la noche, «Avisos» explica cuándo salta', 'Títulos de la noche en un solo renglón', '«Calma» pasa a «Movimiento»: «22 mov.» (toca para ver qué es)']],
   ['v13.5', '25 oct 2026', ['En cada grabación: «41 % probable de ser 😴 Ronquido»']],
   ['v13.4', '25 oct 2026', ['🧱 El sueño profundo y ligero, en bloques, con los ciclos de unos 90 minutos numerados', 'Te dice si te despertaste en sueño ligero o profundo', 'En horizontal: la noche ocupa todo el ancho y el reproductor, 2 filas (play más pequeño, «¿Acierta?» a la derecha)']],
   ['v13.3', '25 oct 2026', ['«Duermo solo» más compacto', 'Los títulos de los desplegables, en un renglón entero', 'Sueño profundo y ligero: la explicación sale al tocar la ⓘ; debajo, a qué hora dormiste y despertaste']],
