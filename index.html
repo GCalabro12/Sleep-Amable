@@ -1294,7 +1294,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v14.5'; // v14.5: en Mi cuenta, «👑 Administrador de la app» (antes «Gerente»)
+const VERSION = 'v14.6'; // v14.6: en Mi cuenta, «Tipo de cuenta» en vez de «Papel»
+// v14.5: // v14.5: en Mi cuenta, «👑 Administrador de la app» (antes «Gerente»)
 // v14.4: // v14.4: «¿Acierta? Sí / No» de las grabaciones también solo para el administrador («solo admin»)
 // v14.3: // v14.3: «🧠 Lo que ha aprendido la IA» solo se ve en la cuenta del gerente (la IA sigue aprendiendo para todos)
 // v14.2: // v14.2 + APK 4.2 (Android 16 para Google Play; «Recomendar» abre el menú de compartir del móvil): en Ajustes, «🌐 Amable Sleep Web y compartir»: el enlace a la web y un botón para recomendar la app
@@ -4482,7 +4483,7 @@ function pintaCuenta() {
     <form class="cuform" id="cuF-pass" hidden><label class="cplab"${sinPass ? ' hidden' : ''}>Contraseña actual<input class="cpin" name="actual" type="password" autocomplete="current-password"></label>
       <label class="cplab">Contraseña nueva <small>(al menos 6 letras o números)</small><input class="cpin" name="nueva" type="password" autocomplete="new-password"></label>
       <p class="cperr" hidden></p><button class="btn wide cugo">Guardar contraseña nueva</button></form>
-    ${sesion.admin ? `<div class="cufila"><span><small>Papel</small>👑 Administrador de la app</span><button type="button" class="btn" id="cuAdmin">Cuentas y países</button></div><div id="cuAdminRes" class="note" hidden></div>` : ''}
+    ${sesion.admin ? `<div class="cufila"><span><small>Tipo de cuenta</small>👑 Administrador de la app</span><button type="button" class="btn" id="cuAdmin">Cuentas y países</button></div><div id="cuAdminRes" class="note" hidden></div>` : ''}
     <p class="note" style="margin:12px 0 10px">Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
     <button class="btn wide" id="cuSalir">Salir de la cuenta</button>
     <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
@@ -4861,6 +4862,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.6', '25 oct 2026', ['En Mi cuenta pone «Tipo de cuenta» en vez de «Papel»']],
   ['v14.5', '25 oct 2026', ['En Mi cuenta pone «Administrador de la app»']],
   ['v14.4', '25 oct 2026', ['«¿Acierta? Sí / No» de las grabaciones, solo para el administrador']],
   ['v14.3', '25 oct 2026', ['«Lo que ha aprendido la IA» queda solo para el administrador de la app (con el texto «solo administrador»)']],
