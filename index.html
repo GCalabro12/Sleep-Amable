@@ -328,6 +328,40 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 #napScr .nclock{font-size:72px;font-weight:200;color:#CBD5E1;font-variant-numeric:tabular-nums}
 #napScr .ntx{color:var(--dim);margin:6px 0 30px}
 #napScr button{background:#111827;border:1px solid #1F2937;color:#94A3B8;padding:12px 26px;border-radius:14px}
+.manana .mtit{font-weight:600;margin-bottom:8px}
+#nScore .manana{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.mtop{display:flex;align-items:center;gap:14px}
+.mtop b{display:block;font-size:19px}
+.mtop small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.anillo{width:84px;height:84px;flex:none}
+.anillo circle{fill:none;stroke-width:8}
+.anillo .fondo{stroke:#1F2937}
+.anillo .valor{stroke-linecap:round}
+.anillo text{fill:var(--text);font-size:22px;font-weight:800}
+.anillo.ok .valor{stroke:#4ADE80} .anillo.mid .valor{stroke:#FBBF24} .anillo.bad .valor{stroke:#F87171}
+.mpartes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mp{background:var(--card2);border-radius:12px;padding:8px 10px;border-left:4px solid #64748B}
+.mp span{display:block;font-size:13px;color:var(--muted)}
+.mp b{font-size:16px}
+.mp.ok{border-left-color:#4ADE80} .mp.mid{border-left-color:#FBBF24} .mp.bad{border-left-color:#F87171}
+.lronq{width:100%;height:auto;margin-top:8px}
+.lronq .rej{stroke:#1F2937;stroke-width:1}
+.lronq text{fill:#64748B;font-size:11px}
+.lronq .lin{fill:none;stroke:#A78BFA;stroke-width:2.5;stroke-linejoin:round}
+.lronq .pt{stroke:var(--card);stroke-width:2}
+.lronq .pt.ok{fill:#4ADE80} .lronq .pt.mid{fill:#FBBF24} .lronq .pt.bad{fill:#F87171}
+.etqcard{margin-top:12px}
+.etqtit{font-weight:600;font-size:15px}
+.etqtit small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.etqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.etqs button{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:7px 11px;color:var(--text);font-size:14px}
+.etqs button.on{background:#312E81;border-color:#A78BFA;color:#fff}
+.etqs button.mas{color:#C4B5FD;border-style:dashed}
+#etqForm{display:flex;gap:8px;margin-top:10px}
+#etqForm .cpin{margin:0;flex:1}
+.efe{font-size:15px;padding:9px 10px;border-radius:12px;background:var(--card2);margin-top:8px;border-left:4px solid #64748B}
+.efe.bad{border-left-color:#F87171} .efe.ok{border-left-color:#4ADE80}
+.efe small{color:var(--muted)}
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center}
 .stbox b{display:block;font-size:20px}
@@ -636,10 +670,13 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="stats" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
+  <div class="card" id="mananaCard" hidden></div>
   <div class="card">
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
+  <div class="card"><div style="font-weight:600">📉 Tus minutos roncando</div><div id="lineaBody"></div></div>
+  <div class="card"><div style="font-weight:600">🏷️ Qué te hace roncar más</div><div id="efeBody"></div></div>
   <div class="card avcard" id="avStats" hidden></div>
   <details class="card ajd" id="misDet">
     <summary>📚 Mis noches <small id="misN"></small></summary>
@@ -832,6 +869,8 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" id="backBtn">← Volver</button>
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
+  <div id="nScore"></div>
+  <div class="card etqcard" id="nTags"></div>
   <div class="tiles">
     <div class="tile s"><b id="tSnore">0</b><span>grabaciones con ronquido</span></div>
     <div class="tile s"><b id="tSnoreMin">0</b><span>roncando en total</span></div>
@@ -1001,7 +1040,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v11.1'; // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
+const VERSION = 'v11.2'; // v11.2: tarjeta de la mañana con puntuación (horas, ronquido, regularidad, calma); línea de minutos roncando; etiquetas de la noche (y una propia) con «Qué te hace roncar más»
+// v11.1: // v11.1: grabaciones con el ▶ grande a la izquierda, la hora sin segundos, «😴 Ronquido · 33 % seguro» y la duración en pequeño abajo
 // v11.0: // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
 // v10.9: // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
 // v10.8: // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
@@ -2288,10 +2328,118 @@ const LUNA_SVG_OLD = `<svg viewBox="0 0 120 120" aria-hidden="true"><defs><mask 
   <path d="M100 26 h9 l-9 9 h9" fill="none" stroke="#A78BFA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const hm = mins => `${Math.floor(mins / 60) % 24}:${String(Math.round(mins % 60)).padStart(2, '0')}`;
 let lunaDetAbierto = true; try { lunaDetAbierto = localStorage.getItem('ronquino-lunadet') !== '0'; } catch {}
+
+// ---------- ☀️ Tarjeta de la mañana, 📉 línea de ronquido y 🏷️ etiquetas ----------
+// Puntuación de una noche (0-100) con 4 partes: horas, ronquido, regularidad y calma (movimientos).
+// prev = las noches anteriores (para la regularidad). Solo noches con micrófono de 3 horas o más.
+const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
+const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
+function puntuacion(n, prev) {
+  const h = (n.fin - n.inicio) / 3600e3, ronq = (n.segRonquido || 0) / 60, porHora = ronq / h;
+  const partes = [];
+  const sDur = h >= 7 && h <= 9 ? 100 : h < 7 ? Math.max(0, 100 - (7 - h) * 25) : Math.max(0, 100 - (h - 9) * 20);
+  partes.push({t: '🕒 Horas', v: `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`, s: sDur, peso: 35});
+  partes.push({t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(0, 100 - porHora * 8), peso: 35});
+  const ant = prev.filter(nocheValida).slice(0, 7);
+  if (ant.length >= 2) {
+    const media = ant.reduce((a, x) => a + minDesdeMediodia(x.inicio), 0) / ant.length;
+    const dif = Math.round(Math.abs(minDesdeMediodia(n.inicio) - media));
+    partes.push({t: '⏰ Regularidad', v: dif <= 5 ? 'a tu hora' : `±${dif} min`, s: Math.max(0, 100 - dif * 1.2), peso: 15});
+  }
+  if (n.mov) {
+    const m = n.mov.length;
+    partes.push({t: '🏃 Calma', v: `${m} ${m === 1 ? 'movimiento' : 'movimientos'}`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
+  }
+  const pesos = partes.reduce((a, p) => a + p.peso, 0);
+  return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
+}
+const colorNota = s => s >= 75 ? 'ok' : s >= 50 ? 'mid' : 'bad';
+function tarjetaManana(n, prev, titulo) {
+  const {total, partes} = puntuacion(n, prev), c = colorNota(total);
+  const frase = total >= 85 ? '¡Noche estupenda!' : total >= 70 ? 'Buena noche' : total >= 50 ? 'Noche regular' : 'Noche difícil';
+  const R = 34, L = 2 * Math.PI * R;
+  return `<div class="manana">
+    ${titulo ? `<div class="mtit">${titulo}</div>` : ''}
+    <div class="mtop"><svg class="anillo ${c}" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="${R}" class="fondo"/><circle cx="40" cy="40" r="${R}" class="valor" stroke-dasharray="${(L * total / 100).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="47" text-anchor="middle">${total}</text></svg>
+      <div><b>${frase}</b><small>Puntuación de la noche (de 0 a 100). Lo bueno es pasar de 85.</small></div></div>
+    <div class="mpartes">${partes.map(p => `<div class="mp ${colorNota(p.s)}"><span>${p.t}</span><b>${p.v}</b></div>`).join('')}</div>
+  </div>`;
+}
+// 📉 Minutos roncando de las últimas noches (hasta 14): lo bueno es que la línea baje hacia 0
+function lineaRonquido(ok) {
+  const ns = ok.slice(0, 14).reverse();
+  if (ns.length < 2) return '<div class="stnote">En cuanto tengas 2 noches de más de 3 horas, aquí verás la línea de tus minutos roncando.</div>';
+  const W = 320, H = 130, pl = 30, pr = 8, pt = 10, pb = 24;
+  const v = ns.map(n => (n.segRonquido || 0) / 60), max = Math.max(10, ...v);
+  const x = i => pl + (W - pl - pr) * (ns.length === 1 ? .5 : i / (ns.length - 1)), y = m => pt + (H - pt - pb) * (1 - m / max);
+  const pts = v.map((m, i) => `${x(i).toFixed(1)},${y(m).toFixed(1)}`).join(' ');
+  const dia = n => new Date(n.inicio - 6 * 3600e3).toLocaleDateString('es-ES', {weekday: 'short'}).replace('.', '').slice(0, 2);
+  const marcas = [0, Math.round(max / 2), Math.round(max)];
+  return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutos roncando de las últimas noches">
+    ${marcas.map(m => `<line x1="${pl}" x2="${W - pr}" y1="${y(m)}" y2="${y(m)}" class="rej"/><text x="${pl - 6}" y="${y(m) + 4}" text-anchor="end">${m}</text>`).join('')}
+    <polyline points="${pts}" class="lin"/>
+    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><text x="${x(i)}" y="${H - 6}" text-anchor="middle">${dia(ns[i])}</text>`).join('')}
+  </svg>
+  <div class="stnote">Minutos roncando cada noche. Lo bueno es que la línea baje hacia 0. ${v.at(-1) <= v[0] ? '👍 Vas a mejor que al principio.' : 'Esta última noche roncaste más que al principio.'}</div>`;
+}
+// 🏷️ Etiquetas de la noche: un toque para marcar lo que pudo influir; hay una que escribes tú
+const ETIQUETAS = [
+  {id: 'alcohol', t: '🍷 Alcohol'}, {id: 'cena', t: '🍝 Cena fuerte'}, {id: 'cafe', t: '☕ Café por la tarde'},
+  {id: 'pastilla', t: '💊 Pastilla para dormir'}, {id: 'resfriado', t: '🤧 Resfriado'}, {id: 'estres', t: '😟 Estrés'},
+  {id: 'deporte', t: '🏃 Deporte'}, {id: 'boca', t: '🛌 Dormí boca arriba'}
+];
+let etiqPropias = []; try { etiqPropias = JSON.parse(localStorage.getItem('ronquino-etiquetas') || '[]'); } catch {}
+const todasEtiq = () => [...ETIQUETAS, ...etiqPropias.map(t => ({id: 'p:' + t, t: '🏷️ ' + t}))];
+const nombreEtiq = id => todasEtiq().find(e => e.id === id)?.t || (id.startsWith('p:') ? '🏷️ ' + id.slice(2) : id);
+function pintaEtiquetas(n) {
+  const box = $('nTags'); if (!box) return;
+  if (n.fuente !== 'micro') { box.innerHTML = ''; return; }
+  const sel = new Set(n.tags || []);
+  box.innerHTML = `<div class="etqtit">🏷️ ¿Algo especial esta noche? <small>Toca lo que pasó: así verás qué te hace roncar más</small></div>
+    <div class="etqs">${todasEtiq().map(e => `<button type="button" data-e="${e.id.replace(/"/g, '&quot;')}" class="${sel.has(e.id) ? 'on' : ''}">${e.t.replace(/</g, '&lt;')}</button>`).join('')}<button type="button" class="mas" id="etqMas">＋ Otra</button></div>
+    <form id="etqForm" hidden><input class="cpin" id="etqIn" maxlength="24" placeholder="Por ejemplo: ventana abierta"><button class="btn">Añadir</button></form>`;
+  box.querySelectorAll('[data-e]').forEach(b => b.onclick = async () => {
+    const id = b.dataset.e, t = new Set(n.tags || []);
+    t.has(id) ? t.delete(id) : t.add(id); n.tags = [...t];
+    await DB.put('noches', n); pintaEtiquetas(n); subeNoches();
+  });
+  $('etqMas').onclick = () => { $('etqForm').hidden = false; $('etqIn').focus(); };
+  $('etqForm').onsubmit = async ev => {
+    ev.preventDefault();
+    const t = $('etqIn').value.trim().replace(/\s+/g, ' ');
+    if (!t) return;
+    if (!etiqPropias.includes(t)) { etiqPropias.push(t); try { localStorage.setItem('ronquino-etiquetas', JSON.stringify(etiqPropias)); } catch {} }
+    n.tags = [...new Set([...(n.tags || []), 'p:' + t])];
+    await DB.put('noches', n); pintaEtiquetas(n); subeNoches();
+  };
+}
+// Qué etiquetas te hacen roncar más: minutos roncando por hora con la etiqueta frente a sin ella (2 noches de cada, mínimo)
+function efectoEtiquetas(validas) {
+  const porHora = n => ((n.segRonquido || 0) / 60) / ((n.fin - n.inicio) / 3600e3);
+  const ids = [...new Set(validas.flatMap(n => n.tags || []))];
+  const res = [];
+  for (const id of ids) {
+    const con = validas.filter(n => (n.tags || []).includes(id)), sin = validas.filter(n => !(n.tags || []).includes(id));
+    if (con.length < 2 || sin.length < 2) continue;
+    const a = con.reduce((s, n) => s + porHora(n), 0) / con.length, b = sin.reduce((s, n) => s + porHora(n), 0) / sin.length;
+    res.push({id, dif: a - b, n: con.length});
+  }
+  res.sort((p, q) => Math.abs(q.dif) - Math.abs(p.dif));
+  if (!res.length) return '<div class="stnote">Marca etiquetas en tus noches (🍷 alcohol, 🍝 cena fuerte…). Con 2 noches con la etiqueta y 2 sin ella, aquí verás cómo te afectan.</div>';
+  return res.slice(0, 4).map(r => {
+    const d = Math.abs(r.dif).toFixed(1).replace('.', ','), igual = Math.abs(r.dif) < .3;
+    return `<div class="efe ${igual ? '' : r.dif > 0 ? 'bad' : 'ok'}">${nombreEtiq(r.id)}: ${igual ? 'roncas casi igual' : `roncas <b>${d} min por hora ${r.dif > 0 ? 'más' : 'menos'}</b>`} <small>(${r.n} noches)</small></div>`;
+  }).join('');
+}
+
 function renderStatsHome(ns) {
   // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan). Las últimas 14.
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
+  $('mananaCard').hidden = !ok.length;
+  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Tu última noche');
+  $('lineaBody').innerHTML = lineaRonquido(ok);
+  $('efeBody').innerHTML = efectoEtiquetas(ns.filter(nocheValida).slice(0, 60));
   if (!ok.length) {
     comunidad(ok, 0, 0, 0); renderAvisoStats(ns);
     $('statBody').innerHTML = `<div class="moontip">${luna('saluda', true)}<div class="bubble"><p>¡Hola! Soy la luna 🌙. En cuanto grabes alguna noche de más de 3 horas, te cuento cuánto duermes, si eres regular y cuánto roncas.</p></div></div>`;
@@ -2434,6 +2582,10 @@ async function openNight(id) {
     + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '')
     + (n.restaurada ? ' · recuperada de tu cuenta (las grabaciones se quedaron en el otro móvil)' : '');
   renderStats(); drawTimeline(total); renderList();
+  // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
+  const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
+  $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
+  $('nTags').hidden = n.fuente !== 'micro'; pintaEtiquetas(n);
   requestAnimationFrame(tlSticky);
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
@@ -3503,7 +3655,7 @@ const subKey = () => 'ronquino-subidas-' + (sesion?.id || '');
 function leeSubidas() { try { return JSON.parse(localStorage.getItem(subKey()) || '{}'); } catch { return {}; } }
 function guardaSubidas(m) { try { localStorage.setItem(subKey(), JSON.stringify(m)); } catch {} }
 const firmaNoche = n => [n.fin, n.ronquidos, n.voces, n.otros, n.segRonquido, n.segVoz || 0, (n.timeline || []).length,
-  n.nombre || '', n.avisos || 0, (n.mov || []).length].join('|');
+  n.nombre || '', n.avisos || 0, (n.mov || []).length, (n.tags || []).join(',')].join('|');
 let subiendo = false;
 async function subeNoches() {
   if (!sesion || subiendo) return;
@@ -3864,6 +4016,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.2', '25 oct 2026', ['Tarjeta de la mañana con la puntuación de tu noche', 'Línea con tus minutos roncando de las últimas noches', 'Etiquetas de la noche (alcohol, cena fuerte… y una tuya) para ver qué te hace roncar más']],
   ['v11.1', '25 oct 2026', ['Grabaciones más claras: ▶ grande a la izquierda, la hora sin segundos y «Ronquido · 33 % seguro»']],
   ['v11.0', '25 oct 2026', ['Nuevo en Ajustes: «Fondo de la app» con 6 colores']],
   ['v10.9', '25 oct 2026', ['«Duermo solo»: texto más claro']],
