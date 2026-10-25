@@ -169,7 +169,10 @@ body.tabs-on .wrap{padding-bottom:84px}
 #wakeUp .snz button{width:auto;flex:1;margin:0;padding:16px 0;font-size:19px}
 #wakeUp .snzT{color:#C7D2FE;font-size:15px}
 #wakeSnooze button{background:#312E81;color:#E0E7FF} #wakeOff{background:#FDE68A;color:#1E1B4B}
-.alcard{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.alcard{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+#alList .alcard+.alcard{margin-top:22px}
+#alList .alcard+.alcard::before{content:'';position:absolute;left:4px;right:4px;top:-17px;height:2px;border-radius:2px;background:#475569} /* entre alarma y alarma */
+.sepgrueso{height:4px;border-radius:4px;background:#6D5BD0;opacity:.75;margin:4px 6px 18px} /* entre música, siesta y alarmas */
 .alcard.off{opacity:.55}
 .alcard .altop{display:flex;align-items:center;gap:10px}
 .alcard input[type=time]{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:24px;font-weight:600;font-family:inherit}
@@ -649,7 +652,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
-  <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarmas y siesta</b><small>Despierta poco a poco, con tu tono</small></span></button>
+  <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarma y música para dormir</b><small>Música para dormirte, siesta y alarmas</small></span></button>
   <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector y novedades</small></span></button>
@@ -721,7 +724,9 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ALARMA -->
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarmas y siesta</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música para dormir</h1>
+  <details class="instr card" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
+  <div class="sepgrueso"></div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)">
@@ -742,12 +747,13 @@ body.pl-on .wrap{padding-bottom:190px}
       </ol>
     </details>
   </div>
+  <div class="sepgrueso"></div>
   <div class="card">
     <div style="font-weight:600;font-size:17px;margin-bottom:10px">⏰ Alarmas</div>
     <div id="alList"></div>
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
-  <div class="moontip"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble" id="alInfo"></div></div>
+  <div class="moontip" hidden><div class="bubble" id="alInfo"></div></div><!-- quitado (Gustavo): ya se sabe que suenan con la app cerrada -->
 </section>
 
 <div id="toast" class="fuera"></div>
@@ -834,7 +840,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="aprende" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">📚 Aprende sobre el sueño</h1>
-  <div class="moontip" style="margin:0 0 14px"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble"><p>Fichas cortas, de un minuto, para entender tu sueño y tus ronquidos. Cada una trae algo que probar esta semana. Si te queda una duda, pregúntame.</p></div></div>
+  <div class="moontip" style="margin:0 0 14px"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble"><p>Fichas cortas, de un minuto, para entender tu sueño y tus ronquidos. Cada una trae algo que probar esta semana.</p></div></div>
   <div id="fichas"></div>
   <p class="note">Información general, no sustituye a tu médico. Si te preocupa algo de tu sueño, consúltalo.</p>
 </section>
@@ -1085,7 +1091,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.0'; // v12.0: tocar un punto de la línea de ronquido enseña sus minutos; Dormir con quien ronca: «Sonidos neutros» plegable que suenan 5 s al tocarlos, «Apagar después de» en un renglón, sin YouTube
+const VERSION = 'v12.1'; // v12.1: Aprende sin «Si te queda una duda, pregúntame» (cada ficha ya tiene su botón); «Alarma y música para dormir»: arriba «🎵 Música para dormir» plegable (sin monitorear); línea gruesa entre siesta y alarmas y fina entre alarmas; sin la luna de abajo
+// v12.0: // v12.0: tocar un punto de la línea de ronquido enseña sus minutos; Dormir con quien ronca: «Sonidos neutros» plegable que suenan 5 s al tocarlos, «Apagar después de» en un renglón, sin YouTube
 // v11.9: // v11.9: línea de ronquido con día de la semana y número (ma 24) y el mes debajo; recuadros de Estadísticas con el número arriba, la unidad pequeña debajo (horas, min) y el texto abajo del todo
 // v11.8: // v11.8: ⓘ junto al título de cada sección con su explicación (plegada); Reducir ronquidos explica auriculares o altavoz; altavoz moderno en «Leer las respuestas en voz alta»
 // v11.7: // v11.7: nueva sección «📚 Aprende sobre el sueño» con 8 fichas (consejo, fuente y «Pregúntale a Luna»)
@@ -1952,6 +1959,7 @@ $('listen').addEventListener('pointerdown', e => {
 }, true);
 $('stopBtn').onclick = () => stopListening();
 $('startBtn').onclick = async () => {
+  musPara(false); // si sonaba la música sola, se para: en la noche se elige arriba, en 🎵
   // Los desplegables de arriba de la pantalla de monitoreo: «No molestar», canción de cuna y modo avión
   $('pDnd').append($('liDnd')); $('pAir').append($('liAir')); $('pCuna').append($('cunaBody'));
   const ok = !!IA.clf;
@@ -2304,6 +2312,50 @@ function endCuna(now) {
   if (live.det) live.det.muteUntil = live.det.samples / SR + 2;
   muteTick();
 }
+
+// 🎵 Música para dormir sola (en «Alarma y música para dormir»): para quien solo quiere música, sin monitorear.
+// Suena los minutos elegidos (5, 10 o 15), se va apagando al final y usa el mismo volumen que en el monitoreo.
+const MUS = {au: null, c: null, fin: 0, t: null};
+function musPara(suave) {
+  if (!MUS.au) return;
+  const au = MUS.au; clearInterval(MUS.t); MUS.au = null; MUS.c = null;
+  if (!suave) { au.pause(); pintaMusica(); return; }
+  const v0 = au.volume, t0 = Date.now();
+  const f = setInterval(() => { const k = (Date.now() - t0) / 1000; au.volume = Math.max(0, v0 * (1 - k)); if (k >= 1) { clearInterval(f); au.pause(); } }, 50);
+  pintaMusica();
+}
+function musToca(c) {
+  if (MUS.c?.id === c.id) { musPara(true); return; } // otro toque a la que suena: se para
+  musPara(false); stopCunaPrev();
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = cunaVol;
+  au.play().catch(() => {});
+  Object.assign(MUS, {au, c, fin: Date.now() + cunaMin * 60e3});
+  MUS.t = setInterval(() => {
+    const queda = (MUS.fin - Date.now()) / 1000;
+    if (queda <= CUNA_FADE && MUS.au) MUS.au.volume = Math.max(0, cunaVol * queda / CUNA_FADE);
+    if (queda <= 0) { musPara(false); return; }
+    const q = $('musQueda'); if (q) q.textContent = `quedan ${Math.floor(queda / 60)}:${String(Math.floor(queda % 60)).padStart(2, '0')}`;
+  }, 250);
+  pintaMusica();
+}
+function pintaMusica() {
+  const box = $('musBody'); if (!box) return;
+  $('musSum').textContent = MUS.c ? '▶ ' + MUS.c.name : 'no'; $('musSum').classList.toggle('si', !!MUS.c);
+  box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
+    ${MUS.c ? `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">🎵 ${MUS.c.icon} ${MUS.c.name} · <span id="musQueda"></span></span><button type="button" id="musStop" aria-label="Parar">■</button></div>` : ''}
+    <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="musVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
+    <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
+    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${c.icon}</b>${c.name}${MUS.c?.id === c.id ? '<small>🔊 sonando · ■</small>' : ''}</button>`).join('')}</div>`;
+  $('musVol').oninput = e => { cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {} if (MUS.au && MUS.fin - Date.now() > CUNA_FADE * 1000) MUS.au.volume = cunaVol; };
+  box.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
+    cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
+    if (MUS.au) MUS.fin = Date.now() + cunaMin * 60e3; // la que suena vuelve a contar con los minutos nuevos
+    pintaMusica();
+  });
+  box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
+  if ($('musStop')) $('musStop').onclick = () => musPara(true);
+}
+pintaMusica();
 
 // ---------- Analizar un archivo de audio ----------
 $('fileBtn').onclick = () => $('fileIn').click();
@@ -4198,6 +4250,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.1', '25 oct 2026', ['«Alarma y música para dormir»: música para dormirte sin monitorear, plegada arriba', 'Líneas que separan la siesta y cada alarma']],
   ['v12.0', '25 oct 2026', ['Línea de ronquido: toca un punto para ver sus minutos', 'Dormir con quien ronca: «Sonidos neutros» que se oyen 5 segundos al tocarlos']],
   ['v11.9', '25 oct 2026', ['Estadísticas: recuadros más ordenados (número, unidad y texto abajo)', 'La línea de ronquido enseña el día (ma 24) y el mes']],
   ['v11.8', '25 oct 2026', ['Botón ⓘ junto al título de cada sección con su explicación', 'Altavoz moderno en «Leer las respuestas en voz alta»']],
