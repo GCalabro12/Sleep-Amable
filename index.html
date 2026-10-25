@@ -577,7 +577,7 @@ canvas{width:100%;height:90px;display:block}
 .ev.sel{background:#1E1B4B}
 .ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
 .ev .acts .fav{color:#94A3B8}
-.ev .acts .fav.on{color:#FB923C;border-color:#FB923C;background:#431407}
+.ev .acts .fav.on{color:#F472B6}
 .pick{width:26px;height:26px;flex:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:7px;border:2px solid #64748B;background:transparent;color:#fff;font-size:16px;font-weight:800;line-height:1}
 .pick.on{background:#6D5BD0;border-color:#6D5BD0}
 .pick{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
@@ -593,7 +593,11 @@ canvas{width:100%;height:90px;display:block}
 .tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.otro{color:var(--muted)}
 .ev .meta{font-size:12px;color:var(--dim)}
 .ev .acts{margin-left:auto;display:flex;gap:6px}
-.ev .acts button,.ev .acts a{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 9px;font-size:14px;color:var(--text);text-decoration:none}
+.ev .acts button,.ev .acts a{display:inline-flex;background:none;border:0;padding:6px;color:#A5B4FC;text-decoration:none}
+.ev .acts svg{width:23px;height:23px}
+.ev .acts{gap:10px}
+.ev .bot .meta{white-space:nowrap}
+.avnote{font-size:13px;color:#FDE047;margin-top:6px}
 .ev audio{width:100%;margin-top:8px;height:36px}
 .ev.playing{outline:2px solid #A78BFA;outline-offset:1px}
 /* Reproductor fijo de la noche */
@@ -602,6 +606,7 @@ canvas{width:100%;height:90px;display:block}
 #pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 #pl .bar{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:4px}
 #pl .bar input{flex:1;accent-color:#A78BFA;height:28px}
+#plWave{flex:1;height:38px;min-width:0;cursor:pointer;touch-action:none}
 #pl .ctl{display:grid;grid-template-columns:1fr 52px 60px 52px 1fr;align-items:center;gap:12px;margin-top:2px}
 #pl .ctl button{background:none;border:0;color:var(--text);font-size:24px;width:52px;height:52px;border-radius:50%;padding:0}
 #pl .ctl button:disabled{opacity:.3}
@@ -999,7 +1004,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="in">
     <div class="now" id="plNow"></div>
     <div class="plval" id="plVal" hidden></div>
-    <div class="bar"><span id="plT">0:00</span><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación"><span id="plD">0:00</span></div>
+    <div class="bar"><span id="plT">0:00</span><canvas id="plWave" aria-label="Onda del sonido: toca para avanzar"></canvas><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación" hidden><span id="plD">0:00</span></div>
     <div class="ctl">
       <button id="plBst" class="bst" title="Subir el volumen de las grabaciones">🔊 1×</button>
       <button id="plPrev" title="Anterior">⏮</button>
@@ -1139,7 +1144,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v12.3'; // v12.3: la IA aprende de tus valoraciones (huella de cada sonido + 5 vecinos más parecidos); tarjeta «🧠 Lo que ha aprendido la IA» en Ajustes
+const VERSION = 'v12.4'; // v12.4: grabaciones con iconos clásicos sin recuadro (corazón, compartir, papelera); el aviso amarillo ya no se monta encima; el reproductor enseña la onda del sonido que avanza
+// v12.3: // v12.3: la IA aprende de tus valoraciones (huella de cada sonido + 5 vecinos más parecidos); tarjeta «🧠 Lo que ha aprendido la IA» en Ajustes
 // v12.2: // v12.2: el aviso «estás roncando» solo salta si la IA está muy segura (85 % o más); en el reproductor, «¿Acierta?» ✅ / ❌ para valorar cada grabación; Alarma y música sin bordes, con líneas violetas de lado a lado; música: sin «sonando» ni nombre arriba, el icono de la que suena es ■; bienvenida al crear la cuenta: 2 casillas obligatorias (datos y privacidad) y los permisos (micrófono necesario); política de privacidad; en pantallas estrechas «Alarma y música dormir»
 // v12.1: // v12.1: Aprende sin «Si te queda una duda, pregúntame» (cada ficha ya tiene su botón); «Alarma y música para dormir»: arriba «🎵 Música para dormir» plegable (sin monitorear); línea gruesa entre siesta y alarmas y fina entre alarmas; sin la luna de abajo
 // v12.0: // v12.0: tocar un punto de la línea de ronquido enseña sus minutos; Dormir con quien ronca: «Sonidos neutros» plegable que suenan 5 s al tocarlos, «Apagar después de» en un renglón, sin YouTube
@@ -2991,6 +2997,10 @@ function drawTimeline(total) {
     g.fillStyle = '#94A3B8'; g.fillRect(TLV.start / curTotal * W, H - 2 * dpr, Math.max(4 * dpr, TLV.span / curTotal * W), 2 * dpr);
   }
 }
+const ICO_FAV = on => `<svg viewBox="0 0 24 24" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.6-1.7 4.8-9.2 9.4-9.2 9.4z"/></svg>`;
+const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg>';
+const ICO_BAJAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
+const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>';
 const TIPOS = ['ronquido', 'voz', 'otro'];
 const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : '🔊 ' + es(e.top);
 function renderList() {
@@ -3011,11 +3021,11 @@ function renderList() {
     d.innerHTML = `<button class="play big" title="Escuchar" aria-label="Escuchar">▶</button>
       <div class="evbody"><div class="top"><span class="t">${evHora(cur, e.off)}</span>${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
       <div class="bot"><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
-      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita">${e.fav ? '★' : '☆'}</button><a class="dl" title="Descargar">⬇</a><button class="del" title="Borrar">✕</button></span></div></div>`;
+      <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" title="Descargar" aria-label="Descargar">${ICO_BAJAR}</a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
     if (AND) { // en la app Android no hay descargas: se comparte (WhatsApp, correo, Drive…)
-      a.textContent = '⤴'; a.title = 'Compartir';
+      a.innerHTML = ICO_COMPARTIR; a.title = 'Compartir'; a.setAttribute('aria-label', 'Compartir');
       a.onclick = async ev => {
         ev.preventDefault();
         const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(',')[1]); fr.readAsDataURL(e.blob); });
@@ -3043,7 +3053,7 @@ function renderList() {
       e.fav = !e.fav;
       const {_url, ...rec} = e; await DB.put('eventos', rec);
       if (filter === 'fav' && !e.fav) { renderStats(); renderList(); return; }
-      const b = d.querySelector('.fav'); b.classList.toggle('on', e.fav); b.textContent = e.fav ? '★' : '☆';
+      const b = d.querySelector('.fav'); b.classList.toggle('on', e.fav); b.innerHTML = ICO_FAV(e.fav);
       renderStats();
     };
     d.querySelector('.tag').onclick = async () => {
@@ -3060,8 +3070,8 @@ function renderList() {
     if (suyos.length) {
       d.classList.add('avisado');
       const nota = document.createElement('div'); nota.className = 'avnote';
-      nota.textContent = `🟡 Al acabar esta grabación (${evTime(cur, suyos[0])}) se dijo «estás roncando»`;
-      d.append(nota); suyos.forEach(t => usados.add(t));
+      nota.textContent = `🟡 Al acabar se dijo «estás roncando» (${evHora(cur, suyos[0])})`;
+      d.querySelector('.evbody').append(nota); suyos.forEach(t => usados.add(t));
     }
     $('evList').append(d);
   }
@@ -3200,12 +3210,50 @@ function plSetList(list) {
   if (list.length) requestAnimationFrame(() => document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'));
   plRender();
 }
+
+// 〰️ Onda del sonido en el reproductor: barras arriba y abajo según el volumen; la parte ya oída, en violeta. Tocar = avanzar
+const ONDA = {ctx: null};
+async function plPicos(e) {
+  if (e._picos) return e._picos;
+  try {
+    ONDA.ctx ||= new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await ONDA.ctx.decodeAudioData(await e.blob.arrayBuffer());
+    const d = buf.getChannelData(0), N = 70, paso = Math.max(1, Math.floor(d.length / N)), p = [];
+    for (let i = 0; i < N; i++) { let m = 0; for (let j = i * paso; j < Math.min(d.length, (i + 1) * paso); j++) m = Math.max(m, Math.abs(d[j])); p.push(m); }
+    const max = Math.max(.02, ...p);
+    e._picos = p.map(v => Math.max(.06, v / max));
+  } catch { e._picos = Array(70).fill(.15); }
+  return e._picos;
+}
+function plOnda() {
+  const c = $('plWave'), e = PL.list[PL.i]; if (!c) return;
+  const w = c.clientWidth, h = c.clientHeight, dpr = devicePixelRatio || 1;
+  if (!w) return;
+  if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const p = e?._picos || Array(70).fill(.08), n = p.length, bw = w / n;
+  const hecho = PL.au.duration ? PL.au.currentTime / PL.au.duration : 0;
+  for (let i = 0; i < n; i++) {
+    const bh = Math.max(2, p[i] * (h - 4));
+    g.fillStyle = (i + .5) / n <= hecho ? '#A78BFA' : '#475569';
+    g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
+  }
+}
+async function plOndaNueva() { const e = PL.list[PL.i]; plOnda(); if (e) { await plPicos(e); if (PL.list[PL.i] === e) plOnda(); } }
+{
+  const c = $('plWave');
+  const ir = ev => { const r = c.getBoundingClientRect(), x = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width));
+    if (PL.au.duration) { PL.au.currentTime = x * PL.au.duration; plOnda(); } };
+  c.addEventListener('pointerdown', ev => { ir(ev); c.setPointerCapture(ev.pointerId); });
+  c.addEventListener('pointermove', ev => { if (ev.buttons) ir(ev); });
+  addEventListener('resize', () => plOnda());
+}
 function plPlay(i) {
   if (i < 0 || i >= PL.list.length) return;
   const e = PL.list[i]; PL.i = i; TLV.follow = true;
   PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
   PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
-  plGraph();
+  plGraph(); plOndaNueva();
   PL.au.play().catch(() => {});
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({title: tagTxt(e) + ' · ' + evTime(cur, e.off), artist: 'Amable Sleep'});
@@ -3256,7 +3304,7 @@ PL.au.ontimeupdate = () => {
   const d = PL.au.duration || 0;
   if (!PL.seeking) { $('plSeek').max = d; $('plSeek').value = PL.au.currentTime; }
   $('plT').textContent = mss(PL.au.currentTime); $('plD').textContent = mss(d);
-  plHead();
+  plHead(); plOnda();
 };
 PL.au.onloadedmetadata = PL.au.ontimeupdate;
 PL.au.onplay = PL.au.onpause = plRender;
@@ -4449,6 +4497,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v12.4', '25 oct 2026', ['Grabaciones más bonitas: corazón, compartir y papelera sin recuadros', 'El reproductor enseña la onda del sonido']],
   ['v12.3', '25 oct 2026', ['🧠 La IA aprende de tus valoraciones (✅ / ❌) para acertar mejor con tus ronquidos', 'En Ajustes: «Lo que ha aprendido la IA»']],
   ['v12.2', '25 oct 2026', ['Bienvenida al crear la cuenta: tu permiso para guardar tus datos y los permisos del móvil', 'Nueva política de privacidad', 'El aviso «estás roncando» solo salta si la IA está muy segura', 'Al escuchar una grabación: «¿Acierta?» ✅ / ❌']],
   ['v12.1', '25 oct 2026', ['«Alarma y música para dormir»: música para dormirte sin monitorear, plegada arriba', 'Líneas que separan la siesta y cada alarma']],
