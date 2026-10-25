@@ -107,6 +107,10 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #novList .nov:last-child{border-bottom:0}
 #novList .nov b{display:block;color:var(--text);font-size:15px;margin-bottom:3px}
 #novList .nov ul{margin:0;padding-left:18px}
+.temas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.temas button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:13px}
+.temas button.on{border-color:#A78BFA;box-shadow:0 0 0 2px #A78BFA55}
+.temas i{width:38px;height:38px;border-radius:50%;border:2px solid #ffffff33;display:block}
 .cubor{margin-top:8px;border-color:#7F1D1D;color:#FCA5A5}
 .cufila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .cufila span{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -725,6 +729,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="btn wide" id="sonarTest">▶ Probar el sonar (10 s)</button>
     <p class="note" id="sonarRes" hidden></p>
   </details>
+  <details class="card ajd">
+    <summary>🎨 Fondo de la app <small id="sTema"></small></summary>
+    <p class="note" style="margin:6px 0 10px">Elige el color de fondo. La pantalla de la noche (monitoreo) sigue siempre en negro, para que no moleste.</p>
+    <div class="temas" id="temas"></div>
+  </details>
   <details class="card ajd" id="novDet">
     <summary>🆕 Novedades <small id="sNov"></small></summary>
     <div id="novList"></div>
@@ -987,7 +996,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v10.9'; // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
+const VERSION = 'v11.0'; // v11.0: Ajustes → «Fondo de la app» con 6 colores (el monitoreo sigue en negro)
+// v10.9: // v10.9: «Duermo solo» con «Activado · El mensaje sale por el altavoz del móvil»
 // v10.8: // v10.8: sin el texto «Grabando un sonido… / Escuchando…» (repetía lo de «● Grabando» y «Monitoreando»); en cada alarma, con el reto del código: «Escanear otro» (si no hay código guardado, lo pide al elegirlo); «Monitorear mi sueño» se llama «Saber si ronco»; el reto de la alarma ya no está en Ajustes (se elige en cada alarma)
 // v10.7: // v10.7: Ajustes sin «Avisarme si ronco» (está en Reducir ronquidos); nueva tarjeta «Novedades» con lo último de cada versión
 // v10.6: // v10.6: siesta con «😴 Siesta» a la izquierda y el interruptor a la derecha
@@ -3821,8 +3831,29 @@ runSplash();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
 
 
+// 🎨 Fondo de la app (Ajustes): cambia los colores base; la pantalla de la noche (#listen) sigue en negro
+const TEMAS = {
+  noche: {n: 'Noche', bg: '#0B1020', card: '#141B2E', card2: '#1B2440', line: '#26304D'},
+  negro: {n: 'Negro', bg: '#000000', card: '#111214', card2: '#1A1B1E', line: '#2A2C30'},
+  morado: {n: 'Morado', bg: '#160E2B', card: '#22163F', card2: '#2C1D52', line: '#3D2A6B'},
+  oceano: {n: 'Océano', bg: '#071A2B', card: '#0E2A42', card2: '#133452', line: '#1E4466'},
+  bosque: {n: 'Bosque', bg: '#0A1A14', card: '#12271F', card2: '#183328', line: '#24463A'},
+  vino: {n: 'Vino', bg: '#1E0B14', card: '#2D1220', card2: '#3A172A', line: '#52243B'}
+};
+let tema = 'noche'; try { const t = localStorage.getItem('ronquino-tema'); if (TEMAS[t]) tema = t; } catch {}
+function ponTema() {
+  const t = TEMAS[tema], r = document.documentElement.style;
+  r.setProperty('--bg', t.bg); r.setProperty('--card', t.card); r.setProperty('--card2', t.card2); r.setProperty('--line', t.line);
+  document.querySelector('meta[name=theme-color]')?.setAttribute('content', t.bg);
+  $('sTema').textContent = '· ' + t.n;
+  $('temas').innerHTML = Object.entries(TEMAS).map(([k, x]) => `<button type="button" data-t="${k}" class="${k === tema ? 'on' : ''}"><i style="background:linear-gradient(135deg,${x.line},${x.bg})"></i>${x.n}</button>`).join('');
+  $('temas').querySelectorAll('[data-t]').forEach(b => b.onclick = () => { tema = b.dataset.t; try { localStorage.setItem('ronquino-tema', tema); } catch {} ponTema(); });
+}
+ponTema();
+
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v11.0', '25 oct 2026', ['Nuevo en Ajustes: «Fondo de la app» con 6 colores']],
   ['v10.9', '25 oct 2026', ['«Duermo solo»: texto más claro']],
   ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma (y ahí puedes escanear otro código)', 'Monitoreo más limpio: sin el texto «Grabando un sonido»']],
   ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
