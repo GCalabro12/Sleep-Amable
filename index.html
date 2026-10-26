@@ -616,6 +616,8 @@ details.hist[open] summary{margin-bottom:10px}
 .tile{min-width:0;padding:10px 4px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
+.ruidocard{border-color:#78350F;background:#1C1917;font-size:14px;line-height:1.45;color:#E7E5E4;margin-top:10px}
+.ruidocard b{color:#FDBA74}
 .tile.libre{background:transparent;border:1.5px dashed var(--line);cursor:default} /* libre: aquí irán otros datos */
 /* sin seleccionar texto al dejar el dedo apretado: pantalla de monitoreo y recuadros de la noche */
 #listen,#listen *,.tile,.mp,.manana,.calmadatos,.tiles,details>summary,.ev .top,.ev .bot{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -1070,6 +1072,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando<br>en total</span></button>
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
+  <div class="card ruidocard" id="nRuido" hidden></div>
   <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard" id="avCard" hidden></details>
   <div class="card" id="calmaCard" hidden></div>
@@ -1305,7 +1308,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v14.8'; // v14.8: la IA detecta la tos (🫁, grabaciones propias); tarjeta de la mañana: Horas y Regularidad arriba, Ronquido / Voces / Tos debajo y «Otros datos» (movimiento); el 3.er recuadro de la noche queda libre
+const VERSION = 'v14.9'; // v14.9: fuera «N otros ruidos descartados»; si la habitación fue ruidosa, un aviso con los ruidos más frecuentes
+// v14.8: // v14.8: la IA detecta la tos (🫁, grabaciones propias); tarjeta de la mañana: Horas y Regularidad arriba, Ronquido / Voces / Tos debajo y «Otros datos» (movimiento); el 3.er recuadro de la noche queda libre
 // v14.7: // v14.7: en el monitoreo, «🎧 Prueba audífonos» (con ⓘ): dice «Prueba de audífonos» por los auriculares para saber que suenan
 // v14.6: // v14.6: en Mi cuenta, «Tipo de cuenta» en vez de «Papel»
 // v14.5: // v14.5: en Mi cuenta, «👑 Administrador de la app» (antes «Gerente»)
@@ -1988,7 +1992,10 @@ function makeSaver(night, onChange) {
       onChange?.(ev);
     },
     minute(db) { night.timeline.push(Math.round(db * 10) / 10); chain = chain.then(() => DB.put('noches', night)).catch(console.error); },
-    discard() { night.descartados++; },
+    discard(top) { // ruidos que no son ronquido ni voz: solo se cuentan (y cuáles son), para avisar si la habitación es ruidosa
+      night.descartados++;
+      if (top && top !== 'Silence') { night.descTop ||= {}; night.descTop[top] = (night.descTop[top] || 0) + 1; }
+    },
     done() { return chain.then(() => DB.put('noches', night)); }
   };
 }
@@ -3123,14 +3130,14 @@ async function openNight(id) {
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
   $('nTitle').textContent = nightName(n); $('nTitle').style.fontSize = ''; requestAnimationFrame(() => fitLine($('nTitle')));
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
-    + (n.descartados ? ` · ${n.descartados} otros ruidos descartados` : '')
+
     + (n.restaurada ? ' · recuperada de tu cuenta (las grabaciones se quedaron en el otro móvil)' : '');
   renderStats(); drawTimeline(total); renderList();
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
   const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
   $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
-  pintaCalma(n, curEvs);
+  pintaCalma(n, curEvs); pintaRuido(n);
   requestAnimationFrame(tlSticky); requestAnimationFrame(ajustaTitulos); // títulos de la noche en un renglón
 }
 // El gráfico queda fijo arriba: la barra de selección va justo debajo
@@ -3265,6 +3272,15 @@ function renderStats() {
     b.textContent = `${lbl[k]} (${c[k]})`; b.onclick = () => { filter = k; sel.clear(); renderStats(); renderList(); };
     $('chips').append(b);
   }
+}
+
+// 🔇 Habitación ruidosa: si hubo muchos sonidos que no eran ronquido ni voz (unos 10 por hora y 40 o más), se avisa
+function pintaRuido(n) {
+  const box = $('nRuido'); if (!box) return;
+  const h = Math.max(.5, ((n.fin || Date.now()) - n.inicio) / 36e5), d = n.descartados || 0;
+  box.hidden = !(n.fuente === 'micro' && d >= 40 && d / h >= 10); if (box.hidden) return;
+  const tops = Object.entries(n.descTop || {}).filter(([k]) => !/^Inside/.test(k)).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => es(k));
+  box.innerHTML = `🔇 <b>Esta noche hubo mucho ruido en tu habitación</b>: unos ${d} sonidos que no eran ronquido ni voz${tops.length ? ` (sobre todo ${tops.join(', ')})` : ''}. Revisa los relojes con tictac y los aparatos que hagan ruido: pueden despertarte y confundir a la IA.`;
 }
 
 // Las partes de la puntuación de la noche: al tocarlas explican qué significan
@@ -4910,6 +4926,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.9', '26 oct 2026', ['Fuera los «ruidos descartados»: si tu habitación fue ruidosa, sale un aviso con los ruidos más frecuentes']],
   ['v14.8', '26 oct 2026', ['🫁 La IA reconoce la tos: tiene sus propias grabaciones y su filtro', 'Tarjeta de la mañana más ordenada: Horas y Regularidad; Ronquido, Voces y Tos; y Otros datos', 'Arreglado: las grabaciones de voz no se contaban bien en la lista de noches']],
   ['v14.7', '26 oct 2026', ['🎧 En el monitoreo: «Prueba audífonos», para comprobar de noche que tus audífonos suenan']],
   ['v14.6', '25 oct 2026', ['En Mi cuenta pone «Tipo de cuenta» en vez de «Papel»']],
