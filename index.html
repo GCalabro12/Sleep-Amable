@@ -669,6 +669,8 @@ canvas{width:100%;height:90px;display:block}
 .legend{display:flex;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend .lgfila{flex-basis:100%;display:flex;gap:14px;white-space:nowrap} /* cada una en su renglón */
 .legend .lgfila[hidden]{display:none}
+.legend .lgfila{max-width:100%;min-width:0}
+.legend .lgcol{gap:10px} /* los cinco colores, en un renglón (si no caben, la letra encoge) */
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
@@ -1156,7 +1158,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit">🎙️ Registro de grabaciones</div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
+    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1168,7 +1170,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList" class="solo-ruidos"></div>
   <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
-  <button class="btn wide solo-ruidos" id="ajNight" hidden>🎯 Ajustar el detector con mis revisiones<small style="display:block;font-size:11px;opacity:.8">(solo administrador · con todas las que has revisado)</small></button>
+  <button class="btn wide solo-ruidos" id="ajNight" hidden>🎯 Ver el ajuste del detector<small style="display:block;font-size:11px;opacity:.8">(solo administrador · se ajusta solo con lo que revisas)</small></button>
   <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
   <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
   <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
@@ -1395,7 +1397,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.5'; // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
+const VERSION = 'v19.6'; // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
+// v19.5: // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
 // v19.4: // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
 // v19.3: // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
 // v19.2: // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
@@ -2135,9 +2138,10 @@ function reglaTipo(x, thr, k) {
   if (vo >= .3) return 'voz';
   return 'otro';
 }
-async function ajustaDetector() {
+// Busca la regla que más acierta con tus grabaciones revisadas (null si hay menos de 20)
+async function calculaAjuste() {
   const evs = (await DB.all('eventos')).filter(e => (e.val || e.fix) && typeof e.sn === 'number');
-  if (evs.length < 20) return aviso(`Hacen falta al menos 20 grabaciones revisadas en este móvil (hay ${evs.length}).`);
+  if (evs.length < 20) return {evs};
   const acierta = (t, k) => evs.filter(e => reglaTipo(e, t, k) === e.tipo).length;
   const t0 = cfg.strict || .35, k0 = cfg.brK || 0, antes = acierta(t0, k0);
   let m = {t: t0, k: k0, n: antes};
@@ -2145,21 +2149,35 @@ async function ajustaDetector() {
     for (const k of [0, .25, .5, .75, 1, 1.25, 1.5, 2, 3]) { const n = acierta(t, k);
       // a igualdad de aciertos, la más parecida a la de ahora (sin pasarse)
       if (n > m.n || (n === m.n && n > antes && Math.abs(t - t0) + k / 10 < Math.abs(m.t - t0) + m.k / 10)) m = {t, k, n}; } }
-  if (m.n <= antes) return aviso(`Con tus ${evs.length} grabaciones revisadas, la regla de ahora ya es la que más acierta: ${antes} de ${evs.length}.`);
-  const ronq = evs.filter(e => e.tipo === 'ronquido'), resto = evs.filter(e => e.tipo === 'otro');
+  return {evs, acierta, antes, m};
+}
+// 🎯 Se ajusta solo (al abrir la app y al salir de «Ruidos», donde se revisa): si otra regla acierta más, se usa esa
+async function autoAjuste() {
+  if (!sesion?.admin) return;
+  try {
+    const r = await calculaAjuste(); if (!r.m || r.m.n <= r.antes) return;
+    cfg.strict = r.m.t; cfg.brK = r.m.k; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+    pintaStrict(); pintaAprendido();
+  } catch {}
+}
+// El botón: cómo va el ajuste (no hace falta pulsarlo para que se use)
+async function ajustaDetector() {
+  await autoAjuste();
+  const r = await calculaAjuste(), N = r.evs.length;
+  if (!r.m) return aviso(`El detector se ajusta solo con tus revisiones cuando hay al menos 20 grabaciones revisadas en este móvil (ahora hay ${N}).`);
+  const ronq = r.evs.filter(e => e.tipo === 'ronquido'), resto = r.evs.filter(e => e.tipo === 'otro');
   const rq = (t, k) => ronq.filter(e => reglaTipo(e, t, k) === 'ronquido').length, rs = (t, k) => resto.filter(e => reglaTipo(e, t, k) !== 'ronquido').length;
-  if (!await confirma(`Con tus ${evs.length} grabaciones revisadas:
+  const t = cfg.strict || .35, k = cfg.brK || 0;
+  aviso(`🎯 El detector se ajusta solo con lo que revisas: no hace falta hacer nada.
 
-• Con la regla de ahora acertaba ${antes} de ${evs.length}.
-• Con la ajustada a ti acertaría ${m.n} de ${evs.length}.
+Con tus ${N} grabaciones revisadas:
+• Ajustado a ti acierta ${r.acierta(t, k)} de ${N}.
+• Con la regla de fábrica acertaría ${r.acierta(.35, 0)} de ${N}.
 
-😴 Ronquidos reconocidos: ${rq(t0, k0)} → ${rq(m.t, m.k)} de ${ronq.length}.
-😮‍💨 Respiraciones y otros ruidos que no confunde con ronquido: ${rs(t0, k0)} → ${rs(m.t, m.k)} de ${resto.length}.
+😴 Ronquidos reconocidos: ${rq(t, k)} de ${ronq.length}.
+😮‍💨 Respiraciones y otros ruidos que no confunde con ronquido: ${rs(t, k)} de ${resto.length}.
 
-¿Usar la regla ajustada?`, '🎯 Usarla', 'No')) return;
-  cfg.strict = m.t; cfg.brK = m.k; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
-  pintaStrict(); pintaAprendido();
-  aviso('🎯 Listo: desde esta noche detecta con la regla ajustada a ti.\n\nPara corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».');
+Para corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».`);
 }
 // La «Exigencia» de Ajustes: si está ajustada con tus revisiones, sale como «Ajustada a ti»
 function pintaStrict() {
@@ -2174,8 +2192,8 @@ function pintaAprendido() {
   box.innerHTML = `<p class="note" style="margin:6px 0 10px">Cuando escuchas una grabación y dices si la IA acierta (✅ / ❌), aprende de tus ronquidos, tu voz y los ruidos de tu casa. Aprende de las grabaciones hechas desde la versión 12.3.</p>
     <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🫁 <b>${c('tos')}</b> tos</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
     <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
-    <button class="btn wide" id="aprAjusta">🎯 Ajustar el detector con mis revisiones</button>
-    <p class="note" style="margin:6px 0 10px">Prueba muchas reglas con las grabaciones que has revisado y se queda con la que más acierta (sobre todo, para no confundir tu respiración con ronquidos).${cfg.brK != null ? ' ✅ Ya está ajustado a ti.' : ''}</p>
+    <button class="btn wide" id="aprAjusta">🎯 Ver el ajuste del detector</button>
+    <p class="note" style="margin:6px 0 10px">Se ajusta solo con las grabaciones que revisas (sobre todo, para no confundir tu respiración con ronquidos).${cfg.brK != null ? ' ✅ Ya está ajustado a ti.' : ''}</p>
     ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
   $('aprAjusta').onclick = ajustaDetector;
   if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
@@ -2974,6 +2992,15 @@ const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
   : (d => `Noche ${d.toLocaleDateString('es-ES', {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '')} ${d.getFullYear()}`)(new Date(n.inicio - 6 * 3600e3));
 
 // Si un texto no cabe en una línea (p. ej. con la letra grande del móvil), se achica poco a poco hasta que quepa
+// Que una línea quepa entera: encoge la letra hasta «min» px
+function encaja(el, min = 9) {
+  if (!el || !el.clientWidth) return; el.style.fontSize = '';
+  const lim = Math.min(el.clientWidth, el.parentElement?.clientWidth || 1e9);
+  let fs = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > lim + 1 && fs > min) { fs -= .5; el.style.fontSize = fs + 'px'; }
+}
+const encajaLeyenda = () => document.querySelectorAll('#tlCard .lgfila').forEach(x => encaja(x));
+addEventListener('resize', () => requestAnimationFrame(encajaLeyenda));
 function fitLine(el) {
   let fs = parseFloat(getComputedStyle(el).fontSize);
   while (el.scrollWidth > el.clientWidth + 1 && fs > 11) { fs -= .5; el.style.fontSize = fs + 'px'; }
@@ -3453,6 +3480,7 @@ const sel = new Set(); // grabaciones seleccionadas (id)
 let lastPick = null;   // la última que se marcó (para marcar tramos)
 // 🔊 Ruidos: la noche se ve como resumen; las grabaciones, al tocar «Ruidos», con «← Volver al análisis de la noche» arriba
 function verRuidos(on) {
+  if (!on && $('night').classList.contains('ruidos')) autoAjuste(); // al salir de revisar, se ajusta con lo nuevo
   $('night').classList.toggle('ruidos', on);
   window.scrollTo(0, 0);
   requestAnimationFrame(tlSticky);
@@ -3684,6 +3712,7 @@ function drawTimeline(total) {
   }
   $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
   $('lgFila').hidden = $('lgMov').hidden && $('lgAv').hidden;
+  requestAnimationFrame(encajaLeyenda);
   const col = {ronquido: '#FBBF24', voz: '#60A5FA', tos: '#F87171', otro: '#64748B'};
   for (const e of curEvs) {
     const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
@@ -5423,6 +5452,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.6', '26 oct 2026', ['🎯 El detector se ajusta solo con lo que revisas (el botón solo enseña cómo va)', 'Leyenda del registro: los colores en un renglón']],
   ['v19.5', '26 oct 2026', ['«Dormí solo» y «Dormí acompañado» en ¿Algo especial esta noche?', '🎯 Ajustar el detector, también dentro de cada noche']],
   ['v19.4', '26 oct 2026', ['🎯 Ajustar el detector con tus revisiones: para no confundir tu respiración con ronquidos', '«Revisar esta noche» usa también lo que ha aprendido la IA']],
   ['v19.3', '26 oct 2026', ['Arreglado: la onda volvía a salir toda gris en algunas grabaciones']],
@@ -5561,6 +5591,7 @@ else {
   $('apkNo').onclick = () => { $('apkBanner').hidden = true; try { localStorage.setItem('ronquino-sinApk', APK_ULTIMA); } catch {} };
 }
 await DB.open();
+setTimeout(autoAjuste, 3000); // 🎯 el detector se ajusta solo con lo que has revisado
 setTimeout(miraVersion, 4000); // también al abrir: si se ha cargado una copia vieja, se pone al día
 await vigilaNoches();
 renderHome();
