@@ -634,6 +634,14 @@ details.hist[open] summary{margin-bottom:10px}
 #listen,#listen *,.tile,.mp,.manana,.calmadatos,.tiles,details>summary,.ev .top,.ev .bot{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #listen input,#listen textarea{-webkit-user-select:text;user-select:text}
 canvas{width:100%;height:90px;display:block}
+#night:not(.ruidos) .solo-ruidos,#night.ruidos .solo-resumen{display:none !important}
+#ruidosBar{position:sticky;top:0;z-index:8;background:var(--bg);margin:0 -16px;padding:8px 16px 6px}
+#ruidosVolver{background:none;border:0;color:#C4B5FD;font-size:16px;font-weight:700;padding:6px 0}
+#night.ruidos .tlcard{top:50px}
+.ruidosbtn{display:flex;align-items:center;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;margin-top:12px}
+.ruidosbtn span{flex:1;font-weight:700;font-size:17px}
+.ruidosbtn small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.ruidosbtn b{font-size:26px;color:#A78BFA;line-height:1}
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
@@ -1088,35 +1096,37 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- NOCHE -->
 <section id="night" hidden>
-  <button class="back" id="backBtn">← Volver</button>
+  <div id="ruidosBar" class="solo-ruidos"><button type="button" id="ruidosVolver">← Volver al análisis de la noche</button></div>
+  <button class="back solo-resumen" id="backBtn">← Volver</button>
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
-  <div id="nScore"></div>
-  <div class="tiles">
+  <div id="nScore" class="solo-resumen"></div>
+  <div class="tiles solo-resumen">
     <button class="tile s" type="button" data-exp="ronq"><b id="tSnore">0</b><span>grabaciones de ronquidos</span></button>
     <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando<br>en total</span></button>
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
-  <div class="card ruidocard" id="nRuido" hidden></div>
-  <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
-  <details class="instr card avcard" id="avCard" hidden></details>
-  <div class="card" id="calmaCard" hidden></div>
+  <div class="card ruidocard solo-resumen" id="nRuido" hidden></div>
+  <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
+  <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
+  <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
-  <div class="chips" id="chips"></div>
-  <div class="selbar" id="selbar">
+  <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><b aria-hidden="true">›</b></button>
+  <div class="chips solo-ruidos" id="chips"></div>
+  <div class="selbar solo-ruidos" id="selbar">
     <button class="pick" id="selAll" aria-label="Seleccionar todas"></button>
     <span id="selTxt">Seleccionar todas</span>
     <span class="selacts" id="selActs" hidden><button id="selShare" hidden>⤴ Compartir</button><button class="del" id="selDel">🗑️ Borrar</button></span>
   </div>
-  <div id="evList"></div>
-  <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
-  <button class="btn wide" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
-  <p class="note" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
-  <div class="card" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
-  <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
+  <div id="evList" class="solo-ruidos"></div>
+  <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
+  <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
+  <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
+  <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
+  <button class="btn wide danger solo-resumen" id="delNight">🗑️ Borrar esta noche</button>
 </section>
 
 </div>
@@ -1338,7 +1348,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.8'; // v15.8: la noche guarda cuándo se revisó con el detector nuevo (se ve en la noche, solo el administrador); mientras se revisa una noche con el detector nuevo se puede ir a otras pantallas (al acabar, las cuentas quedan bien en esa noche)
+const VERSION = 'v15.9'; // v15.9: la noche es un resumen; las grabaciones van en «🔊 Ruidos» (se abre al tocarlo) con «← Volver al análisis de la noche» siempre arriba
+// v15.8: // v15.8: la noche guarda cuándo se revisó con el detector nuevo (se ve en la noche, solo el administrador); mientras se revisa una noche con el detector nuevo se puede ir a otras pantallas (al acabar, las cuentas quedan bien en esa noche)
 // v15.7: // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
 // v15.6: // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
 // v15.5: // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
@@ -2563,6 +2574,7 @@ window.atrasNativo = () => {
   if (!$('tonoPick').hidden) { $('tonoClose').onclick(); return true; }
   if (!$('ask').hidden) { $('askB').onclick(); return true; } // atrás = la opción segura (guardar)
   if (!$('prep').hidden) { $('prepNo').onclick(); return true; }
+  if (!$('night').hidden && $('night').classList.contains('ruidos')) { verRuidos(false); return true; } // de «Ruidos» al resumen
   if (!$('night').hidden) { $('backBtn').onclick(); return true; }
   if (!$('luna').hidden) { show('menu'); return true; }
   if (['home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes', 'utiles', 'aprende'].some(x => !$(x).hidden)) { show('menu'); return true; }
@@ -3227,8 +3239,18 @@ async function renderHome() {
 let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
 const sel = new Set(); // grabaciones seleccionadas (id)
 let lastPick = null;   // la última que se marcó (para marcar tramos)
+// 🔊 Ruidos: la noche se ve como resumen; las grabaciones, al tocar «Ruidos», con «← Volver al análisis de la noche» arriba
+function verRuidos(on) {
+  $('night').classList.toggle('ruidos', on);
+  window.scrollTo(0, 0);
+  requestAnimationFrame(tlSticky);
+}
+$('ruidosBtn').onclick = () => verRuidos(true);
+$('ruidosVolver').onclick = () => verRuidos(false);
+
 const REV = {id: null}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
+  $('night').classList.remove('ruidos'); // siempre se abre por el resumen
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada(); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
@@ -3312,7 +3334,7 @@ const tlUp = ev => {
   if (!tlPts.has(ev.pointerId)) return;
   const tap = tlPts.size === 1 && tlG && !tlG.moved;
   tlPts.delete(ev.pointerId);
-  if (tap && ev.type === 'pointerup') tlSeek(TLV.start + (ev.clientX - tlG.left) / tlG.w * TLV.span);
+  if (tap && ev.type === 'pointerup') { if (!$('night').classList.contains('ruidos')) verRuidos(true); tlSeek(TLV.start + (ev.clientX - tlG.left) / tlG.w * TLV.span); }
   if (tlPts.size) tlBase(); else tlG = null;
 };
 $('tl').addEventListener('pointerup', tlUp);
@@ -3369,6 +3391,7 @@ function renderStats() {
   $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${String(minR % 60).padStart(2, '0')}` : minR;
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
+  $('ruidosN').textContent = curEvs.length ? `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}: ronquidos, voces, tos…` : 'Esta noche no se grabó nada';
   renderAvisoNoche();
   const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
   const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
@@ -5054,6 +5077,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.9', '26 oct 2026', ['La noche es ahora un resumen: las grabaciones están en «🔊 Ruidos», con «← Volver al análisis de la noche» siempre arriba']],
   ['v15.8', '26 oct 2026', ['Mientras se revisa una noche con el detector nuevo, puedes ir a otras pantallas de la app', 'Al acabar, la noche dice cuándo se revisó (solo administrador)']],
   ['v15.7', '26 oct 2026', ['«Revisar con el detector nuevo», en el menú ⋮ de cada noche y solo para el administrador']],
   ['v15.6', '26 oct 2026', ['⋮ Cada noche del historial tiene sus tres puntitos, con la opción de borrarla']],
