@@ -553,7 +553,9 @@ details.hist[open] summary{margin-bottom:10px}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
-#audiBtn{flex:none;margin:0;background:#14532D;border:1px solid #4ADE80;color:#fff;font-weight:700;border-radius:16px;padding:8px 16px;font-size:15px}
+.audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
+.audifila:not(:has(button:not([hidden]))){display:none}
+#audiBtn{flex:none;margin:0;background:#1E3A8A;border:1px solid #3B82F6;color:#BFDBFE;font-weight:700;border-radius:16px;padding:8px 16px;font-size:15px} /* azul, como «Avisa si ronco» */
 #audiBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #audiBtn:disabled{opacity:.45;background:#1F2937;border-color:#475569}
 .linfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
@@ -1288,7 +1290,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <div class="prfila"><button type="button" id="pruebaBtn" hidden>🧪 Probar detección<small>solo administrador</small></button><button type="button" id="audiBtn" hidden>🎧 Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
+    <div class="prfila"><button type="button" id="pruebaBtn" hidden>🧪 Probar detección<small>solo administrador</small></button></div>
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
@@ -1306,6 +1308,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
     <hr class="lsep">
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="audifila"><button type="button" id="audiBtn" hidden>🎧 Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <hr class="lsep">
@@ -1315,7 +1318,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.2'; // v15.2: el sueño profundo con su propio icono (3 franjas escalonadas: despierto, ligero y profundo) en vez de la ola
+const VERSION = 'v15.3'; // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
+// v15.2: // v15.2: el sueño profundo con su propio icono (3 franjas escalonadas: despierto, ligero y profundo) en vez de la ola
 // v15.1: // v15.1: «🚶 Me levanté» en el monitoreo (con ⓘ): apunta cada vez que te levantas; por la mañana sale en «Otros datos»
 // v15.0: // v15.0: «Prueba audífonos» una vez, despacio (app 4.3) y sin subtítulo; la pantalla vuelve a iluminarse aunque haya un mensaje abierto; iconos y textos del monitoreo con su color (ronquido amarillo, voces azul)
 // v14.9: // v14.9: fuera «N otros ruidos descartados»; si la habitación fue ruidosa, un aviso con los ruidos más frecuentes
@@ -4956,6 +4960,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.3', '26 oct 2026', ['«Prueba audífonos» ahora está debajo de «Avisa si ronco», en azul']],
   ['v15.2', '26 oct 2026', ['El sueño profundo tiene su propio icono: tres franjas con los colores de despierto, ligero y profundo']],
   ['v15.1', '26 oct 2026', ['🚶 «Me levanté» en el monitoreo: apunta cada vez que te levantas; por la mañana sale en Otros datos']],
   ['v15.0', '26 oct 2026', ['🎧 «Prueba audífonos» lo dice una vez, más despacio y suave (app 4.3)', 'Arreglado: la pantalla del monitoreo vuelve a iluminarse aunque tengas un mensaje abierto', 'En el monitoreo, ronquido en amarillo y voces en azul, con sus iconos']],
