@@ -635,13 +635,15 @@ details.hist[open] summary{margin-bottom:10px}
 #listen input,#listen textarea{-webkit-user-select:text;user-select:text}
 canvas{width:100%;height:90px;display:block}
 #night:not(.ruidos) .solo-ruidos,#night.ruidos .solo-resumen{display:none !important}
-#ruidosBar{position:sticky;top:0;z-index:8;background:var(--bg);margin:0 -16px;padding:8px 16px 6px}
-#ruidosVolver{background:none;border:0;color:#C4B5FD;font-size:16px;font-weight:700;padding:6px 0}
-#night.ruidos .tlcard{top:50px}
+.tlruidos{display:flex;align-items:center;width:100%;background:none;border:0;color:var(--text);font:inherit;text-align:left;padding:0 0 8px;cursor:pointer}
+.tlruidos span{flex:1;font-weight:700;font-size:16px}
+.tlruidos small{font-weight:400;font-size:12px;color:var(--muted);margin-left:8px}
+.tri{flex:none;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #A78BFA}
+.tri.up{border-top:0;border-bottom:11px solid #A78BFA}
 .ruidosbtn{display:flex;align-items:center;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;margin-top:12px}
 .ruidosbtn span{flex:1;font-weight:700;font-size:17px}
 .ruidosbtn small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
-.ruidosbtn b{font-size:26px;color:#A78BFA;line-height:1}
+
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
@@ -1096,7 +1098,6 @@ body.pl-on .wrap{padding-bottom:190px}
 
 <!-- NOCHE -->
 <section id="night" hidden>
-  <div id="ruidosBar" class="solo-ruidos"><button type="button" id="ruidosVolver">← Volver al análisis de la noche</button></div>
   <button class="back solo-resumen" id="backBtn">← Volver</button>
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
@@ -1111,10 +1112,11 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
+    <button type="button" class="tlruidos solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
-  <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><b aria-hidden="true">›</b></button>
+  <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
   <div class="chips solo-ruidos" id="chips"></div>
   <div class="selbar solo-ruidos" id="selbar">
     <button class="pick" id="selAll" aria-label="Seleccionar todas"></button>
@@ -1348,7 +1350,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.2'; // v16.2: vuelven los iconos de los títulos, como antes de la v16.0 (a Gustavo le gustaban más)
+const VERSION = 'v16.3'; // v16.3: «🔊 Ruidos» se abre y se cierra como un desplegable: dentro, arriba en la parte fija (con el gráfico), «🔊 Ruidos ▲» para cerrarlo
+// v16.2: // v16.2: vuelven los iconos de los títulos, como antes de la v16.0 (a Gustavo le gustaban más)
 // v16.1: // v16.1: arreglado «Revisar con el detector nuevo» desde ⋮: abre «Ruidos» y enseña la barra de progreso
 // v16.0: // v16.0: sin iconos en los títulos de pantallas, tarjetas y desplegables (más limpio, como Sleep as Android)
 // v15.9: // v15.9: la noche es un resumen; las grabaciones van en «🔊 Ruidos» (se abre al tocarlo) con «← Volver al análisis de la noche» siempre arriba
@@ -3249,7 +3252,7 @@ function verRuidos(on) {
   requestAnimationFrame(tlSticky);
 }
 $('ruidosBtn').onclick = () => verRuidos(true);
-$('ruidosVolver').onclick = () => verRuidos(false);
+$('ruidosCerrar').onclick = () => verRuidos(false); // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
 const REV = {id: null}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
@@ -3394,6 +3397,7 @@ function renderStats() {
   $('tSnoreMin').textContent = minR >= 60 ? `${Math.floor(minR / 60)} h ${String(minR % 60).padStart(2, '0')}` : minR;
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
+  $('ruidosN2').textContent = `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}`;
   $('ruidosN').textContent = curEvs.length ? `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}: ronquidos, voces, tos…` : 'Esta noche no se grabó nada';
   renderAvisoNoche();
   const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
@@ -5081,6 +5085,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.3', '26 oct 2026', ['«🔊 Ruidos» se abre y se cierra con su triangulito; dentro, el título queda fijo arriba con el gráfico']],
   ['v16.2', '26 oct 2026', ['Vuelven los iconos en los títulos, como antes']],
   ['v16.1', '26 oct 2026', ['Arreglado: «Revisar con el detector nuevo» desde ⋮ ahora enseña cómo avanza']],
   ['v16.0', '26 oct 2026', ['Más limpia: los títulos de pantallas, tarjetas y desplegables ya no llevan iconos']],
