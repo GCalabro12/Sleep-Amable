@@ -1318,7 +1318,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.3'; // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
+const VERSION = 'v15.4'; // v15.4: la ⓘ de «Me levanté», más corta
+// v15.3: // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
 // v15.2: // v15.2: el sueño profundo con su propio icono (3 franjas escalonadas: despierto, ligero y profundo) en vez de la ola
 // v15.1: // v15.1: «🚶 Me levanté» en el monitoreo (con ⓘ): apunta cada vez que te levantas; por la mañana sale en «Otros datos»
 // v15.0: // v15.0: «Prueba audífonos» una vez, despacio (app 4.3) y sin subtítulo; la pantalla vuelve a iluminarse aunque haya un mensaje abierto; iconos y textos del monitoreo con su color (ronquido amarillo, voces azul)
@@ -1521,7 +1522,7 @@ $('levBtn').onclick = async () => {
   try { await DB.put('noches', night); } catch {}
   toast(`🚶 Apuntado: ${l.length} ${l.length === 1 ? 'vez' : 'veces'} esta noche`);
 };
-$('levInfo').onclick = () => aviso('🚶 Cada vez que te levantes por la noche (para ir al baño, beber agua u otra cosa), toca «Me levanté». Por la mañana verás cuántas veces te levantaste, en «Otros datos» de tu noche.\n\nEl móvil no puede saberlo solo: levantarse se parece mucho a darse la vuelta en la cama.');
+$('levInfo').onclick = () => aviso('🚶 Cada vez que te levantes por la noche (para ir al baño, beber agua u otra cosa), toca «Me levanté». Por la mañana verás cuántas veces te levantaste.');
 
 // 🎧 Prueba audífonos (pantalla de monitoreo): una frase por los auriculares para saber que están conectados y suenan.
 // De noche, si no oyes nada, así sabes que es porque no has roncado, no porque fallen. Solo en la app Android.
@@ -4960,6 +4961,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.4', '26 oct 2026', ['Explicación de «Me levanté» más corta']],
   ['v15.3', '26 oct 2026', ['«Prueba audífonos» ahora está debajo de «Avisa si ronco», en azul']],
   ['v15.2', '26 oct 2026', ['El sueño profundo tiene su propio icono: tres franjas con los colores de despierto, ligero y profundo']],
   ['v15.1', '26 oct 2026', ['🚶 «Me levanté» en el monitoreo: apunta cada vez que te levantas; por la mañana sale en Otros datos']],
