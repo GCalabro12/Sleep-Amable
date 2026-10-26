@@ -681,8 +681,8 @@ canvas{width:100%;height:90px;display:block}
 .ev .bot .t{font-size:17px}
 .plval{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;margin:4px 0 8px;font-size:14px;color:var(--muted)}
 .plval button{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:5px 8px;color:var(--text);font-size:13px;white-space:nowrap}
-.plops{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;width:100%}
-.plops button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;font-size:11.5px;min-width:0;overflow:hidden}
+.plops{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;width:100%;min-width:0}
+.plops button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 1px;font-size:10.5px;letter-spacing:-.2px;min-width:0;overflow:hidden}
 .plops button span{font-size:17px;line-height:1.1}
 .plops button.ia{background:#3B2F7A;border-color:#C4B5FD;border-width:2px;font-weight:700} /* lo que dijo la IA (también arriba): tocarlo = «sí, es eso» */
 .plops button.on{background:#14532D;border-color:#4ADE80;border-width:2px} /* ya revisada */
@@ -727,6 +727,9 @@ canvas{width:100%;height:90px;display:block}
 /* Reproductor fijo de la noche */
 /* En toda la app: dejar el dedo apretado no selecciona texto (salvo donde se escribe) */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{overscroll-behavior-y:contain} /* el «deslizar para actualizar» es el nuestro (el del navegador no salta a la vez) */
+#pullR{position:fixed;left:50%;top:-46px;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:#1E1B4B;border:2px solid #A78BFA;color:#C4B5FD;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:60;pointer-events:none;opacity:0;box-shadow:0 6px 18px #0009}
+#pullR.listo{background:#6D5BD0;color:#fff}
 input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 #nMenu{position:fixed;z-index:41;min-width:150px;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:14px;padding:6px;box-shadow:0 10px 26px #000a}
 #nMenu[hidden]{display:none}
@@ -1390,7 +1393,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.1'; // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
+const VERSION = 'v19.2'; // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
+// v19.1: // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
 // v19.0: // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
 // v18.9: // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
 // v18.8: // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
@@ -3920,7 +3924,11 @@ async function plSegs(e) {
   try {
     const a = await analizaWav(e.blob, true);
     e.seg = segDe(a.sn, a.vo, a.br, a.co);
+    // y, si aún no la has revisado, la etiqueta pasa a ser la de su parte más fuerte (como en las grabaciones nuevas)
+    const tf = !e.fix && !e.val && !e.aprendido ? tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
+    if (cambia) { e.tipo = tf; delete e.sub; }
     const {_url, _picos, _pico, _segando, ...rec} = e; await DB.put('eventos', rec);
+    if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
     if (PL.list[PL.i] === e) plOnda();
   } catch {}
   e._segando = false;
@@ -3934,10 +3942,21 @@ function plOnda() {
   const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
   const p = e?._picos || Array(70).fill(.08), n = p.length, bw = w / n;
   const hecho = PL.au.duration ? PL.au.currentTime / PL.au.duration : 0, dur = PL.au.duration || e?.dur || 0;
-  // cada raya, del color de lo que es ese segundo (ronquido, voz, tos u otro); lo ya oído, más vivo
+  // Solo los tramos fuertes (rayas seguidas del 80 al 100 % del pico) se pintan del color de lo que son
+  // (ronquido, voz, tos); como mucho los 5 tramos más fuertes. Lo bajito queda en gris. Lo ya oído, más vivo
+  const fuerte = new Array(n).fill(false);
+  if (e?.seg) {
+    const tramos = [];
+    for (let i = 0; i < n;) {
+      if (p[i] < .8) { i++; continue; }
+      let j = i, m = 0; while (j < n && p[j] >= .8) { m = Math.max(m, p[j]); j++; }
+      tramos.push({i, j, m}); i = j;
+    }
+    tramos.sort((a, b) => b.m - a.m).slice(0, 5).forEach(t => { for (let k = t.i; k < t.j; k++) fuerte[k] = true; });
+  }
   for (let i = 0; i < n; i++) {
     const bh = Math.max(2, p[i] * (h - 4)), ya = (i + .5) / n <= hecho;
-    const c = e?.seg && dur ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : null;
+    const c = e?.seg && dur ? (fuerte[i] ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : 'o') : null;
     g.fillStyle = c ? SEGCOL[c] : ya ? '#A78BFA' : '#475569';
     g.globalAlpha = c && !ya ? .5 : 1;
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
@@ -5052,6 +5071,27 @@ function show(id) {
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+// ↻ Deslizar hacia abajo desde arriba del todo: recarga la app y se pone al día (como en Metas Amables). No durante la noche
+const pullR = document.createElement('div'); pullR.id = 'pullR'; pullR.textContent = '↻'; document.body.append(pullR);
+let pr0 = null;
+const pullPon = k => { pullR.style.opacity = k; pullR.style.transform = `translateY(${k * 96}px) rotate(${k * 300}deg)`; pullR.classList.toggle('listo', k >= 1); };
+document.addEventListener('touchstart', e => {
+  pr0 = null;
+  if (e.touches.length !== 1 || window.scrollY > 0 || live.night) return;
+  if (e.target.closest('input, select, textarea, canvas, #pl, #listen, #prep, #ask, #wakeUp, #napScr, #splash, #finQ, #tonoPick, #tlCard')) return;
+  pr0 = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+}, {passive: true});
+document.addEventListener('touchmove', e => {
+  if (!pr0) return;
+  const dy = e.touches[0].clientY - pr0.y, dx = e.touches[0].clientX - pr0.x;
+  if (e.touches.length !== 1 || window.scrollY > 0 || dy < 0 || Math.abs(dx) > dy) { pullPon(0); if (dy < -10 || Math.abs(dx) > 40) pr0 = null; return; }
+  pullPon(Math.min(1, dy / 120));
+}, {passive: true});
+document.addEventListener('touchend', () => {
+  if (!pr0) return; pr0 = null;
+  if (pullR.classList.contains('listo')) { pullR.textContent = '⏳'; toast('↻ Actualizando…'); setTimeout(() => location.reload(), 250); }
+  else pullPon(0);
+});
 // Deslizar con el dedo: a la izquierda, la pantalla siguiente; a la derecha, la anterior (orden de la barra de abajo)
 const ORDEN = ['menu', 'home', 'reducir', 'mask', 'alarma', 'stats', 'ajustes'];
 let sw0 = null;
@@ -5319,6 +5359,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.2', '26 oct 2026', ['↻ Desliza hacia abajo desde arriba para actualizar la app', 'En la onda, solo los tramos fuertes van de color (como mucho 5 por grabación)', 'Los botones de revisar caben enteros']],
   ['v19.1', '26 oct 2026', ['La onda del reproductor se pinta por colores: qué parte es ronquido, voz o tos', 'Cada grabación lleva la etiqueta de su parte más fuerte']],
   ['v19.0', '26 oct 2026', ['Noche recuperada de la cuenta: en «Ruidos» explica dónde están sus grabaciones', 'El salto al momento más fuerte ahora funciona también en Android']],
   ['v18.9', '26 oct 2026', ['Arreglado: el icono podía abrir una versión vieja; ahora se pone al día también al abrirse']],
