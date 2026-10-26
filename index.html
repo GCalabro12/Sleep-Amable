@@ -668,6 +668,7 @@ canvas{width:100%;height:90px;display:block}
 .plvTag{display:none}
 @media (orientation:landscape) and (max-height:600px){.plvTag{display:inline}}
 .ev .conf{font-size:13px;color:#C4B5FD;white-space:nowrap}
+.ev .revok{margin-left:auto;font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap} /* ya la revisaste tú */
 .ev.sel{background:#1E1B4B}
 .ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
 .ev .acts .fav{color:#94A3B8}
@@ -1351,7 +1352,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.5'; // v16.5: «🔊 Ruidos ▲» para cerrar va debajo de «pellizca para ampliar», en la parte fija (antes estaba arriba)
+const VERSION = 'v16.6'; // v16.6: cada grabación que has revisado (¿Acierta? sí/no o etiqueta cambiada) lleva arriba a la derecha «✓ Revisada» en verde
+// v16.5: // v16.5: «🔊 Ruidos ▲» para cerrar va debajo de «pellizca para ampliar», en la parte fija (antes estaba arriba)
 // v16.4: // v16.4: en ⋮, «Última revisión: …»; y «⏹ Detener revisión» mientras revisa
 // v16.3: // v16.3: «🔊 Ruidos» se abre y se cierra como un desplegable: dentro, arriba en la parte fija (con el gráfico), «🔊 Ruidos ▲» para cerrarlo
 // v16.2: // v16.2: vuelven los iconos de los títulos, como antes de la v16.0 (a Gustavo le gustaban más)
@@ -3507,7 +3509,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada</span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -3789,7 +3791,7 @@ function pintaValorar(e) {
   if (e.val === 'ok' || e.fix) { box.innerHTML = e.fix ? `<b>✏️ Corregida: ${tagTxt(e)}</b>` : '<b>✅ Confirmada: la IA acertó</b>'; return; }
   // en horizontal se ve aquí la etiqueta («🗣️ Voz ¿Acierta?») y debajo Sí / No
   box.innerHTML = `<span class="plvQ"><span class="plvTag">${tagTxt(e)} · </span>¿Acierta? <small style="color:var(--dim);font-size:11px">solo admin</small></span> <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
-  $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
+  $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); renderList(); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
   $('plNo').onclick = () => {
     box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : t === 'tos' ? '🫁 Tos' : '🔊 Otro ruido'}</button>`).join('');
     box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
@@ -5094,6 +5096,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.6', '26 oct 2026', ['Las grabaciones que ya revisaste llevan «✓ Revisada» en verde: así sabes dónde te quedaste']],
   ['v16.5', '26 oct 2026', ['«🔊 Ruidos ▲» para cerrar ahora está debajo de «pellizca para ampliar», en la parte fija']],
   ['v16.4', '26 oct 2026', ['En ⋮ de cada noche: la fecha de la última revisión', '«⏹ Detener revisión» mientras revisa con el detector nuevo']],
   ['v16.3', '26 oct 2026', ['«🔊 Ruidos» se abre y se cierra con su triangulito; dentro, el título queda fijo arriba con el gráfico']],
