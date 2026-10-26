@@ -678,8 +678,13 @@ canvas{width:100%;height:90px;display:block}
 .evbody{flex:1;min-width:0}
 .ev .bot{display:flex;align-items:center;gap:10px;margin-top:6px}
 .ev .bot .t{font-size:17px}
-.plval{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0 8px;font-size:14px;color:var(--muted)}
-.plval button{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:6px 12px;color:var(--text);font-size:14px}
+.plval{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;margin:4px 0 8px;font-size:14px;color:var(--muted)}
+.plval button{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:5px 8px;color:var(--text);font-size:13px;white-space:nowrap}
+.plops{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;width:100%}
+.plops button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;font-size:11.5px;min-width:0;overflow:hidden}
+.plops button span{font-size:17px;line-height:1.1}
+.plops button.ia{background:#3B2F7A;border-color:#C4B5FD;border-width:2px;font-weight:700} /* lo que dijo la IA (también arriba): tocarlo = «sí, es eso» */
+.plops button.on{background:#14532D;border-color:#4ADE80;border-width:2px} /* ya revisada */
 .plval button.si{border-color:#16A34A} .plval button.no{border-color:#DC2626}
 .plval b{color:#86EFAC}
 .plvTag{display:none}
@@ -1379,7 +1384,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.0'; // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
+const VERSION = 'v18.1'; // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
+// v18.0: // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
 // v17.9: // v17.9: con el reproductor abierto, los mensajes («Apuntado: la IA acertó»…) salen a mitad de pantalla y nunca tapan los botones
 // v17.8: // v17.8: «Registro de grabaciones» sin «etiquetadas»; «estás roncando» junto a movimiento, en su renglón; «pellizca para ampliar · gira el móvil» en un solo renglón
 // v17.7: // v17.7: fases como en los estudios con actigrafía: despierto solo si te mueves mucho, hablas o pulsas «Me levanté»; el REM aparte (tras un profundo largo, la 1.ª mitad del ligero); 4 filas y lo normal en %
@@ -3864,21 +3870,22 @@ function plToggle() {
 // ¿Acierta la IA con la grabación que suena? ✅ la confirma; ❌ deja elegir lo que era de verdad (queda corregida)
 function pintaValorar(e) {
   const box = $('plVal'); box.hidden = !e || !sesion?.admin; if (box.hidden) return; // valorar si acierta: solo el administrador
-  if (e.val === 'ok' || e.fix) { box.innerHTML = e.fix ? `<b>✏️ Corregida: ${tagTxt(e)}</b>` : '<b>✅ Confirmada: la IA acertó</b>'; return; }
-  // en horizontal se ve aquí la etiqueta («🗣️ Voz ¿Acierta?») y debajo Sí / No
-  box.innerHTML = `<span class="plvQ"><span class="plvTag">${tagTxt(e)} · </span>¿Acierta? <small style="color:var(--dim);font-size:11px">solo admin</small></span> <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
-  $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); renderList(); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
-  $('plNo').onclick = () => {
-    // 😮‍💨 Respiración: muy frecuente; para la IA cuenta como «otro» (no es ronquido), pero se ve con su nombre
-    const ops = TIPOS.filter(t => t !== e.tipo || t === 'otro').flatMap(t => t === 'otro' ? (e.sub === 'respiracion' ? ['otro'] : ['resp', ...(e.tipo === 'otro' ? [] : ['otro'])]) : [t]);
-    box.innerHTML = '¿Qué era? ' + ops.map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : t === 'tos' ? '🫁 Tos' : t === 'resp' ? '😮‍💨 Respiración' : '🔊 Otro ruido'}</button>`).join('');
-    box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
-      const t = b.dataset.t; e.tipo = t === 'resp' ? 'otro' : t; if (t === 'resp') e.sub = 'respiracion'; else delete e.sub;
-      e.fix = true; e.val = 'no'; delete e.aprendido;
-      const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
-      APR.apunta(e, e.tipo); toast('✏️ Corregida, gracias: la IA aprende de esto');
-    });
-  };
+  // Las 5 opciones a la vista, con la de la IA marcada (en verde, si ya la revisaste): tocar la misma = acierta; otra = queda corregida.
+  // Al tocar cualquiera, salta sola a la siguiente grabación. En horizontal se ve también la etiqueta
+  const OPS = [['ronquido', '😴', 'Ronquido'], ['voz', '🗣️', 'Voz'], ['tos', '🫁', 'Tos'], ['resp', '😮‍💨', 'Respiración'], ['otro', '🔊', 'Otro']];
+  const act = e.tipo === 'otro' && e.sub === 'respiracion' ? 'resp' : e.tipo, hecha = e.val === 'ok' || e.fix;
+  box.innerHTML = `<span class="plvTag">${tagTxt(e)} · </span><div class="plops">${OPS.map(([t, ic, tx]) => `<button type="button" data-t="${t}" class="${t === act ? (hecha ? 'on' : 'ia') : ''}"><span>${ic}</span>${tx}</button>`).join('')}</div>`;
+  box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
+    const t = b.dataset.t, sig = PL.list[PL.i + 1];
+    if (t === act) { e.val = 'ok'; if (e.fix) e.val = 'no'; } // la misma: acierta (o se queda como la corregiste)
+    else { e.tipo = t === 'resp' ? 'otro' : t; if (t === 'resp') e.sub = 'respiracion'; else delete e.sub; e.fix = true; e.val = 'no'; delete e.aprendido; }
+    const {_url, ...rec} = e; await DB.put('eventos', rec);
+    if (t !== act) { await recount(); renderStats(); drawTimeline(timelineTotal()); }
+    renderList(); APR.apunta(e, e.tipo);
+    toast(t === act ? '✅ Apuntado' : '✏️ Corregida: ' + tagTxt(e));
+    const k = sig ? PL.list.indexOf(sig) : -1;
+    if (k >= 0) plPlay(k); else { pintaValorar(e); if (!sig) toast('🏁 Era la última grabación'); }
+  });
 }
 function plRender() {
   const e = PL.list[PL.i], on = !!e && !PL.au.paused;
@@ -5182,6 +5189,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.1', '26 oct 2026', ['Revisar es más rápido: bajo la grabación que suena, las 5 opciones a la vista; toca la buena y salta sola a la siguiente']],
   ['v18.0', '26 oct 2026', ['Al corregir una grabación, nueva opción «😮‍💨 Respiración»']],
   ['v17.9', '26 oct 2026', ['Al revisar grabaciones, el mensaje de «Apuntado» sale a mitad de pantalla y no tapa los botones']],
   ['v17.8', '26 oct 2026', ['«Registro de grabaciones», más corto', 'Leyenda más ordenada: «estás roncando» junto a movimiento, y «pellizca para ampliar · gira el móvil» en un renglón']],
