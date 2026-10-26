@@ -663,7 +663,9 @@ canvas{width:100%;height:90px;display:block}
 #tl{touch-action:none}
 @media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}.wrap:has(#night:not([hidden])){max-width:none}} /* en horizontal, la noche usa todo el ancho */
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
-.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend{display:flex;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend .lgfila{flex-basis:100%;display:flex;gap:14px;white-space:nowrap} /* cada una en su renglón */
+.legend .lgfila[hidden]{display:none}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
@@ -1135,9 +1137,9 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
-    <div class="calmatit tltit">🎙️ Registro de grabaciones <small>etiquetadas</small></div>
+    <div class="calmatit tltit">🎙️ Registro de grabaciones</div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1375,7 +1377,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.7'; // v17.7: fases como en los estudios con actigrafía: despierto solo si te mueves mucho, hablas o pulsas «Me levanté»; el REM aparte (tras un profundo largo, la 1.ª mitad del ligero); 4 filas y lo normal en %
+const VERSION = 'v17.8'; // v17.8: «Registro de grabaciones» sin «etiquetadas»; «estás roncando» junto a movimiento, en su renglón; «pellizca para ampliar · gira el móvil» en un solo renglón
+// v17.7: // v17.7: fases como en los estudios con actigrafía: despierto solo si te mueves mucho, hablas o pulsas «Me levanté»; el REM aparte (tras un profundo largo, la 1.ª mitad del ligero); 4 filas y lo normal en %
 // v17.6: // v17.6: títulos «📋 Panel de puntuación» (al abrir una noche) y «☀️ Panel de tu última noche» (Estadísticas)
 // v17.5: // v17.5: tarjeta de la mañana sin el rótulo «Otros datos» (Movimiento va justo debajo); un recuadro solo en su fila sale centrado
 // v17.4: // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
@@ -3539,6 +3542,7 @@ function drawTimeline(total) {
     g.beginPath(); g.arc(x, base - 4 * dpr, 4 * dpr, 0, 7); g.fill();
   }
   $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
+  $('lgFila').hidden = $('lgMov').hidden && $('lgAv').hidden;
   const col = {ronquido: '#FBBF24', voz: '#60A5FA', tos: '#F87171', otro: '#64748B'};
   for (const e of curEvs) {
     const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
@@ -5171,6 +5175,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.8', '26 oct 2026', ['«Registro de grabaciones», más corto', 'Leyenda más ordenada: «estás roncando» junto a movimiento, y «pellizca para ampliar · gira el móvil» en un renglón']],
   ['v17.7', '26 oct 2026', ['Fases del sueño más fieles: moverte un poco ya no cuenta como despierto (solo si te mueves mucho, hablas o pulsas «Me levanté»)', 'El REM sale aparte, en su propia fila', 'Cada fase con su porcentaje y lo normal']],
   ['v17.6', '26 oct 2026', ['Títulos: «Panel de puntuación» al abrir una noche y «Panel de tu última noche» en Estadísticas']],
   ['v17.5', '26 oct 2026', ['Tu última noche: fuera el rótulo «Otros datos»; Movimiento va justo debajo', 'Si un recuadro queda solo en su fila, sale centrado']],
