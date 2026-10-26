@@ -375,7 +375,7 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .prchips button.on{border-color:#A78BFA;color:#E0E7FF;background:#1E1B4B}
 .prveredicto{font-size:17px;font-weight:700;margin:2px 0 8px}
 .prveredicto.si{color:#4ADE80}.prveredicto.no{color:#F87171}
-.flag.on.a{background:#1E3A8A;color:#BFDBFE;border-color:#3B82F6}
+.flag.on.a{color:#BFDBFE}
 .prhh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .prit{font-size:13px;padding:8px 10px;border-radius:10px;background:#0B1020;border:1px solid #1F2937;margin-bottom:6px}
 .prbar{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}
@@ -590,11 +590,14 @@ details.hist[open] summary{margin-bottom:10px}
 @keyframes rq-p2{0%,40%{opacity:.15}45%,90%{opacity:1}95%,100%{opacity:.15}}
 @keyframes rq-p3{0%,65%{opacity:.15}70%,90%{opacity:1}95%,100%{opacity:.15}}
 .flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
-.flag{padding:4px 9px;border-radius:14px;font-size:13px;background:#0B1020;color:#475569;border:1px solid #1F2937}
-.flag.on.g{background:#7F1D1D;color:#FECACA;border-color:#B91C1C}
-.flag.on.m{background:#0C4A6E;color:#BAE6FD;border-color:#0284C7}
-.flag.on.l{background:#713F12;color:#FDE68A;border-color:#CA8A04}
-.flag.cuenta{background:#1E1B4B;color:#E0E7FF;border-color:#6D5BD0}
+.flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
+.flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
+.flag.on{font-weight:700}
+.flag.on.g{color:#FCA5A5} .flag.on.g::before{background:#EF4444;box-shadow:0 0 8px #EF4444}
+.flag.on.m{color:#7DD3FC} .flag.on.m::before{background:#38BDF8;box-shadow:0 0 8px #38BDF8}
+.flag.on.l{color:#FDE68A} .flag.on.l::before{background:#FACC15;box-shadow:0 0 8px #FACC15}
+.flag.on.a::before{background:#60A5FA;box-shadow:0 0 8px #60A5FA}
+.flag.cuenta{color:#E0E7FF} .flag.cuenta::before{display:none}
 #finQ{position:fixed;inset:0;z-index:40;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
 #finQ h2{font-size:27px;margin:0 0 8px;color:#FDE68A}
 #finQ p{color:#CBD5E1;font-size:16px;margin:0 0 22px}
@@ -1007,7 +1010,7 @@ body.pl-on .wrap{padding-bottom:190px}
       <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
     <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
       <input type="checkbox" id="keepOther"></div>
-    <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias</small></label>
+    <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias. Una grabación termina tras 15 s de silencio.</small></label>
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
     <div class="row"><label for="strict">Separar ronquido de respiración<small>Estricto: solo cuenta como ronquido lo que suena claramente a ronquido</small></label>
       <select id="strict"><option value="0.25">Suave</option><option value="0.35">Normal</option><option value="0.5">Estricto</option></select></div>
@@ -1398,7 +1401,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v20.1'; // v20.1: «Medir también el sueño profundo» pasa a «Medir también las fases del sueño» (y sus textos)
+const VERSION = 'v20.2'; // v20.2: Grabando/Movimiento/Luz/Auriculares ya no parecen botones: son lucecitas (un punto que se enciende, sin borde ni fondo); menos grabaciones y más largas: se cortan a los 15 s de silencio (antes 6) y duran hasta 2 min (antes 1); un ronquido con pausas ya no sale troceado
+// v20.1: // v20.1: «Medir también el sueño profundo» pasa a «Medir también las fases del sueño» (y sus textos)
 // v20.0: // v20.0: monitoreo reordenado (Gustavo): «Elige para esta noche» + 🌙 ✈️ 🎵 y Prueba audífonos arriba; Probar detección pequeño al lado; Me levanté, No grabar, Sensibilidad con su barra; «Panel de monitoreo» con la hora; debajo Grabando/Movimiento, el bloque, los contadores y lo último oído
 // v19.9: // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
 // v19.8: // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
@@ -1591,7 +1595,7 @@ const MODEL = 'https://storage.googleapis.com/mediapipe-models/audio_classifier/
 const SR = 16000;          // todo se analiza y guarda a 16 kHz
 const BLK = 4000;          // bloques de 0,25 s
 const PRE = 8;             // 2 s de audio antes del sonido
-const QUIET = 24;          // 6 s de silencio cierran la grabación
+const QUIET = 60;          // 15 s de silencio cierran la grabación (con 6 s, quien ronca con pausas salía troceado en cientos)
 
 const $ = id => document.getElementById(id);
 // Dentro de la app Android existe este puente (No molestar, wifi, pantalla, servicio de noche…). En el navegador es null.
@@ -1599,8 +1603,9 @@ const AND = window.RonquiNoAndroid || null;
 $('ver').textContent = VERSION; $('ver2').textContent = VERSION;
 
 // ---------- Ajustes ----------
-const cfg = {sens:10, keepOther:false, maxSec:60, strict:.35, sonar:false};
+const cfg = {sens:10, keepOther:false, maxSec:120, strict:.35, sonar:false};
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
+if (!cfg.v202) { if (cfg.maxSec === 60) cfg.maxSec = 120; cfg.v202 = 1; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} } // grabaciones de hasta 2 min (antes 1)
 $('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec; $('strict').value = cfg.strict;
 setTimeout(() => pintaStrict()); // (si está ajustada a ti, que se vea en el selector)
 for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => {
@@ -5533,6 +5538,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.2', '26 oct 2026', ['Menos grabaciones por noche y más largas (hasta 2 min): un ronquido con pausas ya no sale en trocitos', 'En el monitoreo, Grabando y Movimiento son lucecitas (no parecen botones)']],
   ['v20.1', '26 oct 2026', ['«Medir también las fases del sueño» (antes «el sueño profundo»)']],
   ['v20.0', '26 oct 2026', ['Pantalla de monitoreo más ordenada: arriba lo que eliges para la noche; luego Me levanté, No grabar y Sensibilidad; abajo el Panel de monitoreo']],
   ['v19.9', '26 oct 2026', ['🧠 El detector aprende un modelo propio con la huella completa de tus grabaciones revisadas (solo se usa si acierta más)']],
