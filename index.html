@@ -1386,7 +1386,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.4'; // v18.4: en el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión tienen ✕ para cerrarlas
+const VERSION = 'v18.5'; // v18.5: cada grabación empieza a sonar 1 s antes de su momento más fuerte (no desde el principio)
+// v18.4: // v18.4: en el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión tienen ✕ para cerrarlas
 // v18.3: // v18.3: noches perdidas (sáb 24 y dom 25, dos veces): al abrir, con cuenta, se recuperan solas de la cuenta; y un registro de qué borra cada noche (y de las que desaparecen sin borrarlas), visible para el administrador en Mi cuenta
 // v18.2: // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
 // v18.1: // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
@@ -3843,7 +3844,11 @@ async function plPicos(e) {
     for (let i = 0; i < N; i++) { let m = 0; for (let j = i * paso; j < Math.min(d.length, (i + 1) * paso); j++) m = Math.max(m, Math.abs(d[j])); p.push(m); }
     const max = Math.max(.02, ...p);
     e._picos = p.map(v => Math.max(.06, v / max));
-  } catch { e._picos = Array(70).fill(.15); }
+    // el momento más fuerte: la décima de segundo con más energía
+    const W = Math.max(1, Math.round(buf.sampleRate / 10)); let mejor = 0, en = -1;
+    for (let i = 0; i + W <= d.length; i += W) { let s2 = 0; for (let j = i; j < i + W; j++) s2 += d[j] * d[j]; if (s2 > en) { en = s2; mejor = i; } }
+    e._pico = mejor / buf.sampleRate;
+  } catch { e._picos = Array(70).fill(.15); e._pico = 0; }
   return e._picos;
 }
 function plOnda() {
@@ -3874,8 +3879,15 @@ function plPlay(i) {
   const e = PL.list[i]; PL.i = i; TLV.follow = true;
   PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
   PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
-  plGraph(); plOndaNueva();
-  PL.au.play().catch(() => {});
+  plGraph(); plOnda();
+  // empieza 1 segundo antes del momento más fuerte de la grabación (no desde el principio)
+  plPicos(e).then(() => {
+    if (PL.list[PL.i] !== e) return;
+    plOnda();
+    const t0 = Math.max(0, (e._pico || 0) - 1);
+    const go = () => { if (PL.list[PL.i] !== e) return; if (t0 > .05) PL.au.currentTime = t0; PL.au.play().catch(() => {}); };
+    PL.au.readyState >= 1 ? go() : PL.au.addEventListener('loadedmetadata', go, {once: true});
+  });
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({title: tagTxt(e) + ' · ' + evTime(cur, e.off), artist: 'Amable Sleep'});
     navigator.mediaSession.setActionHandler('play', () => PL.au.play());
@@ -5225,6 +5237,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.5', '26 oct 2026', ['Cada grabación empieza a sonar 1 segundo antes de su momento más fuerte']],
   ['v18.4', '26 oct 2026', ['En el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión se cierran con su ✕']],
   ['v18.3', '26 oct 2026', ['☁️ Si falta alguna noche que está en tu cuenta, al abrir la app vuelve sola', 'Se apunta qué borra cada noche, para encontrar por qué se perdían']],
   ['v18.2', '26 oct 2026', ['¿Te equivocaste al revisar? La ✕ junto a «✓ Revisada» la deja otra vez sin revisar']],
