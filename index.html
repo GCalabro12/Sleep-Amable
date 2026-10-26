@@ -552,6 +552,7 @@ details.hist[open] summary{margin-bottom:10px}
 #pCuna{top:72px;left:0;right:0;bottom:0;max-height:none;border-radius:20px 20px 0 0;background:#0B1020;padding:16px 16px 28px;font-size:15px}
 .pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
 .pchead button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px}
+.lpanel .lpx{float:right;width:40px;height:40px;margin:0 0 6px 10px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px} /* ✕ para cerrar */
 .cuctl{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:15px;color:#E0E7FF}
 .cuctl>span:first-child{flex:none;min-width:96px}
 .cuctl input[type=range]{flex:1;accent-color:#8B5CF6}
@@ -1342,9 +1343,9 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
     <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
   </div>
-  <div class="lpanel" id="pDnd" hidden></div>
+  <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
   <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
-  <div class="lpanel" id="pAir" hidden></div>
+  <div class="lpanel" id="pAir" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
   <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
@@ -1385,7 +1386,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.3'; // v18.3: noches perdidas (sáb 24 y dom 25, dos veces): al abrir, con cuenta, se recuperan solas de la cuenta; y un registro de qué borra cada noche (y de las que desaparecen sin borrarlas), visible para el administrador en Mi cuenta
+const VERSION = 'v18.4'; // v18.4: en el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión tienen ✕ para cerrarlas
+// v18.3: // v18.3: noches perdidas (sáb 24 y dom 25, dos veces): al abrir, con cuenta, se recuperan solas de la cuenta; y un registro de qué borra cada noche (y de las que desaparecen sin borrarlas), visible para el administrador en Mi cuenta
 // v18.2: // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
 // v18.1: // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
 // v18.0: // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
@@ -2447,6 +2449,7 @@ $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
 $('pCunaX').onclick = () => panel(null);
 $('lAir').onclick = () => panel('pAir');
+document.querySelectorAll('#listen .lpx').forEach(b => b.onclick = () => panel(null)); // ✕ cierra la ventana
 // 🧪 Probar detección (pantalla completa): graba 6 s con el micrófono de la noche, pita y dice qué ha oído.
 // Debajo: «Correcto / No correcto» y el historial, que se puede enviar (para ajustar la detección).
 let prueba = false, pruebas = [];
@@ -5222,6 +5225,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.4', '26 oct 2026', ['En el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión se cierran con su ✕']],
   ['v18.3', '26 oct 2026', ['☁️ Si falta alguna noche que está en tu cuenta, al abrir la app vuelve sola', 'Se apunta qué borra cada noche, para encontrar por qué se perdían']],
   ['v18.2', '26 oct 2026', ['¿Te equivocaste al revisar? La ✕ junto a «✓ Revisada» la deja otra vez sin revisar']],
   ['v18.1', '26 oct 2026', ['Revisar es más rápido: bajo la grabación que suena, las 5 opciones a la vista; toca la buena y salta sola a la siguiente']],
