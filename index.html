@@ -1348,7 +1348,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.0'; // v16.0: sin iconos en los títulos de pantallas, tarjetas y desplegables (más limpio, como Sleep as Android)
+const VERSION = 'v16.1'; // v16.1: arreglado «Revisar con el detector nuevo» desde ⋮: abre «Ruidos» y enseña la barra de progreso
+// v16.0: // v16.0: sin iconos en los títulos de pantallas, tarjetas y desplegables (más limpio, como Sleep as Android)
 // v15.9: // v15.9: la noche es un resumen; las grabaciones van en «🔊 Ruidos» (se abre al tocarlo) con «← Volver al análisis de la noche» siempre arriba
 // v15.8: // v15.8: la noche guarda cuándo se revisó con el detector nuevo (se ve en la noche, solo el administrador); mientras se revisa una noche con el detector nuevo se puede ir a otras pantallas (al acabar, las cuentas quedan bien en esa noche)
 // v15.7: // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
@@ -3185,7 +3186,7 @@ function menuNoche(n, el) {
   $('nmRevisar').onclick = async () => { // abre la noche y la revisa con el detector nuevo
     m.hidden = true;
     nightFrom = el.closest('section')?.id || 'home';
-    await openNight(n.id); $('reNight').onclick();
+    await openNight(n.id); verRuidos(true); $('reNight').onclick(); // la barra de progreso está en «Ruidos»
   };
 }
 document.addEventListener('pointerdown', e => { const m = $('nMenu'); if (!m.hidden && !e.target.closest('#nMenu, .nmas')) m.hidden = true; }, true);
@@ -3634,10 +3635,11 @@ async function recount() {
 }
 // Vuelve a pasar la IA por cada grabación de la noche (no toca las que corregiste tú a mano)
 $('reNight').onclick = async () => {
-  if (!IA.clf) return alert('El detector con IA aún no está listo. Espera a ver «Detector listo» (hace falta internet la primera vez).');
-  const evs = curEvs.filter(e => !e.fix); if (!evs.length) return alert('No hay grabaciones que revisar.');
+  if (!IA.clf) return aviso('El detector con IA aún no está listo. Espera unos segundos y vuelve a probar (la primera vez hace falta internet).');
+  const evs = curEvs.filter(e => !e.fix); if (!evs.length) return aviso('No hay grabaciones que revisar.');
   if (!await confirma(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`, 'Revisar')) return;
   plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
+  requestAnimationFrame(() => $('reCard').scrollIntoView({block: 'center', behavior: 'smooth'})); // que se vea cómo avanza
   const id = cur.id; REV.id = id; // se puede ir a otras pantallas mientras revisa
   const antes = {ronquido: 0, voz: 0, tos: 0, otro: 0}, cambios = {};
   for (let k = 0; k < evs.length; k++) {
@@ -5078,6 +5080,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.1', '26 oct 2026', ['Arreglado: «Revisar con el detector nuevo» desde ⋮ ahora enseña cómo avanza']],
   ['v16.0', '26 oct 2026', ['Más limpia: los títulos de pantallas, tarjetas y desplegables ya no llevan iconos']],
   ['v15.9', '26 oct 2026', ['La noche es ahora un resumen: las grabaciones están en «🔊 Ruidos», con «← Volver al análisis de la noche» siempre arriba']],
   ['v15.8', '26 oct 2026', ['Mientras se revisa una noche con el detector nuevo, puedes ir a otras pantallas de la app', 'Al acabar, la noche dice cuándo se revisó (solo administrador)']],
