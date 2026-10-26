@@ -708,6 +708,7 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .legend .lgfila{flex-basis:100%;display:flex;gap:14px;white-space:nowrap} /* cada una en su renglón */
 .legend .lgfila[hidden]{display:none}
 .legend .lgfila{max-width:100%;min-width:0}
+.unalinea{display:block;white-space:nowrap;overflow:hidden;max-width:100%} /* en un renglón: si no cabe, la letra encoge (encaja) */
 .legend .lgcol{gap:10px} /* los cinco colores, en un renglón (si no caben, la letra encoge) */
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
@@ -913,7 +914,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también las fases del sueño<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <div class="dosdib">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
@@ -921,7 +922,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
-    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también las <b>fases del sueño</b>? Actívalo arriba, en <b>«Medir también las fases del sueño»</b>.</li>
+    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también las <b>fases del sueño</b>? Actívalo arriba, en <b>«Medir las fases del sueño»</b>.</li>
     <li>🔇 Quita de la habitación los <b>relojes con tictac</b> y apaga los <b>aparatos que hagan ruido</b>: sus sonidos se mezclan con tus ronquidos y la IA se confunde.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:#A78BFA">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
@@ -1118,8 +1119,8 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también las fases del sueño<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
+  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz" style="min-width:0;flex:1"><span class="unalinea" style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
@@ -1443,7 +1444,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v20.9'; // v20.9: «Prueba audífonos» y «Me levanté» mitad y mitad (en pantallas estrechas se montaban); monitoreo repartido por la pantalla (sin el hueco bajo los iconos); «Fin monitoreo sueño» encima del «Panel de monitoreo» (debajo, solo información); paso 3: textos pequeños más grandes (notas de 12 a 14 px); la noche sin frases de relleno (puntuación: solo «de 100»; «Despertaste en sueño ligero/profundo», corto)
+const VERSION = 'v21.0'; // v21.0: «Aviso por altavoz o auricular» en un renglón; «Medir las fases del sueño» (sin «también») en un renglón y debajo, en pequeño, «Se mide junto con los sonidos»
+// v20.9: // v20.9: «Prueba audífonos» y «Me levanté» mitad y mitad (en pantallas estrechas se montaban); monitoreo repartido por la pantalla (sin el hueco bajo los iconos); «Fin monitoreo sueño» encima del «Panel de monitoreo» (debajo, solo información); paso 3: textos pequeños más grandes (notas de 12 a 14 px); la noche sin frases de relleno (puntuación: solo «de 100»; «Despertaste en sueño ligero/profundo», corto)
 // v20.8: // v20.8: paso 3 (menos texto): Inicio en mosaico: «Saber si ronco» grande y el resto en baldosas de 2 en 2 con icono y nombre (sin frases); cabe sin bajar
 // v20.7: // v20.7: monitoreo sin «● Grabando bloque: … · quedan …» ni «Esperando un sonido…»: basta la lucecita «Grabando» (solo queda «Sin grabar ahora» si pulsas No grabar)
 // v20.6: // v20.6: «Prueba audífonos» y «Me levanté» justo encima de «Panel de monitoreo» (sin raya: la barra ya separa)
@@ -3127,7 +3129,7 @@ function encaja(el, min = 9) {
   let fs = parseFloat(getComputedStyle(el).fontSize);
   while (el.scrollWidth > lim + 1 && fs > min) { fs -= .5; el.style.fontSize = fs + 'px'; }
 }
-const encajaLeyenda = () => document.querySelectorAll('#tlCard .lgfila').forEach(x => encaja(x));
+const encajaLeyenda = () => { document.querySelectorAll('#tlCard .lgfila').forEach(x => encaja(x)); document.querySelectorAll('.unalinea').forEach(x => encaja(x, 11)); };
 addEventListener('resize', () => requestAnimationFrame(encajaLeyenda));
 function fitLine(el) {
   let fs = parseFloat(getComputedStyle(el).fontSize);
@@ -5313,6 +5315,7 @@ $('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').sty
 
 // ---------- Pantallas y bienvenida ----------
 function show(id) {
+  requestAnimationFrame(encajaLeyenda); // títulos que van en un renglón
   for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna', 'aprende']) $(x).hidden = x !== id;
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
   $('tabs').hidden = true;
@@ -5614,6 +5617,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.0', '26 oct 2026', ['«Aviso por altavoz o auricular» y «Medir las fases del sueño», cada uno en un renglón']],
   ['v20.9', '26 oct 2026', ['Monitoreo: «Fin monitoreo sueño» encima del panel', 'Letra de las notas más grande', 'La noche, con menos frases: lo importante en corto']],
   ['v20.8', '26 oct 2026', ['Inicio más visual: «Saber si ronco» grande y lo demás en baldosas de 2 en 2, sin frases; cabe sin bajar']],
   ['v20.7', '26 oct 2026', ['Monitoreo más limpio: sin «Grabando bloque… quedan…»; basta la lucecita «Grabando»']],
