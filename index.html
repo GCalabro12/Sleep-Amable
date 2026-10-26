@@ -414,6 +414,12 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .mp b{font-size:16px}
 .mp[data-mexp]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mp.ok{border-left-color:#4ADE80} .mp.mid{border-left-color:#FBBF24} .mp.bad{border-left-color:#F87171}
+.mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
+.mpartes.tresp .mp{padding:8px 6px 8px 8px;min-width:0}
+.mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
+.mpartes.tresp .mp b{font-size:15px}
+.mp.neutro{border-left-color:#475569}
+.motros{font-size:12px;color:var(--muted);margin:12px 0 -4px;font-weight:600;letter-spacing:.2px}
 .lronq{width:100%;height:auto;margin-top:8px}
 .lronq .rej{stroke:#1F2937;stroke-width:1}
 .lronq text{fill:#64748B;font-size:11px}
@@ -610,6 +616,7 @@ details.hist[open] summary{margin-bottom:10px}
 .tile{min-width:0;padding:10px 4px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
+.tile.libre{background:transparent;border:1.5px dashed var(--line);cursor:default} /* libre: aquí irán otros datos */
 /* sin seleccionar texto al dejar el dedo apretado: pantalla de monitoreo y recuadros de la noche */
 #listen,#listen *,.tile,.mp,.manana,.calmadatos,.tiles,details>summary,.ev .top,.ev .bot{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #listen input,#listen textarea{-webkit-user-select:text;user-select:text}
@@ -650,11 +657,11 @@ canvas{width:100%;height:90px;display:block}
 .selbar .selacts{margin-left:auto;display:flex;gap:6px}
 .selbar .selacts button{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:14px;color:var(--text)}
 .selbar .selacts .del{color:var(--bad)}
-.ev.ronquido{border-left-color:var(--snore)} .ev.voz{border-left-color:var(--voice)}
+.ev.ronquido{border-left-color:var(--snore)} .ev.voz{border-left-color:var(--voice)} .ev.tos{border-left-color:#F87171}
 .ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ev .t{font-weight:600;font-variant-numeric:tabular-nums}
 .tag{font-size:13px;padding:3px 9px;border-radius:10px;border:0;background:var(--card2)}
-.tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.otro{color:var(--muted)}
+.tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.tos{color:#F87171} .tag.otro{color:var(--muted)}
 .ev .meta{font-size:12px;color:var(--dim)}
 .ev .acts{margin-left:auto;display:flex;gap:6px}
 .ev .acts button,.ev .acts a{display:inline-flex;background:none;border:0;padding:6px;color:#A5B4FC;text-decoration:none}
@@ -1061,14 +1068,14 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="tiles">
     <button class="tile s" type="button" data-exp="ronq"><b id="tSnore">0</b><span>grabaciones de ronquidos</span></button>
     <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando<br>en total</span></button>
-    <button class="tile v" type="button" data-exp="voz"><b id="tVoice">0</b><span>grabaciones de voz</span></button>
+    <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
   <details class="instr card etqcard" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard" id="avCard" hidden></details>
   <div class="card" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
-    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
+    <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
   <div class="chips" id="chips"></div>
   <div class="selbar" id="selbar">
@@ -1298,7 +1305,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v14.7'; // v14.7: en el monitoreo, «🎧 Prueba audífonos» (con ⓘ): dice «Prueba de audífonos» por los auriculares para saber que suenan
+const VERSION = 'v14.8'; // v14.8: la IA detecta la tos (🫁, grabaciones propias); tarjeta de la mañana: Horas y Regularidad arriba, Ronquido / Voces / Tos debajo y «Otros datos» (movimiento); el 3.er recuadro de la noche queda libre
+// v14.7: // v14.7: en el monitoreo, «🎧 Prueba audífonos» (con ⓘ): dice «Prueba de audífonos» por los auriculares para saber que suenan
 // v14.6: // v14.6: en Mi cuenta, «Tipo de cuenta» en vez de «Papel»
 // v14.5: // v14.5: en Mi cuenta, «👑 Administrador de la app» (antes «Gerente»)
 // v14.4: // v14.4: «¿Acierta? Sí / No» de las grabaciones también solo para el administrador («solo admin»)
@@ -1732,6 +1740,7 @@ const DB = {
 // ---------- Detector de IA (YAMNet: reconoce «Snoring», «Speech» y 500 sonidos más) ----------
 const SNORE = new Set(['Snoring', 'Snort']);
 const BREATH = new Set(['Breathing', 'Gasp', 'Pant', 'Wheeze', 'Sigh']); // respirar fuerte NO es roncar
+const COUGH = new Set(['Cough', 'Throat clearing']); // 🫁 tos (v14.8)
 const VOICE = new Set(['Speech','Conversation','Narration, monologue','Babbling','Whispering','Male speech, man speaking','Female speech, woman speaking','Child speech, kid speaking','Shout','Laughter']);
 const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathing:'respiración',Gasp:'jadeo',Sniff:'sorbido',
   Dog:'perro',Bark:'ladrido',Cat:'gato',Meow:'maullido',Music:'música',Television:'tele',Vehicle:'vehículo',Car:'coche',
@@ -1760,19 +1769,20 @@ const IA = {
   // Devuelve la probabilidad de ronquido y de voz de un trozo de audio
   scores(f) {
     if (this.clf) {
-      let sn = 0, vo = 0, br = 0, top = null, topS = 0, vec = null;
+      let sn = 0, vo = 0, br = 0, co = 0, top = null, topS = 0, vec = null;
       for (const r of this.clf.classify(f, SR)) for (const c of r.classifications[0].categories) {
         const n = c.categoryName, s = c.score;
         vec ||= new Float32Array(r.classifications[0].categories.length);
         if (c.index < vec.length && s > vec[c.index]) vec[c.index] = s; // huella: lo que oyó de cada tipo de sonido
         if (SNORE.has(n)) sn = Math.max(sn, s);
         else if (VOICE.has(n)) vo = Math.max(vo, s);
+        else if (COUGH.has(n)) co = Math.max(co, s);
         else {
           if (BREATH.has(n)) br = Math.max(br, s);
           if (n !== 'Silence' && s > topS) { topS = s; top = n; }
         }
       }
-      return {sn, vo, br, top, topS, est:false, vec};
+      return {sn, vo, br, co, top, topS, est:false, vec};
     }
     // Básico: los ronquidos son graves (mucha energía < 400 Hz) y la voz cruza más veces el cero
     let y = 0, lo = 0, tot = 0, zc = 0;
@@ -1787,12 +1797,13 @@ const IA = {
 // Decide qué es una grabación a partir de lo que la IA oyó en cada segundo.
 // Ronquido solo si en algún segundo el ronquido es claro (≥ exigencia) Y gana a la respiración; si no, la respiración
 // fuerte se queda en «otro» (respiración), que es lo que más se confundía.
-function decide(sn, vo, br) {
+function decide(sn, vo, br, co = []) {
   const max = a => a.length ? Math.max(...a) : 0, avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const thr = cfg.strict || .35;
   // Un ronquido es inspirar roncando y espirar (que suena a respiración): basta un segundo de ronquido claro
   const clear = sn.filter(v => v >= thr).length;
   if (clear >= 1 && max(sn) >= max(vo) * .8) return 'ronquido';
+  if (max(co) >= .3 && max(co) >= max(vo)) return 'tos'; // 🫁 tos o carraspeo claros
   if (max(vo) >= .3) return 'voz';
   return 'otro';
 }
@@ -1858,7 +1869,7 @@ class Detector {
       if (!muted) this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
       this.pre.push(b); if (this.pre.length > PRE) this.pre.shift();
       if (loud && !muted && this.samples > SR * 3) {
-        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], br: [], tops: {}, peak: db, est: false};
+        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], br: [], co: [], tops: {}, peak: db, est: false};
         this.pre = [];
         this.onStart?.();
       }
@@ -1879,7 +1890,7 @@ class Detector {
   }
   classify(blocks) {
     const e = this.ev, r = IA.scores(concat(blocks));
-    e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.est = e.est || r.est;
+    e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.co.push(r.co || 0); e.est = e.est || r.est;
     if (r.vec) { e.vsum ||= new Float32Array(r.vec.length); for (let i = 0; i < r.vec.length; i++) e.vsum[i] += r.vec[i]; e.vn = (e.vn || 0) + 1; }
     this.onScore?.(r);
     if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
@@ -1890,14 +1901,14 @@ class Detector {
     if (e.loud < 2 || !e.sn.length) return; // un golpe suelto: se ignora
     const max = a => Math.max(...a), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
     const snMax = max(e.sn), voMax = max(e.vo);
-    let tipo = decide(e.sn, e.vo, e.br), aprendido = false;
+    let tipo = decide(e.sn, e.vo, e.br, e.co), aprendido = false;
     const vec = huellaMedia(e), ap = APR.decide(vec); // 🧠 lo que has enseñado manda si está claro
     if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; }
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
-    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), top, peak: e.peak, est: e.est, audio, vec, aprendido});
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido});
   }
   flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
 }
@@ -1950,7 +1961,7 @@ function pintaAprendido() {
   const n = APR.ej.length, c = t => APR.ej.filter(x => x.t === t).length;
   $('sApr').textContent = APR.activo() ? '· activo' : `· ${n} de ${APR.MIN}`;
   box.innerHTML = `<p class="note" style="margin:6px 0 10px">Cuando escuchas una grabación y dices si la IA acierta (✅ / ❌), aprende de tus ronquidos, tu voz y los ruidos de tu casa. Aprende de las grabaciones hechas desde la versión 12.3.</p>
-    <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
+    <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🫁 <b>${c('tos')}</b> tos</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
     <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
     ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
   if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
@@ -1961,16 +1972,17 @@ function pintaAprendido() {
 
 // ---------- Guardar sonidos de una noche ----------
 function newNight(fuente, extra = {}) {
-  return {id: Date.now(), inicio: Date.now(), fin: null, fuente, ronquidos: 0, voces: 0, otros: 0, descartados: 0, segRonquido: 0, timeline: [], ...extra};
+  return {id: Date.now(), inicio: Date.now(), fin: null, fuente, ronquidos: 0, voces: 0, tos: 0, otros: 0, descartados: 0, segRonquido: 0, timeline: [], ...extra};
 }
 function makeSaver(night, onChange) {
   let chain = Promise.resolve();
   return {
     event(ev) {
       if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
-      if (ev.tipo === 'voz') night.segVoz = (night.segVoz || 0) + ev.dur;
-      else if (ev.tipo === 'voz') night.voces++; else night.otros++;
-      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio),
+      else if (ev.tipo === 'voz') { night.voces++; night.segVoz = (night.segVoz || 0) + ev.dur; }
+      else if (ev.tipo === 'tos') night.tos = (night.tos || 0) + 1;
+      else night.otros++;
+      const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, co: ev.co || 0, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio),
         ...(ev.vec ? {vec: ev.vec} : {}), ...(ev.aprendido ? {aprendido: true} : {})};
       chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
       onChange?.(ev);
@@ -2777,6 +2789,18 @@ function puntuacion(n, prev) {
   return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
 }
 const colorNota = s => s >= 75 ? 'ok' : s >= 50 ? 'mid' : 'bad';
+// Cómo se enseñan las partes: arriba Horas y Regularidad; debajo Ronquido, Voces y Tos; y «Otros datos» (movimiento…)
+function mananaPartes(n, partes) {
+  const P = k => partes.find(p => p.k === k);
+  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}" role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b></div>` : '';
+  const minVoz = Math.round((n.segVoz || 0) / 60);
+  const fila1 = [P('horas'), P('reg')].filter(Boolean);
+  const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
+  const otros = [P('calma')].filter(Boolean);
+  return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
+    <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
+    ${otros.length ? `<div class="motros">Otros datos</div><div class="mpartes">${otros.map(p => caja(p)).join('')}</div>` : ''}`;
+}
 function tarjetaManana(n, prev, titulo) {
   const {total, partes} = puntuacion(n, prev), c = colorNota(total);
   const frase = total >= 85 ? '¡Noche estupenda!' : total >= 70 ? 'Buena noche' : total >= 50 ? 'Noche regular' : 'Noche difícil';
@@ -2785,7 +2809,7 @@ function tarjetaManana(n, prev, titulo) {
     ${titulo ? `<div class="mtit">${titulo}</div>` : ''}
     <div class="mtop"><svg class="anillo ${c}" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="${R}" class="fondo"/><circle cx="40" cy="40" r="${R}" class="valor" stroke-dasharray="${(L * total / 100).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="47" text-anchor="middle">${total}</text></svg>
       <div><b>${frase}</b><small>Puntuación de la noche (de 0 a 100). Lo bueno es pasar de 85.</small></div></div>
-    <div class="mpartes">${partes.map(p => `<div class="mp ${colorNota(p.s)}" data-mexp="${p.k}" role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b></div>`).join('')}</div>
+    ${mananaPartes(n, partes)}
   </div>`;
 }
 // 📉 Minutos roncando de las últimas noches (hasta 14): lo bueno es que la línea baje hacia 0
@@ -3232,11 +3256,11 @@ function renderStats() {
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
   renderAvisoNoche();
-  const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
-  const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', otro: '🔊 Otros'};
+  const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
+  const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
   $('chips').innerHTML = '';
   for (const k of Object.keys(lbl)) {
-    if ((k === 'otro' || k === 'fav') && !c[k] && filter !== k) continue;
+    if ((k === 'otro' || k === 'fav' || k === 'tos') && !c[k] && filter !== k) continue;
     const b = document.createElement('button'); b.className = 'chip' + (filter === k ? ' on' : '');
     b.textContent = `${lbl[k]} (${c[k]})`; b.onclick = () => { filter = k; sel.clear(); renderStats(); renderList(); };
     $('chips').append(b);
@@ -3248,6 +3272,8 @@ const EXP_PARTE = {
   horas: 'Cuánto duró tu noche: desde que tocaste «Empezar a monitorear» hasta «Fin monitoreo sueño». Lo bueno para un adulto es dormir de 7 a 9 horas.',
   ronq: 'Los minutos que roncaste esta noche. Cuantos menos minutos por cada hora de sueño, mejor puntuación.',
   reg: 'Cuánto cambió la hora de acostarte comparada con tus últimas noches. «±20 min» quiere decir que te acostaste unos 20 minutos antes o después de lo normal. Acostarte siempre a la misma hora ayuda a dormir mejor.',
+  voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
+  tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (m) aviso(EXP_PARTE[m.dataset.mexp]); });
@@ -3257,7 +3283,7 @@ const EXP_TILE = {
   min: 'El tiempo que estuviste roncando esta noche: la suma de lo que duran todas las grabaciones de ronquidos.',
   voz: 'Cuántas grabaciones guardó la IA porque oyó una voz: alguien hablando, la tele o tú hablando en sueños.'
 };
-document.querySelectorAll('#night .tile').forEach(t => t.onclick = () => aviso(EXP_TILE[t.dataset.exp]));
+document.querySelectorAll('#night .tile[data-exp]').forEach(t => t.onclick = () => aviso(EXP_TILE[t.dataset.exp]));
 function drawTimeline(total) {
   if (total != null) curTotal = Math.max(total, 60);
   tlClamp();
@@ -3284,7 +3310,7 @@ function drawTimeline(total) {
     g.beginPath(); g.arc(x, base - 4 * dpr, 4 * dpr, 0, 7); g.fill();
   }
   $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
-  const col = {ronquido: '#FBBF24', voz: '#60A5FA', otro: '#64748B'};
+  const col = {ronquido: '#FBBF24', voz: '#60A5FA', tos: '#F87171', otro: '#64748B'};
   for (const e of curEvs) {
     const x = X(e.off), w = Math.max(2 * dpr, e.dur / TLV.span * W);
     if (x + w < 0 || x > W) continue;
@@ -3306,8 +3332,8 @@ const ICO_FAV = on => `<svg viewBox="0 0 24 24" fill="${on ? 'currentColor' : 'n
 const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg>';
 const ICO_BAJAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
 const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>';
-const TIPOS = ['ronquido', 'voz', 'otro'];
-const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : '🔊 ' + es(e.top);
+const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
+const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : '🔊 ' + es(e.top);
 function renderList() {
   const list = curList = curEvs.filter(e => filter === 'todos' || (filter === 'fav' ? e.fav : e.tipo === filter));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
@@ -3320,7 +3346,7 @@ function renderList() {
   for (const e of list) {
     for (const t of avisos) if (!usados.has(t) && t < e.off) filaAviso(t);
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
-    const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : null;
+    const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
     d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
@@ -3360,7 +3386,7 @@ function renderList() {
       renderStats();
     };
     d.querySelector('.tag').onclick = async () => {
-      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % 3]; e.fix = true; delete e.aprendido;
+      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % TIPOS.length]; e.fix = true; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
       APR.apunta(e, e.tipo);
     };
@@ -3454,6 +3480,8 @@ async function recount() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   cur.ronquidos = s.length; cur.segRonquido = s.reduce((a, e) => a + e.dur, 0);
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
+  cur.segVoz = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + e.dur, 0);
+  if (cur.tos != null || curEvs.some(e => e.tipo === 'tos')) cur.tos = curEvs.filter(e => e.tipo === 'tos').length;
   await DB.put('noches', cur);
 }
 // Vuelve a pasar la IA por cada grabación de la noche (no toca las que corregiste tú a mano)
@@ -3462,16 +3490,16 @@ $('reNight').onclick = async () => {
   const evs = curEvs.filter(e => !e.fix); if (!evs.length) return alert('No hay grabaciones que revisar.');
   if (!await confirma(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`, 'Revisar')) return;
   plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
-  const antes = {ronquido: 0, voz: 0, otro: 0}, cambios = {};
+  const antes = {ronquido: 0, voz: 0, tos: 0, otro: 0}, cambios = {};
   for (let k = 0; k < evs.length; k++) {
     const e = evs[k]; antes[e.tipo]++;
     const ab = await e.blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
     const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
-    const sn = [], vo = [], br = [];
-    for (let i = 0; i + sr * .5 <= f.length; i += sr) { const r = IA.scores(f.subarray(i, Math.min(i + sr, f.length))); sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0); }
-    const tipo = sn.length ? decide(sn, vo, br) : e.tipo;
+    const sn = [], vo = [], br = [], co = [];
+    for (let i = 0; i + sr * .5 <= f.length; i += sr) { const r = IA.scores(f.subarray(i, Math.min(i + sr, f.length))); sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0); co.push(r.co || 0); }
+    const tipo = sn.length ? decide(sn, vo, br, co) : e.tipo;
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
-    e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0);
+    e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
     const {_url, ...rec} = e; await DB.put('eventos', rec);
     $('reProg').style.width = ((k + 1) / evs.length * 100) + '%';
     $('reTxt').textContent = `Revisando ${k + 1} de ${evs.length}…`;
@@ -3580,7 +3608,7 @@ function pintaValorar(e) {
   box.innerHTML = `<span class="plvQ"><span class="plvTag">${tagTxt(e)} · </span>¿Acierta? <small style="color:var(--dim);font-size:11px">solo admin</small></span> <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
   $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
   $('plNo').onclick = () => {
-    box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : '🔊 Otro ruido'}</button>`).join('');
+    box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : t === 'tos' ? '🫁 Tos' : '🔊 Otro ruido'}</button>`).join('');
     box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
       e.tipo = b.dataset.t; e.fix = true; e.val = 'no'; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
@@ -4882,6 +4910,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v14.8', '26 oct 2026', ['🫁 La IA reconoce la tos: tiene sus propias grabaciones y su filtro', 'Tarjeta de la mañana más ordenada: Horas y Regularidad; Ronquido, Voces y Tos; y Otros datos', 'Arreglado: las grabaciones de voz no se contaban bien en la lista de noches']],
   ['v14.7', '26 oct 2026', ['🎧 En el monitoreo: «Prueba audífonos», para comprobar de noche que tus audífonos suenan']],
   ['v14.6', '25 oct 2026', ['En Mi cuenta pone «Tipo de cuenta» en vez de «Papel»']],
   ['v14.5', '25 oct 2026', ['En Mi cuenta pone «Administrador de la app»']],
