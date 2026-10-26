@@ -719,7 +719,11 @@ canvas{width:100%;height:90px;display:block}
 .ev .bot .meta{white-space:nowrap}
 .avnote{font-size:13px;color:#F472B6;margin-top:6px}
 .ev audio{width:100%;margin-top:8px;height:36px}
-.ev.playing{outline:2px solid #A78BFA;outline-offset:1px}
+.ev.playing{outline:none}
+.ev.aqui{outline:3px solid #FBBF24;outline-offset:2px;transition:outline-color 1s} /* aquí te quedaste */
+.ev.playing::after{content:'';position:absolute;inset:-5px;border:3px dashed #C4B5FD;border-radius:16px;pointer-events:none;animation:suenaYa 1s ease-in-out infinite} /* la que suena: reborde punteado que parpadea */
+@keyframes suenaYa{0%,100%{opacity:1;border-color:#C4B5FD}50%{opacity:.25;border-color:#7C3AED}}
+@media (prefers-reduced-motion:reduce){.ev.playing::after{animation:none}}
 /* Reproductor fijo de la noche */
 /* En toda la app: dejar el dedo apretado no selecciona texto (salvo donde se escribe) */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -1386,7 +1390,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.5'; // v18.5: cada grabación empieza a sonar 1 s antes de su momento más fuerte (no desde el principio)
+const VERSION = 'v18.7'; // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
+// v18.6: // v18.6: la grabación que suena lleva un reborde punteado que parpadea (se ve mucho mejor dónde vas)
+// v18.5: // v18.5: cada grabación empieza a sonar 1 s antes de su momento más fuerte (no desde el principio)
 // v18.4: // v18.4: en el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión tienen ✕ para cerrarlas
 // v18.3: // v18.3: noches perdidas (sáb 24 y dom 25, dos veces): al abrir, con cuenta, se recuperan solas de la cuenta; y un registro de qué borra cada noche (y de las que desaparecen sin borrarlas), visible para el administrador en Mi cuenta
 // v18.2: // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
@@ -3358,13 +3364,22 @@ function verRuidos(on) {
   window.scrollTo(0, 0);
   requestAnimationFrame(tlSticky);
 }
-$('ruidosBtn').onclick = () => verRuidos(true);
+// Al abrir «Ruidos» (solo el administrador, que es quien revisa): si ya revisaste alguna, va a la siguiente de la última revisada, y ▶ empieza por ella
+function irASinRevisar() {
+  const l = PL.list; let u = -1; l.forEach((e, i) => { if (e.val || e.fix) u = i; });
+  PL.ini = sesion?.admin && u >= 0 && u + 1 < l.length ? u + 1 : 0;
+  if (!PL.ini || PL.i >= 0) return;
+  const card = [...document.querySelectorAll('#evList .ev')].find(d => d._ev === l[PL.ini]);
+  if (card) setTimeout(() => { card.scrollIntoView({block: 'center'}); card.classList.add('aqui'); setTimeout(() => card.classList.remove('aqui'), 2500); }, 60);
+  plRender();
+}
+$('ruidosBtn').onclick = () => { verRuidos(true); irASinRevisar(); };
 $('ruidosCerrar').onclick = () => verRuidos(false);
 $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
-  $('night').classList.remove('ruidos'); // siempre se abre por el resumen
+  $('night').classList.remove('ruidos'); PL.ini = 0; // siempre se abre por el resumen
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada(); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
@@ -3899,7 +3914,7 @@ function plPlay(i) {
   document.querySelector('.ev.playing')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
 }
 function plToggle() {
-  if (PL.i < 0) return plPlay(0);
+  if (PL.i < 0) return plPlay(PL.ini || 0); // empieza por la siguiente sin revisar
   if (PL.au.paused) { PL.au.playbackRate = PL.speed; plGraph(); PL.au.play().catch(() => {}); } else PL.au.pause();
 }
 // Lo que dijo la IA, guardado la primera vez que se corrige (para poder deshacerlo con la ✕)
@@ -3940,7 +3955,7 @@ function plRender() {
   const pn = $('plNow'); pn.textContent = '';
   if (e) { const a = document.createElement('span'), b = document.createElement('span'); a.className = 'plnTag';
     a.textContent = `${tagTxt(e)} · ${evTime(cur, e.off)} · `; b.textContent = `${PL.i + 1} de ${PL.list.length}`; pn.append(a, b); }
-  else pn.textContent = `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
+  else pn.textContent = PL.ini ? `${PL.list.length} grabaciones · toca ▶ para seguir por la ${PL.ini + 1}` : `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
   $('plPP').textContent = on ? '❚❚' : '▶';
   $('plSpd').textContent = String(PL.speed).replace('.', ',') + '×';
   $('plBst').textContent = '🔊 ' + (PL.boost === 1 ? '1×' : '×' + PL.boost);
@@ -5237,6 +5252,8 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.7', '26 oct 2026', ['Al abrir «Ruidos» vas directo a la siguiente después de la última revisada, y ▶ empieza ahí']],
+  ['v18.6', '26 oct 2026', ['La grabación que suena se ve mejor: reborde punteado que parpadea']],
   ['v18.5', '26 oct 2026', ['Cada grabación empieza a sonar 1 segundo antes de su momento más fuerte']],
   ['v18.4', '26 oct 2026', ['En el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión se cierran con su ✕']],
   ['v18.3', '26 oct 2026', ['☁️ Si falta alguna noche que está en tu cuenta, al abrir la app vuelve sola', 'Se apunta qué borra cada noche, para encontrar por qué se perdían']],
