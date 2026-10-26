@@ -682,6 +682,15 @@ canvas{width:100%;height:90px;display:block}
 .ev audio{width:100%;margin-top:8px;height:36px}
 .ev.playing{outline:2px solid #A78BFA;outline-offset:1px}
 /* Reproductor fijo de la noche */
+/* En toda la app: dejar el dedo apretado no selecciona texto (salvo donde se escribe) */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+#borraBar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#1E1B4B;border-bottom:1px solid #6D5BD0;box-shadow:0 6px 18px #00000088}
+#borraBar[hidden]{display:none}
+#borraTxt{flex:1;min-width:0;font-size:14px;color:#E0E7FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#borraSi{background:#7F1D1D;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:12px;padding:8px 14px;font-size:15px}
+#borraNo{background:none;border:0;color:#C4B5FD;font-size:20px;padding:4px 8px}
+.night.marcada{outline:2px solid #F87171;outline-offset:1px}
 #pl{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#0F1529f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
 #pl .in{max-width:640px;margin:0 auto}
 #pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
@@ -1122,6 +1131,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- REPRODUCTOR DE LA NOCHE -->
+<div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
   <div class="in">
     <div class="now" id="plNow"></div>
@@ -1318,7 +1328,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.4'; // v15.4: la ⓘ de «Me levanté», más corta
+const VERSION = 'v15.5'; // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
+// v15.4: // v15.4: la ⓘ de «Me levanté», más corta
 // v15.3: // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
 // v15.2: // v15.2: el sueño profundo con su propio icono (3 franjas escalonadas: despierto, ligero y profundo) en vez de la ola
 // v15.1: // v15.1: «🚶 Me levanté» en el monitoreo (con ⓘ): apunta cada vez que te levantas; por la mañana sale en «Otros datos»
@@ -3132,6 +3143,29 @@ $('guardar').onchange = async () => {
   renderHome();
 };
 let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
+// Mantener pulsado (medio segundo) sin mover el dedo: hace «largo» y evita que el toque abra la noche
+function pulsacionLarga(el, fn) {
+  let t = null, x0 = 0, y0 = 0;
+  el.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; clearTimeout(t); t = setTimeout(() => { el._largo = true; try { navigator.vibrate?.(35); } catch {} fn(); }, 550); });
+  el.addEventListener('pointermove', e => { if (Math.abs(e.clientX - x0) + Math.abs(e.clientY - y0) > 12) clearTimeout(t); });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => clearTimeout(t));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+// 🗑️ Barra de arriba para borrar una noche del historial (con su confirmación)
+function barraBorrar(n) {
+  if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
+  document.querySelectorAll('.night.marcada').forEach(x => x.classList.remove('marcada'));
+  document.querySelectorAll('.night').forEach(x => { if (x._id === n.id) x.classList.add('marcada'); });
+  $('borraTxt').textContent = nightName(n);
+  $('borraBar').hidden = false;
+  const cierra = () => { $('borraBar').hidden = true; document.querySelectorAll('.night.marcada').forEach(x => x.classList.remove('marcada')); };
+  $('borraNo').onclick = cierra;
+  $('borraSi').onclick = async () => {
+    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Borrar')) return;
+    cierra(); await DB.delNight(n.id); borraNocheCuenta(n.id); await renderHome(); toast('🗑️ Noche borrada');
+  };
+}
+
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
@@ -3140,12 +3174,13 @@ async function renderHome() {
   for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats'], ['nights3', 'reducir']]) {
     $(lista).innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
     for (const n of ns) {
-      const b = document.createElement('button'); b.className = 'night';
+      const b = document.createElement('button'); b.className = 'night'; b._id = n.id;
       const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
         : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
       b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div>`;
       b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
-      b.onclick = () => { nightFrom = desde; openNight(n.id); };
+      b.onclick = () => { if (b._largo) { b._largo = false; return; } nightFrom = desde; openNight(n.id); };
+      pulsacionLarga(b, () => barraBorrar(n));
       $(lista).append(b);
     }
   }
@@ -4961,6 +4996,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.5', '26 oct 2026', ['🗑️ En el historial, deja apretada una noche para borrarla', 'Al dejar el dedo apretado sobre un texto ya no sale «seleccionar»']],
   ['v15.4', '26 oct 2026', ['Explicación de «Me levanté» más corta']],
   ['v15.3', '26 oct 2026', ['«Prueba audífonos» ahora está debajo de «Avisa si ronco», en azul']],
   ['v15.2', '26 oct 2026', ['El sueño profundo tiene su propio icono: tres franjas con los colores de despierto, ligero y profundo']],
