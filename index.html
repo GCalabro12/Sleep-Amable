@@ -706,6 +706,13 @@ input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webk
 #nMenu button:active{background:#312E81}
 #nMenu button small{display:block;font-size:11px;color:#A5B4FC;margin-top:1px}
 #nMenu #nmUltima{color:#86EFAC;font-size:12px;margin-top:3px}
+#nMenu #nmBorrar{color:#FCA5A5;border-top:1px solid #3B3486;border-radius:0 0 10px 10px;margin-top:4px}
+#nMenu #nmRevisar:not([hidden]) + #nmBorrar{margin-top:8px}
+#deshacer{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:45;display:flex;align-items:center;gap:10px;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:14px;padding:10px 12px;box-shadow:0 10px 26px #000a;font-size:15px;color:#E0E7FF}
+#deshacer[hidden]{display:none}
+#deshacer span{flex:1}
+#deshacer button{background:#4ADE80;color:#052e16;border:0;border-radius:10px;font-weight:800;font-size:15px;padding:8px 14px}
+body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 #borraBar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#1E1B4B;border-bottom:1px solid #6D5BD0;box-shadow:0 6px 18px #00000088}
 #borraBar[hidden]{display:none}
 #borraTxt{flex:1;min-width:0;font-size:14px;color:#E0E7FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1155,7 +1162,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- REPRODUCTOR DE LA NOCHE -->
-<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small><small id="nmUltima"></small></button></div>
+<div id="deshacer" hidden><span id="deshTxt">🗑️ Noche borrada</span><button type="button" id="deshBtn">↩️ Deshacer</button></div>
+<div id="nMenu" hidden><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small><small id="nmUltima"></small></button><button type="button" id="nmBorrar">🗑️ Borrar esta noche</button></div>
 <div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
   <div class="in">
@@ -1353,7 +1361,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.7'; // v16.7: en ⋮, «Revisada el 26 oct a las 11:05»
+const VERSION = 'v16.8'; // v16.8: borrar una noche es más difícil por error: en ⋮ «Borrar» va abajo y en rojo, y después hay 8 s para «Deshacer»; en Mi cuenta, «Recuperar noches de mi cuenta»
+// v16.7: // v16.7: en ⋮, «Revisada el 26 oct a las 11:05»
 // v16.6: // v16.6: cada grabación que has revisado (¿Acierta? sí/no o etiqueta cambiada) lleva arriba a la derecha «✓ Revisada» en verde
 // v16.5: // v16.5: «🔊 Ruidos ▲» para cerrar va debajo de «pellizca para ampliar», en la parte fija (antes estaba arriba)
 // v16.4: // v16.4: en ⋮, «Última revisión: …»; y «⏹ Detener revisión» mientras revisa
@@ -3181,6 +3190,21 @@ $('guardar').onchange = async () => {
   renderHome();
 };
 let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
+// 🗑️ Borrar una noche con 8 segundos para «Deshacer»: hasta entonces solo se esconde (si se cierra la app, no se borra)
+const PEND = new Map(); // id → temporizador
+async function borrarNocheConDeshacer(n) {
+  if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
+  const t = setTimeout(async () => {
+    PEND.delete(n.id); $('deshacer').hidden = PEND.size === 0;
+    await DB.delNight(n.id); borraNocheCuenta(n.id); renderHome();
+  }, 8000);
+  PEND.set(n.id, t);
+  $('deshTxt').textContent = `🗑️ Borrada la ${nightName(n).toLowerCase()}`;
+  $('deshacer').hidden = false;
+  $('deshBtn').onclick = () => { for (const [id, tm] of PEND) clearTimeout(tm); PEND.clear(); $('deshacer').hidden = true; renderHome(); toast('↩️ Recuperada'); if (cur?.id === n.id && !$('night').hidden) {} };
+  await renderHome();
+}
+
 // ⋮ Menú de cada noche del historial (de momento solo «Borrar»)
 function menuNoche(n, el) {
   const m = $('nMenu'), r = el.getBoundingClientRect();
@@ -3192,8 +3216,8 @@ function menuNoche(n, el) {
   $('nmBorrar').onclick = async () => {
     m.hidden = true;
     if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
-    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Borrar')) return;
-    await DB.delNight(n.id); borraNocheCuenta(n.id); await renderHome(); toast('🗑️ Noche borrada');
+    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Sí, borrarla', 'No')) return;
+    borrarNocheConDeshacer(n);
   };
   $('nmRevisar').onclick = async () => { // abre la noche y la revisa con el detector nuevo
     m.hidden = true;
@@ -3222,13 +3246,13 @@ function barraBorrar(n) {
   const cierra = () => { $('borraBar').hidden = true; document.querySelectorAll('.night.marcada').forEach(x => x.classList.remove('marcada')); };
   $('borraNo').onclick = cierra;
   $('borraSi').onclick = async () => {
-    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Borrar')) return;
-    cierra(); await DB.delNight(n.id); borraNocheCuenta(n.id); await renderHome(); toast('🗑️ Noche borrada');
+    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Sí, borrarla', 'No')) return;
+    cierra(); borrarNocheConDeshacer(n);
   };
 }
 
 async function renderHome() {
-  const ns = await podar((await DB.all('noches')).sort((a, b) => b.id - a.id));
+  const ns = await podar((await DB.all('noches')).filter(n => !PEND.has(n.id)).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
   $('histN').textContent = $('histN3').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
   $('misN').textContent = ns.length ? `(${ns.length})` : '';
@@ -3848,8 +3872,8 @@ $('plSpd').onclick = () => {
   plRender();
 };
 $('delNight').onclick = async () => {
-  if (!await confirma('¿Borrar esta noche y todas sus grabaciones?', '🗑️ Borrar')) return;
-  await DB.delNight(cur.id); borraNocheCuenta(cur.id); $('backBtn').onclick();
+  if (!await confirma('¿Borrar esta noche y todas sus grabaciones?', '🗑️ Sí, borrarla', 'No')) return;
+  const n = cur; $('backBtn').onclick(); borrarNocheConDeshacer(n);
 };
 addEventListener('resize', () => { if (!$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } });
 
@@ -4706,6 +4730,12 @@ function pintaCuenta() {
     return;
   }
   const sinPass = sesion.conPass === false; // entró con Google y aún no tiene contraseña
+  setTimeout(() => { if ($('cuRecuperar')) $('cuRecuperar').onclick = async () => {
+    $('cuRecuperar').disabled = true;
+    try { const k = await bajaNoches(); await renderHome(); aviso(k ? `☁️ Recuperadas ${k} ${k === 1 ? 'noche' : 'noches'} de tu cuenta. Vuelven con sus números (puntuación, ronquido, gráfico…), pero sin las grabaciones: esas solo estaban en el móvil.` : '☁️ No falta ninguna noche: todas las de tu cuenta ya están en este móvil.'); }
+    catch (x) { aviso(x.message || 'No se ha podido conectar. Mira si tienes internet y vuelve a probar.'); }
+    $('cuRecuperar').disabled = false;
+  }; });
   b.innerHTML = `
     <div class="cufila"><span><small>Nombre</small>${escT(sesion.nombre) || '<i>sin nombre</i>'}</span><button type="button" class="btn" data-abre="nom">Cambiar</button></div>
     <form class="cuform" id="cuF-nom" hidden><label class="cplab">Tu nombre <small>(con uno basta; así te llama Luna)</small><input class="cpin" name="nombre" maxlength="40" autocomplete="given-name" value="${escT(sesion.nombre)}"></label>
@@ -4721,7 +4751,8 @@ function pintaCuenta() {
       <p class="cperr" hidden></p><button class="btn wide cugo">Guardar contraseña nueva</button></form>
     ${sesion.admin ? `<div class="cufila"><span><small>Tipo de cuenta</small>👑 Administrador de la app</span><button type="button" class="btn" id="cuAdmin">Cuentas y países</button></div><div id="cuAdminRes" class="note" hidden></div>` : ''}
     <p class="note" style="margin:12px 0 10px">Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
-    <button class="btn wide" id="cuSalir">Salir de la cuenta</button>
+    <button class="btn wide" id="cuRecuperar">☁️ Recuperar noches de mi cuenta</button>
+    <button class="btn wide" id="cuSalir" style="margin-top:8px">Salir de la cuenta</button>
     <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
     <form class="cuform" id="cuF-bor" hidden><p class="note">Se borrarán tu cuenta y las noches guardadas en ella. Las de este móvil se quedan. Escribe tu contraseña para confirmarlo:</p>
       <input class="cpin" name="pass" type="password" autocomplete="current-password">
@@ -5098,6 +5129,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.8', '26 oct 2026', ['🗑️ Más difícil borrar por error: en ⋮ «Borrar» va abajo, en rojo, y luego tienes 8 s para «Deshacer»', '☁️ En Mi cuenta: «Recuperar noches de mi cuenta»']],
   ['v16.7', '26 oct 2026', ['En ⋮ de cada noche: «Revisada el … a las …»']],
   ['v16.6', '26 oct 2026', ['Las grabaciones que ya revisaste llevan «✓ Revisada» en verde: así sabes dónde te quedaste']],
   ['v16.5', '26 oct 2026', ['«🔊 Ruidos ▲» para cerrar ahora está debajo de «pellizca para ampliar», en la parte fija']],
