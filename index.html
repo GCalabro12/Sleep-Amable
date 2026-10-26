@@ -582,6 +582,10 @@ details.hist[open] summary{margin-bottom:10px}
 #finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
 .clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1}
 .elapsed{color:var(--dim);margin-bottom:2px;font-size:14px}
+.levfila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 2px}
+#levBtn{background:#1E293B;border:1px solid #475569;color:#E2E8F0;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
+#levBtn small{display:block;font-size:10.5px;font-weight:500;color:#94A3B8;margin-top:1px}
+#levBtn small:empty{display:none}
 .counters{display:flex;gap:26px;justify-content:center;font-size:16px;margin-bottom:2px}
 .counters b{display:block;font-size:28px;font-weight:600}
 .c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
@@ -1287,6 +1291,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clock" id="clock">--:--</div>
     <div class="elapsed" id="elapsed">Escuchando</div>
+    <div class="levfila"><button type="button" id="levBtn">🚶 Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     <hr class="lsep">
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
@@ -1309,7 +1314,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.0'; // v15.0: «Prueba audífonos» una vez, despacio (app 4.3) y sin subtítulo; la pantalla vuelve a iluminarse aunque haya un mensaje abierto; iconos y textos del monitoreo con su color (ronquido amarillo, voces azul)
+const VERSION = 'v15.1'; // v15.1: «🚶 Me levanté» en el monitoreo (con ⓘ): apunta cada vez que te levantas; por la mañana sale en «Otros datos»
+// v15.0: // v15.0: «Prueba audífonos» una vez, despacio (app 4.3) y sin subtítulo; la pantalla vuelve a iluminarse aunque haya un mensaje abierto; iconos y textos del monitoreo con su color (ronquido amarillo, voces azul)
 // v14.9: // v14.9: fuera «N otros ruidos descartados»; si la habitación fue ruidosa, un aviso con los ruidos más frecuentes
 // v14.8: // v14.8: la IA detecta la tos (🫁, grabaciones propias); tarjeta de la mañana: Horas y Regularidad arriba, Ronquido / Voces / Tos debajo y «Otros datos» (movimiento); el 3.er recuadro de la noche queda libre
 // v14.7: // v14.7: en el monitoreo, «🎧 Prueba audífonos» (con ⓘ): dice «Prueba de audífonos» por los auriculares para saber que suenan
@@ -1496,6 +1502,21 @@ document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
   if (!decirNoche(FRASE)) aviso(SIN_VOZ);
 });
 pintaAviso();
+// 🚶 Me levanté (pantalla de monitoreo): cada toque apunta que te levantaste (baño, beber agua…). Por la mañana sale en «Otros datos».
+function pintaLev() {
+  const n = (live.night?.levantadas || []).length;
+  $('levN').textContent = n ? `${n} ${n === 1 ? 'vez' : 'veces'} esta noche` : '';
+}
+$('levBtn').onclick = async () => {
+  const night = live.night; if (!night) return;
+  const t = Math.round((Date.now() - night.inicio) / 1000), l = night.levantadas ||= [];
+  if (l.length && t - l.at(-1) < 30) { toast('🚶 Ya lo has apuntado hace un momento'); return; } // un doble toque no cuenta dos veces
+  l.push(t); pintaLev();
+  try { await DB.put('noches', night); } catch {}
+  toast(`🚶 Apuntado: ${l.length} ${l.length === 1 ? 'vez' : 'veces'} esta noche`);
+};
+$('levInfo').onclick = () => aviso('🚶 Cada vez que te levantes por la noche (para ir al baño, beber agua u otra cosa), toca «Me levanté». Por la mañana verás cuántas veces te levantaste, en «Otros datos» de tu noche.\n\nEl móvil no puede saberlo solo: levantarse se parece mucho a darse la vuelta en la cama.');
+
 // 🎧 Prueba audífonos (pantalla de monitoreo): una frase por los auriculares para saber que están conectados y suenan.
 // De noche, si no oyes nada, así sabes que es porque no has roncado, no porque fallen. Solo en la app Android.
 function pintaAudi() {
@@ -2808,10 +2829,11 @@ function mananaPartes(n, partes) {
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
   const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
-  const otros = [P('calma')].filter(Boolean);
+  const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
+  const otros = [P('calma'), lev].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
-    ${otros.length ? `<div class="motros">Otros datos</div><div class="mpartes">${otros.map(p => caja(p)).join('')}</div>` : ''}`;
+    ${otros.length ? `<div class="motros">Otros datos</div><div class="mpartes">${otros.map(p => caja(p, p.k === 'lev' ? ' neutro' : '')).join('')}</div>` : ''}`;
 }
 function tarjetaManana(n, prev, titulo) {
   const {total, partes} = puntuacion(n, prev), c = colorNota(total);
@@ -3294,6 +3316,7 @@ const EXP_PARTE = {
   ronq: 'Los minutos que roncaste esta noche. Cuantos menos minutos por cada hora de sueño, mejor puntuación.',
   reg: 'Cuánto cambió la hora de acostarte comparada con tus últimas noches. «±20 min» quiere decir que te acostaste unos 20 minutos antes o después de lo normal. Acostarte siempre a la misma hora ayuda a dormir mejor.',
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
+  lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
@@ -4931,6 +4954,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.1', '26 oct 2026', ['🚶 «Me levanté» en el monitoreo: apunta cada vez que te levantas; por la mañana sale en Otros datos']],
   ['v15.0', '26 oct 2026', ['🎧 «Prueba audífonos» lo dice una vez, más despacio y suave (app 4.3)', 'Arreglado: la pantalla del monitoreo vuelve a iluminarse aunque tengas un mensaje abierto', 'En el monitoreo, ronquido en amarillo y voces en azul, con sus iconos']],
   ['v14.9', '26 oct 2026', ['Fuera los «ruidos descartados»: si tu habitación fue ruidosa, sale un aviso con los ruidos más frecuentes']],
   ['v14.8', '26 oct 2026', ['🫁 La IA reconoce la tos: tiene sus propias grabaciones y su filtro', 'Tarjeta de la mañana más ordenada: Horas y Regularidad; Ronquido, Voces y Tos; y Otros datos', 'Arreglado: las grabaciones de voz no se contaban bien en la lista de noches']],
