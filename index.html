@@ -692,6 +692,7 @@ input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webk
 #nMenu[hidden]{display:none}
 #nMenu button{display:block;width:100%;text-align:left;background:none;border:0;color:#E0E7FF;font-size:16px;padding:10px 12px;border-radius:10px}
 #nMenu button:active{background:#312E81}
+#nMenu button small{display:block;font-size:11px;color:#A5B4FC;margin-top:1px}
 #borraBar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#1E1B4B;border-bottom:1px solid #6D5BD0;box-shadow:0 6px 18px #00000088}
 #borraBar[hidden]{display:none}
 #borraTxt{flex:1;min-width:0;font-size:14px;color:#E0E7FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1112,7 +1113,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList"></div>
   <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
-  <button class="btn wide" id="reNight">🔄 Revisar esta noche con el detector nuevo</button>
+  <button class="btn wide" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
   <div class="card" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
   <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
 </section>
@@ -1138,7 +1139,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- REPRODUCTOR DE LA NOCHE -->
-<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button></div>
+<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small></button></div>
 <div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
   <div class="in">
@@ -1336,7 +1337,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.6'; // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
+const VERSION = 'v15.7'; // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
+// v15.6: // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
 // v15.5: // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
 // v15.4: // v15.4: la ⓘ de «Me levanté», más corta
 // v15.3: // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
@@ -3155,6 +3157,7 @@ let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reduc
 // ⋮ Menú de cada noche del historial (de momento solo «Borrar»)
 function menuNoche(n, el) {
   const m = $('nMenu'), r = el.getBoundingClientRect();
+  $('nmRevisar').hidden = !sesion?.admin; // revisar con el detector: solo el administrador
   m.hidden = false;
   m.style.top = Math.min(innerHeight - m.offsetHeight - 10, r.bottom + 4) + 'px';
   m.style.left = Math.max(10, r.right - m.offsetWidth) + 'px';
@@ -3163,6 +3166,11 @@ function menuNoche(n, el) {
     if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
     if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Borrar')) return;
     await DB.delNight(n.id); borraNocheCuenta(n.id); await renderHome(); toast('🗑️ Noche borrada');
+  };
+  $('nmRevisar').onclick = async () => { // abre la noche y la revisa con el detector nuevo
+    m.hidden = true;
+    nightFrom = el.closest('section')?.id || 'home';
+    await openNight(n.id); $('reNight').onclick();
   };
 }
 document.addEventListener('pointerdown', e => { const m = $('nMenu'); if (!m.hidden && !e.target.closest('#nMenu, .nmas')) m.hidden = true; }, true);
@@ -4621,6 +4629,7 @@ const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '
 function pintaCuenta() {
   $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el administrador
   $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el administrador
+  $('reNight').hidden = !sesion?.admin; // «Revisar esta noche con el detector nuevo»: también
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
@@ -5022,6 +5031,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.7', '26 oct 2026', ['«Revisar con el detector nuevo», en el menú ⋮ de cada noche y solo para el administrador']],
   ['v15.6', '26 oct 2026', ['⋮ Cada noche del historial tiene sus tres puntitos, con la opción de borrarla']],
   ['v15.5', '26 oct 2026', ['🗑️ En el historial, deja apretada una noche para borrarla', 'Al dejar el dedo apretado sobre un texto ya no sale «seleccionar»']],
   ['v15.4', '26 oct 2026', ['Explicación de «Me levanté» más corta']],
