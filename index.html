@@ -1390,7 +1390,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.0'; // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
+const VERSION = 'v19.1'; // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
+// v19.0: // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
 // v18.9: // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
 // v18.8: // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
 // v18.7: // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
@@ -1941,6 +1942,16 @@ const IA = {
 // Decide qué es una grabación a partir de lo que la IA oyó en cada segundo.
 // Ronquido solo si en algún segundo el ronquido es claro (≥ exigencia) Y gana a la respiración; si no, la respiración
 // fuerte se queda en «otro» (respiración), que es lo que más se confundía.
+// Qué es cada segundo de una grabación: una letra por segundo (r ronquido, v voz, t tos, o otro)
+const SEGC = {ronquido: 'r', voz: 'v', tos: 't', otro: 'o'}, SEGT = {r: 'ronquido', v: 'voz', t: 'tos', o: 'otro'};
+const segDe = (sn, vo, br, co) => sn.map((_, i) => SEGC[decide([sn[i]], [vo[i]], [br[i] || 0], [co[i] || 0])]).join('');
+// La etiqueta de la parte más fuerte: lo que es el segundo con más volumen (mirando también el de antes y el de después)
+function tipoFuerte(e, seg) {
+  if (!e.db?.length || !seg) return null;
+  let k = 0; e.db.forEach((d, i) => { if (d > e.db[k]) k = i; });
+  const cerca = [seg[k], seg[k - 1], seg[k + 1]].filter(c => c && c !== 'o');
+  return cerca.length ? SEGT[cerca[0]] : null;
+}
 function decide(sn, vo, br, co = []) {
   const max = a => a.length ? Math.max(...a) : 0, avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const thr = cfg.strict || .35;
@@ -2013,7 +2024,7 @@ class Detector {
       if (!muted) this.floor += (db - this.floor) * (db < this.floor ? 0.05 : 0.002);
       this.pre.push(b); if (this.pre.length > PRE) this.pre.shift();
       if (loud && !muted && this.samples > SR * 3) {
-        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], br: [], co: [], tops: {}, peak: db, est: false};
+        this.ev = {start: t0 - (this.pre.length - 1) * BLK / SR, blocks: this.pre, pend: [...this.pre], quiet: 0, loud: 1, sn: [], vo: [], br: [], co: [], db: [], tops: {}, peak: db, est: false};
         this.pre = [];
         this.onStart?.();
       }
@@ -2033,8 +2044,9 @@ class Detector {
     this.ev = null; this.pre = [];
   }
   classify(blocks) {
-    const e = this.ev, r = IA.scores(concat(blocks));
+    const e = this.ev, f = concat(blocks), r = IA.scores(f);
     e.sn.push(r.sn); e.vo.push(r.vo); e.br.push(r.br || 0); e.co.push(r.co || 0); e.est = e.est || r.est;
+    let s2 = 0; for (const v of f) s2 += v * v; e.db.push(10 * Math.log10(s2 / f.length + 1e-12)); // el volumen de ese segundo
     if (r.vec) { e.vsum ||= new Float32Array(r.vec.length); for (let i = 0; i < r.vec.length; i++) e.vsum[i] += r.vec[i]; e.vn = (e.vn || 0) + 1; }
     this.onScore?.(r);
     if (r.top) e.tops[r.top] = (e.tops[r.top] || 0) + r.topS;
@@ -2045,14 +2057,16 @@ class Detector {
     if (e.loud < 2 || !e.sn.length) return; // un golpe suelto: se ignora
     const max = a => Math.max(...a), avg = a => a.reduce((x, y) => x + y, 0) / a.length;
     const snMax = max(e.sn), voMax = max(e.vo);
-    let tipo = decide(e.sn, e.vo, e.br, e.co), aprendido = false;
+    // Qué es cada segundo (r ronquido, v voz, t tos, o otro) y la etiqueta: la de la parte más fuerte (si es algo claro)
+    const seg = segDe(e.sn, e.vo, e.br, e.co);
+    let tipo = tipoFuerte(e, seg) || decide(e.sn, e.vo, e.br, e.co), aprendido = false;
     const vec = huellaMedia(e), ap = APR.decide(vec); // 🧠 lo que has enseñado manda si está claro
     if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; }
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
-    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido});
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido, seg});
   }
   flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
 }
@@ -2127,7 +2141,7 @@ function makeSaver(night, onChange) {
       else if (ev.tipo === 'tos') night.tos = (night.tos || 0) + 1;
       else night.otros++;
       const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, co: ev.co || 0, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio),
-        ...(ev.vec ? {vec: ev.vec} : {}), ...(ev.aprendido ? {aprendido: true} : {})};
+        ...(ev.vec ? {vec: ev.vec} : {}), ...(ev.aprendido ? {aprendido: true} : {}), ...(ev.seg ? {seg: ev.seg} : {})};
       chain = chain.then(() => DB.put('eventos', rec)).then(() => DB.put('noches', night)).catch(console.error);
       onChange?.(ev);
     },
@@ -3802,11 +3816,9 @@ $('reNight').onclick = async () => {
   for (let k = 0; k < evs.length; k++) {
     if (REV.parar) break; // ⏹ Detener revisión: lo revisado hasta aquí se queda guardado
     const e = evs[k]; antes[e.tipo]++; hechas = k + 1;
-    const ab = await e.blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
-    const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
-    const sn = [], vo = [], br = [], co = [];
-    for (let i = 0; i + sr * .5 <= f.length; i += sr) { const r = IA.scores(f.subarray(i, Math.min(i + sr, f.length))); sn.push(r.sn); vo.push(r.vo); br.push(r.br || 0); co.push(r.co || 0); }
-    const tipo = sn.length ? decide(sn, vo, br, co) : e.tipo;
+    const a = await analizaWav(e.blob), {sn, vo, br, co} = a;
+    if (sn.length) e.seg = segDe(sn, vo, br, co);
+    const tipo = sn.length ? tipoFuerte(a, e.seg) || decide(sn, vo, br, co) : e.tipo; // la etiqueta: la de la parte más fuerte
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
     e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
     const {_url, ...rec} = e; await DB.put('eventos', rec);
@@ -3889,6 +3901,31 @@ async function plPicos(e) {
   } catch { e._picos = Array(70).fill(.15); e._pico = 0; }
   return e._picos;
 }
+// Analiza una grabación guardada (WAV), segundo a segundo: lo que oye la IA y el volumen de cada segundo
+async function analizaWav(blob, pausa) {
+  const ab = await blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
+  const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
+  const r0 = {sn: [], vo: [], br: [], co: [], db: []};
+  for (let i = 0; i + sr * .5 <= f.length; i += sr) {
+    const t = f.subarray(i, Math.min(i + sr, f.length)), r = IA.scores(t);
+    r0.sn.push(r.sn); r0.vo.push(r.vo); r0.br.push(r.br || 0); r0.co.push(r.co || 0);
+    let s2 = 0; for (const v of t) s2 += v * v; r0.db.push(10 * Math.log10(s2 / t.length + 1e-12));
+    if (pausa) await new Promise(ok => setTimeout(ok)); // segundo a segundo: la pantalla no se queda parada
+  }
+  return r0;
+}
+async function plSegs(e) {
+  if (e.seg || e._segando || !IA.clf || !e.blob) return;
+  e._segando = true;
+  try {
+    const a = await analizaWav(e.blob, true);
+    e.seg = segDe(a.sn, a.vo, a.br, a.co);
+    const {_url, _picos, _pico, _segando, ...rec} = e; await DB.put('eventos', rec);
+    if (PL.list[PL.i] === e) plOnda();
+  } catch {}
+  e._segando = false;
+}
+const SEGCOL = {r: '#FBBF24', v: '#60A5FA', t: '#F87171', o: '#64748B'};
 function plOnda() {
   const c = $('plWave'), e = PL.list[PL.i]; if (!c) return;
   const w = c.clientWidth, h = c.clientHeight, dpr = devicePixelRatio || 1;
@@ -3896,12 +3933,17 @@ function plOnda() {
   if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
   const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
   const p = e?._picos || Array(70).fill(.08), n = p.length, bw = w / n;
-  const hecho = PL.au.duration ? PL.au.currentTime / PL.au.duration : 0;
+  const hecho = PL.au.duration ? PL.au.currentTime / PL.au.duration : 0, dur = PL.au.duration || e?.dur || 0;
+  // cada raya, del color de lo que es ese segundo (ronquido, voz, tos u otro); lo ya oído, más vivo
   for (let i = 0; i < n; i++) {
-    const bh = Math.max(2, p[i] * (h - 4));
-    g.fillStyle = (i + .5) / n <= hecho ? '#A78BFA' : '#475569';
+    const bh = Math.max(2, p[i] * (h - 4)), ya = (i + .5) / n <= hecho;
+    const c = e?.seg && dur ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : null;
+    g.fillStyle = c ? SEGCOL[c] : ya ? '#A78BFA' : '#475569';
+    g.globalAlpha = c && !ya ? .5 : 1;
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
   }
+  g.globalAlpha = 1;
+  if (e?.seg && hecho > 0) { g.fillStyle = '#fff'; g.fillRect(Math.min(w - 2, hecho * w), 0, 2, h); } // por dónde va
 }
 async function plOndaNueva() { const e = PL.list[PL.i]; plOnda(); if (e) { await plPicos(e); if (PL.list[PL.i] === e) plOnda(); } }
 {
@@ -3917,7 +3959,7 @@ function plPlay(i) {
   const e = PL.list[i]; PL.i = i; TLV.follow = true;
   PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
   PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
-  plGraph(); plOnda();
+  plGraph(); plOnda(); plSegs(e);
   // empieza 1 segundo antes del momento más fuerte de la grabación (no desde el principio)
   plPicos(e).then(() => {
     if (PL.list[PL.i] !== e) return;
@@ -5277,6 +5319,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.1', '26 oct 2026', ['La onda del reproductor se pinta por colores: qué parte es ronquido, voz o tos', 'Cada grabación lleva la etiqueta de su parte más fuerte']],
   ['v19.0', '26 oct 2026', ['Noche recuperada de la cuenta: en «Ruidos» explica dónde están sus grabaciones', 'El salto al momento más fuerte ahora funciona también en Android']],
   ['v18.9', '26 oct 2026', ['Arreglado: el icono podía abrir una versión vieja; ahora se pone al día también al abrirse']],
   ['v18.8', '26 oct 2026', ['Al volver a la app desde el icono, se pone sola al día si hay versión nueva']],
