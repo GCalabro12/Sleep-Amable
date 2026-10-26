@@ -818,7 +818,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- SABER SI RONCO -->
 <section id="home" hidden>
   <button class="back" id="homeBack">← Inicio</button>
-  <h1 class="htit" style="font-size:21px;margin:0 0 12px">😴 Saber si ronco<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">Saber si ronco<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Graba la noche y la IA detecta tus ronquidos y las voces. Por la mañana verás la puntuación de tu noche, el gráfico y las grabaciones para escucharlas. Las grabaciones se quedan en tu móvil.</div>
 
   <div class="card" id="iaCard">
@@ -826,9 +826,9 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
+  <details class="instr card alrap"><summary><span>Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
+  <details class="instr card profrap"><summary><span>Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <details class="instr card"><summary>Instrucciones de uso</summary>
   <div class="dosdib">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
     <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide tu sueño profundo</figcaption></figure>
@@ -852,7 +852,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <details class="hist instr card" id="histDet">
-    <summary><span>📚 Historial de grabaciones</span><small id="histN"></small></summary>
+    <summary><span>Historial de grabaciones</span><small id="histN"></small></summary>
     <div id="nights"></div>
   </details>
 
@@ -862,21 +862,21 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ESTADÍSTICAS -->
 <section id="stats" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
+  <h1 style="font-size:21px;margin:0 0 12px">Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
   <div class="card" id="mananaCard" hidden></div>
   <div class="card">
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
-  <div class="card"><div style="font-weight:600">📉 Tus minutos roncando</div><div id="lineaBody"></div></div>
-  <div class="card"><div style="font-weight:600">🏷️ Qué te hace roncar más</div><div id="efeBody"></div></div>
+  <div class="card"><div style="font-weight:600">Tus minutos roncando</div><div id="lineaBody"></div></div>
+  <div class="card"><div style="font-weight:600">Qué te hace roncar más</div><div id="efeBody"></div></div>
   <div class="card avcard" id="avStats" hidden></div>
   <details class="card ajd" id="misDet">
-    <summary>📚 Mis noches <small id="misN"></small></summary>
+    <summary>Mis noches <small id="misN"></small></summary>
     <div id="nights2"></div>
   </details>
   <div class="card">
-    <div style="font-weight:600">🌍 Media de tu país</div>
+    <div style="font-weight:600">Media de tu país</div>
     <div id="paisBody" class="stnote"></div>
   </div>
 </section>
@@ -884,18 +884,18 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ALARMA -->
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
-  <details class="instr card" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
+  <h1 style="font-size:21px;margin:0 0 12px">Alarma y música <span class="para">para </span>dormir</h1>
+  <details class="instr card" id="musDet"><summary><span>Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
   <div class="sepgrueso"></div>
   <div class="card">
-    <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)">
       <label>Tono<button class="tonobtn" id="napSon" type="button"></button></label>
       <label>Duración<select id="napMin" style="width:100%;margin-top:3px"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
     </div>
   </div>
   <div class="card" id="alFull" hidden>
-    <div style="font-weight:600">📱 Alarma a pantalla completa</div>
+    <div style="font-weight:600">Alarma a pantalla completa</div>
     <p class="note" style="margin:6px 0 0">Para que al sonar ocupe toda la pantalla (también si estás usando el móvil), Android pide el permiso «Mostrar encima de otras aplicaciones». Actívalo en la pantalla que se abre y vuelve.</p>
     <button class="btn wide" id="alFullBtn">Dar el permiso</button>
     <details class="cfg" style="margin-top:10px"><summary style="font-size:14px">¿Sale «Controlado por ajustes restringidos»?</summary>
@@ -909,7 +909,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div class="sepgrueso"></div>
   <div class="card">
-    <div style="font-weight:600;font-size:17px;margin-bottom:10px">⏰ Alarmas</div>
+    <div style="font-weight:600;font-size:17px;margin-bottom:10px">Alarmas</div>
     <div id="alList"></div>
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
@@ -928,13 +928,13 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- AJUSTES -->
 <section id="utiles" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">✨ Utilidades</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">Utilidades</h1>
   <button class="choice sm a" data-go="luna"><span class="ic"><img class="icimg" src="luna/luna-consejo.png" alt=""></span><span><b class="tt">Habla con Luna</b><small>Pregúntale lo que quieras sobre el sueño y los ronquidos</small></span></button>
 </section>
 
 <section id="luna" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <div class="lunahead"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div style="flex:1"><h1 class="htit">🌙 Habla con Luna<button type="button" class="hinfo" aria-label="Información">i</button></h1></div></div>
+  <div class="lunahead"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div style="flex:1"><h1 class="htit">Habla con Luna<button type="button" class="hinfo" aria-label="Información">i</button></h1></div></div>
   <div class="hbox" hidden>Luna es una inteligencia artificial que te da consejos para dormir mejor y roncar menos, mirando tus noches. Puedes hacerle 3 preguntas al día. Luna no es un médico: ante algo que te preocupe, consulta con tu médico.</div>
   <div id="lunaChat"></div>
   <div id="lunaSugBox"><div class="sugT">💡 Sugerencias de preguntas</div><div id="lunaSug"></div></div>
@@ -942,19 +942,19 @@ body.pl-on .wrap{padding-bottom:190px}
   <form id="lunaForm"><textarea id="lunaIn" rows="1" placeholder="Tu pregunta…" maxlength="600"></textarea><button type="button" id="lunaMic" aria-label="Dictar la pregunta"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="submit" aria-label="Enviar">➤</button></form>
   <div class="row" style="margin-top:10px"><label for="lunaVoz"><span class="icoalt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>Leer las respuestas en voz alta</label><label class="swt"><input type="checkbox" id="lunaVoz"><i></i></label></div>
   <div class="note" id="lunaVozInfo" hidden>🗣️ Luna lee con la voz que tengas puesta en tu móvil, así responde al momento. <button class="btn wide" id="lunaVozCfg" style="margin-top:8px" hidden>⚙️ Cambiar la voz del móvil</button></div>
-  <details class="instr card" id="lunaHistDet"><summary>📚 Historial de charlas con Luna <small id="lunaHistN" style="font-weight:400;color:var(--muted)"></small></summary><div id="lunaHistList"></div></details>
+  <details class="instr card" id="lunaHistDet"><summary>Historial de charlas con Luna <small id="lunaHistN" style="font-weight:400;color:var(--muted)"></small></summary><div id="lunaHistList"></div></details>
   <p class="note">Luna da consejos generales sobre el sueño; no es un médico. Tus preguntas y los números de tus noches se envían a la IA para contestarte (nunca las grabaciones).</p>
 </section>
 
 <section id="ajustes" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">⚙️ Ajustes</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">Ajustes</h1>
   <details class="card ajd">
-    <summary>👤 Mi cuenta <small id="sCuenta"></small></summary>
+    <summary>Mi cuenta <small id="sCuenta"></small></summary>
     <div id="cuentaBody"></div>
   </details>
   <details class="card ajd">
-    <summary>😴 Detector de ronquidos</summary>
+    <summary>Detector de ronquidos</summary>
     <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
       <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
     <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
@@ -969,44 +969,44 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note" id="sonarRes" hidden></p>
   </details>
   <details class="card ajd">
-    <summary>🎨 Fondo de la app <small id="sTema"></small></summary>
+    <summary>Fondo de la app <small id="sTema"></small></summary>
     <p class="note" style="margin:6px 0 10px">Elige el color de fondo. La pantalla de la noche (monitoreo) sigue siempre en negro, para que no moleste.</p>
     <div class="temas" id="temas"></div>
   </details>
   <details class="card ajd" id="aprDet" hidden>
-    <summary><span>🧠 Lo que ha aprendido la IA <small id="sApr"></small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">solo administrador</small></span></summary>
+    <summary><span>Lo que ha aprendido la IA <small id="sApr"></small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">solo administrador</small></span></summary>
     <div id="aprBody"></div>
   </details>
   <details class="card ajd" id="webDet">
-    <summary><span>🌐 Amable Sleep Web y compartir</span></summary>
+    <summary><span>Amable Sleep Web y compartir</span></summary>
     <p class="note" style="margin:8px 0 6px">Amable Sleep también funciona en el navegador, en cualquier móvil u ordenador:</p>
     <a id="webLink" href="https://gcalabro12.github.io/Sleep-Amable/" target="_blank" rel="noopener" style="display:block;font-weight:700;color:#C4B5FD;margin-bottom:12px">🌐 Abrir Amable Sleep Web<small style="display:block;font-weight:400;color:var(--muted);margin-top:2px">gcalabro12.github.io/Sleep-Amable</small></a>
     <button class="btn wide" id="compartirApp" type="button">📤 Recomendar Amable Sleep</button>
     <p class="note" style="margin:8px 0 0">Envía a quien quieras un mensaje con el enlace para que la pruebe.</p>
   </details>
   <details class="card ajd" id="ayudaDet">
-    <summary><span>🆘 Ayuda y soporte</span></summary>
+    <summary><span>Ayuda y soporte</span></summary>
     <p class="note" style="margin:8px 0 10px">¿Algo no funciona o tienes una duda? Escríbenos y te ayudamos. El email ya lleva puesto que es de Amable Sleep y la versión que tienes.</p>
     <a class="btn wide" id="ayudaMail" href="#" style="display:block;text-align:center;text-decoration:none;color:var(--text)">✉️ Escribir a soporte</a>
     <a class="btn wide" id="ayudaWa" href="#" hidden style="display:block;text-align:center;text-decoration:none;margin-top:8px;color:var(--text)">💬 Escribir por WhatsApp</a>
     <p class="note" style="margin:10px 0 0">Email: <b>info@practicaintegral.club</b> · WhatsApp: <b>+34 658 82 57 99</b></p>
   </details>
   <details class="card ajd" id="novDet">
-    <summary>🆕 Novedades <small id="sNov"></small></summary>
+    <summary>Novedades <small id="sNov"></small></summary>
     <div id="novList"></div>
   </details>
   <details class="card ajd">
-    <summary>💾 Noches guardadas <small id="sGuardar"></small></summary>
+    <summary>Noches guardadas <small id="sGuardar"></small></summary>
     <div class="row"><label for="guardar">Cuántas noches guardar<small>Las más antiguas se borran solas, con sus grabaciones, para no llenar el móvil.</small></label>
       <select id="guardar"><option value="7">7</option><option value="14">14</option><option value="30">30</option><option value="60">60</option><option value="0">Todas</option></select></div>
   </details>
   <details class="card ajd">
-    <summary>🤝 Compartir mis noches <small id="sShare"></small></summary>
+    <summary>Compartir mis noches <small id="sShare"></small></summary>
     <div class="row"><label for="shareOn">Compartir de forma anónima<small>Solo se envían números de cada noche (horas, a qué hora te acuestas y te levantas, minutos roncando) y tu país. Nunca grabaciones, nombres ni correos. Con ellos se calcula la media de tu país (en Estadísticas).</small></label>
       <label class="swt"><input type="checkbox" id="shareOn"><i></i></label></div>
   </details>
   <details class="card ajd" hidden><!-- el reto se elige en cada alarma («Reto alarma ?»); el código de aquí sigue sirviendo de valor por defecto -->
-    <summary>⏰ Reto para apagar la alarma <small id="sRetoAj"></small></summary>
+    <summary>Reto para apagar la alarma <small id="sRetoAj"></small></summary>
     <p class="note" style="margin:6px 0 8px">Para no volver a dormirte: cuando suena, la alarma no se apaga hasta que haces el reto (mientras lo haces, el volumen baja). Posponer funciona igual. Lo que elijas aquí se pone a todas las alarmas; luego puedes cambiarlo en cada una (en Alarmas, «Reto alarma ?»). Si no activas ninguno, se apaga con el botón.</p>
     <div id="retoList"></div>
     <p class="note" id="retoNo" hidden></p>
@@ -1017,7 +1017,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- APRENDE SOBRE EL SUEÑO -->
 <section id="aprende" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">📚 Aprende sobre el sueño</h1>
+  <h1 style="font-size:21px;margin:0 0 12px">Aprende sobre el sueño</h1>
   <div class="moontip" style="margin:0 0 14px"><video class="lunavid" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video><div class="bubble"><p>Fichas cortas, de un minuto, para entender tu sueño y tus ronquidos. Cada una trae algo que probar esta semana.</p></div></div>
   <div id="fichas"></div>
   <p class="note">Información general, no sustituye a tu médico. Si te preocupa algo de tu sueño, consúltalo.</p>
@@ -1026,34 +1026,34 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- REDUCIR RONQUIDOS -->
 <section id="reducir" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Reducir ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">Reducir ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
-  <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
+  <details class="instr card alrap"><summary><span>Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
+  <details class="instr card profrap"><summary><span>Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
+  <details class="instr card"><summary><span>Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
-  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sMsg">no</b></summary>
+  <details class="instr card" id="msgDet"><summary><span>Un mensaje en la noche<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sMsg">no</b></summary>
     <div class="row"><label for="msgOn">Activado<small id="msgTxInfo">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina…</small></label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
-    <details class="subdet"><summary><span>📝 Qué te digo</span><small id="msgSumTx"></small></summary>
+    <details class="subdet"><summary><span>Qué te digo</span><small id="msgSumTx"></small></summary>
       <input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua" aria-label="Qué te digo">
       <div class="msgsug" id="msgSug"></div>
     </details>
-    <details class="subdet"><summary><span>⏰ Cuándo</span><small id="msgSumCu"></small></summary>
+    <details class="subdet"><summary><span>Cuándo</span><small id="msgSumCu"></small></summary>
     <div class="cumin" id="msgModo" style="margin-top:8px"><button type="button" data-v="cada">Cada cierto tiempo</button><button type="button" data-v="horas">A horas fijas</button></div>
     <div class="cuctl" id="msgCada"><span>Cada</span><div class="cumin"><button type="button" data-h="1">1 h</button><button type="button" data-h="2">2 h</button><button type="button" data-h="3">3 h</button><button type="button" data-h="4">4 h</button></div></div>
     <div id="msgHoras"></div>
     </details>
-    <details class="subdet"><summary><span>🔗 Juntarlo con el aviso de ronquido</span><small id="msgSumJu"></small></summary>
+    <details class="subdet"><summary><span>Juntarlo con el aviso de ronquido</span><small id="msgSumJu"></small></summary>
     <div class="row"><label for="msgJunto">Activado<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora del mensaje, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
     </details>
     <button class="btn wide" id="msgTest" style="margin-top:12px">▶ Probar el mensaje</button>
   </details>
   <details class="hist instr card">
-    <summary><span>📚 Historial de grabaciones</span><small id="histN3"></small></summary>
+    <summary><span>Historial de grabaciones</span><small id="histN3"></small></summary>
     <div id="nights3"></div>
   </details>
 </section>
@@ -1061,10 +1061,10 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ALGUIEN RONCA A MI LADO -->
 <section id="mask" hidden>
   <button class="back" id="maskBack">← Inicio</button>
-  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">Dormir con quien ronca<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Si duermes al lado de alguien que ronca: sonidos suaves (ruido marrón, lluvia…) que tapan los ronquidos por los auriculares.</div>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
+  <details class="instr card alrap"><summary><span>Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
+  <details class="instr card"><summary>Instrucciones de uso</summary>
     <ol class="steps">
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
       <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
@@ -1074,7 +1074,7 @@ body.pl-on .wrap{padding-bottom:190px}
       <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (por ejemplo, a las 2 o 4 horas): así duran más los pinganillos y descansan tus oídos.</li>
     </ol>
   </details>
-  <details class="instr card" id="sndDet"><summary><span>🌊 Sonidos neutros<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca uno para oírlo 5 segundos</small></span><b class="estado si" id="sndSel"></b></summary>
+  <details class="instr card" id="sndDet"><summary><span>Sonidos neutros<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca uno para oírlo 5 segundos</small></span><b class="estado si" id="sndSel"></b></summary>
     <div class="sounds" id="sounds"></div>
   </details>
   <button class="playbig" id="playBtn">▶ Empezar el sonido</button>
@@ -1107,14 +1107,14 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
   <div class="card ruidocard solo-resumen" id="nRuido" hidden></div>
-  <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
+  <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
   </div>
-  <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><b aria-hidden="true">›</b></button>
+  <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>Ruidos<small id="ruidosN"></small></span><b aria-hidden="true">›</b></button>
   <div class="chips solo-ruidos" id="chips"></div>
   <div class="selbar solo-ruidos" id="selbar">
     <button class="pick" id="selAll" aria-label="Seleccionar todas"></button>
@@ -1278,11 +1278,11 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="prep" hidden>
   <div class="sheet">
     <h2>🌙 Antes de dormir</h2>
-    <details class="pdet"><summary>🔌 Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la <b>pantalla hacia arriba</b>. Si lo dejas <b>sobre el colchón, en una esquina junto a la almohada</b> (nunca debajo: se calienta y oye peor), o activas el 📡 sonar en Ajustes, también verás en el gráfico cuándo te mueves. Con la pantalla hacia arriba, la app nota además cuándo se enciende la luz.</div></details>
-    <details class="pdet"><summary>🌙 «No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
-    <details class="pdet"><summary>✈️ Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
-    <details class="pdet" id="dWifi" hidden><summary>📶 Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
-    <details class="pdet" id="dCuna"><summary>🎵 Música para dormir <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
+    <details class="pdet"><summary>Enchufa el móvil</summary><div class="pbody">Déjalo cerca de la cama, con la <b>pantalla hacia arriba</b>. Si lo dejas <b>sobre el colchón, en una esquina junto a la almohada</b> (nunca debajo: se calienta y oye peor), o activas el 📡 sonar en Ajustes, también verás en el gráfico cuándo te mueves. Con la pantalla hacia arriba, la app nota además cuándo se enciende la luz.</div></details>
+    <details class="pdet"><summary>«No molestar» <span id="sDnd"></span></summary><div class="pbody" id="liDnd">Actívalo (el icono de la luna): desliza el dedo desde arriba de la pantalla y tócalo. Así ninguna notificación ni llamada te despierta ni se cuela en las grabaciones.</div></details>
+    <details class="pdet"><summary>Modo avión <small>opcional</small></summary><div class="pbody" id="liAir"><span id="prepAir"></span></div></details>
+    <details class="pdet" id="dWifi" hidden><summary>Wifi <small>opcional</small> <span id="sWifi"></span></summary><div class="pbody" id="liWifi"></div></details>
+    <details class="pdet" id="dCuna"><summary>Música para dormir <small id="sCuna">ninguna</small></summary><div class="pbody" id="cunaBody"></div></details>
     <p class="note" id="prepNote">Amable Sleep no puede activar estos modos por ti: los móviles no dejan que una app web los cambie.</p>
     <button class="big" id="prepGo">🌙 Listo, empezar</button>
     <button class="btn wide" id="prepNo">Cancelar</button>
@@ -1306,7 +1306,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden></div>
-  <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
+  <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
   <div class="lpanel" id="pAir" hidden></div>
   <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
@@ -1348,7 +1348,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.9'; // v15.9: la noche es un resumen; las grabaciones van en «🔊 Ruidos» (se abre al tocarlo) con «← Volver al análisis de la noche» siempre arriba
+const VERSION = 'v16.0'; // v16.0: sin iconos en los títulos de pantallas, tarjetas y desplegables (más limpio, como Sleep as Android)
+// v15.9: // v15.9: la noche es un resumen; las grabaciones van en «🔊 Ruidos» (se abre al tocarlo) con «← Volver al análisis de la noche» siempre arriba
 // v15.8: // v15.8: la noche guarda cuándo se revisó con el detector nuevo (se ve en la noche, solo el administrador); mientras se revisa una noche con el detector nuevo se puede ir a otras pantallas (al acabar, las cuentas quedan bien en esa noche)
 // v15.7: // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
 // v15.6: // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
@@ -2849,17 +2850,17 @@ function puntuacion(n, prev) {
   const h = (n.fin - n.inicio) / 3600e3, ronq = (n.segRonquido || 0) / 60, porHora = ronq / h;
   const partes = [];
   const sDur = h >= 7 && h <= 9 ? 100 : h < 7 ? Math.max(0, 100 - (7 - h) * 25) : Math.max(0, 100 - (h - 9) * 20);
-  partes.push({k: 'horas', t: '🕒 Horas', v: `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`, s: sDur, peso: 35});
-  partes.push({k: 'ronq', t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(0, 100 - porHora * 8), peso: 35});
+  partes.push({k: 'horas', t: 'Horas', v: `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`, s: sDur, peso: 35});
+  partes.push({k: 'ronq', t: 'Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(0, 100 - porHora * 8), peso: 35});
   const ant = prev.filter(nocheValida).slice(0, 7);
   if (ant.length >= 2) {
     const media = ant.reduce((a, x) => a + minDesdeMediodia(x.inicio), 0) / ant.length;
     const dif = Math.round(Math.abs(minDesdeMediodia(n.inicio) - media));
-    partes.push({k: 'reg', t: '⏰ Regularidad', v: dif <= 5 ? 'a tu hora' : `±${dif} min`, s: Math.max(0, 100 - dif * 1.2), peso: 15});
+    partes.push({k: 'reg', t: 'Regularidad', v: dif <= 5 ? 'a tu hora' : `±${dif} min`, s: Math.max(0, 100 - dif * 1.2), peso: 15});
   }
   if (n.mov) {
     const m = n.mov.length;
-    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
+    partes.push({k: 'calma', t: 'Movimiento', v: `${m} mov.`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
   }
   const pesos = partes.reduce((a, p) => a + p.peso, 0);
   return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
@@ -2871,8 +2872,8 @@ function mananaPartes(n, partes) {
   const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}" role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b></div>` : '';
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
-  const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
-  const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
+  const fila2 = [P('ronq'), {k: 'voz', t: 'Voces', v: `${minVoz} min`}, {k: 'tos', t: 'Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
+  const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: 'Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
   const otros = [P('calma'), lev].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
@@ -2994,7 +2995,7 @@ function pintaCalma(n, evs) {
   const pidio = n.profundo || (n.inicio < PROF_DESDE && (n.mov || []).length > 0);
   if (c && n.fuente === 'micro' && !pidio && nocheValida(n)) { // invitar a activarlo para la próxima noche
     box.hidden = false;
-    box.innerHTML = `<div class="calmatit"><i class="icos" aria-hidden="true"></i> Sueño profundo y ligero</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
+    box.innerHTML = `<div class="calmatit">Sueño profundo y ligero</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
     $('profAct').onclick = () => { ponProfundo(true); box.innerHTML = '<div class="stnote">✅ Activado. La próxima noche deja el móvil sobre el colchón, junto a la almohada.</div>'; };
     return;
   }
@@ -3033,7 +3034,7 @@ function pintaCalma(n, evs) {
   const despTxt = prof
     ? `😵 <b>Te despertaste en sueño profundo</b>: por eso puedes notarte espeso al levantarte.${cerca.length ? ` Tus ciclos acababan hacia las <b>${cerca.join('</b> y las <b>')}</b>: despertar cerca de esas horas suele costar menos.` : ''}`
     : '👍 <b>Te despertaste en sueño ligero</b>: es el mejor momento para despertar.';
-  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Sueño profundo y ligero <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
+  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span>Sueño profundo y ligero <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 minutos</b>, contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y vuelves. Es una aproximación: cada ciclo dura entre 70 y 120 minutos, y las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
@@ -3054,7 +3055,7 @@ function renderStatsHome(ns) {
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
   $('mananaCard').hidden = !ok.length;
-  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Tu última noche');
+  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), 'Tu última noche');
   $('lineaBody').innerHTML = lineaRonquido(ok);
   $('lineaBody').querySelectorAll('.toque').forEach(c => c.onclick = () => {
     $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
@@ -3079,7 +3080,7 @@ function renderStatsHome(ns) {
       <div class="stbox ${cls(snPorHora, 3, 10)}"><b>${snPorHora.toFixed(1).replace('.', ',')}</b><i>min</i><span>roncando por hora</span></div>
     </div>
     <div class="strow"><span>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></span><span>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></span></div>
-    <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>🌙 Consejos de la luna</summary>
+    <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>Consejos de la luna</summary>
     <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div></details>
     <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
   $('lunaDet').ontoggle = () => { lunaDetAbierto = $('lunaDet').open; try { localStorage.setItem('ronquino-lunadet', lunaDetAbierto ? '1' : '0'); } catch {} };
@@ -3369,7 +3370,7 @@ function renderAvisoNoche() {
   const fx = efectoAvisos(cur, curEvs);
   $('avCard').hidden = !fx.length;
   $('avCard').open = false; // plegado: se abre al tocarlo
-  if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
+  if (fx.length) $('avCard').innerHTML = `<summary><span>Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
     <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>` + textoEfecto(fx)
     + `<div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido. Cuentan los minutos que roncas, no el número de grabaciones. Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar.${cur.inicio < AVISO2_DESDE ? ' Esta noche aún saltaba al minuto y con el 85 %.' : ''}</div>`;
   requestAnimationFrame(ajustaTitulos);
@@ -3381,7 +3382,7 @@ async function renderAvisoStats(ns) {
   let fx = [];
   for (const n of con) fx = fx.concat(efectoAvisos(n, await DB.byNight(n.id)));
   $('avStats').hidden = false;
-  $('avStats').innerHTML = `<div style="font-weight:600">🎧 ¿Te ayuda el aviso «estás roncando»?</div>
+  $('avStats').innerHTML = `<div style="font-weight:600">¿Te ayuda el aviso «estás roncando»?</div>
     <div class="avl">${fx.length} ${fx.length === 1 ? 'aviso' : 'avisos'} en ${con.length} ${con.length === 1 ? 'noche' : 'noches'}.</div>` + textoEfecto(fx);
 }
 function renderStats() {
@@ -4940,7 +4941,7 @@ const FICHAS = [
    q: '¿Cómo puedo acostumbrarme a dormir de lado?'}
 ];
 function pintaAprende() {
-  $('fichas').innerHTML = FICHAS.map((x, k) => `<details class="instr card ficha"><summary><span>${x.ic} ${x.t}</span></summary>
+  $('fichas').innerHTML = FICHAS.map((x, k) => `<details class="instr card ficha"><summary><span>${x.t}</span></summary>
     ${x.p.map(t => `<p>${t}</p>`).join('')}
     <div class="fprueba">✅ <b>Prueba esto:</b> ${x.prueba}</div>
     <div class="ffuente">Fuente: <a href="${x.f[1]}" target="_blank" rel="noopener">${x.f[0]}</a></div>
@@ -5077,6 +5078,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.0', '26 oct 2026', ['Más limpia: los títulos de pantallas, tarjetas y desplegables ya no llevan iconos']],
   ['v15.9', '26 oct 2026', ['La noche es ahora un resumen: las grabaciones están en «🔊 Ruidos», con «← Volver al análisis de la noche» siempre arriba']],
   ['v15.8', '26 oct 2026', ['Mientras se revisa una noche con el detector nuevo, puedes ir a otras pantallas de la app', 'Al acabar, la noche dice cuándo se revisó (solo administrador)']],
   ['v15.7', '26 oct 2026', ['«Revisar con el detector nuevo», en el menú ⋮ de cada noche y solo para el administrador']],
