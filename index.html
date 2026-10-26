@@ -736,6 +736,7 @@ input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webk
 #nMenu button{display:block;width:100%;text-align:left;background:none;border:0;color:#E0E7FF;font-size:16px;padding:10px 12px;border-radius:10px}
 #nMenu button:active{background:#312E81}
 #nMenu button small{display:block;font-size:11px;color:#A5B4FC;margin-top:1px}
+#askP{white-space:pre-line}
 #nMenu #nmUltima{color:#86EFAC;font-size:12px;margin-top:3px}
 #nMenu #nmBorrar{color:#FCA5A5;border-top:1px solid #3B3486;border-radius:0 0 10px 10px;margin-top:4px}
 #nMenu #nmRevisar:not([hidden]) + #nmBorrar{margin-top:8px}
@@ -1393,7 +1394,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.3'; // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
+const VERSION = 'v19.4'; // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
+// v19.3: // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
 // v19.2: // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
 // v19.1: // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
 // v19.0: // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
@@ -1589,8 +1591,10 @@ $('ver').textContent = VERSION; $('ver2').textContent = VERSION;
 const cfg = {sens:10, keepOther:false, maxSec:60, strict:.35, sonar:false};
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
 $('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec; $('strict').value = cfg.strict;
+setTimeout(() => pintaStrict()); // (si está ajustada a ti, que se vea en el selector)
 for (const id of ['sens','keepOther','maxSec','strict']) $(id).onchange = () => {
-  cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value; cfg.strict = +$('strict').value;
+  const st = +$('strict').value; if (st !== cfg.strict && !$('strict').selectedOptions[0]?.dataset.aj) delete cfg.brK; // elegir otra exigencia a mano quita el ajuste
+  cfg.sens = +$('sens').value; cfg.keepOther = $('keepOther').checked; cfg.maxSec = +$('maxSec').value; cfg.strict = st || cfg.strict;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
 };
 
@@ -1962,7 +1966,8 @@ function decide(sn, vo, br, co = []) {
   const thr = cfg.strict || .35;
   // Un ronquido es inspirar roncando y espirar (que suena a respiración): basta un segundo de ronquido claro
   const clear = sn.filter(v => v >= thr).length;
-  if (clear >= 1 && max(sn) >= max(vo) * .8) return 'ronquido';
+  // y, si está ajustado con tus revisiones, que suene a ronquido bastante más que a respiración (cfg.brK)
+  if (clear >= 1 && max(sn) >= max(vo) * .8 && max(sn) >= max(br || []) * (cfg.brK || 0)) return 'ronquido';
   if (max(co) >= .3 && max(co) >= max(vo)) return 'tos'; // 🫁 tos o carraspeo claros
   if (max(vo) >= .3) return 'voz';
   return 'otro';
@@ -2119,6 +2124,47 @@ const APR = {
 APR.carga();
 // Media de las huellas de cada segundo de una grabación (o de la que está en marcha)
 const huellaMedia = e => e && e.vsum && e.vn ? Float32Array.from(e.vsum, x => Math.round(x / e.vn * 1000) / 1000) : null;
+// 🎯 Ajustar el detector con mis revisiones: las grabaciones revisadas dicen lo que era de verdad; se prueban muchas
+// reglas (dos ruedas: cuánto tiene que sonar a ronquido y cuánto más que a respiración) y se queda la que más acierta
+function reglaTipo(x, thr, k) {
+  const sn = x.sn || 0, vo = x.vo || 0, br = x.br || 0, co = x.co || 0;
+  if (sn >= thr && sn >= vo * .8 && sn >= br * k) return 'ronquido';
+  if (co >= .3 && co >= vo) return 'tos';
+  if (vo >= .3) return 'voz';
+  return 'otro';
+}
+async function ajustaDetector() {
+  const evs = (await DB.all('eventos')).filter(e => (e.val || e.fix) && typeof e.sn === 'number');
+  if (evs.length < 20) return aviso(`Hacen falta al menos 20 grabaciones revisadas en este móvil (hay ${evs.length}).`);
+  const acierta = (t, k) => evs.filter(e => reglaTipo(e, t, k) === e.tipo).length;
+  const t0 = cfg.strict || .35, k0 = cfg.brK || 0, antes = acierta(t0, k0);
+  let m = {t: t0, k: k0, n: antes};
+  for (let i = 0; i <= 12; i++) { const t = Math.round((.2 + i * .05) * 100) / 100;
+    for (const k of [0, .25, .5, .75, 1, 1.25, 1.5, 2, 3]) { const n = acierta(t, k);
+      // a igualdad de aciertos, la más parecida a la de ahora (sin pasarse)
+      if (n > m.n || (n === m.n && n > antes && Math.abs(t - t0) + k / 10 < Math.abs(m.t - t0) + m.k / 10)) m = {t, k, n}; } }
+  if (m.n <= antes) return aviso(`Con tus ${evs.length} grabaciones revisadas, la regla de ahora ya es la que más acierta: ${antes} de ${evs.length}.`);
+  const ronq = evs.filter(e => e.tipo === 'ronquido'), resto = evs.filter(e => e.tipo === 'otro');
+  const rq = (t, k) => ronq.filter(e => reglaTipo(e, t, k) === 'ronquido').length, rs = (t, k) => resto.filter(e => reglaTipo(e, t, k) !== 'ronquido').length;
+  if (!await confirma(`Con tus ${evs.length} grabaciones revisadas:
+
+• Con la regla de ahora acertaba ${antes} de ${evs.length}.
+• Con la ajustada a ti acertaría ${m.n} de ${evs.length}.
+
+😴 Ronquidos reconocidos: ${rq(t0, k0)} → ${rq(m.t, m.k)} de ${ronq.length}.
+😮‍💨 Respiraciones y otros ruidos que no confunde con ronquido: ${rs(t0, k0)} → ${rs(m.t, m.k)} de ${resto.length}.
+
+¿Usar la regla ajustada?`, '🎯 Usarla', 'No')) return;
+  cfg.strict = m.t; cfg.brK = m.k; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  pintaStrict(); pintaAprendido();
+  aviso('🎯 Listo: desde esta noche detecta con la regla ajustada a ti.\n\nPara corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».');
+}
+// La «Exigencia» de Ajustes: si está ajustada con tus revisiones, sale como «Ajustada a ti»
+function pintaStrict() {
+  const sel = $('strict'); let o = sel.querySelector('option[data-aj]');
+  if (![...sel.options].some(x => +x.value === +cfg.strict)) { if (!o) { o = document.createElement('option'); o.dataset.aj = '1'; sel.append(o); } o.value = cfg.strict; o.textContent = 'Ajustada a ti'; }
+  sel.value = String(cfg.strict); if (+sel.value !== +cfg.strict && o) sel.value = o.value;
+}
 function pintaAprendido() {
   const box = $('aprBody'); if (!box) return;
   const n = APR.ej.length, c = t => APR.ej.filter(x => x.t === t).length;
@@ -2126,7 +2172,10 @@ function pintaAprendido() {
   box.innerHTML = `<p class="note" style="margin:6px 0 10px">Cuando escuchas una grabación y dices si la IA acierta (✅ / ❌), aprende de tus ronquidos, tu voz y los ruidos de tu casa. Aprende de las grabaciones hechas desde la versión 12.3.</p>
     <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🫁 <b>${c('tos')}</b> tos</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
     <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
+    <button class="btn wide" id="aprAjusta">🎯 Ajustar el detector con mis revisiones</button>
+    <p class="note" style="margin:6px 0 10px">Prueba muchas reglas con las grabaciones que has revisado y se queda con la que más acierta (sobre todo, para no confundir tu respiración con ronquidos).${cfg.brK != null ? ' ✅ Ya está ajustado a ti.' : ''}</p>
     ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
+  $('aprAjusta').onclick = ajustaDetector;
   if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
     if (!await confirma('¿Olvidar todo lo que la IA ha aprendido de tus valoraciones?', 'Olvidar')) return;
     APR.ej = []; APR.guarda(); pintaAprendido(); toast('🧠 Olvidado');
@@ -3823,7 +3872,8 @@ $('reNight').onclick = async () => {
     const e = evs[k]; antes[e.tipo]++; hechas = k + 1;
     const a = await analizaWav(e.blob), {sn, vo, br, co} = a;
     if (sn.length) e.seg = segDe(sn, vo, br, co);
-    const tipo = sn.length ? tipoFuerte(a, e.seg) || decide(sn, vo, br, co) : e.tipo; // la etiqueta: la de la parte más fuerte
+    let tipo = sn.length ? tipoFuerte(a, e.seg) || decide(sn, vo, br, co) : e.tipo; // la etiqueta: la de la parte más fuerte
+    const ap = e.vec && !e.val ? APR.decide(e.vec) : null; if (ap) tipo = ap.tipo; // 🧠 y lo que has enseñado, si está claro
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
     e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
     const {_url, ...rec} = e; await DB.put('eventos', rec);
@@ -5366,6 +5416,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.4', '26 oct 2026', ['🎯 Ajustar el detector con tus revisiones: para no confundir tu respiración con ronquidos', '«Revisar esta noche» usa también lo que ha aprendido la IA']],
   ['v19.3', '26 oct 2026', ['Arreglado: la onda volvía a salir toda gris en algunas grabaciones']],
   ['v19.2', '26 oct 2026', ['↻ Desliza hacia abajo desde arriba para actualizar la app', 'En la onda, solo los tramos fuertes van de color (como mucho 5 por grabación)', 'Los botones de revisar caben enteros']],
   ['v19.1', '26 oct 2026', ['La onda del reproductor se pinta por colores: qué parte es ronquido, voz o tos', 'Cada grabación lleva la etiqueta de su parte más fuerte']],
