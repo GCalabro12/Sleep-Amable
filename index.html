@@ -629,6 +629,7 @@ details.hist[open] summary{margin-bottom:10px}
 .tile span{letter-spacing:-.2px}
 .tile.s b{color:var(--snore)} .tile.v b{color:var(--voice)}
 .ruidocard{border-color:#78350F;background:#1C1917;font-size:14px;line-height:1.45;color:#E7E5E4;margin-top:10px}
+details.ruidocard>summary{font-size:15px}
 .ruidocard b{color:#FDBA74}
 .tile.libre{background:transparent;border:1.5px dashed var(--line);cursor:default} /* libre: aquí irán otros datos */
 /* sin seleccionar texto al dejar el dedo apretado: pantalla de monitoreo y recuadros de la noche */
@@ -1118,7 +1119,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando<br>en total</span></button>
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
-  <div class="card ruidocard solo-resumen" id="nRuido" hidden></div>
+  <details class="instr card ruidocard solo-resumen" id="nRuido" hidden></details>
   <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
@@ -1362,7 +1363,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.0'; // v17.0: fuera los 3 recuadros de debajo de la puntuación (grabaciones de ronquidos / minutos roncando / libre): repetían la tarjeta
+const VERSION = 'v17.1'; // v17.1: el aviso de ruido es un desplegable: «Esta noche hubo N sonidos que no son ronquido ni voz» y, al abrirlo, la explicación
+// v17.0: // v17.0: fuera los 3 recuadros de debajo de la puntuación (grabaciones de ronquidos / minutos roncando / libre): repetían la tarjeta
 // v16.9: // v16.9: las noches recuperadas de la cuenta dicen claro que vuelven sin grabaciones
 // v16.8: // v16.8: borrar una noche es más difícil por error: en ⋮ «Borrar» va abajo y en rojo, y después hay 8 s para «Deshacer»; en Mi cuenta, «Recuperar noches de mi cuenta»
 // v16.7: // v16.7: en ⋮, «Revisada el 26 oct a las 11:05»
@@ -3453,7 +3455,10 @@ function pintaRuido(n) {
   const h = Math.max(.5, ((n.fin || Date.now()) - n.inicio) / 36e5), d = n.descartados || 0;
   box.hidden = !(n.fuente === 'micro' && d >= 40 && d / h >= 10); if (box.hidden) return;
   const tops = Object.entries(n.descTop || {}).filter(([k]) => !/^Inside/.test(k)).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => es(k));
-  box.innerHTML = `🔇 <b>Esta noche hubo mucho ruido en tu habitación</b>: unos ${d} sonidos que no eran ronquido ni voz${tops.length ? ` (sobre todo ${tops.join(', ')})` : ''}. Revisa los relojes con tictac y los aparatos que hagan ruido: pueden despertarte y confundir a la IA.`;
+  box.open = false;
+  box.innerHTML = `<summary><span>🔇 Esta noche hubo ${d} sonidos que no son ronquido ni voz</span></summary>
+    <p class="note" style="margin:8px 0 0">${tops.length ? `Sobre todo: ${tops.join(', ')}. ` : ''}Revisa los relojes con sonido tictac, los aparatos que hagan ruido u otros elementos que puedan despertarte y confundir a la IA.</p>`;
+  requestAnimationFrame(ajustaTitulos);
 }
 
 // Las partes de la puntuación de la noche: al tocarlas explican qué significan
@@ -5132,6 +5137,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.1', '26 oct 2026', ['El aviso de ruido se abre como desplegable: primero cuántos sonidos hubo y, al tocarlo, qué revisar']],
   ['v17.0', '26 oct 2026', ['Resumen de la noche más limpio: fuera los recuadros que repetían los datos de la puntuación']],
   ['v16.9', '26 oct 2026', ['Las noches recuperadas de tu cuenta dicen que vuelven sin grabaciones']],
   ['v16.8', '26 oct 2026', ['🗑️ Más difícil borrar por error: en ⋮ «Borrar» va abajo, en rojo, y luego tienes 8 s para «Deshacer»', '☁️ En Mi cuenta: «Recuperar noches de mi cuenta»']],
