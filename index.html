@@ -1216,7 +1216,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
-    <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Registro de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
+    <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
@@ -1460,7 +1460,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.3'; // v21.3: «Fases del sueño estimado» y «Registro de grabaciones» plegados, cada uno en un renglón (la letra encoge si no cabe)
+const VERSION = 'v21.4'; // v21.4: «Registro de grabaciones» pasa a llamarse «Gráfico de grabaciones»
+// v21.3: // v21.3: «Fases del sueño estimado» y «Registro de grabaciones» plegados, cada uno en un renglón (la letra encoge si no cabe)
 // v21.2: // v21.2: Reducir ronquidos: primero y destacado «Aviso: estás roncando» (Requiere audífonos), luego el mensaje, la alarma y las fases; desplegables más estrechos y sin sí/no
 // v21.1: // v21.1: en la noche, «Fases del sueño» y «Registro de grabaciones» van plegadas (título + un dato: profundo % y nº de grabaciones); se abren al tocarlas. En «Ruidos», el registro siempre abierto
 // v21.0: // v21.0: «Aviso por altavoz o auricular» en un renglón; «Medir las fases del sueño» (sin «también») en un renglón y debajo, en pequeño, «Se mide junto con los sonidos»
@@ -5647,6 +5648,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.4', '26 oct 2026', ['«Registro de grabaciones» ahora se llama «Gráfico de grabaciones»']],
   ['v21.3', '26 oct 2026', ['Fases del sueño y Registro de grabaciones, cada uno en un renglón']],
   ['v21.2', '26 oct 2026', ['Reducir ronquidos: primero y destacado «Aviso: estás roncando»; desplegables más estrechos y sin sí/no']],
   ['v21.1', '26 oct 2026', ['La noche cabe mejor: «Fases del sueño» y «Registro de grabaciones» van plegadas; tócalas para abrirlas']],
