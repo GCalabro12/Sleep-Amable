@@ -1390,7 +1390,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.8'; // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
+const VERSION = 'v18.9'; // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
+// v18.8: // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
 // v18.7: // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
 // v18.6: // v18.6: la grabación que suena lleva un reborde punteado que parpadea (se ve mucho mejor dónde vas)
 // v18.5: // v18.5: cada grabación empieza a sonar 1 s antes de su momento más fuerte (no desde el principio)
@@ -2432,7 +2433,11 @@ async function miraVersion() {
     navigator.serviceWorker?.getRegistration().then(r => r?.update()).catch(() => {});
     const t = await (await fetch('./?v=' + Date.now(), {cache: 'no-store'})).text();
     const v = (t.match(/const VERSION = '([^']+)'/) || [])[1];
-    if (v && v !== VERSION && !live.night && PL.au.paused) { toast(`🔄 Actualizando a la ${v}…`); setTimeout(() => location.reload(), 900); }
+    let ya = false; try { ya = sessionStorage.getItem('sa-recarga') === v; } catch {}
+    if (v && v !== VERSION && !ya && !live.night && PL.au.paused) { // una sola vez por versión (que nunca se quede recargando)
+      try { sessionStorage.setItem('sa-recarga', v); } catch {}
+      toast(`🔄 Actualizando a la ${v}…`); setTimeout(() => location.reload(), 900);
+    }
   } catch {}
 }
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
@@ -5266,6 +5271,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.9', '26 oct 2026', ['Arreglado: el icono podía abrir una versión vieja; ahora se pone al día también al abrirse']],
   ['v18.8', '26 oct 2026', ['Al volver a la app desde el icono, se pone sola al día si hay versión nueva']],
   ['v18.7', '26 oct 2026', ['Al abrir «Ruidos» vas directo a la siguiente después de la última revisada, y ▶ empieza ahí']],
   ['v18.6', '26 oct 2026', ['La grabación que suena se ve mejor: reborde punteado que parpadea']],
@@ -5397,6 +5403,7 @@ else {
   $('apkNo').onclick = () => { $('apkBanner').hidden = true; try { localStorage.setItem('ronquino-sinApk', APK_ULTIMA); } catch {} };
 }
 await DB.open();
+setTimeout(miraVersion, 4000); // también al abrir: si se ha cargado una copia vieja, se pone al día
 await vigilaNoches();
 renderHome();
 // ☁️ Con cuenta: si falta alguna noche que está en la cuenta (y no la borraste tú), vuelve sola
