@@ -455,10 +455,14 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .calma text{fill:#64748B;font-size:11px}
 .calma .et{fill:#94A3B8;font-size:10.5px}
 .calma .cic{fill:#C4B5FD;font-size:10px;font-weight:700}
+.calma .ini{fill:#C4B5FD;font-weight:700}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
 .calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
 .calmadatos b{display:block;font-size:16px;color:var(--text)}
-.calmadatos.tresdat span i{display:block;font-style:normal;font-size:16px;line-height:1.3}
+.calmadatos.tresdat span{font-weight:600}
+.calmadatos.tresdat .fp{background:#6366F1;color:#E0E7FF} .calmadatos.tresdat .fp b{color:#fff}
+.calmadatos.tresdat .fl{background:#A78BFA;color:#2E1065} .calmadatos.tresdat .fl b{color:#1E1B4B}
+.calmadatos.tresdat .fd{background:#FB923C;color:#431407} .calmadatos.tresdat .fd b{color:#2A0E04} /* los colores de los bloques */
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;min-width:0}
 .stbox b{display:block;font-size:22px;line-height:1.1;white-space:nowrap}
@@ -1363,7 +1367,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.1'; // v17.1: el aviso de ruido es un desplegable: «Esta noche hubo N sonidos que no son ronquido ni voz» y, al abrirlo, la explicación
+const VERSION = 'v17.2'; // v17.2: los 3 recuadros de las fases, sin iconos y con su color de fondo (profundo azul, ligero violeta, despierto naranja); «Fases del sueño»; el gráfico empieza con la hora en que empezaste; «Dormiste: 22:07 · Despertaste: 06:55»
+// v17.1: // v17.1: el aviso de ruido es un desplegable: «Esta noche hubo N sonidos que no son ronquido ni voz» y, al abrirlo, la explicación
 // v17.0: // v17.0: fuera los 3 recuadros de debajo de la puntuación (grabaciones de ronquidos / minutos roncando / libre): repetían la tarjeta
 // v16.9: // v16.9: las noches recuperadas de la cuenta dicen claro que vuelven sin grabaciones
 // v16.8: // v16.8: borrar una noche es más difícil por error: en ⋮ «Borrar» va abajo y en rojo, y después hay 8 s para «Deshacer»; en Mi cuenta, «Recuperar noches de mi cuenta»
@@ -3049,7 +3054,8 @@ function pintaCalma(n, evs) {
   // marcas de hora cada 1 o 2 horas
   const marcas = []; const paso = c.B * 5 > 420 ? 120 : 60;
   const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
-  for (let m = primera; m < c.B * 5; m += paso) { const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 8}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
+  marcas.push(`<text x="${pl}" y="${H - 8}" text-anchor="start" class="ini">${hhmm(c.ini)}</text>`); // la hora en que empezaste
+  for (let m = primera; m < c.B * 5; m += paso) { if (w * m / (c.B * 5) < 44) continue; const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 8}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
   const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
   const min = k => c.niv.filter(z => z === k).length * 5;
   const hm3 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')}` : `${mi} min`; // corto: caben 3 en fila
@@ -3060,7 +3066,7 @@ function pintaCalma(n, evs) {
   const despTxt = prof
     ? `😵 <b>Te despertaste en sueño profundo</b>: por eso puedes notarte espeso al levantarte.${cerca.length ? ` Tus ciclos acababan hacia las <b>${cerca.join('</b> y las <b>')}</b>: despertar cerca de esas horas suele costar menos.` : ''}`
     : '👍 <b>Te despertaste en sueño ligero</b>: es el mejor momento para despertar.';
-  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Sueño profundo y ligero <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
+  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 minutos</b>, contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y vuelves. Es una aproximación: cada ciclo dura entre 70 y 120 minutos, y las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
@@ -3069,8 +3075,8 @@ function pintaCalma(n, evs) {
       ${marcas.join('')}
     </svg>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
-    <div class="calmadatos tresdat"><span><i>🌙</i>Profundo<b>${hm3(min(0))}</b></span><span><i>🌀</i>Ligero<b>${hm3(min(1))}</b></span><span><i>👁️</i>Despierto<b>${hm3(min(2))}</b></span></div>
-    <div class="stnote" style="margin-top:8px">Dormiste a las <b>${hhmm(n.inicio)}</b> y despertaste a las <b>${hhmm(n.fin)}</b>.</div>
+    <div class="calmadatos tresdat"><span class="fp">Profundo<b>${hm3(min(0))}</b></span><span class="fl">Ligero<b>${hm3(min(1))}</b></span><span class="fd">Despierto<b>${hm3(min(2))}</b></span></div>
+    <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
   $('calmaInfo').onclick = () => { const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
@@ -5137,6 +5143,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.2', '26 oct 2026', ['«Fases del sueño»: el gráfico empieza con la hora en que empezaste; «Dormiste: … · Despertaste: …»', 'Los recuadros de profundo, ligero y despierto llevan su color, sin iconos']],
   ['v17.1', '26 oct 2026', ['El aviso de ruido se abre como desplegable: primero cuántos sonidos hubo y, al tocarlo, qué revisar']],
   ['v17.0', '26 oct 2026', ['Resumen de la noche más limpio: fuera los recuadros que repetían los datos de la puntuación']],
   ['v16.9', '26 oct 2026', ['Las noches recuperadas de tu cuenta dicen que vuelven sin grabaciones']],
