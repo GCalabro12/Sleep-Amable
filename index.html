@@ -26,6 +26,11 @@ header .logo{width:62px;height:62px;flex:none}
 header h1{font-size:clamp(20px,6.6vw,34px);margin:0;font-weight:800;white-space:nowrap;line-height:1.1;min-width:0}
 header .ver{flex:none;margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;font-size:11px;line-height:1.5;color:var(--dim);white-space:nowrap}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+/* Reducir ronquidos: desplegables más estrechos y sin «sí/no» (se abren con el triángulo) */
+#reducir > .card,#reducir > details.card{padding:10px 14px;margin-bottom:8px}
+#reducir .estado{display:none}
+#reducir details.destacado{background:#1E3A8A;border-color:#3B82F6} /* lo principal: el aviso «estás roncando» */
+#reducir details.destacado > summary small{color:#BFDBFE !important}
 .ia{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
 .dot.ok{background:var(--ok)} .dot.wait{background:var(--voice);animation:pulse 1s infinite alternate} .dot.bad{background:var(--bad)}
@@ -1128,14 +1133,11 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Reducir ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz" style="min-width:0;flex:1"><span class="unalinea" style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
-  <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
+  <details class="instr card destacado"><summary><span>🎧 Aviso: estás roncando<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   </details>
-  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sMsg">no</b></summary>
+  <details class="instr card" id="msgDet"><summary><span>💬 Un mensaje en la noche<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
     <div class="row"><label for="msgOn">Activado<small id="msgTxInfo">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina…</small></label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
     <details class="subdet"><summary><span>📝 Qué te digo</span><small id="msgSumTx"></small></summary>
       <input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua" aria-label="Qué te digo">
@@ -1151,6 +1153,9 @@ body.pl-on .wrap{padding-bottom:190px}
     </details>
     <button class="btn wide" id="msgTest" style="margin-top:12px">▶ Probar el mensaje</button>
   </details>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
+  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz" style="min-width:0;flex:1"><span class="unalinea" style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="hist instr card">
     <summary><span>📚 Historial de grabaciones</span><small id="histN3"></small></summary>
     <div class="ncal" data-desde="reducir"></div>
@@ -1454,7 +1459,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.1'; // v21.1: en la noche, «Fases del sueño» y «Registro de grabaciones» van plegadas (título + un dato: profundo % y nº de grabaciones); se abren al tocarlas. En «Ruidos», el registro siempre abierto
+const VERSION = 'v21.2'; // v21.2: Reducir ronquidos: primero y destacado «Aviso: estás roncando» (Requiere audífonos), luego el mensaje, la alarma y las fases; desplegables más estrechos y sin sí/no
+// v21.1: // v21.1: en la noche, «Fases del sueño» y «Registro de grabaciones» van plegadas (título + un dato: profundo % y nº de grabaciones); se abren al tocarlas. En «Ruidos», el registro siempre abierto
 // v21.0: // v21.0: «Aviso por altavoz o auricular» en un renglón; «Medir las fases del sueño» (sin «también») en un renglón y debajo, en pequeño, «Se mide junto con los sonidos»
 // v20.9: // v20.9: «Prueba audífonos» y «Me levanté» mitad y mitad (en pantallas estrechas se montaban); monitoreo repartido por la pantalla (sin el hueco bajo los iconos); «Fin monitoreo sueño» encima del «Panel de monitoreo» (debajo, solo información); paso 3: textos pequeños más grandes (notas de 12 a 14 px); la noche sin frases de relleno (puntuación: solo «de 100»; «Despertaste en sueño ligero/profundo», corto)
 // v20.8: // v20.8: paso 3 (menos texto): Inicio en mosaico: «Saber si ronco» grande y el resto en baldosas de 2 en 2 con icono y nombre (sin frases); cabe sin bajar
@@ -1825,7 +1831,7 @@ pintaMsg();
 // 🛏️ Duermo solo
 function pintaAltavoz() {
   $('altavoz').checked = VOZ_OK && !!cfg.altavoz; $('altavoz').disabled = !VOZ_OK;
-  document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Auriculares o altavoz' : 'Necesita auriculares');
+  document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auriculares o altavoz' : 'Requiere audífonos');
   $('altavozTx').textContent = cfg.altavoz ? 'Ahora: por los auriculares o, si no los llevas, por el altavoz (si duermes solo)' : 'Ahora: solo por los auriculares';
 }
 $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaAltavoz(); };
@@ -5639,6 +5645,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.2', '26 oct 2026', ['Reducir ronquidos: primero y destacado «Aviso: estás roncando»; desplegables más estrechos y sin sí/no']],
   ['v21.1', '26 oct 2026', ['La noche cabe mejor: «Fases del sueño» y «Registro de grabaciones» van plegadas; tócalas para abrirlas']],
   ['v21.0', '26 oct 2026', ['«Aviso por altavoz o auricular» y «Medir las fases del sueño», cada uno en un renglón']],
   ['v20.9', '26 oct 2026', ['Monitoreo: «Fin monitoreo sueño» encima del panel', 'Letra de las notas más grande', 'La noche, con menos frases: lo importante en corto']],
