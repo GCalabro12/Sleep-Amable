@@ -538,17 +538,18 @@ details.hist[open] summary{margin-bottom:10px}
 .choice.e{background:linear-gradient(135deg,#334155,#1E293B);box-shadow:0 8px 24px #33415544}
 #menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
-#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:104px 16px 14px;text-align:center;transition:opacity .8s;overflow-y:auto;overscroll-behavior:contain}
+#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:112px 16px 14px;text-align:center;transition:opacity .8s;overflow-y:auto;overscroll-behavior:contain}
 #listen.on{display:flex}
 #listen .inner{transition:opacity 1.2s;margin:auto 0;width:100%} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
-.ltop .ltit{flex-basis:100%;text-align:center;font-size:18px;color:#A78BFA;margin-bottom:6px;font-weight:700;letter-spacing:.3px} /* como «Panel de monitoreo» */
+.ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
+.monit .tres i{background:#fff}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #1F2937;background:#0B1020;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
-.lpanel{position:absolute;top:100px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
+.lpanel{position:absolute;top:108px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #pCuna{top:72px;left:0;right:0;bottom:0;max-height:none;border-radius:20px 20px 0 0;background:#0B1020;padding:16px 16px 28px;font-size:15px}
 .pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
@@ -580,9 +581,9 @@ details.hist[open] summary{margin-bottom:10px}
 .linfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
 #bloque{font-size:14px;color:#94A3B8;line-height:1.3;margin:-2px 0 6px;min-height:18px}
 .prfila:not(:has(button:not([hidden]))){display:none}
-.lsep{border:0;border-top:1px solid #1F2937;width:100%;margin:10px 0}
+.lsep{border:0;border-top:3px solid #2E2A5A;border-radius:2px;width:100%;margin:10px 0}
 #bloque.on{color:#FCA5A5}
-.monit{font-size:18px;font-weight:700;color:#A78BFA;margin-bottom:2px;letter-spacing:.3px}
+.monit{width:100%;box-sizing:border-box;margin-bottom:4px}
 .tres{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
 .tres i{width:9px;height:9px;border-radius:50%;background:#A78BFA;opacity:.15;animation:2s linear infinite}
 .tres i:nth-child(1){animation-name:rq-p1}.tres i:nth-child(2){animation-name:rq-p2}.tres i:nth-child(3){animation-name:rq-p3}
@@ -607,7 +608,12 @@ details.hist[open] summary{margin-bottom:10px}
 #finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
 .clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1}
 .elapsed{color:var(--dim);margin-bottom:2px;font-size:14px}
-.levfila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 2px}
+.duofila{display:flex;gap:10px;width:100%;margin:4px 0 10px} /* Prueba audífonos (izquierda) y Me levanté (derecha) */
+.duo{position:relative;flex:1;display:flex;min-width:0}
+.duo:not(:has(button:not([hidden]))){display:none}
+.duo > button:first-child{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 26px 8px 8px;font-size:14px;margin:0}
+.duoic{font-size:24px;line-height:1.1}
+.duo .linfo{position:absolute;top:6px;right:6px;width:22px;height:22px;font-size:12px}
 #levBtn{background:#1E293B;border:1px solid #475569;color:#E2E8F0;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
 #levBtn small{display:block;font-size:10.5px;font-weight:500;color:#94A3B8;margin-top:1px}
 #levBtn small:empty{display:none}
@@ -1394,8 +1400,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <div class="audifila"><button type="button" id="audiBtn" hidden>🎧 Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
-    <div class="levfila"><button type="button" id="levBtn">🚶 Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
@@ -1412,13 +1416,18 @@ body.pl-on .wrap{padding-bottom:190px}
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
+    <div class="duofila">
+      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
+      <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
+    </div>
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v20.4'; // v20.4: «Elige para esta noche» con el mismo tamaño y color violeta que «Panel de monitoreo»
+const VERSION = 'v20.5'; // v20.5: «Prueba audífonos» y «Me levanté» lado a lado, abajo (encima de «Fin monitoreo»), con el icono arriba y el nombre debajo; «Elige para esta noche» y «Panel de monitoreo» son barras moradas con letras blancas; las rayas de separación, más gruesas
+// v20.4: // v20.4: «Elige para esta noche» con el mismo tamaño y color violeta que «Panel de monitoreo»
 // v20.3: // v20.3: monitoreo sin la raya y el hueco de antes de «Fin monitoreo» (cabe en la pantalla); 📅 calendario de noches encima de la lista: cada noche del color de su puntuación; tocar el día abre esa noche (idea de Felipe)
 // v20.2: // v20.2: Grabando/Movimiento/Luz/Auriculares ya no parecen botones: son lucecitas (un punto que se enciende, sin borde ni fondo); menos grabaciones y más largas: se cortan a los 15 s de silencio (antes 6) y duran hasta 2 min (antes 1); un ronquido con pausas ya no sale troceado
 // v20.1: // v20.1: «Medir también el sueño profundo» pasa a «Medir también las fases del sueño» (y sus textos)
@@ -5584,6 +5593,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, encima de «Fin monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
   ['v20.4', '26 oct 2026', ['Monitoreo: «Elige para esta noche» en violeta y del mismo tamaño que «Panel de monitoreo»']],
   ['v20.3', '26 oct 2026', ['📅 Calendario de noches: cada noche, del color de su puntuación; toca el día para abrirla', 'Monitoreo: sin el hueco antes de «Fin monitoreo», que ya se ve sin bajar']],
   ['v20.2', '26 oct 2026', ['Menos grabaciones por noche y más largas (hasta 2 min): un ronquido con pausas ya no sale en trocitos', 'En el monitoreo, Grabando y Movimiento son lucecitas (no parecen botones)']],
