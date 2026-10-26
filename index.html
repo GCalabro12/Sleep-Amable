@@ -466,6 +466,8 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .calmadatos.tresdat small{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:2px;line-height:1.2}
 .calmadatos.tresdat .fp{background:#6366F1;color:#E0E7FF} .calmadatos.tresdat .fp b{color:#fff}
 .calmadatos.tresdat .fl{background:#A78BFA;color:#2E1065} .calmadatos.tresdat .fl b{color:#1E1B4B}
+.calmadatos.cuatro{display:grid;grid-template-columns:1fr 1fr}
+.calmadatos.tresdat .fr{background:#22D3EE;color:#083344} .calmadatos.tresdat .fr b{color:#04222B}
 .calmadatos.tresdat .fd{background:#FB923C;color:#431407} .calmadatos.tresdat .fd b{color:#2A0E04} /* los colores de los bloques */
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;border:2px solid #475569;display:flex;flex-direction:column;align-items:center;min-width:0}
@@ -1373,7 +1375,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.6'; // v17.6: títulos «📋 Panel de puntuación» (al abrir una noche) y «☀️ Panel de tu última noche» (Estadísticas)
+const VERSION = 'v17.7'; // v17.7: fases como en los estudios con actigrafía: despierto solo si te mueves mucho, hablas o pulsas «Me levanté»; el REM aparte (tras un profundo largo, la 1.ª mitad del ligero); 4 filas y lo normal en %
+// v17.6: // v17.6: títulos «📋 Panel de puntuación» (al abrir una noche) y «☀️ Panel de tu última noche» (Estadísticas)
 // v17.5: // v17.5: tarjeta de la mañana sin el rótulo «Otros datos» (Movimiento va justo debajo); un recuadro solo en su fila sale centrado
 // v17.4: // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
 // v17.3: // v17.3: cualquier movimiento cuenta como «despierto»; «Profundo y REM» (el móvil no los distingue); debajo de cada recuadro, lo normal; en la ⓘ, la noche orientativa de 8 h
@@ -3026,9 +3029,22 @@ function curvaCalma(n, evs) {
   for (let b = 0; b + 2 < B; b++) if (v[b] < .25 && v[b + 1] < .25 && v[b + 2] < .25) { dormido = b; break; }
   for (let b = B - 1; b >= 2; b--) if (v[b] < .25 && v[b - 1] < .25 && v[b - 2] < .25) { despierto = b + 1; break; }
   const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
-  // En bloques: profundo (poco movimiento), ligero, despierto (mucho movimiento, o antes de dormirte y después de despertar)
-  // cualquier movimiento que note el móvil en esos 5 min = despierto (en la almohada hay movimientos que ni llega a notar)
-  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] > 0 || x >= .6 ? 2 : x >= .25 ? 1 : 0);
+  // En bloques (como en los estudios que comparan movimiento con laboratorio): poco movimiento = profundo, algo = ligero;
+  // despierto solo si te mueves mucho (5 o más movimientos en 5 min; en el laboratorio, despierto ≈ 11 y REM ≈ 2,6), hablas o pulsas «Me levanté», o antes de dormirte y después de despertar
+  const hab = new Array(B).fill(false);
+  for (const e of evs) if (e.tipo === 'voz') { const b = Math.floor(e.off / 300); if (b >= 0 && b < B) hab[b] = true; }
+  for (const t of n.levantadas || []) { const b = Math.floor(t / 300); if (b >= 0 && b < B) hab[b] = true; }
+  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] >= 5 || hab[b] ? 3 : x >= .25 ? 1 : 0);
+  // REM: suele llegar justo después de un profundo largo. Si a 20 min o más de profundo les siguen 20 min o más de ligero,
+  // la primera mitad de ese ligero (tras 5 min) se marca como REM
+  for (let b = 0; b < B;) {
+    let e = b; while (e + 1 < B && niv[e + 1] === niv[b]) e++;
+    const largo = e - b + 1;
+    if (niv[b] === 1 && largo >= 4 && b >= 4 && niv.slice(b - 4, b).every(z => z === 0)) {
+      for (let k = b + 1; k < b + Math.ceil(largo / 2); k++) niv[k] = 2;
+    }
+    b = e + 1;
+  }
   return {v, niv, ini, fin, B, dB: dormido, dormido: dormido == null ? null : ini + dormido * 300e3, despierto: despierto == null ? null : Math.min(fin, ini + despierto * 300e3),
     tranq, inq, conMov: (n.mov || []).length > 0};
 }
@@ -3043,10 +3059,10 @@ function pintaCalma(n, evs) {
   }
   box.hidden = !c || n.fuente !== 'micro' || !pidio; if (box.hidden) return;
   // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
-  const W = 320, H = 132, pl = 58, pr = 6, pt = 16, fila = 26, w = W - pl - pr, hB = fila * 3;
+  const W = 320, H = 154, pl = 58, pr = 6, pt = 16, fila = 24, w = W - pl - pr, hB = fila * 4;
   const x = b => pl + w * b / c.B;
-  const COL = ['#6366F1', '#A78BFA', '#FB923C'], FIL = ['Prof./REM', 'Ligero', 'Despierto'];
-  const yF = k => pt + (2 - k) * fila; // fila del nivel k
+  const COL = ['#6366F1', '#A78BFA', '#22D3EE', '#FB923C'], FIL = ['Profundo', 'Ligero', 'REM', 'Despierto'];
+  const yF = k => pt + (3 - k) * fila; // fila del nivel k (despierto arriba, REM, ligero, profundo abajo)
   const bloques = [];
   for (let b = 0; b < c.B;) {
     let e = b; while (e + 1 < c.B && c.niv[e + 1] === c.niv[b]) e++;
@@ -3069,6 +3085,7 @@ function pintaCalma(n, evs) {
   for (let m = primera; m < c.B * 5; m += paso) { if (w * m / (c.B * 5) < 44) continue; const d = new Date(c.ini + m * 60e3); marcas.push(`<text x="${(pl + w * m / (c.B * 5)).toFixed(1)}" y="${H - 8}" text-anchor="middle">${String(d.getHours()).padStart(2, '0')}:00</text>`); }
   const hm2 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')} min` : `${mi} min`;
   const min = k => c.niv.filter(z => z === k).length * 5;
+  const pc = k => Math.round(min(k) / (c.B * 5) * 100);
   const hm3 = mi => mi >= 60 ? `${Math.floor(mi / 60)} h ${String(mi % 60).padStart(2, '0')}` : `${mi} min`; // corto: caben 3 en fila
   // ¿En qué te despertaste? Lo de 20 a 5 minutos antes del final (los últimos minutos ya son moverte para levantarte)
   const fin5 = c.niv.slice(Math.max(0, c.B - 4), Math.max(1, c.B - 1)), prof = fin5.filter(z => z === 0).length > fin5.length / 2;
@@ -3078,15 +3095,15 @@ function pintaCalma(n, evs) {
     ? `😵 <b>Te despertaste en sueño profundo</b>: por eso puedes notarte espeso al levantarte.${cerca.length ? ` Tus ciclos acababan hacia las <b>${cerca.join('</b> y las <b>')}</b>: despertar cerca de esas horas suele costar menos.` : ''}`
     : '👍 <b>Te despertaste en sueño ligero</b>: es el mejor momento para despertar.';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
-    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: si el móvil nota que te mueves, cuenta como despierto; cuanto más quieto, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y REM, y vuelves.<br><br>A modo orientativo, una noche de 8 horas tiene: <b>ligero</b>, la mitad de la noche (unas 4 h); <b>REM</b>, una quinta parte (1,5 a 2 h); <b>profundo</b>, un 15-20 % (1 a 1,5 h); <b>despierto</b>, menos de 30 min. En el REM (cuando sueñas) el cuerpo se queda quieto, como en el profundo: por eso el móvil los cuenta juntos.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
-    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero y despierto a lo largo de la noche, en bloques">
+    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto más quieto, más profundo. Si te mueves mucho, hablas o pulsas «Me levanté», cuenta como despierto. El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
+    <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
-      ${[2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
+      ${[3, 2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
       ${bloques.join('')}
       ${marcas.join('')}
     </svg>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
-    <div class="calmadatos tresdat"><span class="fp">Profundo y REM<b>${hm3(min(0))}</b><small>normal: 35-45 %</small></span><span class="fl">Ligero<b>${hm3(min(1))}</b><small>normal: la mitad</small></span><span class="fd">Despierto<b>${hm3(min(2))}</b><small>normal: menos de 30 min</small></span></div>
+    <div class="calmadatos tresdat cuatro"><span class="fp">Profundo<b>${hm3(min(0))} · ${pc(0)} %</b><small>normal: 10-20 %</small></span><span class="fr">REM<b>${hm3(min(2))} · ${pc(2)} %</b><small>normal: 10-25 %</small></span><span class="fl">Ligero<b>${hm3(min(1))} · ${pc(1)} %</b><small>normal: 45-55 %</small></span><span class="fd">Despierto<b>${hm3(min(3))} · ${pc(3)} %</b><small>normal: 5-20 %</small></span></div>
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
@@ -5154,6 +5171,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.7', '26 oct 2026', ['Fases del sueño más fieles: moverte un poco ya no cuenta como despierto (solo si te mueves mucho, hablas o pulsas «Me levanté»)', 'El REM sale aparte, en su propia fila', 'Cada fase con su porcentaje y lo normal']],
   ['v17.6', '26 oct 2026', ['Títulos: «Panel de puntuación» al abrir una noche y «Panel de tu última noche» en Estadísticas']],
   ['v17.5', '26 oct 2026', ['Tu última noche: fuera el rótulo «Otros datos»; Movimiento va justo debajo', 'Si un recuadro queda solo en su fila, sale centrado']],
   ['v17.4', '26 oct 2026', ['El gráfico de los sonidos de la noche ya tiene título: «Registro de grabaciones etiquetadas»', 'Los recuadros pequeños (Horas, Regularidad, Ronquido…, y Profundo, Ligero y Despierto), centrados; y con el borde entero de su color']],
