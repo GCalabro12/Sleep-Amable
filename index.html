@@ -38,7 +38,10 @@ header .ver{flex:none;margin-left:auto;align-self:flex-start;display:flex;flex-d
 .tips li{margin:3px 0}
 h2{font-size:17px;margin:22px 0 10px}
 .night{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:8px}
-.night .when{font-weight:600;font-size:clamp(13px,4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.night{position:relative}
+.night .nmas{position:absolute;top:4px;right:4px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#A5B4FC;border-radius:50%}
+.night .nmas:active{background:#ffffff14}
+.night .when{padding-right:30px;font-weight:600;font-size:clamp(13px,4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .night .line2{display:flex;align-items:center;gap:10px;margin-top:3px}
 .night .sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .night .counts{margin-left:auto;text-align:right;font-size:14px;white-space:nowrap}
@@ -685,6 +688,10 @@ canvas{width:100%;height:90px;display:block}
 /* En toda la app: dejar el dedo apretado no selecciona texto (salvo donde se escribe) */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+#nMenu{position:fixed;z-index:41;min-width:150px;background:#1E1B4B;border:1px solid #6D5BD0;border-radius:14px;padding:6px;box-shadow:0 10px 26px #000a}
+#nMenu[hidden]{display:none}
+#nMenu button{display:block;width:100%;text-align:left;background:none;border:0;color:#E0E7FF;font-size:16px;padding:10px 12px;border-radius:10px}
+#nMenu button:active{background:#312E81}
 #borraBar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#1E1B4B;border-bottom:1px solid #6D5BD0;box-shadow:0 6px 18px #00000088}
 #borraBar[hidden]{display:none}
 #borraTxt{flex:1;min-width:0;font-size:14px;color:#E0E7FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1131,6 +1138,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- REPRODUCTOR DE LA NOCHE -->
+<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button></div>
 <div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
   <div class="in">
@@ -1328,7 +1336,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.5'; // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
+const VERSION = 'v15.6'; // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
+// v15.5: // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
 // v15.4: // v15.4: la ⓘ de «Me levanté», más corta
 // v15.3: // v15.3: «Prueba audífonos» baja debajo de «Avisa si ronco» y en azul, como ese aviso
 // v15.2: // v15.2: el sueño profundo con su propio icono (3 franjas escalonadas: despierto, ligero y profundo) en vez de la ola
@@ -3143,6 +3152,22 @@ $('guardar').onchange = async () => {
   renderHome();
 };
 let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reducir ronquidos» o «Estadísticas», según de dónde se abrió
+// ⋮ Menú de cada noche del historial (de momento solo «Borrar»)
+function menuNoche(n, el) {
+  const m = $('nMenu'), r = el.getBoundingClientRect();
+  m.hidden = false;
+  m.style.top = Math.min(innerHeight - m.offsetHeight - 10, r.bottom + 4) + 'px';
+  m.style.left = Math.max(10, r.right - m.offsetWidth) + 'px';
+  $('nmBorrar').onclick = async () => {
+    m.hidden = true;
+    if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
+    if (!await confirma(`¿Borrar la ${nightName(n).toLowerCase()} y todas sus grabaciones?`, '🗑️ Borrar')) return;
+    await DB.delNight(n.id); borraNocheCuenta(n.id); await renderHome(); toast('🗑️ Noche borrada');
+  };
+}
+document.addEventListener('pointerdown', e => { const m = $('nMenu'); if (!m.hidden && !e.target.closest('#nMenu, .nmas')) m.hidden = true; }, true);
+addEventListener('scroll', () => { $('nMenu').hidden = true; }, true);
+
 // Mantener pulsado (medio segundo) sin mover el dedo: hace «largo» y evita que el toque abra la noche
 function pulsacionLarga(el, fn) {
   let t = null, x0 = 0, y0 = 0;
@@ -3177,7 +3202,8 @@ async function renderHome() {
       const b = document.createElement('button'); b.className = 'night'; b._id = n.id;
       const sub = n.fuente === 'archivo' ? `Grabación de ${dur(((n.fin || n.inicio) - n.inicio) / 1000)}`
         : `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) + ' · ' + dur((n.fin - n.inicio) / 1000) : 'interrumpida'}`;
-      b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div>`;
+      b.innerHTML = `<div class="when"></div><div class="line2"><div class="sub"></div><div class="counts">😴 ${n.ronquidos} · 🗣️ ${n.voces}</div></div><span class="nmas" role="button" aria-label="Más opciones">⋮</span>`;
+      b.querySelector('.nmas').onclick = ev => { ev.stopPropagation(); menuNoche(n, ev.currentTarget); };
       b.querySelector('.when').textContent = nightName(n); b.querySelector('.sub').textContent = sub;
       b.onclick = () => { if (b._largo) { b._largo = false; return; } nightFrom = desde; openNight(n.id); };
       pulsacionLarga(b, () => barraBorrar(n));
@@ -4996,6 +5022,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.6', '26 oct 2026', ['⋮ Cada noche del historial tiene sus tres puntitos, con la opción de borrarla']],
   ['v15.5', '26 oct 2026', ['🗑️ En el historial, deja apretada una noche para borrarla', 'Al dejar el dedo apretado sobre un texto ya no sale «seleccionar»']],
   ['v15.4', '26 oct 2026', ['Explicación de «Me levanté» más corta']],
   ['v15.3', '26 oct 2026', ['«Prueba audífonos» ahora está debajo de «Avisa si ronco», en azul']],
