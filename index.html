@@ -690,7 +690,8 @@ canvas{width:100%;height:90px;display:block}
 .plvTag{display:none}
 @media (orientation:landscape) and (max-height:600px){.plvTag{display:inline}}
 .ev .conf{font-size:13px;color:#C4B5FD;white-space:nowrap}
-.ev .revok{margin-left:auto;font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap} /* ya la revisaste tú */
+.ev .revok{margin-left:auto;font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap;display:inline-flex;align-items:center;gap:6px} /* ya la revisaste tú */
+.ev .revx{background:none;border:1px solid #475569;color:#CBD5E1;border-radius:50%;width:24px;height:24px;padding:0;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center} /* deshacer la revisión */
 .ev.sel{background:#1E1B4B}
 .ev{scroll-margin-top:calc(var(--tlh, 140px) + 56px);scroll-margin-bottom:calc(var(--plh, 180px) + 16px)}
 .ev .acts .fav{color:#94A3B8}
@@ -1384,7 +1385,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.1'; // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
+const VERSION = 'v18.2'; // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
+// v18.1: // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
 // v18.0: // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
 // v17.9: // v17.9: con el reproductor abierto, los mensajes («Apuntado: la IA acertó»…) salen a mitad de pantalla y nunca tapan los botones
 // v17.8: // v17.8: «Registro de grabaciones» sin «etiquetadas»; «estás roncando» junto a movimiento, en su renglón; «pellizca para ampliar · gira el móvil» en un solo renglón
@@ -3591,7 +3593,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada</span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -3629,10 +3631,11 @@ function renderList() {
       renderStats();
     };
     d.querySelector('.tag').onclick = async () => {
-      e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % TIPOS.length]; e.fix = true; delete e.aprendido;
+      guardaIA(e); e.tipo = TIPOS[(TIPOS.indexOf(e.tipo) + 1) % TIPOS.length]; delete e.sub; e.fix = true; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
       APR.apunta(e, e.tipo);
     };
+    const rx = d.querySelector('.revx'); if (rx) rx.onclick = ev => { ev.stopPropagation(); desRevisar(e); };
     d.querySelector('.del').onclick = async () => {
       if (!await confirma('¿Borrar esta grabación?', '🗑️ Borrar')) return;
       await DB.tx('eventos', 'readwrite', st => st.delete(e.id));
@@ -3867,6 +3870,17 @@ function plToggle() {
   if (PL.i < 0) return plPlay(0);
   if (PL.au.paused) { PL.au.playbackRate = PL.speed; plGraph(); PL.au.play().catch(() => {}); } else PL.au.pause();
 }
+// Lo que dijo la IA, guardado la primera vez que se corrige (para poder deshacerlo con la ✕)
+function guardaIA(e) { if (!e.fix && !('tipoIA' in e)) { e.tipoIA = e.tipo; if (e.sub) e.subIA = e.sub; } }
+// ✕ junto a «✓ Revisada»: la grabación vuelve a lo que dijo la IA, sin revisar, y la IA olvida lo que aprendió de ella
+async function desRevisar(e) {
+  if ('tipoIA' in e) { e.tipo = e.tipoIA; if (e.subIA) e.sub = e.subIA; else delete e.sub; }
+  delete e.fix; delete e.val; delete e.tipoIA; delete e.subIA;
+  APR.ej = APR.ej.filter(x => x.id !== e.id); APR.guarda(); pintaAprendido();
+  const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+  if (PL.list[PL.i] === e) pintaValorar(e);
+  toast('↩️ Sin revisar: vuelve a revisarla');
+}
 // ¿Acierta la IA con la grabación que suena? ✅ la confirma; ❌ deja elegir lo que era de verdad (queda corregida)
 function pintaValorar(e) {
   const box = $('plVal'); box.hidden = !e || !sesion?.admin; if (box.hidden) return; // valorar si acierta: solo el administrador
@@ -3878,7 +3892,7 @@ function pintaValorar(e) {
   box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
     const t = b.dataset.t, sig = PL.list[PL.i + 1];
     if (t === act) { e.val = 'ok'; if (e.fix) e.val = 'no'; } // la misma: acierta (o se queda como la corregiste)
-    else { e.tipo = t === 'resp' ? 'otro' : t; if (t === 'resp') e.sub = 'respiracion'; else delete e.sub; e.fix = true; e.val = 'no'; delete e.aprendido; }
+    else { guardaIA(e); e.tipo = t === 'resp' ? 'otro' : t; if (t === 'resp') e.sub = 'respiracion'; else delete e.sub; e.fix = true; e.val = 'no'; delete e.aprendido; }
     const {_url, ...rec} = e; await DB.put('eventos', rec);
     if (t !== act) { await recount(); renderStats(); drawTimeline(timelineTotal()); }
     renderList(); APR.apunta(e, e.tipo);
@@ -5189,6 +5203,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.2', '26 oct 2026', ['¿Te equivocaste al revisar? La ✕ junto a «✓ Revisada» la deja otra vez sin revisar']],
   ['v18.1', '26 oct 2026', ['Revisar es más rápido: bajo la grabación que suena, las 5 opciones a la vista; toca la buena y salta sola a la siguiente']],
   ['v18.0', '26 oct 2026', ['Al corregir una grabación, nueva opción «😮‍💨 Respiración»']],
   ['v17.9', '26 oct 2026', ['Al revisar grabaciones, el mensaje de «Apuntado» sale a mitad de pantalla y no tapa los botones']],
