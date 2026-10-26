@@ -632,8 +632,9 @@ details.hist[open] summary{margin-bottom:10px}
 .lcuna:not([hidden]){display:flex}
 .lcuna .cuname{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .lcuna button{flex:none;width:40px;height:34px;padding:0;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;font-size:14px}
-.state{font-size:14px;color:var(--dim);min-height:20px;margin-bottom:4px}
-.last{font-size:14px;color:var(--muted);min-height:18px;margin-bottom:12px}
+.state{font-size:14px;color:var(--dim);margin-bottom:2px}
+.last{font-size:14px;color:var(--muted);margin-bottom:8px}
+.state:empty,.last:empty{display:none}
 #stopBtn{background:#111827;border:1.5px solid #6D5BD0;color:#C4B5FD;padding:12px 26px;border-radius:14px}
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
 /* Noche */
@@ -671,6 +672,20 @@ canvas{width:100%;height:90px;display:block}
 #tl{touch-action:none}
 @media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}.wrap:has(#night:not([hidden])){max-width:none}} /* en horizontal, la noche usa todo el ancho */
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
+.ncal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 10px 8px;margin:8px 0 12px}
+.ncal:empty{display:none}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.calhead b{font-size:16px}
+.calhead button{background:none;border:0;color:#C4B5FD;font-size:26px;line-height:1;padding:0 12px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.calgrid i{font-style:normal;font-size:11px;color:var(--muted)}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:14px;color:#64748B;border:0;background:none;padding:0;font-family:inherit}
+button.cd{color:#0B1020;font-weight:800;cursor:pointer}
+button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad{background:#F87171} button.cd.gris{background:#475569;color:#E2E8F0}
+.cd.hoy{outline:2px solid #A78BFA;outline-offset:1px}
+.calley{display:flex;justify-content:center;gap:14px;margin-top:8px;font-size:12px;color:var(--muted)}
+.calley span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.calley .ok::before{background:#4ADE80} .calley .mid::before{background:#FBBF24} .calley .bad::before{background:#F87171}
 .legend{display:flex;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend .lgfila{flex-basis:100%;display:flex;gap:14px;white-space:nowrap} /* cada una en su renglón */
 .legend .lgfila[hidden]{display:none}
@@ -904,6 +919,7 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <details class="hist instr card" id="histDet">
     <summary><span>📚 Historial de grabaciones</span><small id="histN"></small></summary>
+    <div class="ncal" data-desde="home"></div>
     <div id="nights"></div>
   </details>
 
@@ -924,6 +940,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card avcard" id="avStats" hidden></div>
   <details class="card ajd" id="misDet">
     <summary>📚 Mis noches <small id="misN"></small></summary>
+    <div class="ncal" data-desde="stats"></div>
     <div id="nights2"></div>
   </details>
   <div class="card">
@@ -1105,6 +1122,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="hist instr card">
     <summary><span>📚 Historial de grabaciones</span><small id="histN3"></small></summary>
+    <div class="ncal" data-desde="reducir"></div>
     <div id="nights3"></div>
   </details>
 </section>
@@ -1394,14 +1412,14 @@ body.pl-on .wrap{padding-bottom:190px}
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
-    <hr class="lsep">
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v20.2'; // v20.2: Grabando/Movimiento/Luz/Auriculares ya no parecen botones: son lucecitas (un punto que se enciende, sin borde ni fondo); menos grabaciones y más largas: se cortan a los 15 s de silencio (antes 6) y duran hasta 2 min (antes 1); un ronquido con pausas ya no sale troceado
+const VERSION = 'v20.3'; // v20.3: monitoreo sin la raya y el hueco de antes de «Fin monitoreo» (cabe en la pantalla); 📅 calendario de noches encima de la lista: cada noche del color de su puntuación; tocar el día abre esa noche (idea de Felipe)
+// v20.2: // v20.2: Grabando/Movimiento/Luz/Auriculares ya no parecen botones: son lucecitas (un punto que se enciende, sin borde ni fondo); menos grabaciones y más largas: se cortan a los 15 s de silencio (antes 6) y duran hasta 2 min (antes 1); un ronquido con pausas ya no sale troceado
 // v20.1: // v20.1: «Medir también el sueño profundo» pasa a «Medir también las fases del sueño» (y sus textos)
 // v20.0: // v20.0: monitoreo reordenado (Gustavo): «Elige para esta noche» + 🌙 ✈️ 🎵 y Prueba audífonos arriba; Probar detección pequeño al lado; Me levanté, No grabar, Sensibilidad con su barra; «Panel de monitoreo» con la hora; debajo Grabando/Movimiento, el bloque, los contadores y lo último oído
 // v19.9: // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
@@ -3530,6 +3548,32 @@ function barraBorrar(n) {
   };
 }
 
+// 📅 Calendario de noches: cada noche, del color de su puntuación (verde buena, ámbar regular, rojo difícil); tocar el día la abre
+let calMes = null; // {y, m}: el mes que se ve
+function pintaCalendario(ns) {
+  const clave = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, diaDe = n => new Date(n.inicio - 6 * 3600e3); // como en el nombre de la noche
+  const porDia = new Map(); for (const n of ns) if (n.fuente !== 'archivo') { const k = clave(diaDe(n)); if (!porDia.has(k)) porDia.set(k, n); } // la más reciente de cada día
+  if (!calMes) { const d = ns[0] ? diaDe(ns[0]) : new Date(); calMes = {y: d.getFullYear(), m: d.getMonth()}; }
+  const {y, m} = calMes, primero = new Date(y, m, 1), dias = new Date(y, m + 1, 0).getDate(), hueco = (primero.getDay() + 6) % 7, hoy = clave(new Date());
+  const tit = primero.toLocaleDateString('es-ES', {month: 'long', year: 'numeric'});
+  let h = `<div class="calhead"><button type="button" data-cm="-1" aria-label="Mes anterior">‹</button><b>${tit[0].toUpperCase() + tit.slice(1)}</b><button type="button" data-cm="1" aria-label="Mes siguiente">›</button></div><div class="calgrid">${['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(x => `<i>${x}</i>`).join('')}`;
+  for (let i = 0; i < hueco; i++) h += '<span></span>';
+  for (let d = 1; d <= dias; d++) {
+    const k = `${y}-${m}-${d}`, n = porDia.get(k), cl = k === hoy ? ' hoy' : '';
+    if (!n) { h += `<span class="cd${cl}">${d}</span>`; continue; }
+    const c = nocheValida(n) ? colorNota(puntuacion(n, []).total) : 'gris';
+    h += `<button type="button" class="cd ${c}${cl}" data-cn="${n.id}" aria-label="${escT(nightName(n))}">${d}</button>`;
+  }
+  h += `</div><div class="calley"><span class="ok">buena</span><span class="mid">regular</span><span class="bad">difícil</span></div>`;
+  document.querySelectorAll('.ncal').forEach(box => {
+    box.innerHTML = ns.length ? h : '';
+    box.querySelectorAll('[data-cn]').forEach(b => b.onclick = () => { nightFrom = box.dataset.desde; openNight(+b.dataset.cn); });
+    box.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
+      let mm = calMes.m + +b.dataset.cm, yy = calMes.y; if (mm < 0) { mm = 11; yy--; } if (mm > 11) { mm = 0; yy++; }
+      calMes = {y: yy, m: mm}; pintaCalendario(ns);
+    });
+  });
+}
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).filter(n => !PEND.has(n.id)).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
@@ -3550,6 +3594,7 @@ async function renderHome() {
     }
   }
   requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when, #nights3 .when').forEach(fitLine));
+  pintaCalendario(ns); // 📅 encima de la lista
   apuntaIds(ns); // para notar, la próxima vez, si alguna desaparece sin borrarla
   subeNoches(); // con cuenta: sube las noches nuevas o cambiadas
 }
@@ -5538,6 +5583,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.3', '26 oct 2026', ['📅 Calendario de noches: cada noche, del color de su puntuación; toca el día para abrirla', 'Monitoreo: sin el hueco antes de «Fin monitoreo», que ya se ve sin bajar']],
   ['v20.2', '26 oct 2026', ['Menos grabaciones por noche y más largas (hasta 2 min): un ronquido con pausas ya no sale en trocitos', 'En el monitoreo, Grabando y Movimiento son lucecitas (no parecen botones)']],
   ['v20.1', '26 oct 2026', ['«Medir también las fases del sueño» (antes «el sueño profundo»)']],
   ['v20.0', '26 oct 2026', ['Pantalla de monitoreo más ordenada: arriba lo que eliges para la noche; luego Me levanté, No grabar y Sensibilidad; abajo el Panel de monitoreo']],
