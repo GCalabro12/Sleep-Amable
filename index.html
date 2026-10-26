@@ -1385,7 +1385,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.2'; // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
+const VERSION = 'v18.3'; // v18.3: noches perdidas (sáb 24 y dom 25, dos veces): al abrir, con cuenta, se recuperan solas de la cuenta; y un registro de qué borra cada noche (y de las que desaparecen sin borrarlas), visible para el administrador en Mi cuenta
+// v18.2: // v18.2: «✓ Revisada ✕»: la ✕ deshace la revisión (vuelve a lo que dijo la IA y la IA lo olvida), para revisarla otra vez
 // v18.1: // v18.1: revisión más rápida: debajo de la grabación que suena, las 5 opciones a la vista (la de la IA marcada); tocar la misma = acierta, otra = corrige; y salta sola a la siguiente
 // v18.0: // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
 // v17.9: // v17.9: con el reproductor abierto, los mensajes («Apuntado: la IA acertó»…) salen a mitad de pantalla y nunca tapan los botones
@@ -1860,7 +1861,8 @@ const DB = {
   get(s, k) { return this.tx(s, 'readonly', st => st.get(k)); },
   all(s) { return this.tx(s, 'readonly', st => st.getAll()); },
   byNight(id) { return this.tx('eventos', 'readonly', st => st.index('noche').getAll(id)); },
-  async delNight(id) {
+  async delNight(id, motivo = 'sin motivo') {
+    registraBorrado(id, motivo);
     const evs = await this.byNight(id);
     await this.tx('eventos', 'readwrite', st => { evs.forEach(e => st.delete(e.id)); });
     await this.tx('noches', 'readwrite', st => st.delete(id));
@@ -2336,7 +2338,7 @@ async function stopListening(auto) {
     const keep = await ask('¿Guardar esta grabación?',
       `Ha durado ${dur(secs)}${n ? ` y tiene ${n} ${n === 1 ? 'sonido grabado' : 'sonidos grabados'}` : ' y no se grabó ningún sonido'}.`,
       '🗑️ Borrarla', '💾 Guardarla');
-    if (keep === 'a') { await DB.delNight(id); await renderHome(); show('home'); return; }
+    if (keep === 'a') { await DB.delNight(id, 'grabación corta descartada'); await renderHome(); show('home'); return; }
   }
   await renderHome(); openNight(id);
 }
@@ -3228,11 +3230,25 @@ function consejos(media, desv, snPorHora) {
   return c;
 }
 // 💾 Solo se guardan las últimas N noches (Ajustes); las más antiguas se borran con sus grabaciones
+// 🔍 Registro de noches borradas (para encontrar por qué se pierden noches): qué la borró, cuándo y con qué versión.
+// Y «desaparecida sin borrarla»: estaba la última vez que se abrió la app y ya no está, sin que nada la borrara.
+const leeBorradas = () => { try { return JSON.parse(localStorage.getItem('ronquino-borradas') || '[]'); } catch { return []; } };
+function registraBorrado(ids, motivo) {
+  const l = leeBorradas(); for (const id of [].concat(ids)) l.push({id, m: motivo, t: Date.now(), v: VERSION});
+  try { localStorage.setItem('ronquino-borradas', JSON.stringify(l.slice(-40))); } catch {}
+}
+async function vigilaNoches() {
+  let antes = []; try { antes = JSON.parse(localStorage.getItem('ronquino-ids') || '[]'); } catch {}
+  const hay = new Set((await DB.all('noches')).map(n => String(n.id))), borr = new Set(leeBorradas().map(x => String(x.id)));
+  const perdidas = antes.filter(id => !hay.has(String(id)) && !borr.has(String(id)));
+  if (perdidas.length) registraBorrado(perdidas, 'desaparecida sin borrarla');
+}
+const apuntaIds = ns => { try { localStorage.setItem('ronquino-ids', JSON.stringify(ns.map(n => n.id))); } catch {} };
 let guardar = 0; try { guardar = +(localStorage.getItem('ronquino-guardar') || 0); } catch {}
 $('guardar').value = String(guardar); $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
 async function podar(ns) {
   if (!guardar || ns.length <= guardar) return ns;
-  for (const n of ns.slice(guardar)) if (n.id !== live.night?.id) await DB.delNight(n.id);
+  for (const n of ns.slice(guardar)) if (n.id !== live.night?.id) await DB.delNight(n.id, `límite de ${guardar} noches guardadas`);
   return ns.slice(0, guardar);
 }
 $('guardar').onchange = async () => {
@@ -3250,7 +3266,7 @@ async function borrarNocheConDeshacer(n) {
   if (n.id === live.night?.id) { toast('🎙️ Esta noche se está grabando ahora'); return; }
   const t = setTimeout(async () => {
     PEND.delete(n.id); $('deshacer').hidden = PEND.size === 0;
-    await DB.delNight(n.id); borraNocheCuenta(n.id); renderHome();
+    await DB.delNight(n.id, 'borrada por ti'); borraNocheCuenta(n.id); renderHome();
   }, 8000);
   PEND.set(n.id, t);
   $('deshTxt').textContent = `🗑️ Borrada la ${nightName(n).toLowerCase()}`;
@@ -3325,6 +3341,7 @@ async function renderHome() {
     }
   }
   requestAnimationFrame(() => document.querySelectorAll('#nights .when, #nights2 .when, #nights3 .when').forEach(fitLine));
+  apuntaIds(ns); // para notar, la próxima vez, si alguna desaparece sin borrarla
   subeNoches(); // con cuenta: sube las noches nuevas o cambiadas
 }
 
@@ -4675,8 +4692,9 @@ async function bajaNoches() {
   const {noches} = await apiCuenta('/noches');
   const tengo = new Set((await DB.all('noches')).map(n => n.id)), sub = leeSubidas();
   let nuevas = 0;
+  const aProposito = new Set(leeBorradas().filter(x => x.m !== 'desaparecida sin borrarla').map(x => String(x.id)));
   for (const n of noches || []) {
-    if (!n || !n.id || tengo.has(n.id)) continue;
+    if (!n || !n.id || tengo.has(n.id) || aProposito.has(String(n.id))) continue;
     n.timeline ||= []; n.restaurada = true;
     await DB.put('noches', n); sub[n.id] = firmaNoche(n); nuevas++;
   }
@@ -4826,6 +4844,7 @@ function pintaCuenta() {
     ${sesion.admin ? `<div class="cufila"><span><small>Tipo de cuenta</small>👑 Administrador de la app</span><button type="button" class="btn" id="cuAdmin">Cuentas y países</button></div><div id="cuAdminRes" class="note" hidden></div>` : ''}
     <p class="note" style="margin:12px 0 10px">Tus noches se guardan también en tu cuenta: solo los números de cada noche, nunca las grabaciones.</p>
     <button class="btn wide" id="cuRecuperar">☁️ Recuperar noches de mi cuenta</button>
+    ${sesion.admin ? `<details class="note" style="margin:8px 0 0"><summary>🔍 Noches borradas o perdidas <small>(solo administrador)</small></summary>${leeBorradas().slice().reverse().map(x => `<div style="margin-top:4px">${isNaN(+x.id) ? x.id : new Date(+x.id).toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short'})} · <b>${x.m}</b> · ${new Date(x.t).toLocaleString('es-ES', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})} · ${x.v}</div>`).join('') || '<div style="margin-top:4px">Ninguna todavía.</div>'}</details>` : ''}
     <button class="btn wide" id="cuSalir" style="margin-top:8px">Salir de la cuenta</button>
     <button class="btn wide cubor" id="cuBorrar">🗑️ Borrar mi cuenta</button>
     <form class="cuform" id="cuF-bor" hidden><p class="note">Se borrarán tu cuenta y las noches guardadas en ella. Las de este móvil se quedan. Escribe tu contraseña para confirmarlo:</p>
@@ -5203,6 +5222,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.3', '26 oct 2026', ['☁️ Si falta alguna noche que está en tu cuenta, al abrir la app vuelve sola', 'Se apunta qué borra cada noche, para encontrar por qué se perdían']],
   ['v18.2', '26 oct 2026', ['¿Te equivocaste al revisar? La ✕ junto a «✓ Revisada» la deja otra vez sin revisar']],
   ['v18.1', '26 oct 2026', ['Revisar es más rápido: bajo la grabación que suena, las 5 opciones a la vista; toca la buena y salta sola a la siguiente']],
   ['v18.0', '26 oct 2026', ['Al corregir una grabación, nueva opción «😮‍💨 Respiración»']],
@@ -5328,7 +5348,10 @@ else {
   $('apkNo').onclick = () => { $('apkBanner').hidden = true; try { localStorage.setItem('ronquino-sinApk', APK_ULTIMA); } catch {} };
 }
 await DB.open();
+await vigilaNoches();
 renderHome();
+// ☁️ Con cuenta: si falta alguna noche que está en la cuenta (y no la borraste tú), vuelve sola
+if (sesion) bajaNoches().then(k => { if (k) { renderHome(); toast(`☁️ Recuperadas ${k} ${k === 1 ? 'noche' : 'noches'} de tu cuenta`); } }).catch(() => {});
 IA.load();
 show('menu');
 // Sin cuenta no se puede usar: crear una o entrar (la primera vez, antes, el recorrido de bienvenida)
