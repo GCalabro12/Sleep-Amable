@@ -1373,7 +1373,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.5'; // v17.5: tarjeta de la mañana sin el rótulo «Otros datos» (Movimiento va justo debajo); un recuadro solo en su fila sale centrado
+const VERSION = 'v17.6'; // v17.6: títulos «📋 Panel de puntuación» (al abrir una noche) y «☀️ Panel de tu última noche» (Estadísticas)
+// v17.5: // v17.5: tarjeta de la mañana sin el rótulo «Otros datos» (Movimiento va justo debajo); un recuadro solo en su fila sale centrado
 // v17.4: // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
 // v17.3: // v17.3: cualquier movimiento cuenta como «despierto»; «Profundo y REM» (el móvil no los distingue); debajo de cada recuadro, lo normal; en la ⓘ, la noche orientativa de 8 h
 // v17.2: // v17.2: los 3 recuadros de las fases, sin iconos y con su color de fondo (profundo azul, ligero violeta, despierto naranja); «Fases del sueño»; el gráfico empieza con la hora en que empezaste; «Dormiste: 22:07 · Despertaste: 06:55»
@@ -3097,7 +3098,7 @@ function renderStatsHome(ns) {
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
   $('mananaCard').hidden = !ok.length;
-  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Tu última noche');
+  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Panel de tu última noche');
   $('lineaBody').innerHTML = lineaRonquido(ok);
   $('lineaBody').querySelectorAll('.toque').forEach(c => c.onclick = () => {
     $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
@@ -3324,7 +3325,7 @@ async function openNight(id) {
   renderStats(); drawTimeline(total); renderList();
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
   const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
-  $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes) : '';
+  $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes, '📋 Panel de puntuación') : '';
   $('nTagsDet').hidden = n.fuente !== 'micro'; $('nTagsDet').open = false; pintaEtiquetas(n);
   pintaCalma(n, curEvs); pintaRuido(n);
   requestAnimationFrame(tlSticky); requestAnimationFrame(ajustaTitulos); // títulos de la noche en un renglón
@@ -5153,6 +5154,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.6', '26 oct 2026', ['Títulos: «Panel de puntuación» al abrir una noche y «Panel de tu última noche» en Estadísticas']],
   ['v17.5', '26 oct 2026', ['Tu última noche: fuera el rótulo «Otros datos»; Movimiento va justo debajo', 'Si un recuadro queda solo en su fila, sale centrado']],
   ['v17.4', '26 oct 2026', ['El gráfico de los sonidos de la noche ya tiene título: «Registro de grabaciones etiquetadas»', 'Los recuadros pequeños (Horas, Regularidad, Ronquido…, y Profundo, Ligero y Despierto), centrados; y con el borde entero de su color']],
   ['v17.3', '26 oct 2026', ['Fases del sueño: cualquier movimiento cuenta como despierto', '«Profundo y REM», y debajo de cada recuadro lo normal', 'En la ⓘ, cómo es una noche orientativa de 8 horas']],
