@@ -419,6 +419,8 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .mp[data-mexp]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mp.ok{border-color:#4ADE80} .mp.mid{border-color:#FBBF24} .mp.bad{border-color:#F87171}
 .mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
+.mpartes.motrosf{margin-top:8px}
+.mpartes:not(.tresp) .mp:only-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* un recuadro solo: centrado en su fila */
 .mpartes.tresp .mp{padding:8px 6px 8px 8px;min-width:0}
 .mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
 .mpartes.tresp .mp b{font-size:15px}
@@ -1371,7 +1373,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.4'; // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
+const VERSION = 'v17.5'; // v17.5: tarjeta de la mañana sin el rótulo «Otros datos» (Movimiento va justo debajo); un recuadro solo en su fila sale centrado
+// v17.4: // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
 // v17.3: // v17.3: cualquier movimiento cuenta como «despierto»; «Profundo y REM» (el móvil no los distingue); debajo de cada recuadro, lo normal; en la ⓘ, la noche orientativa de 8 h
 // v17.2: // v17.2: los 3 recuadros de las fases, sin iconos y con su color de fondo (profundo azul, ligero violeta, despierto naranja); «Fases del sueño»; el gráfico empieza con la hora en que empezaste; «Dormiste: 22:07 · Despertaste: 06:55»
 // v17.1: // v17.1: el aviso de ruido es un desplegable: «Esta noche hubo N sonidos que no son ronquido ni voz» y, al abrirlo, la explicación
@@ -2914,7 +2917,7 @@ function mananaPartes(n, partes) {
   const otros = [P('calma'), lev].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
-    ${otros.length ? `<div class="motros">Otros datos</div><div class="mpartes">${otros.map(p => caja(p, p.k === 'lev' ? ' neutro' : '')).join('')}</div>` : ''}`;
+    ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'lev' ? ' neutro' : '')).join('')}</div>` : ''}`;
 }
 function tarjetaManana(n, prev, titulo) {
   const {total, partes} = puntuacion(n, prev), c = colorNota(total);
@@ -5150,6 +5153,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.5', '26 oct 2026', ['Tu última noche: fuera el rótulo «Otros datos»; Movimiento va justo debajo', 'Si un recuadro queda solo en su fila, sale centrado']],
   ['v17.4', '26 oct 2026', ['El gráfico de los sonidos de la noche ya tiene título: «Registro de grabaciones etiquetadas»', 'Los recuadros pequeños (Horas, Regularidad, Ronquido…, y Profundo, Ligero y Despierto), centrados; y con el borde entero de su color']],
   ['v17.3', '26 oct 2026', ['Fases del sueño: cualquier movimiento cuenta como despierto', '«Profundo y REM», y debajo de cada recuadro lo normal', 'En la ⓘ, cómo es una noche orientativa de 8 horas']],
   ['v17.2', '26 oct 2026', ['«Fases del sueño»: el gráfico empieza con la hora en que empezaste; «Dormiste: … · Despertaste: …»', 'Los recuadros de profundo, ligero y despierto llevan su color, sin iconos']],
