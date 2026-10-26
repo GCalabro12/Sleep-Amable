@@ -592,6 +592,7 @@ details.hist[open] summary{margin-bottom:10px}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:10px;padding:3px 8px;font-size:11px;line-height:1.15;position:absolute;right:0;top:50%;transform:translateY(-50%)} /* estrecho, a la derecha de la hora */
 .clockfila{position:relative;width:100%}
+.alhora{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#FCD34D;background:#1F2937;border-radius:10px;padding:3px 8px} /* ⏰ hora de la alarma */
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
 .audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
 .audifila:not(:has(button:not([hidden]))){display:none}
@@ -1448,7 +1449,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
     <div class="lgrupo">
     <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
-    <div class="clockfila"><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
+    <div class="clockfila"><span class="alhora" id="alHora" hidden></span><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
@@ -1464,7 +1465,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.5'; // v21.5: Reducir ronquidos: el 2.º renglón de cada opción dice «Activado/Desactivado» (alarma: «Activada/Desactivada»); «Aviso por altavoz o auricular» pasa dentro de «Aviso: estás roncando»
+const VERSION = 'v21.6'; // v21.6: a la izquierda de la hora, ⏰ y la hora de la alarma si hay una activada
+// v21.5: // v21.5: Reducir ronquidos: el 2.º renglón de cada opción dice «Activado/Desactivado» (alarma: «Activada/Desactivada»); «Aviso por altavoz o auricular» pasa dentro de «Aviso: estás roncando»
 // v21.4: // v21.4: «Registro de grabaciones» pasa a llamarse «Gráfico de grabaciones»
 // v21.3: // v21.3: «Fases del sueño estimado» y «Registro de grabaciones» plegados, cada uno en un renglón (la letra encoge si no cabe)
 // v21.2: // v21.2: Reducir ronquidos: primero y destacado «Aviso: estás roncando» (Requiere audífonos), luego el mensaje, la alarma y las fases; desplegables más estrechos y sin sí/no
@@ -2437,6 +2439,7 @@ async function startListening() {
   renderLiveSens();
   live.timer = setInterval(() => {
     $('clock').textContent = hhmm(Date.now());
+    { const act = ALS.list.filter(a => a.on).map(a => a.hora).sort(); $('alHora').hidden = !act.length; $('alHora').textContent = act.length ? '⏰ ' + act[0] : ''; } // la hora de la alarma, a la izquierda
     $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
@@ -5669,6 +5672,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.6', '26 oct 2026', ['Monitoreo: a la izquierda de la hora, ⏰ y la hora de tu alarma']],
   ['v21.5', '26 oct 2026', ['Reducir ronquidos: cada opción dice si está Activada o Desactivada', '«Aviso por altavoz o auricular» va dentro de «Aviso: estás roncando»']],
   ['v21.4', '26 oct 2026', ['«Registro de grabaciones» ahora se llama «Gráfico de grabaciones»']],
   ['v21.3', '26 oct 2026', ['Fases del sueño y Registro de grabaciones, cada uno en un renglón']],
