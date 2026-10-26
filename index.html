@@ -27,8 +27,11 @@ header h1{font-size:clamp(20px,6.6vw,34px);margin:0;font-weight:800;white-space:
 header .ver{flex:none;margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;font-size:11px;line-height:1.5;color:var(--dim);white-space:nowrap}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 /* Reducir ronquidos: desplegables más estrechos y sin «sí/no» (se abren con el triángulo) */
-#reducir > .card,#reducir > details.card{padding:10px 14px;margin-bottom:8px}
-#reducir .estado{display:none}
+#reducir > .card,#reducir > details.card,#home > details.card,#mask > details.card{padding:10px 14px;margin-bottom:8px}
+#reducir .estado,#home .estado,#mask .estado[data-alsum]{display:none}
+#home summary:has(.estsub) small:not(.estsub),#mask summary:has(.estsub) small:not(.estsub){display:none !important}
+#home .estsub,#mask .estsub{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
+#home .estsub.on,#mask .estsub.on{color:#86EFAC}
 #reducir summary small:not(.estsub){display:none !important} /* lo dice el 2.º renglón (Activado · …) */
 #reducir .estsub{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
 #reducir .estsub.on{color:#86EFAC}
@@ -1467,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.7'; // v21.7: monitoreo: tocar «⏰ hora» abre un desplegable para activar, desactivar o cambiar la alarma sin salir
+const VERSION = 'v21.8'; // v21.8: Saber si ronco (y Dormir con quien ronca) como Reducir ronquidos: «Activado/Desactivado» en el 2.º renglón, sin sí/no y desplegables más estrechos
+// v21.7: // v21.7: monitoreo: tocar «⏰ hora» abre un desplegable para activar, desactivar o cambiar la alarma sin salir
 // v21.6: // v21.6: a la izquierda de la hora, ⏰ y la hora de la alarma si hay una activada
 // v21.5: // v21.5: Reducir ronquidos: el 2.º renglón de cada opción dice «Activado/Desactivado» (alarma: «Activada/Desactivada»); «Aviso por altavoz o auricular» pasa dentro de «Aviso: estás roncando»
 // v21.4: // v21.4: «Registro de grabaciones» pasa a llamarse «Gráfico de grabaciones»
@@ -5360,8 +5364,8 @@ $('lunaIn').oninput = () => { $('lunaIn').style.height = 'auto'; $('lunaIn').sty
 // ---------- Pantallas y bienvenida ----------
 // Reducir ronquidos: en vez del «sí/no», el segundo renglón de cada opción dice si está activada y lo que hace falta
 function estadoRed() {
-  document.querySelectorAll('#reducir > details > summary').forEach(sm => {
-    const est = sm.querySelector('.estado'); if (!est) return;
+  document.querySelectorAll('#reducir > details > summary, #home > details > summary, #mask > details > summary').forEach(sm => {
+    const est = sm.querySelector('.estado'); if (!est || est.id === 'sndSel') return; // (el sonido elegido de «Dormir con quien ronca» se queda como está)
     let sub = sm.querySelector('.estsub');
     if (!sub) { sub = document.createElement('small'); sub.className = 'estsub'; (sm.querySelector('span') || sm).append(sub); }
     const on = est.classList.contains('si'), al = est.hasAttribute('data-alsum'), fases = est.hasAttribute('data-profsum');
@@ -5373,7 +5377,7 @@ function estadoRed() {
     if (sub.classList.contains('on') !== on) sub.classList.toggle('on', on);
   });
 }
-new MutationObserver(estadoRed).observe(document.getElementById('reducir'), {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class']});
+for (const id of ['reducir', 'home', 'mask']) new MutationObserver(estadoRed).observe(document.getElementById(id), {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class']});
 function show(id) {
   requestAnimationFrame(encajaLeyenda); // títulos que van en un renglón
   for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna', 'aprende']) $(x).hidden = x !== id;
@@ -5677,6 +5681,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.8', '26 oct 2026', ['Saber si ronco y Dormir con quien ronca: cada opción dice si está Activada o Desactivada, como en Reducir ronquidos']],
   ['v21.7', '26 oct 2026', ['Monitoreo: toca ⏰ junto a la hora para activar, quitar o cambiar la alarma sin salir']],
   ['v21.6', '26 oct 2026', ['Monitoreo: a la izquierda de la hora, ⏰ y la hora de tu alarma']],
   ['v21.5', '26 oct 2026', ['Reducir ronquidos: cada opción dice si está Activada o Desactivada', '«Aviso por altavoz o auricular» va dentro de «Aviso: estás roncando»']],
