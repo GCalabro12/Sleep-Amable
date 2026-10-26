@@ -579,6 +579,7 @@ details.hist[open] summary{margin-bottom:10px}
 #audiBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #audiBtn:disabled{opacity:.45;background:#1F2937;border-color:#475569}
 .linfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
+#bloque:empty{display:none}
 #bloque{font-size:14px;color:#94A3B8;line-height:1.3;margin:-2px 0 6px;min-height:18px}
 .prfila:not(:has(button:not([hidden]))){display:none}
 .lsep{border:0;border-top:3px solid #2E2A5A;border-radius:2px;width:100%;margin:10px 0}
@@ -1412,7 +1413,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="clockfila"><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
-    <div id="bloque">Esperando un sonido…</div>
+    <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
       <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#60A5FA"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-linecap="round"/></svg> min de voces</div>
@@ -1425,7 +1426,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v20.6'; // v20.6: «Prueba audífonos» y «Me levanté» justo encima de «Panel de monitoreo» (sin raya: la barra ya separa)
+const VERSION = 'v20.7'; // v20.7: monitoreo sin «● Grabando bloque: … · quedan …» ni «Esperando un sonido…»: basta la lucecita «Grabando» (solo queda «Sin grabar ahora» si pulsas No grabar)
+// v20.6: // v20.6: «Prueba audífonos» y «Me levanté» justo encima de «Panel de monitoreo» (sin raya: la barra ya separa)
 // v20.5: // v20.5: «Prueba audífonos» y «Me levanté» lado a lado, abajo (encima de «Fin monitoreo»), con el icono arriba y el nombre debajo; «Elige para esta noche» y «Panel de monitoreo» son barras moradas con letras blancas; las rayas de separación, más gruesas
 // v20.4: // v20.4: «Elige para esta noche» con el mismo tamaño y color violeta que «Panel de monitoreo»
 // v20.3: // v20.3: monitoreo sin la raya y el hueco de antes de «Fin monitoreo» (cabe en la pantalla); 📅 calendario de noches encima de la lista: cada noche del color de su puntuación; tocar el día abre esa noche (idea de Felipe)
@@ -2402,7 +2404,7 @@ async function startListening() {
       $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').textContent = `💬 Mensaje ${hhmm(sig)}`; }
     { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
       $('bloque').classList.toggle('on', en);
-      $('bloque').textContent = en ? `● Grabando bloque: ${mmss(e.blocks.length * BLK / SR)} · quedan ${mmss(Math.max(0, det.maxSec - e.blocks.length * BLK / SR))}` : (det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : 'Esperando un sonido…'); }
+      $('bloque').textContent = !en && det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : ''; } // grabando: ya lo dice la lucecita
     if (AND?.auriculares) { // con «Avisarme si ronco»: «Avisa si ronco» (en color si hay auriculares); si no, solo «Auriculares» cuando estén puestos
       const au = !!AND.auriculares(), av = VOZ_OK && cfg.avisoRonco;
       $('fAur').textContent = av ? (au ? '🎧 Avisa si ronco' : cfg.altavoz ? '🔊 Avisa si ronco · por el altavoz' : '🎧 Avisa si ronco · falta auriculares') : '🎧 Auriculares';
@@ -5593,6 +5595,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.7', '26 oct 2026', ['Monitoreo más limpio: sin «Grabando bloque… quedan…»; basta la lucecita «Grabando»']],
   ['v20.6', '26 oct 2026', ['«Prueba audífonos» y «Me levanté» pasan encima de «Panel de monitoreo»']],
   ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, justo encima de «Panel de monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
   ['v20.4', '26 oct 2026', ['Monitoreo: «Elige para esta noche» en violeta y del mismo tamaño que «Panel de monitoreo»']],
