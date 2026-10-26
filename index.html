@@ -1390,7 +1390,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.9'; // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
+const VERSION = 'v19.0'; // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
+// v18.9: // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
 // v18.8: // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
 // v18.7: // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
 // v18.6: // v18.6: la grabación que suena lleva un reborde punteado que parpadea (se ve mucho mejor dónde vas)
@@ -3638,7 +3639,10 @@ function renderList() {
   const list = curList = curEvs.filter(e => filter === 'todos' || (filter === 'fav' ? e.fav : e.tipo === filter));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
   $('selbar').hidden = !list.length;
-  $('evList').innerHTML = list.length ? '' : '<div class="empty">No se grabó nada de este tipo.</div>';
+  $('evList').innerHTML = list.length ? '' : !curEvs.length && cur?.restaurada
+    ? '<div class="empty">☁️ Esta noche se recuperó de tu cuenta, que guarda solo los números. Las grabaciones se quedan en el móvil (o la app) donde se grabó: ábrela allí para oírlas.</div>'
+    : '<div class="empty">No se grabó nada de este tipo.</div>';
+  $('reNight').style.display = curEvs.length ? '' : 'none'; // sin grabaciones no hay nada que revisar
   // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
   const avisos = ['todos', 'ronquido'].includes(filter) ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
   const usados = new Set();
@@ -3919,7 +3923,9 @@ function plPlay(i) {
     if (PL.list[PL.i] !== e) return;
     plOnda();
     const t0 = Math.max(0, (e._pico || 0) - 1);
-    const go = () => { if (PL.list[PL.i] !== e) return; if (t0 > .05) PL.au.currentTime = t0; PL.au.play().catch(() => {}); };
+    // en algunos Android el salto se pierde si se hace antes de que empiece a sonar: se repite al empezar y un poco después
+    const pon = () => { try { if (PL.list[PL.i] === e && t0 > .05 && PL.au.currentTime < t0 - .3) PL.au.currentTime = t0; } catch {} };
+    const go = () => { if (PL.list[PL.i] !== e) return; pon(); PL.au.play().then(pon).catch(() => {}); setTimeout(pon, 350); };
     PL.au.readyState >= 1 ? go() : PL.au.addEventListener('loadedmetadata', go, {once: true});
   });
   if ('mediaSession' in navigator) {
@@ -5271,6 +5277,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.0', '26 oct 2026', ['Noche recuperada de la cuenta: en «Ruidos» explica dónde están sus grabaciones', 'El salto al momento más fuerte ahora funciona también en Android']],
   ['v18.9', '26 oct 2026', ['Arreglado: el icono podía abrir una versión vieja; ahora se pone al día también al abrirse']],
   ['v18.8', '26 oct 2026', ['Al volver a la app desde el icono, se pone sola al día si hay versión nueva']],
   ['v18.7', '26 oct 2026', ['Al abrir «Ruidos» vas directo a la siguiente después de la última revisada, y ▶ empieza ahí']],
