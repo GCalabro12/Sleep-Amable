@@ -875,15 +875,15 @@ body.pl-on .wrap{padding-bottom:190px}
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también las fases del sueño<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
   <details class="instr card"><summary>📖 Instrucciones de uso</summary>
   <div class="dosdib">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
-    <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide tu sueño profundo</figcaption></figure>
+    <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide las fases del sueño</figcaption></figure>
   </div>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
-    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también tu <b>sueño profundo y ligero</b>? Actívalo arriba, en <b>«Medir también el sueño profundo»</b>.</li>
+    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también las <b>fases del sueño</b>? Actívalo arriba, en <b>«Medir también las fases del sueño»</b>.</li>
     <li>🔇 Quita de la habitación los <b>relojes con tictac</b> y apaga los <b>aparatos que hagan ruido</b>: sus sonidos se mezclan con tus ronquidos y la IA se confunde.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:#A78BFA">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
@@ -1078,7 +1078,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también el sueño profundo<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
+  <details class="instr card profrap"><summary><span><i class="icos" aria-hidden="true"></i> Medir también las fases del sueño<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Con el móvil sobre el colchón</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
   <div class="card" style="margin-top:14px"><div class="row" style="margin:0"><label for="altavoz"><span style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div></div>
   <details class="instr card"><summary><span>🎧 Avisarme si ronco<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Necesita auriculares</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
@@ -1272,14 +1272,14 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tslide">
       <div class="dosdib tour">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
-    <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide tu sueño profundo</figcaption></figure>
+    <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide las fases del sueño</figcaption></figure>
   </div>
       <h2>Así de fácil</h2>
       <ul>
         <li>📱 Deja el móvil <b>enchufado</b> y boca arriba, en la <b>mesilla</b> o <b>sobre el colchón</b>, cerca de tu cabeza.</li>
         <li>🌙 Toca <b>«Empezar a monitorear»</b> y duérmete. La pantalla se queda casi negra.</li>
         <li>☀️ Por la mañana, toca <b>«Fin monitoreo sueño»</b> y mira cómo has dormido.</li>
-        <li><i class="icos" aria-hidden="true"></i> En el <b>colchón</b>, en la esquina junto a la almohada, mide también tu <b>sueño profundo y ligero</b>. Debajo de la almohada no: se calienta y oye peor.</li>
+        <li><i class="icos" aria-hidden="true"></i> En el <b>colchón</b>, en la esquina junto a la almohada, mide también las <b>fases del sueño</b>. Debajo de la almohada no: se calienta y oye peor.</li>
       </ul>
     </div>
   </div>
@@ -1398,7 +1398,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v20.0'; // v20.0: monitoreo reordenado (Gustavo): «Elige para esta noche» + 🌙 ✈️ 🎵 y Prueba audífonos arriba; Probar detección pequeño al lado; Me levanté, No grabar, Sensibilidad con su barra; «Panel de monitoreo» con la hora; debajo Grabando/Movimiento, el bloque, los contadores y lo último oído
+const VERSION = 'v20.1'; // v20.1: «Medir también el sueño profundo» pasa a «Medir también las fases del sueño» (y sus textos)
+// v20.0: // v20.0: monitoreo reordenado (Gustavo): «Elige para esta noche» + 🌙 ✈️ 🎵 y Prueba audífonos arriba; Probar detección pequeño al lado; Me levanté, No grabar, Sensibilidad con su barra; «Panel de monitoreo» con la hora; debajo Grabando/Movimiento, el bloque, los contadores y lo último oído
 // v19.9: // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
 // v19.8: // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
 // v19.7: // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
@@ -3273,7 +3274,7 @@ function pintaCalma(n, evs) {
   const pidio = n.profundo || (n.inicio < PROF_DESDE && (n.mov || []).length > 0);
   if (c && n.fuente === 'micro' && !pidio && nocheValida(n)) { // invitar a activarlo para la próxima noche
     box.hidden = false;
-    box.innerHTML = `<div class="calmatit"><i class="icos" aria-hidden="true"></i> Sueño profundo y ligero</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
+    box.innerHTML = `<div class="calmatit"><i class="icos" aria-hidden="true"></i> Fases del sueño</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
     $('profAct').onclick = () => { ponProfundo(true); box.innerHTML = '<div class="stnote">✅ Activado. La próxima noche deja el móvil sobre el colchón, junto a la almohada.</div>'; };
     return;
   }
@@ -4645,11 +4646,11 @@ function ponProfundo(on) {
 function pintaProfundo() {
   document.querySelectorAll('[data-profsum]').forEach(x => { x.textContent = cfg.profundo ? 'sí' : 'no'; x.classList.toggle('si', !!cfg.profundo); });
   document.querySelectorAll('.profBody').forEach(box => {
-    box.innerHTML = `<div class="arow"><span>¿Quieres medir también tu sueño profundo y ligero?</span><label class="swt"><input type="checkbox" data-prof${cfg.profundo ? ' checked' : ''}><i></i></label></div>`
+    box.innerHTML = `<div class="arow"><span>¿Quieres medir también las fases del sueño?</span><label class="swt"><input type="checkbox" data-prof${cfg.profundo ? ' checked' : ''}><i></i></label></div>`
       + (cfg.profundo ? `<img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada">
         <ol><li>Deja el móvil <b>sobre el colchón</b>, en la esquina junto a la almohada, a un palmo de tu cabeza.</li>
         <li><b>Enchufado</b> y con la pantalla hacia arriba. <b>Debajo de la almohada no</b>: se calienta y el micrófono oye peor tus ronquidos.</li>
-        <li>Por la mañana, en tu noche, verás la curva <b>«Sueño profundo y ligero»</b>: cuanto menos te mueves, más profundo.</li></ol>
+        <li>Por la mañana, en tu noche, verás las <b>«Fases del sueño»</b>: cuanto menos te mueves, más profundo.</li></ol>
         <div class="arow"><span>📡 Prefiero dejarlo en la mesilla<small>Usa el sonar: un pitido muy agudo que casi nadie oye y nota si te mueves. Niños y mascotas pueden oírlo.</small></span><label class="swt"><input type="checkbox" data-sonar${cfg.sonar ? ' checked' : ''}><i></i></label></div>
         <p class="note" style="margin:8px 0 0">Es una estimación, como la de otras apps de sueño: las fases exactas solo las mide un estudio del sueño.</p>`
       : '<p class="note" style="margin:8px 0 0">Por la mañana verás cuándo dormiste profundo y cuándo ligero, según lo que te mueves. Solo tienes que dejar el móvil sobre el colchón.</p>');
@@ -5532,6 +5533,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.1', '26 oct 2026', ['«Medir también las fases del sueño» (antes «el sueño profundo»)']],
   ['v20.0', '26 oct 2026', ['Pantalla de monitoreo más ordenada: arriba lo que eliges para la noche; luego Me levanté, No grabar y Sensibilidad; abajo el Panel de monitoreo']],
   ['v19.9', '26 oct 2026', ['🧠 El detector aprende un modelo propio con la huella completa de tus grabaciones revisadas (solo se usa si acierta más)']],
   ['v19.8', '26 oct 2026', ['En «Ruidos», «Revisar esta noche» va arriba, antes de las grabaciones', '«¿Algo especial esta noche?»: selecciona si hubo algo diferente a lo habitual']],
