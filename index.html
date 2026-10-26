@@ -608,7 +608,7 @@ details.hist[open] summary{margin-bottom:10px}
 #finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
 .clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1}
 .elapsed{color:var(--dim);margin-bottom:2px;font-size:14px}
-.duofila{display:flex;gap:10px;width:100%;margin:4px 0 10px} /* Prueba audífonos (izquierda) y Me levanté (derecha) */
+.duofila{display:flex;gap:10px;width:100%;margin:10px 0 10px} /* Prueba audífonos (izquierda) y Me levanté (derecha) */
 .duo{position:relative;flex:1;display:flex;min-width:0}
 .duo:not(:has(button:not([hidden]))){display:none}
 .duo > button:first-child{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 26px 8px 8px;font-size:14px;margin:0}
@@ -1404,7 +1404,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <hr class="lsep">
+    <div class="duofila">
+      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
+      <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
+    </div>
     <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
     <div class="clockfila"><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
@@ -1416,17 +1419,14 @@ body.pl-on .wrap{padding-bottom:190px}
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
-    <div class="duofila">
-      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
-      <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
-    </div>
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v20.5'; // v20.5: «Prueba audífonos» y «Me levanté» lado a lado, abajo (encima de «Fin monitoreo»), con el icono arriba y el nombre debajo; «Elige para esta noche» y «Panel de monitoreo» son barras moradas con letras blancas; las rayas de separación, más gruesas
+const VERSION = 'v20.6'; // v20.6: «Prueba audífonos» y «Me levanté» justo encima de «Panel de monitoreo» (sin raya: la barra ya separa)
+// v20.5: // v20.5: «Prueba audífonos» y «Me levanté» lado a lado, abajo (encima de «Fin monitoreo»), con el icono arriba y el nombre debajo; «Elige para esta noche» y «Panel de monitoreo» son barras moradas con letras blancas; las rayas de separación, más gruesas
 // v20.4: // v20.4: «Elige para esta noche» con el mismo tamaño y color violeta que «Panel de monitoreo»
 // v20.3: // v20.3: monitoreo sin la raya y el hueco de antes de «Fin monitoreo» (cabe en la pantalla); 📅 calendario de noches encima de la lista: cada noche del color de su puntuación; tocar el día abre esa noche (idea de Felipe)
 // v20.2: // v20.2: Grabando/Movimiento/Luz/Auriculares ya no parecen botones: son lucecitas (un punto que se enciende, sin borde ni fondo); menos grabaciones y más largas: se cortan a los 15 s de silencio (antes 6) y duran hasta 2 min (antes 1); un ronquido con pausas ya no sale troceado
@@ -5593,7 +5593,8 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
-  ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, encima de «Fin monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
+  ['v20.6', '26 oct 2026', ['«Prueba audífonos» y «Me levanté» pasan encima de «Panel de monitoreo»']],
+  ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, justo encima de «Panel de monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
   ['v20.4', '26 oct 2026', ['Monitoreo: «Elige para esta noche» en violeta y del mismo tamaño que «Panel de monitoreo»']],
   ['v20.3', '26 oct 2026', ['📅 Calendario de noches: cada noche, del color de su puntuación; toca el día para abrirla', 'Monitoreo: sin el hueco antes de «Fin monitoreo», que ya se ve sin bajar']],
   ['v20.2', '26 oct 2026', ['Menos grabaciones por noche y más largas (hasta 2 min): un ronquido con pausas ya no sale en trocitos', 'En el monitoreo, Grabando y Movimiento son lucecitas (no parecen botones)']],
