@@ -1152,7 +1152,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
   </div>
   <details class="instr card ruidocard solo-resumen" id="nRuido" hidden></details>
-  <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca lo que pasó: así verás qué te hace roncar más</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
+  <details class="instr card etqcard solo-resumen" id="nTagsDet"><summary><span>🏷️ ¿Algo especial esta noche?<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Selecciona si esta noche hubo algo diferente a lo habitual</small></span><b class="estado" id="nTagsN"></b></summary><div id="nTags"></div></details>
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
@@ -1162,6 +1162,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
+  <!-- arriba, antes de las grabaciones (con muchas, abajo costaba llegar) -->
+  <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
+  <p class="note solo-ruidos" id="ajNota" hidden style="text-align:center;margin:6px 0 0"></p>
+  <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
+  <div class="card solo-ruidos" id="reCard" hidden style="margin-top:10px"><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
   <div class="chips solo-ruidos" id="chips"></div>
   <div class="selbar solo-ruidos" id="selbar">
     <button class="pick" id="selAll" aria-label="Seleccionar todas"></button>
@@ -1170,10 +1175,6 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList" class="solo-ruidos"></div>
   <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
-  <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
-  <p class="note solo-ruidos" id="ajNota" hidden style="text-align:center;margin:6px 0 0"></p>
-  <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
-  <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
   <button class="btn wide danger solo-resumen" id="delNight">🗑️ Borrar esta noche</button>
 </section>
 
@@ -1397,7 +1398,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.7'; // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
+const VERSION = 'v19.8'; // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
+// v19.7: // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
 // v19.6: // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
 // v19.5: // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
 // v19.4: // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
@@ -5450,6 +5452,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.8', '26 oct 2026', ['En «Ruidos», «Revisar esta noche» va arriba, antes de las grabaciones', '«¿Algo especial esta noche?»: selecciona si hubo algo diferente a lo habitual']],
   ['v19.7', '26 oct 2026', ['En Ajustes: «Actualizar el detector con mis revisiones», con la fecha de la última vez y cuánto acierta']],
   ['v19.6', '26 oct 2026', ['🎯 El detector se ajusta solo con lo que revisas (el botón solo enseña cómo va)', 'Leyenda del registro: los colores en un renglón']],
   ['v19.5', '26 oct 2026', ['«Dormí solo» y «Dormí acompañado» en ¿Algo especial esta noche?', '🎯 Ajustar el detector, también dentro de cada noche']],
