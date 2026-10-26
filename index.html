@@ -1170,8 +1170,8 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList" class="solo-ruidos"></div>
   <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
-  <button class="btn wide solo-ruidos" id="ajNight" hidden>🎯 Ver el ajuste del detector<small style="display:block;font-size:11px;opacity:.8">(solo administrador · se ajusta solo con lo que revisas)</small></button>
   <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
+  <p class="note solo-ruidos" id="ajNota" hidden style="text-align:center;margin:6px 0 0"></p>
   <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
   <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
   <button class="btn wide danger solo-resumen" id="delNight">🗑️ Borrar esta noche</button>
@@ -1397,7 +1397,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.6'; // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
+const VERSION = 'v19.7'; // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
+// v19.6: // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
 // v19.5: // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
 // v19.4: // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
 // v19.3: // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
@@ -2152,32 +2153,30 @@ async function calculaAjuste() {
   return {evs, acierta, antes, m};
 }
 // 🎯 Se ajusta solo (al abrir la app y al salir de «Ruidos», donde se revisa): si otra regla acierta más, se usa esa
+// 🔄 Actualizar el detector con tus revisiones: si otra regla acierta más, se usa; y se apunta cuándo y cuánto acierta.
+// Se hace solo al abrir la app y al salir de «Ruidos» (donde se revisa), y con el botón de Ajustes
 async function autoAjuste() {
-  if (!sesion?.admin) return;
+  if (!sesion?.admin) return null;
   try {
-    const r = await calculaAjuste(); if (!r.m || r.m.n <= r.antes) return;
-    cfg.strict = r.m.t; cfg.brK = r.m.k; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
-    pintaStrict(); pintaAprendido();
-  } catch {}
+    const r = await calculaAjuste(); if (!r.m) return r;
+    if (r.m.n > r.antes) { cfg.strict = r.m.t; cfg.brK = r.m.k; }
+    cfg.aj = {f: Date.now(), n: r.evs.length, ok: Math.max(r.m.n, r.antes), fab: r.acierta(.35, 0)};
+    try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+    pintaStrict(); pintaAprendido(); pintaAjNota();
+    return r;
+  } catch { return null; }
 }
-// El botón: cómo va el ajuste (no hace falta pulsarlo para que se use)
+const ajFecha = () => cfg.aj ? `${new Date(cfg.aj.f).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}).replace('.', '')} a las ${hhmm(cfg.aj.f)}` : '';
 async function ajustaDetector() {
-  await autoAjuste();
-  const r = await calculaAjuste(), N = r.evs.length;
-  if (!r.m) return aviso(`El detector se ajusta solo con tus revisiones cuando hay al menos 20 grabaciones revisadas en este móvil (ahora hay ${N}).`);
-  const ronq = r.evs.filter(e => e.tipo === 'ronquido'), resto = r.evs.filter(e => e.tipo === 'otro');
-  const rq = (t, k) => ronq.filter(e => reglaTipo(e, t, k) === 'ronquido').length, rs = (t, k) => resto.filter(e => reglaTipo(e, t, k) !== 'ronquido').length;
-  const t = cfg.strict || .35, k = cfg.brK || 0;
-  aviso(`🎯 El detector se ajusta solo con lo que revisas: no hace falta hacer nada.
-
-Con tus ${N} grabaciones revisadas:
-• Ajustado a ti acierta ${r.acierta(t, k)} de ${N}.
-• Con la regla de fábrica acertaría ${r.acierta(.35, 0)} de ${N}.
-
-😴 Ronquidos reconocidos: ${rq(t, k)} de ${ronq.length}.
-😮‍💨 Respiraciones y otros ruidos que no confunde con ronquido: ${rs(t, k)} de ${resto.length}.
-
-Para corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».`);
+  const r = await autoAjuste(), N = r?.evs?.length || 0;
+  if (!r?.m) return aviso(`Hacen falta al menos 20 grabaciones revisadas en este móvil para actualizar el detector (ahora hay ${N}).`);
+  toast(`🔄 Actualizado: acierta ${cfg.aj.ok} de ${N}`);
+}
+// En la noche (solo administrador): cuándo se actualizó el detector con tus revisiones
+function pintaAjNota() {
+  const p = $('ajNota'); if (!p) return;
+  p.hidden = !sesion?.admin || !cfg.aj;
+  if (!p.hidden) p.textContent = `🎯 Detector actualizado con tus revisiones el ${ajFecha()} (acierta ${cfg.aj.ok} de ${cfg.aj.n})`;
 }
 // La «Exigencia» de Ajustes: si está ajustada con tus revisiones, sale como «Ajustada a ti»
 function pintaStrict() {
@@ -2192,8 +2191,8 @@ function pintaAprendido() {
   box.innerHTML = `<p class="note" style="margin:6px 0 10px">Cuando escuchas una grabación y dices si la IA acierta (✅ / ❌), aprende de tus ronquidos, tu voz y los ruidos de tu casa. Aprende de las grabaciones hechas desde la versión 12.3.</p>
     <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🫁 <b>${c('tos')}</b> tos</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
     <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
-    <button class="btn wide" id="aprAjusta">🎯 Ver el ajuste del detector</button>
-    <p class="note" style="margin:6px 0 10px">Se ajusta solo con las grabaciones que revisas (sobre todo, para no confundir tu respiración con ronquidos).${cfg.brK != null ? ' ✅ Ya está ajustado a ti.' : ''}</p>
+    <button class="btn wide" id="aprAjusta">🔄 Actualizar el detector con mis revisiones</button>
+    <p class="note" style="margin:6px 0 10px">${cfg.aj ? `<b>Última actualización: ${ajFecha()}</b>. Con tus ${cfg.aj.n} grabaciones revisadas acierta ${cfg.aj.ok} (con la regla de fábrica acertaría ${cfg.aj.fab}).` : 'Aún no se ha actualizado: hacen falta 20 grabaciones revisadas.'} Sirve sobre todo para no confundir tu respiración con ronquidos. También se actualiza solo al abrir la app y al terminar de revisar.</p>
     ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
   $('aprAjusta').onclick = ajustaDetector;
   if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
@@ -3892,7 +3891,6 @@ async function recount() {
   await DB.put('noches', cur);
 }
 // Vuelve a pasar la IA por cada grabación de la noche (no toca las que corregiste tú a mano)
-$('ajNight').onclick = () => ajustaDetector();
 $('reNight').onclick = async () => {
   if (!IA.clf) return aviso('El detector con IA aún no está listo. Espera unos segundos y vuelve a probar (la primera vez hace falta internet).');
   const evs = curEvs.filter(e => !e.fix); if (!evs.length) return aviso('No hay grabaciones que revisar.');
@@ -5021,7 +5019,7 @@ function pintaCuenta() {
   $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el administrador
   $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el administrador
   $('reNight').hidden = !sesion?.admin; // «Revisar esta noche con el detector nuevo»: también
-  $('ajNight').hidden = !sesion?.admin; // «Ajustar el detector»: también aquí, junto a «Revisar»
+  pintaAjNota(); // «🎯 Detector actualizado con tus revisiones el …»: también solo el administrador
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
@@ -5452,6 +5450,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.7', '26 oct 2026', ['En Ajustes: «Actualizar el detector con mis revisiones», con la fecha de la última vez y cuánto acierta']],
   ['v19.6', '26 oct 2026', ['🎯 El detector se ajusta solo con lo que revisas (el botón solo enseña cómo va)', 'Leyenda del registro: los colores en un renglón']],
   ['v19.5', '26 oct 2026', ['«Dormí solo» y «Dormí acompañado» en ¿Algo especial esta noche?', '🎯 Ajustar el detector, también dentro de cada noche']],
   ['v19.4', '26 oct 2026', ['🎯 Ajustar el detector con tus revisiones: para no confundir tu respiración con ronquidos', '«Revisar esta noche» usa también lo que ha aprendido la IA']],
