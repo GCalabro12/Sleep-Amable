@@ -1393,7 +1393,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.2'; // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
+const VERSION = 'v19.3'; // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
+// v19.2: // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
 // v19.1: // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
 // v19.0: // v19.0: noche recuperada de la cuenta y sin grabaciones: en «Ruidos» lo explica (en vez de «No se grabó nada») y no sale «Revisar»; el salto al pico se repite al empezar a sonar (en Android a veces se perdía)
 // v18.9: // v18.9: el icono abría una versión vieja: el service worker pide siempre la página al servidor (petición nueva, sin la caché del navegador) y la app mira su versión también al abrirse (se recarga una sola vez si hay otra)
@@ -3899,8 +3900,8 @@ async function plPicos(e) {
     const max = Math.max(.02, ...p);
     e._picos = p.map(v => Math.max(.06, v / max));
     // el momento más fuerte: la décima de segundo con más energía
-    const W = Math.max(1, Math.round(buf.sampleRate / 10)); let mejor = 0, en = -1;
-    for (let i = 0; i + W <= d.length; i += W) { let s2 = 0; for (let j = i; j < i + W; j++) s2 += d[j] * d[j]; if (s2 > en) { en = s2; mejor = i; } }
+    const W = Math.max(1, Math.round(buf.sampleRate / 10)); let mejor = 0, en = -1; e._en = [];
+    for (let i = 0; i + W <= d.length; i += W) { let s2 = 0; for (let j = i; j < i + W; j++) s2 += d[j] * d[j]; e._en.push(s2); if (s2 > en) { en = s2; mejor = i; } }
     e._pico = mejor / buf.sampleRate;
   } catch { e._picos = Array(70).fill(.15); e._pico = 0; }
   return e._picos;
@@ -3927,7 +3928,7 @@ async function plSegs(e) {
     // y, si aún no la has revisado, la etiqueta pasa a ser la de su parte más fuerte (como en las grabaciones nuevas)
     const tf = !e.fix && !e.val && !e.aprendido ? tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
     if (cambia) { e.tipo = tf; delete e.sub; }
-    const {_url, _picos, _pico, _segando, ...rec} = e; await DB.put('eventos', rec);
+    const {_url, _picos, _pico, _segando, _en, ...rec} = e; await DB.put('eventos', rec);
     if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
     if (PL.list[PL.i] === e) plOnda();
   } catch {}
@@ -3945,18 +3946,21 @@ function plOnda() {
   // Solo los tramos fuertes (rayas seguidas del 80 al 100 % del pico) se pintan del color de lo que son
   // (ronquido, voz, tos); como mucho los 5 tramos más fuertes. Lo bajito queda en gris. Lo ya oído, más vivo
   const fuerte = new Array(n).fill(false);
+  const letra = i => e?.seg && dur ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : 'o';
   if (e?.seg) {
-    const tramos = [];
+    // el 80 % se mide sobre lo más fuerte que sea ronquido, voz o tos (si lo más fuerte era un golpe, no se pintaba nada)
+    let mL = 0; for (let i = 0; i < n; i++) if (letra(i) !== 'o') mL = Math.max(mL, p[i]);
+    const ok = i => letra(i) !== 'o' && p[i] >= mL * .8, tramos = [];
     for (let i = 0; i < n;) {
-      if (p[i] < .8) { i++; continue; }
-      let j = i, m = 0; while (j < n && p[j] >= .8) { m = Math.max(m, p[j]); j++; }
+      if (!mL || !ok(i)) { i++; continue; }
+      let j = i, m = 0; while (j < n && ok(j)) { m = Math.max(m, p[j]); j++; }
       tramos.push({i, j, m}); i = j;
     }
     tramos.sort((a, b) => b.m - a.m).slice(0, 5).forEach(t => { for (let k = t.i; k < t.j; k++) fuerte[k] = true; });
   }
   for (let i = 0; i < n; i++) {
     const bh = Math.max(2, p[i] * (h - 4)), ya = (i + .5) / n <= hecho;
-    const c = e?.seg && dur ? (fuerte[i] ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : 'o') : null;
+    const c = e?.seg && dur ? (fuerte[i] ? letra(i) : 'o') : null;
     g.fillStyle = c ? SEGCOL[c] : ya ? '#A78BFA' : '#475569';
     g.globalAlpha = c && !ya ? .5 : 1;
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
@@ -3983,7 +3987,10 @@ function plPlay(i) {
   plPicos(e).then(() => {
     if (PL.list[PL.i] !== e) return;
     plOnda();
-    const t0 = Math.max(0, (e._pico || 0) - 1);
+    // si se sabe qué es cada segundo: lo más fuerte que sea ronquido, voz o tos (no un golpe)
+    let pico = e._pico || 0;
+    if (e.seg && e._en?.length && /[rvt]/.test(e.seg)) { let m = -1; e._en.forEach((x, k) => { if (e.seg[Math.floor(k / 10)] && e.seg[Math.floor(k / 10)] !== 'o' && x > m) { m = x; pico = k / 10; } }); }
+    const t0 = Math.max(0, pico - 1);
     // en algunos Android el salto se pierde si se hace antes de que empiece a sonar: se repite al empezar y un poco después
     const pon = () => { try { if (PL.list[PL.i] === e && t0 > .05 && PL.au.currentTime < t0 - .3) PL.au.currentTime = t0; } catch {} };
     const go = () => { if (PL.list[PL.i] !== e) return; pon(); PL.au.play().then(pon).catch(() => {}); setTimeout(pon, 350); };
@@ -5359,6 +5366,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.3', '26 oct 2026', ['Arreglado: la onda volvía a salir toda gris en algunas grabaciones']],
   ['v19.2', '26 oct 2026', ['↻ Desliza hacia abajo desde arriba para actualizar la app', 'En la onda, solo los tramos fuertes van de color (como mucho 5 por grabación)', 'Los botones de revisar caben enteros']],
   ['v19.1', '26 oct 2026', ['La onda del reproductor se pinta por colores: qué parte es ronquido, voz o tos', 'Cada grabación lleva la etiqueta de su parte más fuerte']],
   ['v19.0', '26 oct 2026', ['Noche recuperada de la cuenta: en «Ruidos» explica dónde están sus grabaciones', 'El salto al momento más fuerte ahora funciona también en Android']],
