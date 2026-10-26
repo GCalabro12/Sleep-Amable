@@ -538,16 +538,17 @@ details.hist[open] summary{margin-bottom:10px}
 .choice.e{background:linear-gradient(135deg,#334155,#1E293B);box-shadow:0 8px 24px #33415544}
 #menu .sellos{margin-top:auto;padding-top:30px}
 /* Escuchando */
-#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:76px 16px 14px;text-align:center;transition:opacity .8s;overflow-y:auto;overscroll-behavior:contain}
+#listen{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:96px 16px 14px;text-align:center;transition:opacity .8s;overflow-y:auto;overscroll-behavior:contain}
 #listen.on{display:flex}
 #listen .inner{transition:opacity 1.2s;margin:auto 0;width:100%} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
 #listen.dim .inner{opacity:.07}
-.ltop{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:3;transition:opacity 1.2s}
+.ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
+.ltop .ltit{flex-basis:100%;text-align:center;font-size:13px;color:#94A3B8;margin-bottom:6px;font-weight:600}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #1F2937;background:#0B1020;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
-.lpanel{position:absolute;top:72px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
+.lpanel{position:absolute;top:92px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
 #pCuna{top:72px;left:0;right:0;bottom:0;max-height:none;border-radius:20px 20px 0 0;background:#0B1020;padding:16px 16px 28px;font-size:15px}
 .pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
@@ -568,7 +569,8 @@ details.hist[open] summary{margin-bottom:10px}
 .msghora button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#FCA5A5}
 #listen.dim .ltop,#listen.dim .lpanel{opacity:.07}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
-#pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:16px;padding:8px 18px;font-size:15px}
+#pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:10px;padding:3px 8px;font-size:11px;line-height:1.15;position:absolute;right:0;top:50%;transform:translateY(-50%)} /* estrecho, a la derecha de la hora */
+.clockfila{position:relative;width:100%}
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
 .audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
 .audifila:not(:has(button:not([hidden]))){display:none}
@@ -1351,9 +1353,10 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ESCUCHANDO -->
 <div id="listen">
   <div class="ltop">
+    <div class="ltit">Elige para esta noche</div>
     <button class="lico" id="lDnd" aria-label="No molestar">🌙<small>▾</small></button>
-    <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
     <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
+    <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
   <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
@@ -1370,25 +1373,22 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <div class="prfila"><button type="button" id="pruebaBtn" hidden>🧪 Probar detección<small>solo administrador</small></button></div>
-    <div class="monit">Monitoreando<span class="tres"><i></i><i></i><i></i></span></div>
-    <div class="clock" id="clock">--:--</div>
-    <div class="elapsed" id="elapsed">Escuchando</div>
+    <div class="audifila"><button type="button" id="audiBtn" hidden>🎧 Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
     <div class="levfila"><button type="button" id="levBtn">🚶 Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
+    <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
+    <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
+    <div class="meter"><i id="lvl"></i></div>
+    <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     <hr class="lsep">
+    <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
+    <div class="clockfila"><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
+    <div class="elapsed" id="elapsed">Escuchando</div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div id="bloque">Esperando un sonido…</div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
       <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#60A5FA"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-linecap="round"/></svg> min de voces</div>
     </div>
-    <hr class="lsep">
-    <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
-    <div class="meter"><i id="lvl"></i></div>
-    <div id="bloque">Esperando un sonido…</div>
-    <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
-    <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
-    <hr class="lsep">
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
-    <div class="audifila"><button type="button" id="audiBtn" hidden>🎧 Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="last" id="lastEv"></div>
     <hr class="lsep">
@@ -1398,7 +1398,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.9'; // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
+const VERSION = 'v20.0'; // v20.0: monitoreo reordenado (Gustavo): «Elige para esta noche» + 🌙 ✈️ 🎵 y Prueba audífonos arriba; Probar detección pequeño al lado; Me levanté, No grabar, Sensibilidad con su barra; «Panel de monitoreo» con la hora; debajo Grabando/Movimiento, el bloque, los contadores y lo último oído
+// v19.9: // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
 // v19.8: // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
 // v19.7: // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
 // v19.6: // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
@@ -5531,6 +5532,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.0', '26 oct 2026', ['Pantalla de monitoreo más ordenada: arriba lo que eliges para la noche; luego Me levanté, No grabar y Sensibilidad; abajo el Panel de monitoreo']],
   ['v19.9', '26 oct 2026', ['🧠 El detector aprende un modelo propio con la huella completa de tus grabaciones revisadas (solo se usa si acierta más)']],
   ['v19.8', '26 oct 2026', ['En «Ruidos», «Revisar esta noche» va arriba, antes de las grabaciones', '«¿Algo especial esta noche?»: selecciona si hubo algo diferente a lo habitual']],
   ['v19.7', '26 oct 2026', ['En Ajustes: «Actualizar el detector con mis revisiones», con la fecha de la última vez y cuánto acierta']],
