@@ -686,6 +686,16 @@ canvas{width:100%;height:90px;display:block}
 .ruidosbtn small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
 
 .tlcard{position:sticky;top:0;z-index:6;padding:10px 12px;box-shadow:0 10px 14px var(--bg)}
+/* Plegadas en el resumen de la noche: título + un dato + triángulo */
+.pldato{flex:none;background:#1E1B4B;border:1px solid #6D5BD0;color:#C4B5FD;border-radius:12px;padding:2px 10px;font-size:13px;font-weight:700}
+#calmaCard.plg .calmatit,#tlTit{display:flex;align-items:center;gap:8px;cursor:pointer}
+#calmaCard.plg:not(.abierta) > :not(.calmatit){display:none}
+#calmaCard.plg:not(.abierta) .calmatit #calmaInfo{display:none}
+#night:not(.ruidos) .tlcard{position:static;box-shadow:none}
+#night:not(.ruidos) #tlCard:not(.abierta) > :not(.tltit){display:none}
+#night:not(.ruidos) #tlCard:not(.abierta) .tltit{margin-bottom:0}
+#night.ruidos #tlTit .pldato,#night.ruidos #tlTit .tri{display:none}
+#night.ruidos #tlTit{cursor:default}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
 @media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}.wrap:has(#night:not([hidden])){max-width:none}} /* en horizontal, la noche usa todo el ancho */
@@ -1200,7 +1210,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
-    <div class="calmatit tltit">🎙️ Registro de grabaciones</div>
+    <div class="calmatit tltit" id="tlTit"><span style="flex:1">🎙️ Registro de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
@@ -1444,7 +1454,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.0'; // v21.0: «Aviso por altavoz o auricular» en un renglón; «Medir las fases del sueño» (sin «también») en un renglón y debajo, en pequeño, «Se mide junto con los sonidos»
+const VERSION = 'v21.1'; // v21.1: en la noche, «Fases del sueño» y «Registro de grabaciones» van plegadas (título + un dato: profundo % y nº de grabaciones); se abren al tocarlas. En «Ruidos», el registro siempre abierto
+// v21.0: // v21.0: «Aviso por altavoz o auricular» en un renglón; «Medir las fases del sueño» (sin «también») en un renglón y debajo, en pequeño, «Se mide junto con los sonidos»
 // v20.9: // v20.9: «Prueba audífonos» y «Me levanté» mitad y mitad (en pantallas estrechas se montaban); monitoreo repartido por la pantalla (sin el hueco bajo los iconos); «Fin monitoreo sueño» encima del «Panel de monitoreo» (debajo, solo información); paso 3: textos pequeños más grandes (notas de 12 a 14 px); la noche sin frases de relleno (puntuación: solo «de 100»; «Despertaste en sueño ligero/profundo», corto)
 // v20.8: // v20.8: paso 3 (menos texto): Inicio en mosaico: «Saber si ronco» grande y el resto en baldosas de 2 en 2 con icono y nombre (sin frases); cabe sin bajar
 // v20.7: // v20.7: monitoreo sin «● Grabando bloque: … · quedan …» ni «Esperando un sonido…»: basta la lucecita «Grabando» (solo queda «Sin grabar ahora» si pulsas No grabar)
@@ -3371,7 +3382,7 @@ function pintaCalma(n, evs) {
   const despTxt = prof
     ? `😵 <b>Despertaste en sueño profundo</b>${cerca.length ? ` · mejor hacia las <b>${cerca.join('</b> o las <b>')}</b>` : ''}`
     : '👍 <b>Despertaste en sueño ligero</b>';
-  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
+  box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span style="flex:1"><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button><span class="pldato">Profundo ${pc(0)} %</span><i class="tri"></i></div>
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto más quieto, más profundo. Si te mueves mucho, hablas o pulsas «Me levanté», cuenta como despierto. El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
@@ -3384,7 +3395,10 @@ function pintaCalma(n, evs) {
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
-  $('calmaInfo').onclick = () => { const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
+  $('calmaInfo').onclick = ev => { ev.stopPropagation(); box.classList.add('abierta'); box.querySelector('.tri').classList.add('up'); const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
+  // plegada: se ve el título y el % de profundo; al tocarla se abre (y se cierra)
+  box.classList.add('plg'); box.classList.remove('abierta');
+  box.querySelector('.calmatit').onclick = () => { const a = box.classList.toggle('abierta'); box.querySelector('.tri').classList.toggle('up', a); };
 }
 
 function renderStatsHome(ns) {
@@ -3640,8 +3654,14 @@ function verRuidos(on) {
   if (!on && $('night').classList.contains('ruidos')) autoAjuste(); // al salir de revisar, se ajusta con lo nuevo
   $('night').classList.toggle('ruidos', on);
   window.scrollTo(0, 0);
-  requestAnimationFrame(tlSticky);
+  requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); }); // (si estaba plegado, el gráfico se dibuja ahora)
 }
+// 🎙️ Registro de grabaciones: en el resumen de la noche va plegado; al tocar el título se abre
+$('tlTit').onclick = () => {
+  if ($('night').classList.contains('ruidos')) return;
+  const a = $('tlCard').classList.toggle('abierta'); $('tlTri').classList.toggle('up', a);
+  if (a) requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); });
+};
 // Al abrir «Ruidos» (solo el administrador, que es quien revisa): si ya revisaste alguna, va a la siguiente de la última revisada, y ▶ empieza por ella
 function irASinRevisar() {
   const l = PL.list; let u = -1; l.forEach((e, i) => { if (e.val || e.fix) u = i; });
@@ -3658,6 +3678,7 @@ $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
   $('night').classList.remove('ruidos'); PL.ini = 0; // siempre se abre por el resumen
+  $('tlCard').classList.remove('abierta'); $('tlTri').classList.remove('up'); // con el registro plegado
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada(); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
@@ -3799,6 +3820,7 @@ function renderStats() {
   $('tSnoreMin').classList.toggle('long', minR >= 60);
   $('tVoice').textContent = curEvs.filter(e => e.tipo === 'voz').length;
   $('ruidosN2').textContent = `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}`;
+  $('tlN').textContent = curEvs.length;
   $('ruidosN').textContent = curEvs.length ? `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}: ronquidos, voces, tos…` : 'Esta noche no se grabó nada';
   renderAvisoNoche();
   const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
@@ -5617,6 +5639,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v21.1', '26 oct 2026', ['La noche cabe mejor: «Fases del sueño» y «Registro de grabaciones» van plegadas; tócalas para abrirlas']],
   ['v21.0', '26 oct 2026', ['«Aviso por altavoz o auricular» y «Medir las fases del sueño», cada uno en un renglón']],
   ['v20.9', '26 oct 2026', ['Monitoreo: «Fin monitoreo sueño» encima del panel', 'Letra de las notas más grande', 'La noche, con menos frases: lo importante en corto']],
   ['v20.8', '26 oct 2026', ['Inicio más visual: «Saber si ronco» grande y lo demás en baldosas de 2 en 2, sin frases; cabe sin bajar']],
