@@ -413,16 +413,16 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .anillo text{fill:var(--text);font-size:22px;font-weight:800}
 .anillo.ok .valor{stroke:#4ADE80} .anillo.mid .valor{stroke:#FBBF24} .anillo.bad .valor{stroke:#F87171}
 .mpartes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.mp{background:var(--card2);border-radius:12px;padding:8px 10px;border-left:4px solid #64748B}
+.mp{background:var(--card2);border-radius:12px;padding:8px 8px;border:2px solid #64748B;text-align:center}
 .mp span{display:block;font-size:13px;color:var(--muted)}
 .mp b{font-size:16px}
 .mp[data-mexp]{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.mp.ok{border-left-color:#4ADE80} .mp.mid{border-left-color:#FBBF24} .mp.bad{border-left-color:#F87171}
+.mp.ok{border-color:#4ADE80} .mp.mid{border-color:#FBBF24} .mp.bad{border-color:#F87171}
 .mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
 .mpartes.tresp .mp{padding:8px 6px 8px 8px;min-width:0}
 .mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
 .mpartes.tresp .mp b{font-size:15px}
-.mp.neutro{border-left-color:#475569}
+.mp.neutro{border-color:#475569}
 .motros{font-size:12px;color:var(--muted);margin:12px 0 -4px;font-weight:600;letter-spacing:.2px}
 .lronq{width:100%;height:auto;margin-top:8px}
 .lronq .rej{stroke:#1F2937;stroke-width:1}
@@ -449,6 +449,7 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .efe small{color:var(--muted)}
 .calmatit{font-weight:600}
 .calmatit small{font-weight:400;font-size:12px;color:var(--muted);margin-left:4px}
+.tltit{margin-bottom:6px}
 .calma{width:100%;height:auto;margin-top:8px}
 .calma .lin{fill:none;stroke:#C4B5FD;stroke-width:2;stroke-linejoin:round}
 .calma .lim{stroke:#334155;stroke-dasharray:3 4}
@@ -457,19 +458,21 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .calma .cic{fill:#C4B5FD;font-size:10px;font-weight:700}
 .calma .ini{fill:#C4B5FD;font-weight:700}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
-.calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--muted)}
+.calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 8px;font-size:13px;color:var(--muted);text-align:center}
 .calmadatos b{display:block;font-size:16px;color:var(--text)}
 .calmadatos.tresdat span{font-weight:600}
+.calmadatos.tresdat small{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:2px;line-height:1.2}
 .calmadatos.tresdat .fp{background:#6366F1;color:#E0E7FF} .calmadatos.tresdat .fp b{color:#fff}
 .calmadatos.tresdat .fl{background:#A78BFA;color:#2E1065} .calmadatos.tresdat .fl b{color:#1E1B4B}
 .calmadatos.tresdat .fd{background:#FB923C;color:#431407} .calmadatos.tresdat .fd b{color:#2A0E04} /* los colores de los bloques */
 .stgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;min-width:0}
+.stbox{background:var(--card2);border-radius:12px;padding:10px 6px;text-align:center;border:2px solid #475569;display:flex;flex-direction:column;align-items:center;min-width:0}
 .stbox b{display:block;font-size:22px;line-height:1.1;white-space:nowrap}
 .stbox i{font-style:normal;font-size:13px;font-weight:700;line-height:1.2;opacity:.85}
 .stbox.ok i{color:#86EFAC} .stbox.mid i{color:var(--voice)} .stbox.bad i{color:#FCA5A5}
 .stbox span{margin-top:auto;padding-top:6px;font-size:11px;line-height:1.2;color:var(--muted)} /* el texto, abajo del todo en los tres */
 .stbox.ok b{color:#86EFAC} .stbox.mid b{color:var(--voice)} .stbox.bad b{color:#FCA5A5}
+.stbox.ok{border-color:#4ADE80} .stbox.mid{border-color:#FBBF24} .stbox.bad{border-color:#F87171}
 .moontip{display:flow-root;background:#1E1B4B;border:1px solid #312E81;border-radius:16px;padding:12px;margin-top:10px}
 .moontip svg{width:74px;height:74px;flex:none;animation:rq-float 3s ease-in-out infinite}
 .moontip .bubble{font-size:14px;color:#E0E7FF}
@@ -1128,6 +1131,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <details class="instr card avcard solo-resumen" id="avCard" hidden></details>
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
+    <div class="calmatit tltit">🎙️ Registro de grabaciones <small>etiquetadas</small></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
     <div class="legend"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span><span>🤏 pellizca para ampliar · 📱 gira el móvil para verlo en grande</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
@@ -1367,7 +1371,9 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.2'; // v17.2: los 3 recuadros de las fases, sin iconos y con su color de fondo (profundo azul, ligero violeta, despierto naranja); «Fases del sueño»; el gráfico empieza con la hora en que empezaste; «Dormiste: 22:07 · Despertaste: 06:55»
+const VERSION = 'v17.4'; // v17.4: el gráfico de sonidos lleva título, «Registro de grabaciones etiquetadas»; los recuadros pequeños (Horas, Regularidad, Ronquido…) centrados y con el borde entero de su color
+// v17.3: // v17.3: cualquier movimiento cuenta como «despierto»; «Profundo y REM» (el móvil no los distingue); debajo de cada recuadro, lo normal; en la ⓘ, la noche orientativa de 8 h
+// v17.2: // v17.2: los 3 recuadros de las fases, sin iconos y con su color de fondo (profundo azul, ligero violeta, despierto naranja); «Fases del sueño»; el gráfico empieza con la hora en que empezaste; «Dormiste: 22:07 · Despertaste: 06:55»
 // v17.1: // v17.1: el aviso de ruido es un desplegable: «Esta noche hubo N sonidos que no son ronquido ni voz» y, al abrirlo, la explicación
 // v17.0: // v17.0: fuera los 3 recuadros de debajo de la puntuación (grabaciones de ronquidos / minutos roncando / libre): repetían la tarjeta
 // v16.9: // v16.9: las noches recuperadas de la cuenta dicen claro que vuelven sin grabaciones
@@ -3017,7 +3023,8 @@ function curvaCalma(n, evs) {
   for (let b = B - 1; b >= 2; b--) if (v[b] < .25 && v[b - 1] < .25 && v[b - 2] < .25) { despierto = b + 1; break; }
   const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
   // En bloques: profundo (poco movimiento), ligero, despierto (mucho movimiento, o antes de dormirte y después de despertar)
-  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || x >= .6 ? 2 : x >= .25 ? 1 : 0);
+  // cualquier movimiento que note el móvil en esos 5 min = despierto (en la almohada hay movimientos que ni llega a notar)
+  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] > 0 || x >= .6 ? 2 : x >= .25 ? 1 : 0);
   return {v, niv, ini, fin, B, dB: dormido, dormido: dormido == null ? null : ini + dormido * 300e3, despierto: despierto == null ? null : Math.min(fin, ini + despierto * 300e3),
     tranq, inq, conMov: (n.mov || []).length > 0};
 }
@@ -3034,7 +3041,7 @@ function pintaCalma(n, evs) {
   // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
   const W = 320, H = 132, pl = 58, pr = 6, pt = 16, fila = 26, w = W - pl - pr, hB = fila * 3;
   const x = b => pl + w * b / c.B;
-  const COL = ['#6366F1', '#A78BFA', '#FB923C'], FIL = ['Profundo', 'Ligero', 'Despierto'];
+  const COL = ['#6366F1', '#A78BFA', '#FB923C'], FIL = ['Prof./REM', 'Ligero', 'Despierto'];
   const yF = k => pt + (2 - k) * fila; // fila del nivel k
   const bloques = [];
   for (let b = 0; b < c.B;) {
@@ -3067,7 +3074,7 @@ function pintaCalma(n, evs) {
     ? `😵 <b>Te despertaste en sueño profundo</b>: por eso puedes notarte espeso al levantarte.${cerca.length ? ` Tus ciclos acababan hacia las <b>${cerca.join('</b> y las <b>')}</b>: despertar cerca de esas horas suele costar menos.` : ''}`
     : '👍 <b>Te despertaste en sueño ligero</b>: es el mejor momento para despertar.';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button></div>
-    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto menos te mueves, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 minutos</b>, contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y vuelves. Es una aproximación: cada ciclo dura entre 70 y 120 minutos, y las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
+    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: si el móvil nota que te mueves, cuenta como despierto; cuanto más quieto, más profundo. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste: en cada ciclo pasas de sueño ligero a profundo y REM, y vuelves.<br><br>A modo orientativo, una noche de 8 horas tiene: <b>ligero</b>, la mitad de la noche (unas 4 h); <b>REM</b>, una quinta parte (1,5 a 2 h); <b>profundo</b>, un 15-20 % (1 a 1,5 h); <b>despierto</b>, menos de 30 min. En el REM (cuando sueñas) el cuerpo se queda quieto, como en el profundo: por eso el móvil los cuenta juntos.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
       ${[2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
@@ -3075,7 +3082,7 @@ function pintaCalma(n, evs) {
       ${marcas.join('')}
     </svg>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
-    <div class="calmadatos tresdat"><span class="fp">Profundo<b>${hm3(min(0))}</b></span><span class="fl">Ligero<b>${hm3(min(1))}</b></span><span class="fd">Despierto<b>${hm3(min(2))}</b></span></div>
+    <div class="calmadatos tresdat"><span class="fp">Profundo y REM<b>${hm3(min(0))}</b><small>normal: 35-45 %</small></span><span class="fl">Ligero<b>${hm3(min(1))}</b><small>normal: la mitad</small></span><span class="fd">Despierto<b>${hm3(min(2))}</b><small>normal: menos de 30 min</small></span></div>
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
@@ -5143,6 +5150,8 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.4', '26 oct 2026', ['El gráfico de los sonidos de la noche ya tiene título: «Registro de grabaciones etiquetadas»', 'Los recuadros pequeños (Horas, Regularidad, Ronquido…, y Profundo, Ligero y Despierto), centrados; y con el borde entero de su color']],
+  ['v17.3', '26 oct 2026', ['Fases del sueño: cualquier movimiento cuenta como despierto', '«Profundo y REM», y debajo de cada recuadro lo normal', 'En la ⓘ, cómo es una noche orientativa de 8 horas']],
   ['v17.2', '26 oct 2026', ['«Fases del sueño»: el gráfico empieza con la hora en que empezaste; «Dormiste: … · Despertaste: …»', 'Los recuadros de profundo, ligero y despierto llevan su color, sin iconos']],
   ['v17.1', '26 oct 2026', ['El aviso de ruido se abre como desplegable: primero cuántos sonidos hubo y, al tocarlo, qué revisar']],
   ['v17.0', '26 oct 2026', ['Resumen de la noche más limpio: fuera los recuadros que repetían los datos de la puntuación']],
