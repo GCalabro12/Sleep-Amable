@@ -620,6 +620,7 @@ details.hist[open] summary{margin-bottom:10px}
 /* Noche */
 .back{background:none;border:0;color:var(--muted);padding:6px 0;margin-bottom:6px}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tiles[hidden]{display:none}
 .tile{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
 .tile b{display:block;font-size:24px;white-space:nowrap}
 .tile b.long{font-size:19px;line-height:29px}
@@ -1112,7 +1113,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 id="nTitle" style="font-size:clamp(15px,5vw,21px);margin:0"></h1>
   <div id="nSub" style="color:var(--muted);font-size:14px"></div>
   <div id="nScore" class="solo-resumen"></div>
-  <div class="tiles solo-resumen">
+  <div class="tiles solo-resumen" hidden><!-- quitados en la v17.0: repetían lo de la tarjeta de la mañana -->
     <button class="tile s" type="button" data-exp="ronq"><b id="tSnore">0</b><span>grabaciones de ronquidos</span></button>
     <button class="tile s" type="button" data-exp="min"><b id="tSnoreMin">0</b><span>minutos roncando<br>en total</span></button>
     <div class="tile libre" aria-hidden="true"></div><b id="tVoice" hidden></b>
@@ -1361,7 +1362,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.9'; // v16.9: las noches recuperadas de la cuenta dicen claro que vuelven sin grabaciones
+const VERSION = 'v17.0'; // v17.0: fuera los 3 recuadros de debajo de la puntuación (grabaciones de ronquidos / minutos roncando / libre): repetían la tarjeta
+// v16.9: // v16.9: las noches recuperadas de la cuenta dicen claro que vuelven sin grabaciones
 // v16.8: // v16.8: borrar una noche es más difícil por error: en ⋮ «Borrar» va abajo y en rojo, y después hay 8 s para «Deshacer»; en Mi cuenta, «Recuperar noches de mi cuenta»
 // v16.7: // v16.7: en ⋮, «Revisada el 26 oct a las 11:05»
 // v16.6: // v16.6: cada grabación que has revisado (¿Acierta? sí/no o etiqueta cambiada) lleva arriba a la derecha «✓ Revisada» en verde
@@ -5130,6 +5132,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v17.0', '26 oct 2026', ['Resumen de la noche más limpio: fuera los recuadros que repetían los datos de la puntuación']],
   ['v16.9', '26 oct 2026', ['Las noches recuperadas de tu cuenta dicen que vuelven sin grabaciones']],
   ['v16.8', '26 oct 2026', ['🗑️ Más difícil borrar por error: en ⋮ «Borrar» va abajo, en rojo, y luego tienes 8 s para «Deshacer»', '☁️ En Mi cuenta: «Recuperar noches de mi cuenta»']],
   ['v16.7', '26 oct 2026', ['En ⋮ de cada noche: «Revisada el … a las …»']],
