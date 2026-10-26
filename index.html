@@ -1114,6 +1114,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div id="evList"></div>
   <p class="note">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
   <button class="btn wide" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
+  <p class="note" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
   <div class="card" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
   <button class="btn wide danger" id="delNight">🗑️ Borrar esta noche</button>
 </section>
@@ -1337,7 +1338,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v15.7'; // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
+const VERSION = 'v15.8'; // v15.8: la noche guarda cuándo se revisó con el detector nuevo (se ve en la noche, solo el administrador); mientras se revisa una noche con el detector nuevo se puede ir a otras pantallas (al acabar, las cuentas quedan bien en esa noche)
+// v15.7: // v15.7: «🔄 Revisar con el detector nuevo» en el menú ⋮ y dentro de la noche, solo para el administrador
 // v15.6: // v15.6: «⋮» a la derecha de cada noche del historial, con un menú (de momento: 🗑️ Borrar)
 // v15.5: // v15.5: en el historial, dejar apretada una noche saca arriba una barra para borrarla; en toda la app, dejar el dedo apretado ya no selecciona texto
 // v15.4: // v15.4: la ⓘ de «Me levanté», más corta
@@ -3225,8 +3227,10 @@ async function renderHome() {
 let cur = null, curEvs = [], filter = 'todos', curList = [], curTotal = 60;
 const sel = new Set(); // grabaciones seleccionadas (id)
 let lastPick = null;   // la última que se marcó (para marcar tramos)
+const REV = {id: null}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
-  cur = await DB.get('noches', id); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
+  $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
+  cur = await DB.get('noches', id); pintaRevisada(); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = 'todos';
   show('night');
@@ -3610,6 +3614,7 @@ $('reNight').onclick = async () => {
   const evs = curEvs.filter(e => !e.fix); if (!evs.length) return alert('No hay grabaciones que revisar.');
   if (!await confirma(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`, 'Revisar')) return;
   plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
+  const id = cur.id; REV.id = id; // se puede ir a otras pantallas mientras revisa
   const antes = {ronquido: 0, voz: 0, tos: 0, otro: 0}, cambios = {};
   for (let k = 0; k < evs.length; k++) {
     const e = evs[k]; antes[e.tipo]++;
@@ -3625,11 +3630,29 @@ $('reNight').onclick = async () => {
     $('reTxt').textContent = `Revisando ${k + 1} de ${evs.length}…`;
     await new Promise(r => setTimeout(r, 0));
   }
-  await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
+  REV.id = null;
   const txt = Object.entries(cambios).map(([k, n]) => `${n} ${k.replace('ronquido', 'ronquido').replace('otro', 'respiración/otro')}`).join(' · ');
+  if (cur?.id === id && !$('night').hidden) { cur.revisada = Date.now(); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); pintaRevisada(); }
+  else { await recuentaNoche(id, Date.now()); renderHome(); toast('✅ Noche revisada con el detector nuevo'); }
   $('reTxt').textContent = txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
   $('reNight').disabled = false;
 };
+// «✅ Revisada con el detector nuevo el …» (solo el administrador, que es quien puede revisar)
+function pintaRevisada() {
+  const p = $('reFecha'); p.hidden = !(sesion?.admin && cur?.revisada); if (p.hidden) return;
+  const d = new Date(cur.revisada);
+  p.textContent = `✅ Revisada con el detector nuevo el ${d.toLocaleDateString('es-ES', {day: 'numeric', month: 'short', year: 'numeric'}).replace('.', '')} a las ${hhmm(cur.revisada)}`;
+}
+// Revisión en marcha (para no empezar otra a la vez) y recuento de una noche que no está abierta
+async function recuentaNoche(id, revisada) {
+  const n = await DB.get('noches', id); if (!n) return;
+  if (revisada) n.revisada = revisada;
+  const evs = await DB.byNight(id), de = t => evs.filter(e => e.tipo === t);
+  n.ronquidos = de('ronquido').length; n.segRonquido = de('ronquido').reduce((a, e) => a + e.dur, 0);
+  n.voces = de('voz').length; n.segVoz = de('voz').reduce((a, e) => a + e.dur, 0); n.otros = de('otro').length;
+  if (n.tos != null || de('tos').length) n.tos = de('tos').length;
+  await DB.put('noches', n);
+}
 $('backBtn').onclick = () => { plSetList([]); show(nightFrom); renderHome(); nightFrom = 'home'; };
 
 // ---------- Reproductor de la noche (fijo abajo, aunque hagas scroll) ----------
@@ -5031,6 +5054,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v15.8', '26 oct 2026', ['Mientras se revisa una noche con el detector nuevo, puedes ir a otras pantallas de la app', 'Al acabar, la noche dice cuándo se revisó (solo administrador)']],
   ['v15.7', '26 oct 2026', ['«Revisar con el detector nuevo», en el menú ⋮ de cada noche y solo para el administrador']],
   ['v15.6', '26 oct 2026', ['⋮ Cada noche del historial tiene sus tres puntitos, con la opción de borrarla']],
   ['v15.5', '26 oct 2026', ['🗑️ En el historial, deja apretada una noche para borrarla', 'Al dejar el dedo apretado sobre un texto ya no sale «seleccionar»']],
