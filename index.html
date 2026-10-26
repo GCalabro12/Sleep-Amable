@@ -1127,7 +1127,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
   <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
   <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
-  <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div></div>
+  <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
   <button class="btn wide danger solo-resumen" id="delNight">🗑️ Borrar esta noche</button>
 </section>
 
@@ -1152,7 +1152,7 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <!-- REPRODUCTOR DE LA NOCHE -->
-<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small></button></div>
+<div id="nMenu" hidden><button type="button" id="nmBorrar">🗑️ Borrar</button><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small><small id="nmUltima"></small></button></div>
 <div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
   <div class="in">
@@ -1350,7 +1350,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v16.3'; // v16.3: «🔊 Ruidos» se abre y se cierra como un desplegable: dentro, arriba en la parte fija (con el gráfico), «🔊 Ruidos ▲» para cerrarlo
+const VERSION = 'v16.4'; // v16.4: en ⋮, «Última revisión: …»; y «⏹ Detener revisión» mientras revisa
+// v16.3: // v16.3: «🔊 Ruidos» se abre y se cierra como un desplegable: dentro, arriba en la parte fija (con el gráfico), «🔊 Ruidos ▲» para cerrarlo
 // v16.2: // v16.2: vuelven los iconos de los títulos, como antes de la v16.0 (a Gustavo le gustaban más)
 // v16.1: // v16.1: arreglado «Revisar con el detector nuevo» desde ⋮: abre «Ruidos» y enseña la barra de progreso
 // v16.0: // v16.0: sin iconos en los títulos de pantallas, tarjetas y desplegables (más limpio, como Sleep as Android)
@@ -3178,6 +3179,7 @@ let nightFrom = 'home'; // al volver de una noche: a «Saber si ronco», «Reduc
 function menuNoche(n, el) {
   const m = $('nMenu'), r = el.getBoundingClientRect();
   $('nmRevisar').hidden = !sesion?.admin; // revisar con el detector: solo el administrador
+  $('nmUltima').textContent = n.revisada ? `Última revisión: ${new Date(n.revisada).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}).replace('.', '')}, ${hhmm(n.revisada)}` : 'Sin revisar todavía';
   m.hidden = false;
   m.style.top = Math.min(innerHeight - m.offsetHeight - 10, r.bottom + 4) + 'px';
   m.style.left = Math.max(10, r.right - m.offsetWidth) + 'px';
@@ -3252,9 +3254,10 @@ function verRuidos(on) {
   requestAnimationFrame(tlSticky);
 }
 $('ruidosBtn').onclick = () => verRuidos(true);
-$('ruidosCerrar').onclick = () => verRuidos(false); // ▲ cierra «Ruidos» y vuelve al análisis de la noche
+$('ruidosCerrar').onclick = () => verRuidos(false);
+$('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
-const REV = {id: null}; // revisión con el detector nuevo en marcha (id de la noche)
+const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
   $('night').classList.remove('ruidos'); // siempre se abre por el resumen
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
@@ -3645,10 +3648,12 @@ $('reNight').onclick = async () => {
   if (!await confirma(`¿Revisar ${evs.length} grabaciones con el detector nuevo? Tarda un poco; las que corregiste a mano no se tocan.`, 'Revisar')) return;
   plSetList([]); $('reNight').disabled = true; $('reCard').hidden = false;
   requestAnimationFrame(() => $('reCard').scrollIntoView({block: 'center', behavior: 'smooth'})); // que se vea cómo avanza
-  const id = cur.id; REV.id = id; // se puede ir a otras pantallas mientras revisa
+  const id = cur.id; REV.id = id; REV.parar = false; $('reParar').hidden = false; // se puede ir a otras pantallas mientras revisa
+  let hechas = 0;
   const antes = {ronquido: 0, voz: 0, tos: 0, otro: 0}, cambios = {};
   for (let k = 0; k < evs.length; k++) {
-    const e = evs[k]; antes[e.tipo]++;
+    if (REV.parar) break; // ⏹ Detener revisión: lo revisado hasta aquí se queda guardado
+    const e = evs[k]; antes[e.tipo]++; hechas = k + 1;
     const ab = await e.blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
     const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
     const sn = [], vo = [], br = [], co = [];
@@ -3661,11 +3666,13 @@ $('reNight').onclick = async () => {
     $('reTxt').textContent = `Revisando ${k + 1} de ${evs.length}…`;
     await new Promise(r => setTimeout(r, 0));
   }
-  REV.id = null;
+  const parada = REV.parar; REV.id = null; REV.parar = false; $('reParar').hidden = true;
   const txt = Object.entries(cambios).map(([k, n]) => `${n} ${k.replace('ronquido', 'ronquido').replace('otro', 'respiración/otro')}`).join(' · ');
-  if (cur?.id === id && !$('night').hidden) { cur.revisada = Date.now(); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); pintaRevisada(); }
-  else { await recuentaNoche(id, Date.now()); renderHome(); toast('✅ Noche revisada con el detector nuevo'); }
-  $('reTxt').textContent = txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
+  const fecha = parada ? null : Date.now(); // a medias no cuenta como revisada
+  if (cur?.id === id && !$('night').hidden) { if (fecha) cur.revisada = fecha; await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); pintaRevisada(); }
+  else { await recuentaNoche(id, fecha); renderHome(); toast(parada ? '⏹ Revisión detenida' : '✅ Noche revisada con el detector nuevo'); }
+  $('reTxt').textContent = parada ? `⏹ Revisión detenida: ${hechas} de ${evs.length} revisadas${txt ? `. Cambios: ${txt}` : ''}.`
+    : txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
   $('reNight').disabled = false;
 };
 // «✅ Revisada con el detector nuevo el …» (solo el administrador, que es quien puede revisar)
@@ -5085,6 +5092,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v16.4', '26 oct 2026', ['En ⋮ de cada noche: la fecha de la última revisión', '«⏹ Detener revisión» mientras revisa con el detector nuevo']],
   ['v16.3', '26 oct 2026', ['«🔊 Ruidos» se abre y se cierra con su triangulito; dentro, el título queda fijo arriba con el gráfico']],
   ['v16.2', '26 oct 2026', ['Vuelven los iconos en los títulos, como antes']],
   ['v16.1', '26 oct 2026', ['Arreglado: «Revisar con el detector nuevo» desde ⋮ ahora enseña cómo avanza']],
