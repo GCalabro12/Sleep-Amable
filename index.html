@@ -1398,7 +1398,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.8'; // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
+const VERSION = 'v19.9'; // v19.9: 🧠 modelo propio aprendido de la huella completa (los tipos de sonido de la IA) con tus grabaciones revisadas; se examina con las que no ha visto (5 partes) y solo se usa si acierta más que la regla
+// v19.8: // v19.8: en «Ruidos», «Revisar esta noche» y sus avisos van arriba, antes de las grabaciones; «¿Algo especial esta noche?» con texto nuevo
 // v19.7: // v19.7: en Ajustes, «🔄 Actualizar el detector con mis revisiones» con «Última actualización: …» y cuánto acierta; en la noche, solo una línea con esa fecha (sin botón)
 // v19.6: // v19.6: el ajuste del detector se aplica solo (al abrir la app y al salir de «Ruidos») si acierta más; el botón solo enseña cómo va. Leyenda: los colores en un renglón
 // v19.5: // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
@@ -2078,8 +2079,9 @@ class Detector {
     // Qué es cada segundo (r ronquido, v voz, t tos, o otro) y la etiqueta: la de la parte más fuerte (si es algo claro)
     const seg = segDe(e.sn, e.vo, e.br, e.co);
     let tipo = tipoFuerte(e, seg) || decide(e.sn, e.vo, e.br, e.co), aprendido = false;
-    const vec = huellaMedia(e), ap = APR.decide(vec); // 🧠 lo que has enseñado manda si está claro
-    if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; }
+    const vec = huellaMedia(e), md = vec ? tipoModelo({vec, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co)}) : null;
+    if (md) { if (md.tipo !== tipo) { tipo = md.tipo; aprendido = true; } } // 🧠 el modelo de tu huella, si se usa
+    else { const ap = APR.decide(vec); if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; } } // si no, lo que has enseñado, si está claro
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
@@ -2141,6 +2143,61 @@ function reglaTipo(x, thr, k) {
   if (vo >= .3) return 'voz';
   return 'otro';
 }
+// 🧠 Modelo propio aprendido de la huella completa: lo que oyó la IA de cada tipo de sonido (521) + ronquido/voz/respiración/tos.
+// Regresión logística (4 tipos), aprendida con tus grabaciones revisadas. Se examina con las que no ha visto: se parte en 5,
+// aprende con 4 y comprueba con la otra (así el número de aciertos es real). Solo se usa si acierta más que la regla.
+const MOD_T = ['ronquido', 'voz', 'tos', 'otro'];
+let MODELO = null; try { MODELO = JSON.parse(localStorage.getItem('ronquino-modelo') || 'null'); } catch {}
+const rasgos = e => { const v = e.vec; if (!v || !v.length) return null; const x = Array.from(v, z => Math.sqrt(Math.max(0, z))); x.push(e.sn || 0, e.vo || 0, e.br || 0, e.co || 0); return x; };
+async function entrena(X, Y, it = 220) {
+  const n = X.length, d = X[0].length, K = 4, mu = new Float64Array(d), sd = new Float64Array(d);
+  for (const x of X) for (let j = 0; j < d; j++) mu[j] += x[j] / n;
+  for (const x of X) for (let j = 0; j < d; j++) sd[j] += (x[j] - mu[j]) ** 2 / n;
+  for (let j = 0; j < d; j++) { sd[j] = Math.sqrt(sd[j]); if (!(sd[j] > 1e-3)) sd[j] = 1; } // (casi) siempre igual: no cuenta
+  const Z = X.map(x => Float64Array.from(x, (v, j) => (v - mu[j]) / sd[j]));
+  const cnt = [0, 0, 0, 0]; Y.forEach(y => cnt[y]++);
+  const cw = cnt.map(c => c ? Math.sqrt(n / (K * c)) : 0); // que los ronquidos (menos) pesen algo más que «otro» (muchos)
+  const W = Array.from({length: K}, () => new Float64Array(d + 1)), lr = .3, lam = .05;
+  for (let t = 0; t < it; t++) {
+    const G = Array.from({length: K}, () => new Float64Array(d + 1));
+    for (let i = 0; i < n; i++) {
+      const z = Z[i], sc = W.map(w => { let a = w[d]; for (let j = 0; j < d; j++) a += w[j] * z[j]; return a; });
+      const mx = Math.max(...sc), ex = sc.map(a => Math.exp(a - mx)), se = ex.reduce((a, b) => a + b, 0);
+      for (let k = 0; k < K; k++) { const g = (ex[k] / se - (Y[i] === k ? 1 : 0)) * cw[Y[i]] / n, gk = G[k]; for (let j = 0; j < d; j++) gk[j] += g * z[j]; gk[d] += g; }
+    }
+    for (let k = 0; k < K; k++) for (let j = 0; j <= d; j++) W[k][j] -= lr * (G[k][j] + (j < d ? lam * W[k][j] : 0));
+    if (t % 20 === 19) await new Promise(ok => setTimeout(ok)); // a ratos: la pantalla no se queda parada
+  }
+  return {mu: Array.from(mu, v => +v.toPrecision(6)), sd: Array.from(sd, v => +v.toPrecision(6)), W: W.map(w => Array.from(w, v => +v.toPrecision(6)))};
+}
+function predice(m, x) {
+  const d = m?.mu?.length; if (!d || !x || x.length !== d) return null;
+  const sc = m.W.map(w => { let a = w[d]; for (let j = 0; j < d; j++) a += w[j] * (x[j] - m.mu[j]) / m.sd[j]; return a; });
+  const mx = Math.max(...sc), ex = sc.map(a => Math.exp(a - mx)), se = ex.reduce((a, b) => a + b, 0);
+  let k = 0; for (let i = 1; i < 4; i++) if (ex[i] > ex[k]) k = i;
+  return {tipo: MOD_T[k], p: ex[k] / se};
+}
+const tipoModelo = e => MODELO?.usar ? predice(MODELO, rasgos(e)) : null;
+// Aprende el modelo y lo examina (5 partes). Devuelve también cómo lo haría la regla con esas mismas grabaciones
+async function aprendeModelo(evs) {
+  const L = evs.filter(e => e.vec?.length && MOD_T.includes(e.tipo)), d = L[0] ? rasgos(L[0]).length : 0;
+  const S = L.filter(e => rasgos(e).length === d);
+  if (S.length < 30) return null;
+  const X = S.map(rasgos), Y = S.map(e => MOD_T.indexOf(e.tipo)), n = S.length;
+  const orden = [...Array(n).keys()].sort((a, b) => ((a * 7919) % 101) - ((b * 7919) % 101)); // mezcla fija (siempre igual)
+  const pred = new Array(n);
+  for (let f = 0; f < 5; f++) {
+    const te = orden.filter((_, i) => i % 5 === f), tr = orden.filter((_, i) => i % 5 !== f);
+    const m = await entrena(tr.map(i => X[i]), tr.map(i => Y[i]));
+    for (const i of te) pred[i] = predice(m, X[i]).tipo;
+  }
+  const ok = pred.filter((t, i) => t === S[i].tipo).length;
+  const rq = S.filter((e, i) => e.tipo === 'ronquido' && pred[i] === 'ronquido').length, nr = S.filter(e => e.tipo === 'ronquido').length;
+  const rs = S.filter((e, i) => e.tipo === 'otro' && pred[i] !== 'ronquido').length, no = S.filter(e => e.tipo === 'otro').length;
+  const t = cfg.strict || .35, k = cfg.brK || 0, regla = S.filter(e => reglaTipo(e, t, k) === e.tipo).length;
+  const final = await entrena(X, Y);
+  return {...final, n, ok, regla, rq, nr, rs, no, usar: ok > regla, f: Date.now(), revisadas: evs.length};
+}
 // Busca la regla que más acierta con tus grabaciones revisadas (null si hay menos de 20)
 async function calculaAjuste() {
   const evs = (await DB.all('eventos')).filter(e => (e.val || e.fix) && typeof e.sn === 'number');
@@ -2157,28 +2214,42 @@ async function calculaAjuste() {
 // 🎯 Se ajusta solo (al abrir la app y al salir de «Ruidos», donde se revisa): si otra regla acierta más, se usa esa
 // 🔄 Actualizar el detector con tus revisiones: si otra regla acierta más, se usa; y se apunta cuándo y cuánto acierta.
 // Se hace solo al abrir la app y al salir de «Ruidos» (donde se revisa), y con el botón de Ajustes
-async function autoAjuste() {
+async function autoAjuste(forzar = false) {
   if (!sesion?.admin) return null;
   try {
     const r = await calculaAjuste(); if (!r.m) return r;
     if (r.m.n > r.antes) { cfg.strict = r.m.t; cfg.brK = r.m.k; }
     cfg.aj = {f: Date.now(), n: r.evs.length, ok: Math.max(r.m.n, r.antes), fab: r.acierta(.35, 0)};
     try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+    const firma = r.evs.length + ':' + r.evs.filter(e => e.vec?.length).length + ':' + r.evs.filter(e => e.tipo === 'ronquido').length;
+    if (forzar || MODELO?.firma !== firma) { // 🧠 el modelo, solo si hay revisiones nuevas (tarda unos segundos)
+      const m = await aprendeModelo(r.evs);
+      if (m) { MODELO = {...m, firma}; try { localStorage.setItem('ronquino-modelo', JSON.stringify(MODELO)); } catch {} }
+    }
     pintaStrict(); pintaAprendido(); pintaAjNota();
     return r;
   } catch { return null; }
 }
+// Cómo va: el modelo de la huella (examinado con grabaciones que no vio) y la regla
+function textoAjuste() {
+  const a = cfg.aj, m = MODELO;
+  let t = `🔄 Detector actualizado con tus ${a.n} grabaciones revisadas (${ajFecha()}).\n\n• Regla ajustada: acierta ${a.ok} de ${a.n} (de fábrica, ${a.fab}).`;
+  if (m) t += `\n• 🧠 Modelo de tu huella, examinado con grabaciones que no había visto: acierta ${m.ok} de ${m.n}.\n   😴 Ronquidos reconocidos: ${m.rq} de ${m.nr}.\n   😮‍💨 Respiraciones y otros que no confunde con ronquido: ${m.rs} de ${m.no}.\n\n${m.usar ? '✅ Se usa el modelo de tu huella: acierta más que la regla.' : 'Se sigue usando la regla: el modelo aún no acierta más (con más revisiones aprenderá mejor).'}`;
+  else t += '\n\n🧠 El modelo de tu huella necesita al menos 30 grabaciones revisadas con huella (las grabadas desde la versión 12.3, o las de noches pasadas tras «Revisar esta noche»).';
+  return t + '\n\nPara corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».';
+}
 const ajFecha = () => cfg.aj ? `${new Date(cfg.aj.f).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}).replace('.', '')} a las ${hhmm(cfg.aj.f)}` : '';
 async function ajustaDetector() {
-  const r = await autoAjuste(), N = r?.evs?.length || 0;
+  toast('🔄 Actualizando con tus revisiones… (unos segundos)');
+  const r = await autoAjuste(true), N = r?.evs?.length || 0;
   if (!r?.m) return aviso(`Hacen falta al menos 20 grabaciones revisadas en este móvil para actualizar el detector (ahora hay ${N}).`);
-  toast(`🔄 Actualizado: acierta ${cfg.aj.ok} de ${N}`);
+  aviso(textoAjuste());
 }
 // En la noche (solo administrador): cuándo se actualizó el detector con tus revisiones
 function pintaAjNota() {
   const p = $('ajNota'); if (!p) return;
   p.hidden = !sesion?.admin || !cfg.aj;
-  if (!p.hidden) p.textContent = `🎯 Detector actualizado con tus revisiones el ${ajFecha()} (acierta ${cfg.aj.ok} de ${cfg.aj.n})`;
+  if (!p.hidden) p.textContent = `🎯 Detector actualizado con tus revisiones el ${ajFecha()} (acierta ${MODELO?.usar ? `${MODELO.ok} de ${MODELO.n}, con el 🧠 modelo de tu huella` : `${cfg.aj.ok} de ${cfg.aj.n}`})`;
 }
 // La «Exigencia» de Ajustes: si está ajustada con tus revisiones, sale como «Ajustada a ti»
 function pintaStrict() {
@@ -2194,7 +2265,7 @@ function pintaAprendido() {
     <div class="aprnum"><span>😴 <b>${c('ronquido')}</b> ronquidos</span><span>🗣️ <b>${c('voz')}</b> voces</span><span>🫁 <b>${c('tos')}</b> tos</span><span>🔊 <b>${c('otro')}</b> otros</span></div>
     <p class="note" style="margin:10px 0">${APR.activo() ? '✅ Ya usa tus valoraciones para corregir sus etiquetas y para avisarte solo de ronquidos de verdad.' : `Le faltan ${Math.max(0, APR.MIN - n)} valoraciones (de al menos dos tipos distintos) para empezar a usarlas.`}</p>
     <button class="btn wide" id="aprAjusta">🔄 Actualizar el detector con mis revisiones</button>
-    <p class="note" style="margin:6px 0 10px">${cfg.aj ? `<b>Última actualización: ${ajFecha()}</b>. Con tus ${cfg.aj.n} grabaciones revisadas acierta ${cfg.aj.ok} (con la regla de fábrica acertaría ${cfg.aj.fab}).` : 'Aún no se ha actualizado: hacen falta 20 grabaciones revisadas.'} Sirve sobre todo para no confundir tu respiración con ronquidos. También se actualiza solo al abrir la app y al terminar de revisar.</p>
+    <p class="note" style="margin:6px 0 10px">${cfg.aj ? `<b>Última actualización: ${ajFecha()}</b>. Con tus ${cfg.aj.n} grabaciones revisadas acierta ${MODELO?.usar ? `${MODELO.ok} de ${MODELO.n} con el 🧠 modelo de tu huella` : `${cfg.aj.ok} con la regla`} (de fábrica acertaría ${cfg.aj.fab}).` : 'Aún no se ha actualizado: hacen falta 20 grabaciones revisadas.'} Sirve sobre todo para no confundir tu respiración con ronquidos. También se actualiza solo al abrir la app y al terminar de revisar.</p>
     ${n ? '<button class="btn wide" id="aprOlvida">Olvidar lo aprendido</button>' : ''}`;
   $('aprAjusta').onclick = ajustaDetector;
   if ($('aprOlvida')) $('aprOlvida').onclick = async () => {
@@ -3908,7 +3979,10 @@ $('reNight').onclick = async () => {
     const a = await analizaWav(e.blob), {sn, vo, br, co} = a;
     if (sn.length) e.seg = segDe(sn, vo, br, co);
     let tipo = sn.length ? tipoFuerte(a, e.seg) || decide(sn, vo, br, co) : e.tipo; // la etiqueta: la de la parte más fuerte
-    const ap = e.vec && !e.val ? APR.decide(e.vec) : null; if (ap) tipo = ap.tipo; // 🧠 y lo que has enseñado, si está claro
+    if (!e.vec && a.vec) e.vec = a.vec; // la huella, para que también aprenda de las grabaciones viejas
+    const md = !e.val ? tipoModelo({vec: e.vec, sn: Math.max(...sn, 0), vo: Math.max(...vo, 0), br: Math.max(...br, 0), co: Math.max(...co, 0)}) : null;
+    const ap = !md && e.vec && !e.val ? APR.decide(e.vec) : null;
+    if (md) tipo = md.tipo; else if (ap) tipo = ap.tipo; // 🧠 el modelo de tu huella o, si no, lo que has enseñado
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
     e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
     const {_url, ...rec} = e; await DB.put('eventos', rec);
@@ -3995,13 +4069,16 @@ async function plPicos(e) {
 async function analizaWav(blob, pausa) {
   const ab = await blob.arrayBuffer(), pcm = new Int16Array(ab, 44, (ab.byteLength - 44) >> 1);
   const sr = new DataView(ab).getUint32(24, true), f = Float32Array.from(pcm, v => v / 32768);
-  const r0 = {sn: [], vo: [], br: [], co: [], db: []};
+  const r0 = {sn: [], vo: [], br: [], co: [], db: []}; let vs = null, vn = 0;
+  if (!(sr > 0) || !f.length) return r0; // grabación vacía o dañada: nada que analizar
   for (let i = 0; i + sr * .5 <= f.length; i += sr) {
     const t = f.subarray(i, Math.min(i + sr, f.length)), r = IA.scores(t);
     r0.sn.push(r.sn); r0.vo.push(r.vo); r0.br.push(r.br || 0); r0.co.push(r.co || 0);
+    if (r.vec) { vs ||= new Float32Array(r.vec.length); for (let j = 0; j < r.vec.length; j++) vs[j] += r.vec[j]; vn++; } // la huella
     let s2 = 0; for (const v of t) s2 += v * v; r0.db.push(10 * Math.log10(s2 / t.length + 1e-12));
     if (pausa) await new Promise(ok => setTimeout(ok)); // segundo a segundo: la pantalla no se queda parada
   }
+  if (vn) r0.vec = Float32Array.from(vs, x => Math.round(x / vn * 1000) / 1000);
   return r0;
 }
 async function plSegs(e) {
@@ -4011,7 +4088,9 @@ async function plSegs(e) {
     const a = await analizaWav(e.blob, true);
     e.seg = segDe(a.sn, a.vo, a.br, a.co);
     // y, si aún no la has revisado, la etiqueta pasa a ser la de su parte más fuerte (como en las grabaciones nuevas)
-    const tf = !e.fix && !e.val && !e.aprendido ? tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
+    if (!e.vec && a.vec) e.vec = a.vec;
+    const md = !e.fix && !e.val ? tipoModelo({...e, sn: e.sn ?? Math.max(...a.sn, 0)}) : null;
+    const tf = !e.fix && !e.val && !e.aprendido ? md?.tipo || tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
     if (cambia) { e.tipo = tf; delete e.sub; }
     const {_url, _picos, _pico, _segando, _en, ...rec} = e; await DB.put('eventos', rec);
     if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
@@ -5452,6 +5531,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.9', '26 oct 2026', ['🧠 El detector aprende un modelo propio con la huella completa de tus grabaciones revisadas (solo se usa si acierta más)']],
   ['v19.8', '26 oct 2026', ['En «Ruidos», «Revisar esta noche» va arriba, antes de las grabaciones', '«¿Algo especial esta noche?»: selecciona si hubo algo diferente a lo habitual']],
   ['v19.7', '26 oct 2026', ['En Ajustes: «Actualizar el detector con mis revisiones», con la fecha de la última vez y cuánto acierta']],
   ['v19.6', '26 oct 2026', ['🎯 El detector se ajusta solo con lo que revisas (el botón solo enseña cómo va)', 'Leyenda del registro: los colores en un renglón']],
