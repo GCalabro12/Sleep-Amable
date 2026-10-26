@@ -1390,7 +1390,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v18.7'; // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
+const VERSION = 'v18.8'; // v18.8: al volver a la app (icono, otra ventana…), mira si hay versión nueva y, si no estás monitoreando ni escuchando, se recarga sola
+// v18.7: // v18.7: al abrir «Ruidos», va sola a la siguiente después de la última revisada (y ▶ empieza ahí)
 // v18.6: // v18.6: la grabación que suena lleva un reborde punteado que parpadea (se ve mucho mejor dónde vas)
 // v18.5: // v18.5: cada grabación empieza a sonar 1 s antes de su momento más fuerte (no desde el principio)
 // v18.4: // v18.4: en el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión tienen ✕ para cerrarlas
@@ -2420,7 +2421,20 @@ async function keepAwake() {
 }
 document.addEventListener('visibilitychange', () => {
   if (live.night && document.visibilityState === 'visible') { keepAwake(); live.ctx?.resume(); }
+  if (document.visibilityState === 'visible') miraVersion();
 });
+// 🔄 La app se queda abierta por detrás (el icono la trae tal cual estaba): al volver, mira si hay versión nueva
+// y, si no estás monitoreando ni oyendo una grabación, se recarga sola. Como mucho una vez por minuto.
+let ultMira = 0;
+async function miraVersion() {
+  if (Date.now() - ultMira < 60e3 || location.protocol !== 'https:') return; ultMira = Date.now();
+  try {
+    navigator.serviceWorker?.getRegistration().then(r => r?.update()).catch(() => {});
+    const t = await (await fetch('./?v=' + Date.now(), {cache: 'no-store'})).text();
+    const v = (t.match(/const VERSION = '([^']+)'/) || [])[1];
+    if (v && v !== VERSION && !live.night && PL.au.paused) { toast(`🔄 Actualizando a la ${v}…`); setTimeout(() => location.reload(), 900); }
+  } catch {}
+}
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
@@ -5252,6 +5266,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.8', '26 oct 2026', ['Al volver a la app desde el icono, se pone sola al día si hay versión nueva']],
   ['v18.7', '26 oct 2026', ['Al abrir «Ruidos» vas directo a la siguiente después de la última revisada, y ▶ empieza ahí']],
   ['v18.6', '26 oct 2026', ['La grabación que suena se ve mejor: reborde punteado que parpadea']],
   ['v18.5', '26 oct 2026', ['Cada grabación empieza a sonar 1 segundo antes de su momento más fuerte']],
