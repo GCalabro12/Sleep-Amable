@@ -1168,6 +1168,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <div id="evList" class="solo-ruidos"></div>
   <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
+  <button class="btn wide solo-ruidos" id="ajNight" hidden>🎯 Ajustar el detector con mis revisiones<small style="display:block;font-size:11px;opacity:.8">(solo administrador · con todas las que has revisado)</small></button>
   <button class="btn wide solo-ruidos" id="reNight" hidden>🔄 Revisar esta noche con el detector nuevo<small style="display:block;font-size:11px;opacity:.8">(solo administrador)</small></button>
   <p class="note solo-ruidos" id="reFecha" hidden style="text-align:center;margin:6px 0 0"></p>
   <div class="card solo-ruidos" id="reCard" hidden><div id="reTxt"></div><div class="prog"><i id="reProg"></i></div><button type="button" class="btn wide" id="reParar" hidden style="margin-top:10px">⏹ Detener revisión</button></div>
@@ -1394,7 +1395,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v19.4'; // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
+const VERSION = 'v19.5'; // v19.5: «👤 Dormí solo» / «👫 Dormí acompañado» en «¿Algo especial esta noche?» (una u otra); «🎯 Ajustar el detector» también dentro de cada noche, junto a «Revisar»
+// v19.4: // v19.4: 🎯 «Ajustar el detector con mis revisiones» (admin): prueba reglas con las grabaciones revisadas (cuánto a ronquido = strict, cuánto más que a respiración = brK) y se queda con la que más acierta; «Revisar» usa lo aprendido
 // v19.3: // v19.3: la onda no pintaba nada si lo más fuerte era un ruido «otro»: el 80 % se mide sobre lo más fuerte de ronquido/voz/tos; y empieza a sonar 1 s antes de eso (no de un golpe)
 // v19.2: // v19.2: grabaciones viejas: al oírlas, también la etiqueta de su parte más fuerte (si no estaban revisadas); deslizar hacia abajo desde arriba del todo recarga la app (como en Metas Amables); en la onda solo se pintan de color los tramos fuertes (del 80 al 100 % del pico), como mucho 5 por grabación; lo bajito, en gris. Los 5 botones de revisar caben (Respiración no se corta)
 // v19.1: // v19.1: cada grabación guarda qué es cada segundo (seg: r/v/t/o) y la onda del reproductor se pinta por colores, como Sleep as Android; la etiqueta de la grabación es la de su parte más fuerte; las grabaciones viejas se analizan al oírlas
@@ -3074,7 +3076,8 @@ function lineaRonquido(ok) {
 const ETIQUETAS = [
   {id: 'alcohol', t: '🍷 Alcohol'}, {id: 'cena', t: '🍝 Cena fuerte'}, {id: 'cafe', t: '☕ Café por la tarde'},
   {id: 'pastilla', t: '💊 Pastilla para dormir'}, {id: 'resfriado', t: '🤧 Resfriado'}, {id: 'estres', t: '😟 Estrés'},
-  {id: 'deporte', t: '🏃 Deporte'}, {id: 'boca', t: '🛌 Dormí boca arriba'}
+  {id: 'deporte', t: '🏃 Deporte'}, {id: 'boca', t: '🛌 Dormí boca arriba'},
+  {id: 'solo', t: '👤 Dormí solo'}, {id: 'acomp', t: '👫 Dormí acompañado'}
 ];
 let etiqPropias = []; try { etiqPropias = JSON.parse(localStorage.getItem('ronquino-etiquetas') || '[]'); } catch {}
 const todasEtiq = () => [...ETIQUETAS, ...etiqPropias.map(t => ({id: 'p:' + t, t: '🏷️ ' + t}))];
@@ -3088,7 +3091,9 @@ function pintaEtiquetas(n) {
     <form id="etqForm" hidden><input class="cpin" id="etqIn" maxlength="24" placeholder="Por ejemplo: ventana abierta"><button class="btn">Añadir</button></form>`;
   box.querySelectorAll('[data-e]').forEach(b => b.onclick = async () => {
     const id = b.dataset.e, t = new Set(n.tags || []);
-    t.has(id) ? t.delete(id) : t.add(id); n.tags = [...t];
+    t.has(id) ? t.delete(id) : t.add(id);
+    if (t.has(id) && (id === 'solo' || id === 'acomp')) t.delete(id === 'solo' ? 'acomp' : 'solo'); // una u otra
+    n.tags = [...t];
     await DB.put('noches', n); pintaEtiquetas(n); subeNoches();
   });
   $('etqMas').onclick = () => { $('etqForm').hidden = false; $('etqIn').focus(); };
@@ -3858,6 +3863,7 @@ async function recount() {
   await DB.put('noches', cur);
 }
 // Vuelve a pasar la IA por cada grabación de la noche (no toca las que corregiste tú a mano)
+$('ajNight').onclick = () => ajustaDetector();
 $('reNight').onclick = async () => {
   if (!IA.clf) return aviso('El detector con IA aún no está listo. Espera unos segundos y vuelve a probar (la primera vez hace falta internet).');
   const evs = curEvs.filter(e => !e.fix); if (!evs.length) return aviso('No hay grabaciones que revisar.');
@@ -4986,6 +4992,7 @@ function pintaCuenta() {
   $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el administrador
   $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el administrador
   $('reNight').hidden = !sesion?.admin; // «Revisar esta noche con el detector nuevo»: también
+  $('ajNight').hidden = !sesion?.admin; // «Ajustar el detector»: también aquí, junto a «Revisar»
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
   const b = $('cuentaBody');
@@ -5416,6 +5423,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v19.5', '26 oct 2026', ['«Dormí solo» y «Dormí acompañado» en ¿Algo especial esta noche?', '🎯 Ajustar el detector, también dentro de cada noche']],
   ['v19.4', '26 oct 2026', ['🎯 Ajustar el detector con tus revisiones: para no confundir tu respiración con ronquidos', '«Revisar esta noche» usa también lo que ha aprendido la IA']],
   ['v19.3', '26 oct 2026', ['Arreglado: la onda volvía a salir toda gris en algunas grabaciones']],
   ['v19.2', '26 oct 2026', ['↻ Desliza hacia abajo desde arriba para actualizar la app', 'En la onda, solo los tramos fuertes van de color (como mucho 5 por grabación)', 'Los botones de revisar caben enteros']],
