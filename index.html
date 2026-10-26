@@ -521,6 +521,14 @@ details.hist[open] summary{margin-bottom:10px}
   .choice small{grid-column:2;grid-row:2;margin-top:0}
 }
 .choice.sm .ic{font-size:32px}
+/* Inicio en mosaico: baldosas de 2 en 2, icono arriba y nombre debajo (las frases sobran: se entiende con el nombre) */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cgrid .choice{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:14px 8px;margin:0;min-height:112px;font-size:16px;line-height:1.2}
+.cgrid .choice>span:not(.ic){display:block}
+.cgrid .choice .tt{font-size:16px}
+.cgrid .choice small{display:none}
+.cgrid .choice .ic{font-size:34px}
+.cgrid .choice .para{display:none}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
 .choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
 .htit{display:flex;align-items:center;gap:10px}
@@ -876,12 +884,14 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
+  <div class="cgrid">
   <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarma y música <span class="para">para </span>dormir</b><small>Música para dormirte, siesta y alarmas</small></span></button>
   <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector y novedades</small></span></button>
+  </div>
   <div class="sellos">
     <a class="pi-seal" href="https://practicaintegral.club" target="_blank" rel="noopener">by Práctica Integral</a>
     <a class="gp-seal" href="https://practicaintegral.club/grow-panel/" target="_blank" rel="noopener"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="107.5" r="69.1" fill="#f59e0b"/><circle cx="397.2" cy="210.1" r="69.1" fill="#0f766e"/><circle cx="343.3" cy="376.1" r="69.1" fill="#8b5cf6"/><circle cx="168.7" cy="376.1" r="69.1" fill="#3b82f6"/><circle cx="114.8" cy="210.1" r="69.1" fill="#ef4444"/><circle cx="256" cy="256" r="79.4" fill="#6b7280"/></svg>with Grow Panel</a>
@@ -1426,7 +1436,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v20.7'; // v20.7: monitoreo sin «● Grabando bloque: … · quedan …» ni «Esperando un sonido…»: basta la lucecita «Grabando» (solo queda «Sin grabar ahora» si pulsas No grabar)
+const VERSION = 'v20.8'; // v20.8: paso 3 (menos texto): Inicio en mosaico: «Saber si ronco» grande y el resto en baldosas de 2 en 2 con icono y nombre (sin frases); cabe sin bajar
+// v20.7: // v20.7: monitoreo sin «● Grabando bloque: … · quedan …» ni «Esperando un sonido…»: basta la lucecita «Grabando» (solo queda «Sin grabar ahora» si pulsas No grabar)
 // v20.6: // v20.6: «Prueba audífonos» y «Me levanté» justo encima de «Panel de monitoreo» (sin raya: la barra ya separa)
 // v20.5: // v20.5: «Prueba audífonos» y «Me levanté» lado a lado, abajo (encima de «Fin monitoreo»), con el icono arriba y el nombre debajo; «Elige para esta noche» y «Panel de monitoreo» son barras moradas con letras blancas; las rayas de separación, más gruesas
 // v20.4: // v20.4: «Elige para esta noche» con el mismo tamaño y color violeta que «Panel de monitoreo»
@@ -5595,6 +5606,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v20.8', '26 oct 2026', ['Inicio más visual: «Saber si ronco» grande y lo demás en baldosas de 2 en 2, sin frases; cabe sin bajar']],
   ['v20.7', '26 oct 2026', ['Monitoreo más limpio: sin «Grabando bloque… quedan…»; basta la lucecita «Grabando»']],
   ['v20.6', '26 oct 2026', ['«Prueba audífonos» y «Me levanté» pasan encima de «Panel de monitoreo»']],
   ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, justo encima de «Panel de monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
