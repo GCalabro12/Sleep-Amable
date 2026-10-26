@@ -1379,7 +1379,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v17.9'; // v17.9: con el reproductor abierto, los mensajes («Apuntado: la IA acertó»…) salen a mitad de pantalla y nunca tapan los botones
+const VERSION = 'v18.0'; // v18.0: al corregir una grabación (¿Acierta? → No) se puede elegir «😮‍💨 Respiración» (se guarda como «otro», con sub: 'respiracion')
+// v17.9: // v17.9: con el reproductor abierto, los mensajes («Apuntado: la IA acertó»…) salen a mitad de pantalla y nunca tapan los botones
 // v17.8: // v17.8: «Registro de grabaciones» sin «etiquetadas»; «estás roncando» junto a movimiento, en su renglón; «pellizca para ampliar · gira el móvil» en un solo renglón
 // v17.7: // v17.7: fases como en los estudios con actigrafía: despierto solo si te mueves mucho, hablas o pulsas «Me levanté»; el REM aparte (tras un profundo largo, la 1.ª mitad del ligero); 4 filas y lo normal en %
 // v17.6: // v17.6: títulos «📋 Panel de puntuación» (al abrir una noche) y «☀️ Panel de tu última noche» (Estadísticas)
@@ -3569,7 +3570,7 @@ const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const ICO_BAJAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
 const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>';
 const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
-const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : '🔊 ' + es(e.top);
+const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '😮‍💨 Respiración' : '🔊 ' + es(e.top);
 function renderList() {
   const list = curList = curEvs.filter(e => filter === 'todos' || (filter === 'fav' ? e.fav : e.tipo === filter));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
@@ -3868,9 +3869,12 @@ function pintaValorar(e) {
   box.innerHTML = `<span class="plvQ"><span class="plvTag">${tagTxt(e)} · </span>¿Acierta? <small style="color:var(--dim);font-size:11px">solo admin</small></span> <button type="button" class="si" id="plSi">✅ Sí</button><button type="button" class="no" id="plNo">❌ No</button>`;
   $('plSi').onclick = async () => { e.val = 'ok'; const {_url, ...rec} = e; await DB.put('eventos', rec); pintaValorar(e); renderList(); APR.apunta(e, e.tipo); toast('✅ Apuntado: la IA acertó'); };
   $('plNo').onclick = () => {
-    box.innerHTML = '¿Qué era? ' + TIPOS.filter(t => t !== e.tipo).map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : t === 'tos' ? '🫁 Tos' : '🔊 Otro ruido'}</button>`).join('');
+    // 😮‍💨 Respiración: muy frecuente; para la IA cuenta como «otro» (no es ronquido), pero se ve con su nombre
+    const ops = TIPOS.filter(t => t !== e.tipo || t === 'otro').flatMap(t => t === 'otro' ? (e.sub === 'respiracion' ? ['otro'] : ['resp', ...(e.tipo === 'otro' ? [] : ['otro'])]) : [t]);
+    box.innerHTML = '¿Qué era? ' + ops.map(t => `<button type="button" data-t="${t}">${t === 'ronquido' ? '😴 Ronquido' : t === 'voz' ? '🗣️ Voz' : t === 'tos' ? '🫁 Tos' : t === 'resp' ? '😮‍💨 Respiración' : '🔊 Otro ruido'}</button>`).join('');
     box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
-      e.tipo = b.dataset.t; e.fix = true; e.val = 'no'; delete e.aprendido;
+      const t = b.dataset.t; e.tipo = t === 'resp' ? 'otro' : t; if (t === 'resp') e.sub = 'respiracion'; else delete e.sub;
+      e.fix = true; e.val = 'no'; delete e.aprendido;
       const {_url, ...rec} = e; await DB.put('eventos', rec); await recount(); renderStats(); renderList(); drawTimeline(timelineTotal());
       APR.apunta(e, e.tipo); toast('✏️ Corregida, gracias: la IA aprende de esto');
     });
@@ -5178,6 +5182,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v18.0', '26 oct 2026', ['Al corregir una grabación, nueva opción «😮‍💨 Respiración»']],
   ['v17.9', '26 oct 2026', ['Al revisar grabaciones, el mensaje de «Apuntado» sale a mitad de pantalla y no tapa los botones']],
   ['v17.8', '26 oct 2026', ['«Registro de grabaciones», más corto', 'Leyenda más ordenada: «estás roncando» junto a movimiento, y «pellizca para ampliar · gira el móvil» en un renglón']],
   ['v17.7', '26 oct 2026', ['Fases del sueño más fieles: moverte un poco ya no cuenta como despierto (solo si te mueves mucho, hablas o pulsas «Me levanté»)', 'El REM sale aparte, en su propia fila', 'Cada fase con su porcentaje y lo normal']],
