@@ -1470,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.3'; // v22.3: el botón azul se llama «Avisos por altavoz o por auricular»; sin interruptor del aviso «estás roncando»: avisa en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos» (desde «Saber si ronco», no); el texto dice que se repite tras otros 2 min
+const VERSION = 'v22.4'; // v22.4: Aviso de ronquidos se ve igual en la web que en la app Android (sin textos ni bloqueos «solo en la app»); también el reto de la alarma; arreglo: el botón azul decía «Desactivado» también en el móvil
+// v22.3: // v22.3: el botón azul se llama «Avisos por altavoz o por auricular»; sin interruptor del aviso «estás roncando»: avisa en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos» (desde «Saber si ronco», no); el texto dice que se repite tras otros 2 min
 // v22.2: // v22.2: «estás roncando» se dice una vez; solo vuelve tras otros 2 min seguros roncando (antes, cada 30 s); «Reducir ronquidos» pasa a «Aviso de ronquidos» y su botón enciende el aviso si estaba apagado
 // v22.1: // v22.1: en la app Android, la música para dormir usa el servicio de reproducción (sigue sonando con la pantalla apagada), como los sonidos para tapar ronquidos
 // v22.0: // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
@@ -1709,20 +1710,16 @@ const VOZ_OK = !!(AND && AND.decir), FRASE = 'Estás roncando. Cambia de posici�
 // Decir algo de noche: por los auriculares; sin ellos, por el altavoz solo si «Duermo solo» está activado
 // (y mientras habla no se graba, para que la propia voz no cuente como «voz»)
 function decirNoche(texto) {
-  if (AND.decir(texto)) return true;
-  if (cfg.altavoz && AND.hablar) { AND.hablar(texto); if (live.det) live.det.mute(Math.ceil(texto.length / 12) + 3); return true; }
+  if (AND?.decir?.(texto)) return true;
+  if (cfg.altavoz && AND?.hablar) { AND.hablar(texto); if (live.det) live.det.mute(Math.ceil(texto.length / 12) + 3); return true; }
   return false;
 }
-const SIN_VOZ = '🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie. Si duermes solo, activa «Aviso por altavoz o auricular» en Reducir ronquidos.';
+const SIN_VOZ = '🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie. Si duermes solo, activa «Aviso por altavoz o auricular» en Aviso de ronquidos.';
 function pintaAviso() {
-  $('sAviso').textContent = VOZ_OK ? 'sí' : 'no'; // sin interruptor: avisa en las noches que empiezan desde aquí $('sAviso').classList.toggle('si', $('sAviso').textContent === 'sí');
-  if (!VOZ_OK) document.querySelectorAll('.avisoTx').forEach(x => x.textContent = AND
-    ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.'
-    : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.');
-  document.querySelectorAll('.avisoTest').forEach(b => b.hidden = !VOZ_OK);
+  $('sAviso').textContent = 'sí'; $('sAviso').classList.add('si'); // sin interruptor: avisa en las noches que empiezan desde aquí
 }
 document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
-  AND.prepararVoz();
+  AND?.prepararVoz?.();
   if (!decirNoche(FRASE)) aviso(SIN_VOZ);
 });
 pintaAviso();
@@ -1745,11 +1742,11 @@ $('levInfo').onclick = () => aviso('🚶 Cada vez que te levantes por la noche (
 // De noche, si no oyes nada, así sabes que es porque no has roncado, no porque fallen. Solo en la app Android.
 function pintaAudi() {
   const b = $('audiBtn'); if (!b) return;
-  b.hidden = $('audiInfo').hidden = !VOZ_OK; if (!VOZ_OK) return;
-  let con = false; try { con = !!AND.auriculares?.(); } catch {}
+  let con = false; try { con = !!AND?.auriculares?.(); } catch {}
   b.disabled = !con; $('audiSub').textContent = 'conéctalos primero'; $('audiSub').hidden = con;
 }
 $('audiBtn').onclick = () => {
+  if (!VOZ_OK) { aviso(SIN_VOZ); return; }
   AND.prepararVoz();
   if (live.det) live.det.mute(5); // que la propia frase no se grabe
   const ok = typeof AND.decirDespacio === 'function' ? AND.decirDespacio('Prueba de audífonos.') : AND.decir('Prueba... de audífonos.'); // app 4.3: más despacio y suave
@@ -1810,9 +1807,8 @@ let MSG = {on: false, texto: '', modo: 'cada', cada: 2, horas: ['03:00'], junto:
 try { Object.assign(MSG, JSON.parse(localStorage.getItem('ronquino-mensaje') || '{}')); } catch {}
 const msgGuarda = () => { try { localStorage.setItem('ronquino-mensaje', JSON.stringify(MSG)); } catch {} };
 function pintaMsg() {
-  $('msgOn').checked = VOZ_OK && MSG.on; $('msgOn').disabled = !VOZ_OK;
-  $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí');
-  if (!VOZ_OK) $('msgTxInfo').textContent = AND ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.';
+  $('msgOn').checked = MSG.on;
+  $('sMsg').textContent = MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí');
   if (document.activeElement !== $('msgTx')) $('msgTx').value = MSG.texto;
   $('msgSug').innerHTML = MSG_SUG.map(t => `<button type="button">${t}</button>`).join('');
   $('msgSug').querySelectorAll('button').forEach(b => b.onclick = () => { MSG.texto = b.textContent; msgGuarda(); pintaMsg(); });
@@ -1826,27 +1822,26 @@ function pintaMsg() {
   H.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { MSG.horas.splice(+b.dataset.q, 1); msgGuarda(); pintaMsg(); });
   if ($('msgMas')) $('msgMas').onclick = () => { MSG.horas.push('05:00'); msgGuarda(); pintaMsg(); };
   $('msgJunto').checked = !!MSG.junto;
-  $('msgTest').hidden = !VOZ_OK;
   msgResumen();
 }
-$('msgOn').onchange = () => { MSG.on = $('msgOn').checked; msgGuarda(); if (MSG.on) { AND.prepararVoz(); AND.pedirBluetooth?.(); } pintaMsg(); };
+$('msgOn').onchange = () => { MSG.on = $('msgOn').checked; msgGuarda(); if (MSG.on) { AND?.prepararVoz?.(); AND?.pedirBluetooth?.(); } pintaMsg(); };
 // Lo elegido, a la derecha de cada parte plegada
 function msgResumen() {
   $('msgSumTx').textContent = MSG.texto.trim() || 'sin escribir';
   $('msgSumCu').textContent = MSG.modo === 'cada' ? `cada ${MSG.cada} h` : MSG.horas.join(' · ');
   $('msgSumJu').textContent = MSG.junto ? 'sí' : 'no';
 }
-$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); msgResumen(); $('sMsg').textContent = VOZ_OK && MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí'); };
+$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); msgResumen(); $('sMsg').textContent = MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí'); };
 $('msgJunto').onchange = () => { MSG.junto = $('msgJunto').checked; msgGuarda(); msgResumen(); };
 $('msgTest').onclick = () => {
   if (!MSG.texto.trim()) { aviso('Escribe primero qué quieres que te diga, o toca una de las sugerencias.'); return; }
-  AND.prepararVoz();
+  AND?.prepararVoz?.();
   if (!decirNoche(MSG.texto.trim())) aviso(SIN_VOZ);
 };
 pintaMsg();
 // 🛏️ Duermo solo
 function pintaAltavoz() {
-  $('altavoz').checked = VOZ_OK && !!cfg.altavoz; $('altavoz').disabled = !VOZ_OK;
+  $('altavoz').checked = !!cfg.altavoz;
   document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auriculares o altavoz' : 'Requiere audífonos');
   $('altavozTx').textContent = cfg.altavoz ? 'Ahora: por los auriculares o, si no los llevas, por el altavoz (si duermes solo)' : 'Ahora: solo por los auriculares';
 }
@@ -1854,8 +1849,7 @@ $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localS
 pintaAltavoz();
 // Empezar desde Reducir ronquidos: la misma pantalla de monitoreo, con el aviso y el mensaje que tengas activados
 $('startRed').onclick = async () => {
-  if (VOZ_OK) { avisarNoche = true; AND.prepararVoz(); AND.pedirBluetooth?.(); } // esta noche, con el aviso «estás roncando»
-  if (!VOZ_OK && !await confirma('El aviso y el mensaje necesitan la app de Android. ¿Empezar a monitorear igualmente?', 'Empezar')) return;
+  avisarNoche = true; AND?.prepararVoz?.(); AND?.pedirBluetooth?.(); // esta noche, con el aviso «estás roncando»
   nightFrom = 'reducir'; // al terminar, la noche se abre y «atrás» vuelve aquí
   await $('startBtn').onclick();
   if (!live.night) avisarNoche = false; // no pudo empezar
@@ -4679,7 +4673,7 @@ function renderReto() {
   for (const r of RETOS) {
     const d = document.createElement('div');
     d.innerHTML = `<div class="retorow"><button class="info" type="button" aria-label="¿En qué consiste?">i</button><span class="rt">${r.t}</span>
-        <label class="swt"><input type="checkbox"${ALS.reto === r.id ? ' checked' : ''}${RETO_OK ? '' : ' disabled'}><i></i></label></div>
+        <label class="swt"><input type="checkbox"${ALS.reto === r.id ? ' checked' : ''}><i></i></label></div>
       <div class="retohelp"${retoInfo === r.id ? '' : ' hidden'}>${r.help}</div>
       ${r.id === 'codigo' && ALS.cod ? `<div class="codrow" style="margin:0 0 8px">📷 Código guardado: …${ALS.cod.slice(-6).replace(/[<>&"]/g, '')}<button type="button" class="codcam">Cambiar</button></div>` : ''}`;
     d.querySelector('.info').onclick = () => { retoInfo = retoInfo === r.id ? null : r.id; renderReto(); };
@@ -4693,10 +4687,10 @@ function renderReto() {
     d.querySelector('.codcam')?.addEventListener('click', () => pedirCodigo(ALS, () => { alSave(); renderReto(); }));
     $('retoList').append(d);
   }
-  $('retoNo').hidden = RETO_OK;
-  $('retoNo').textContent = AND ? '📲 Necesita la app Android 2.9 o más nueva: actualízala en Inicio.' : '📲 Solo en la app Android.';
+  $('retoNo').hidden = true; // igual que en la app Android
 }
 async function pedirCodigo(al, done) {
+  if (!RETO_OK) { aviso('📷 El código se escanea con la cámara del móvil, desde la app Amable Sleep.'); return; }
   if (!await confirma('📷 Escanea ahora el código de barras de algo que esté lejos de la cama: la pasta de dientes, el champú, el bote del café…\n\nCuando suene la alarma tendrás que ir hasta él y escanearlo para apagarla.', '📷 Escanear')) return done(false);
   window.codigoEscaneado = (v, err) => {
     window.codigoEscaneado = null;
@@ -4710,7 +4704,7 @@ function pintaRetoAlarma(al, d) {
   const r = RETOS.find(x => x.id === retoDe(al)), box = d.querySelector('.retoal'), opts = d.querySelector('.retoopts');
   box.innerHTML = r
     ? `<span>🧩 Reto activado <b>${r.t.split(' ')[0]}</b></span><button type="button" class="rbtn">Cambiar</button>`
-    : `<span>🧩 Reto alarma</span><button type="button" class="rbtn"${RETO_OK ? '' : ' disabled'}>Activar</button>`;
+    : `<span>🧩 Reto alarma</span><button type="button" class="rbtn">Activar</button>`;
   const lista = r ? [...RETOS, {id: '', t: '🚫 Sin reto (se apaga con el botón)'}] : RETOS;
   opts.innerHTML = lista.map(x => `<div class="ropt"><button type="button" data-r="${x.id}" class="${x.id === retoDe(al) ? 'on' : ''}">${x.t}</button>${x.help ? '<button type="button" class="rinfo" aria-label="¿En qué consiste?">?</button>' : ''}</div>${x.help ? `<div class="rhelp" hidden>${x.help}</div>` : ''}`
     // el código de barras guardado (vale para todas las alarmas) y la opción de escanear otro
@@ -5686,6 +5680,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.4', '27 oct 2026', ['Aviso de ronquidos: el botón azul vuelve a decir «Activado»', 'La web se ve igual que la app Android (aviso, mensaje y reto de la alarma)']],
   ['v22.3', '27 oct 2026', ['🎧 El botón azul se llama «Avisos por altavoz o por auricular»', '🎧 Sin interruptor: el aviso «estás roncando» funciona en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos»']],
   ['v22.2', '27 oct 2026', ['🎧 «Estás roncando» se dice una sola vez; vuelve solo si sigues 2 minutos más roncando', '«Reducir ronquidos» ahora se llama «Aviso de ronquidos»; su botón enciende el aviso si estaba apagado']],
   ['v22.1', '27 oct 2026', ['En la app Android, la música para dormir sigue sonando con la pantalla apagada']],
