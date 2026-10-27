@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.7'; // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
+const VERSION = 'v24.8'; // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
+// v24.7: // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
 // v24.6: // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
 // v24.5: // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
 // v24.4: // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
@@ -2327,7 +2328,16 @@ function predice(m, x) {
   let k = 0; for (let i = 1; i < 4; i++) if (ex[i] > ex[k]) k = i;
   return {tipo: MOD_T[k], p: ex[k] / se};
 }
-const tipoModelo = e => MODELO?.usar ? predice(MODELO, rasgos(e)) : null;
+// 🧠 El administrador usa su propio modelo; los demás, el modelo común (el del administrador, compartido), solo si está seguro
+let MODELO_COMUN = null; try { MODELO_COMUN = JSON.parse(localStorage.getItem('ronquino-modelo-comun') || 'null'); } catch {}
+const COMUN_SEGURO = .75;
+const tipoModelo = e => {
+  let admin = false; try { admin = !!sesion?.admin; } catch {}
+  if (admin) return MODELO?.usar ? predice(MODELO, rasgos(e)) : null;
+  if (!MODELO_COMUN?.usar) return null;
+  const r = predice(MODELO_COMUN, rasgos(e));
+  return r && r.p >= COMUN_SEGURO ? r : null;
+};
 // Aprende el modelo y lo examina (5 partes). Devuelve también cómo lo haría la regla con esas mismas grabaciones
 async function aprendeModelo(evs) {
   const L = evs.filter(e => e.vec?.length && MOD_T.includes(e.tipo)), d = L[0] ? rasgos(L[0]).length : 0;
@@ -2374,7 +2384,7 @@ async function autoAjuste(forzar = false) {
     const firma = r.evs.length + ':' + r.evs.filter(e => e.vec?.length).length + ':' + r.evs.filter(e => e.tipo === 'ronquido').length;
     if (forzar || MODELO?.firma !== firma) { // 🧠 el modelo, solo si hay revisiones nuevas (tarda unos segundos)
       const m = await aprendeModelo(r.evs);
-      if (m) { MODELO = {...m, firma}; try { localStorage.setItem('ronquino-modelo', JSON.stringify(MODELO)); } catch {} if (m.usar) { cfg.detCambio = Date.now(); try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} } }
+      if (m) { MODELO = {...m, firma}; try { localStorage.setItem('ronquino-modelo', JSON.stringify(MODELO)); } catch {} subeModeloComun(); if (m.usar) { cfg.detCambio = Date.now(); try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} } }
     }
     pintaStrict(); pintaAprendido(); pintaAjNota();
     return r;
@@ -5238,6 +5248,20 @@ async function apiCuenta(ruta, body) {
   if (!r.ok) throw new Error(d.error || 'Ahora no se puede. Prueba un poco más tarde.');
   return d;
 }
+// 🧠 Modelo común: todos bajan el más nuevo al abrir; el administrador sube el suyo cuando aprende algo nuevo
+async function bajaModeloComun() {
+  try {
+    const d = await apiCuenta('/modelo');
+    if (d.modelo?.W && d.modelo.fecha !== MODELO_COMUN?.fecha) { MODELO_COMUN = d.modelo; localStorage.setItem('ronquino-modelo-comun', JSON.stringify(MODELO_COMUN)); }
+  } catch {}
+}
+async function subeModeloComun() {
+  if (!sesion?.admin || !MODELO?.usar || !MODELO.W) return;
+  let ya = ''; try { ya = localStorage.getItem('ronquino-modelo-subido') || ''; } catch {}
+  if (ya === MODELO.firma) return;
+  try { await apiCuenta('/modelo', {modelo: MODELO}); localStorage.setItem('ronquino-modelo-subido', MODELO.firma); toast('🧠 Detector compartido con todos'); } catch {}
+}
+setTimeout(() => { bajaModeloComun(); subeModeloComun(); }, 6000);
 // Qué noches ya están subidas (y cómo eran): solo se vuelve a subir la que ha cambiado
 const subKey = () => 'ronquino-subidas-' + (sesion?.id || '');
 function leeSubidas() { try { return JSON.parse(localStorage.getItem(subKey()) || '{}'); } catch { return {}; } }
@@ -5840,6 +5864,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.8', '27 oct 2026', ['🧠 El detector mejora para todos con las grabaciones que revisa el equipo de Amable Sleep']],
   ['v24.7', '27 oct 2026', ['🧠 «Según tus revisiones» solo lo ve el administrador']],
   ['v24.6', '27 oct 2026', ['🧠 «aprendido» ahora dice «según tus revisiones»']],
   ['v24.5', '27 oct 2026', ['🎧 «Aviso «estás roncando» · hora» en un renglón, y una raya «aviso» en la onda donde se dijo']],
