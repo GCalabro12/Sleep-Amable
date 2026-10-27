@@ -1470,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v21.9'; // v21.9: posponer la alarma, cada vez menos: la 1.ª vez 1/3/5/9 min, la 2.ª 1/3, luego solo 1 (también en la app Android 4.4)
+const VERSION = 'v22.0'; // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
+// v21.9: // v21.9: posponer la alarma, cada vez menos: la 1.ª vez 1/3/5/9 min, la 2.ª 1/3, luego solo 1 (también en la app Android 4.4)
 // v21.8: // v21.8: Saber si ronco (y Dormir con quien ronca) como Reducir ronquidos: «Activado/Desactivado» en el 2.º renglón, sin sí/no y desplegables más estrechos
 // v21.7: // v21.7: monitoreo: tocar «⏰ hora» abre un desplegable para activar, desactivar o cambiar la alarma sin salir
 // v21.6: // v21.6: a la izquierda de la hora, ⏰ y la hora de la alarma si hay una activada
@@ -4847,7 +4848,7 @@ function alCheck() {
     if (due) {
       al.nSn = al.snooze ? (al.nSn || 0) : 0; // cuántas veces se ha pospuesto ya esta mañana
       al.fired = key; al.snooze = null; alSave();
-      alRing(al.son, al.sub, m => { al.snooze = Date.now() + m * 60e3; al.nSn = (al.nSn || 0) + 1; alSave(); }, al.nSn);
+      alRing(al.son, al.nSn && al.sub ? 5 : al.sub, m => { al.snooze = Date.now() + m * 60e3; al.nSn = (al.nSn || 0) + 1; alSave(); }, al.nSn); // pospuesta: sube en 5 s
       return;
     }
   }
@@ -4905,7 +4906,7 @@ async function napGo() {
   const tick = () => {
     const left = Math.max(0, nap.fin - Date.now());
     $('napLeft').textContent = `${Math.floor(left / 60e3)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
-    if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, m => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub, null), m * 60e3); }); }
+    if (!left) { napEnd(); if (!NATIVA) alRing(ALS.siesta.son, ALS.siesta.sub, m => { napSnoozeT = setTimeout(() => alRing(ALS.siesta.son, ALS.siesta.sub ? 5 : 0, null), m * 60e3); }); }
   };
   nap.t = setInterval(tick, 500); tick();
 }
@@ -5685,6 +5686,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.0', '27 oct 2026', ['⏰ Después de posponer, la alarma progresiva sube en 5 segundos (no despacio otra vez)']],
   ['v21.9', '27 oct 2026', ['⏰ Posponer la alarma, cada vez menos: la 1.ª vez hasta 9 min, la 2.ª hasta 3 y luego 1']],
   ['v21.8', '26 oct 2026', ['Saber si ronco y Dormir con quien ronca: cada opción dice si está Activada o Desactivada, como en Reducir ronquidos']],
   ['v21.7', '26 oct 2026', ['Monitoreo: toca ⏰ junto a la hora para activar, quitar o cambiar la alarma sin salir']],
@@ -5823,7 +5825,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '4.4';
+const APK_ULTIMA = '4.5';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
