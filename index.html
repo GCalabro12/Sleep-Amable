@@ -1499,7 +1499,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.7'; // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
+const VERSION = 'v22.8'; // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
+// v22.7: // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
 // v22.6: // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
 // v22.5: // v22.5: Aviso de ronquidos: debajo de «Empezar…», «ℹ️ Cómo funciona» (explicación + probar la voz) y, siempre a la vista, el deslizador «Avisos por: 🎧 Auricular | 🔊 Altavoz»; «¿Quieres un mensaje en la noche?»
 // v22.4: // v22.4: Aviso de ronquidos se ve igual en la web que en la app Android (sin textos ni bloqueos «solo en la app»); también el reto de la alarma; arreglo: el botón azul decía «Desactivado» también en el móvil
@@ -1839,7 +1840,7 @@ try { Object.assign(MSG, JSON.parse(localStorage.getItem('ronquino-mensaje') || 
 const msgGuarda = () => { try { localStorage.setItem('ronquino-mensaje', JSON.stringify(MSG)); } catch {} };
 function pintaMsg() {
   $('msgOn').checked = MSG.on;
-  $('sMsg').textContent = MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí');
+  $('sMsg').textContent = MSG.on ? (MSG.texto.trim() ? 'sí' : 'sin texto') : 'no'; $('sMsg').classList.toggle('si', !!MSG.on);
   if (document.activeElement !== $('msgTx')) $('msgTx').value = MSG.texto;
   $('msgSug').innerHTML = MSG_SUG.map(t => `<button type="button">${t}</button>`).join('');
   $('msgSug').querySelectorAll('button').forEach(b => b.onclick = () => { MSG.texto = b.textContent; msgGuarda(); pintaMsg(); });
@@ -1862,7 +1863,7 @@ function msgResumen() {
   $('msgSumCu').textContent = MSG.modo === 'cada' ? `cada ${MSG.cada} h` : MSG.horas.join(' · ');
   $('msgSumJu').textContent = MSG.junto ? 'sí' : 'no';
 }
-$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); msgResumen(); $('sMsg').textContent = MSG.on && MSG.texto.trim() ? 'sí' : 'no'; $('sMsg').classList.toggle('si', $('sMsg').textContent === 'sí'); };
+$('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); msgResumen(); $('sMsg').textContent = MSG.on ? (MSG.texto.trim() ? 'sí' : 'sin texto') : 'no'; $('sMsg').classList.toggle('si', !!MSG.on); };
 $('msgJunto').onchange = () => { MSG.junto = $('msgJunto').checked; msgGuarda(); msgResumen(); };
 $('msgTest').onclick = () => {
   if (!MSG.texto.trim()) { aviso('Escribe primero qué quieres que te diga, o toca una de las sugerencias.'); return; }
@@ -5429,7 +5430,7 @@ function estadoRed() {
     let t = on ? (al ? 'Activada' : 'Activado') : (al ? 'Desactivada' : 'Desactivado');
     if (al && on && est.textContent !== 'no') t += ' · ' + est.textContent; // la hora de la alarma
     else if (fases) t += ' · junto con los sonidos';
-    else if (!al) t += cfg.altavoz ? ' · con auriculares o altavoz' : ' · requiere audífonos';
+    else if (est.id === 'sMsg' && on && est.textContent === 'sin texto') t += ' · escribe en «Qué te digo»'; // (auriculares o altavoz: se elige en «Avisos por»)
     if (sub.textContent !== t) sub.textContent = t; // (solo si cambia: si no, el observador se llamaría sin parar)
     if (sub.classList.contains('on') !== on) sub.classList.toggle('on', on);
   });
@@ -5738,6 +5739,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.8', '27 oct 2026', ['💬 El mensaje en la noche dice Activado o Desactivado en cuanto tocas su interruptor']],
   ['v22.7', '27 oct 2026', ['🛏️ Con «Medir las fases del sueño», al empezar sale una ventana con el móvil en el colchón: ya lo he puesto, desactivar solo esta noche o desactivarlo']],
   ['v22.6', '27 oct 2026', ['«ℹ️ Cómo funciona» arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje', 'Dormir con quien ronca: el sonido puede apagarse al sonar la alarma']],
   ['v22.5', '27 oct 2026', ['Aviso de ronquidos: «Cómo funciona» debajo del botón, y el deslizador «Avisos por: Auricular | Altavoz» siempre a la vista', '«¿Quieres un mensaje en la noche?»']],
