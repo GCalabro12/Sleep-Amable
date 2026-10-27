@@ -1509,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.3'; // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
+const VERSION = 'v23.4'; // v23.4: la «i» de Estadísticas explica qué encontrarás (horas, regularidad, roncando por hora, línea, qué te hace roncar más) y cuánto se guardan los datos
+// v23.3: // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
 // v23.2: // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
 // v23.1: // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
 // v23.0: // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
@@ -3502,7 +3503,12 @@ document.querySelectorAll('#periodo [data-d]').forEach(b => b.onclick = () => {
 function renderStatsHome(ns) {
   document.querySelectorAll('#periodo [data-d]').forEach(b => b.classList.toggle('on', +b.dataset.d === statDias));
   let gu = 0; try { gu = guardar; } catch {} // (por si se pinta antes de leer el ajuste)
-  $('statInfo').innerHTML = `Las cifras, la línea y «Qué te hace roncar más» son de las noches del periodo que eliges debajo del historial. Solo cuentan las noches de más de 3 horas (las pruebas no).<br><br>
+  $('statInfo').innerHTML = `Aquí encontrarás tus estadísticas:<br>
+    🕗 <b>Horas</b>: cuánto duermes de media cada noche (lo ideal, 7 horas o más).<br>
+    ⏱️ <b>Regularidad de horarios</b>: cuántos minutos cambia, de una noche a otra, la hora a la que te acuestas y te levantas (mejor por debajo de 30).<br>
+    😴 <b>Roncando por hora</b>: los minutos que roncas por cada hora de sueño (mejor 3 o menos).<br>
+    📉 <b>Tus minutos roncando</b>: la línea de cada noche; lo bueno es que baje.<br>
+    🏷️ <b>Qué te hace roncar más</b>: compara las noches con cada etiqueta (alcohol, cena fuerte…) con las demás.<br><br>
     <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: ${gu ? `las últimas <b>${gu} noches</b>` : '<b>todas tus noches</b>'}, con sus grabaciones (se cambia en Ajustes → Noches guardadas). Las grabaciones nunca salen del móvil.<br>
     ☁️ En tu cuenta: los números de cada noche (horas, minutos roncando…), mientras tengas la cuenta.`;
   const desde = statDias ? Date.now() - statDias * 864e5 : 0;
@@ -5780,6 +5786,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.4', '27 oct 2026', ['ⓘ En Estadísticas: qué significa cada cifra']],
   ['v23.3', '27 oct 2026', ['🔔 «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)»']],
   ['v23.2', '27 oct 2026', ['📊 Estadísticas de los últimos 7, 30 o 90 días, o de todo', 'ⓘ En Estadísticas: cuánto tiempo se guardan tus datos', '💬 «¿Quieres otro aviso en la noche?»']],
   ['v23.1', '27 oct 2026', ['El botón dice «Monitorear y avisar de ronquidos», y «… y otro aviso» si tienes el aviso en la noche']],
