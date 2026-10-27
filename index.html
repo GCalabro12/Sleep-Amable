@@ -482,10 +482,10 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .tltit{margin-bottom:6px}
 .calma{width:100%;height:auto;margin-top:8px}
 .calma .lin{fill:none;stroke:#C4B5FD;stroke-width:2;stroke-linejoin:round}
-.calma .lim{stroke:#334155;stroke-dasharray:3 4}
+.calma .lim{stroke:#A78BFA;stroke-opacity:.75;stroke-width:1.3;stroke-dasharray:3 3} /* separa los ciclos */
 .calma text{fill:#64748B;font-size:11px}
 .calma .et{fill:#94A3B8;font-size:10.5px}
-.calma .cic{fill:#C4B5FD;font-size:10px;font-weight:700}
+.calma .cic{fill:#C4B5FD;font-size:12px;font-weight:700}
 .calma .ini{fill:#C4B5FD;font-weight:700}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
 .calmadatos span{flex:1;background:var(--card2);border-radius:12px;padding:8px 8px;font-size:13px;color:var(--muted);text-align:center}
@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.9'; // v23.9: «🌍 Tu país» se elige abajo, en «Media de tu país» (es donde se usa), no arriba de las cifras
+const VERSION = 'v24.0'; // v24.0: Fases del sueño: los ciclos se separan con una línea punteada bien visible y su número más grande; debajo, «cada franja numerada es un ciclo»
+// v23.9: // v23.9: «🌍 Tu país» se elige abajo, en «Media de tu país» (es donde se usa), no arriba de las cifras
 // v23.8: // v23.8: filtro de grabaciones con embudo a la izquierda y varias a la vez (p. ej. ronquidos + tos); «Todos» quita el filtro
 // v23.7: // v23.7: «Revisar con el detector nuevo» (admin) solo sale en las noches grabadas o revisadas antes de la última mejora del detector (reglas o modelo aprendido)
 // v23.6: // v23.6: Estadísticas sin «Panel de tu última noche» (ya está en cada noche); «Tus minutos roncando (30 días)» con el periodo elegido
@@ -3489,7 +3490,7 @@ function pintaCalma(n, evs) {
       ${bloques.join('')}
       ${marcas.join('')}
     </svg>
-    <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos</div>
+    <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos · cada franja numerada es un ciclo</div>
     <div class="calmadatos tresdat cuatro"><span class="fp">Profundo<b>${hm3(min(0))} · ${pc(0)} %</b><small>normal: 10-20 %</small></span><span class="fr">REM<b>${hm3(min(2))} · ${pc(2)} %</b><small>normal: 10-25 %</small></span><span class="fl">Ligero<b>${hm3(min(1))} · ${pc(1)} %</b><small>normal: 45-55 %</small></span><span class="fd">Despierto<b>${hm3(min(3))} · ${pc(3)} %</b><small>normal: 5-20 %</small></span></div>
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
@@ -5809,6 +5810,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.0', '27 oct 2026', ['🔄 Fases del sueño: los ciclos se ven separados por una línea punteada y numerados']],
   ['v23.9', '27 oct 2026', ['🌍 «Tu país» se elige abajo, en «Media de tu país»']],
   ['v23.8', '27 oct 2026', ['🔻 Filtro de grabaciones: elige varios a la vez (por ejemplo, ronquidos y tos)']],
   ['v23.7', '27 oct 2026', ['«Revisar con el detector nuevo» solo sale en noches anteriores a la última mejora del detector']],
