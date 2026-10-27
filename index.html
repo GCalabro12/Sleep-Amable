@@ -1009,7 +1009,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
-  <div class="card"><div style="font-weight:600">📉 Tus minutos roncando</div><div id="lineaBody"></div></div>
+  <div class="card"><div style="font-weight:600">📉 Tus minutos roncando <small id="lineaPer" style="font-weight:400;color:var(--muted)"></small></div><div id="lineaBody"></div></div>
   <div class="card"><div style="font-weight:600">🏷️ Qué te hace roncar más</div><div id="efeBody"></div></div>
   <div class="card avcard" id="avStats" hidden></div>
   <div class="card">
@@ -1509,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.5'; // v23.5: al abrir una pantalla, la «i» y todos los desplegables salen plegados (al volver de una noche, se queda como estaba); la «i» de Estadísticas: el tiempo de las grabaciones lo eliges tú en Ajustes → Noches guardadas
+const VERSION = 'v23.6'; // v23.6: Estadísticas sin «Panel de tu última noche» (ya está en cada noche); «Tus minutos roncando (30 días)» con el periodo elegido
+// v23.5: // v23.5: al abrir una pantalla, la «i» y todos los desplegables salen plegados (al volver de una noche, se queda como estaba); la «i» de Estadísticas: el tiempo de las grabaciones lo eliges tú en Ajustes → Noches guardadas
 // v23.4: // v23.4: la «i» de Estadísticas explica qué encontrarás (horas, regularidad, roncando por hora, línea, qué te hace roncar más) y cuánto se guardan los datos
 // v23.3: // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
 // v23.2: // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
@@ -3517,8 +3518,8 @@ function renderStatsHome(ns) {
   // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan), del periodo elegido
   const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
-  $('mananaCard').hidden = !ok.length;
-  if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Panel de tu última noche');
+  $('mananaCard').hidden = true; // (el panel de la última noche ya sale al abrir cada noche)
+  $('lineaPer').textContent = statDias ? `(${statDias} días)` : '(todo)';
   $('lineaBody').innerHTML = lineaRonquido(ok);
   $('lineaBody').querySelectorAll('.toque').forEach(c => c.onclick = () => {
     $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
@@ -5794,6 +5795,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.6', '27 oct 2026', ['📊 Estadísticas más claras: sin el panel de la última noche, y «Tus minutos roncando» dice de qué periodo es']],
   ['v23.5', '27 oct 2026', ['Cada pantalla se abre con la información y los desplegables plegados']],
   ['v23.4', '27 oct 2026', ['ⓘ En Estadísticas: qué significa cada cifra']],
   ['v23.3', '27 oct 2026', ['🔔 «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)»']],
