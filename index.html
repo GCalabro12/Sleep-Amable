@@ -270,7 +270,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 #reducir .auFila span{flex:1;font-size:15px;color:#BFDBFE;opacity:.7} #reducir .auFila span:first-child{text-align:right}
 #reducir .auFila span.on{opacity:1;color:#fff;font-weight:700}
 #reducir .auAl .swt i{background:#6D5BD0}
-#reducir .auTx{display:block;text-align:center;margin-top:8px;font-size:12.5px;color:#BFDBFE}
+#reducir .auTx{display:block;white-space:nowrap;text-align:center;margin-top:8px;font-size:12.5px;color:#BFDBFE}
 .swt input{opacity:0;width:0;height:0}
 .swt i{position:absolute;inset:0;background:#374151;border-radius:13px;transition:.2s}
 .swt i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
@@ -1172,7 +1172,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
-    <small id="altavozTx" class="auTx">Solo por los auriculares</small></div>
+    <small id="altavozTx" class="auTx">Solo auricular, para no despertar a nadie</small></div>
   <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres otro aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
     <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
       <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
@@ -1509,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.2'; // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
+const VERSION = 'v23.3'; // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
+// v23.2: // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
 // v23.1: // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
 // v23.0: // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
 // v22.9: // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
@@ -1891,7 +1892,7 @@ pintaMsg();
 function pintaAltavoz() {
   $('altavoz').checked = !!cfg.altavoz;
   document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auriculares o altavoz' : 'Requiere audífonos');
-  $('altavozTx').textContent = cfg.altavoz ? 'Por los auriculares; si no los llevas, por el altavoz del móvil (si duermes solo)' : 'Solo por los auriculares, para no despertar a nadie';
+  $('altavozTx').textContent = cfg.altavoz ? 'Por el altavoz (si duermes solo)' : 'Solo auricular, para no despertar a nadie';
   $('auL').classList.toggle('on', !cfg.altavoz); $('auR').classList.toggle('on', !!cfg.altavoz);
 }
 $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaAltavoz(); };
@@ -2755,7 +2756,7 @@ function pintaAvisoPor() {
 $('avisoPor').onclick = () => {
   cfg.altavoz = !cfg.altavoz; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
   pintaAltavoz(); pintaAvisoPor();
-  toast(cfg.altavoz ? '🔊 Los avisos sonarán por el altavoz (si no llevas auriculares)' : '🎧 Los avisos sonarán solo por los auriculares');
+  toast(cfg.altavoz ? '🔊 Avisos por el altavoz (si duermes solo)' : '🎧 Solo auricular, para no despertar a nadie');
 };
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
@@ -5779,6 +5780,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.3', '27 oct 2026', ['🔔 «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)»']],
   ['v23.2', '27 oct 2026', ['📊 Estadísticas de los últimos 7, 30 o 90 días, o de todo', 'ⓘ En Estadísticas: cuánto tiempo se guardan tus datos', '💬 «¿Quieres otro aviso en la noche?»']],
   ['v23.1', '27 oct 2026', ['El botón dice «Monitorear y avisar de ronquidos», y «… y otro aviso» si tienes el aviso en la noche']],
   ['v23.0', '27 oct 2026', ['🎧 En el monitoreo con aviso de ronquidos: «Avisos por auricular» o «por altavoz»; tócalo para cambiarlo', '💬 «¿Quieres un aviso en la noche?»: decimos aviso en vez de mensaje']],
