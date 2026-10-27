@@ -914,7 +914,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <div class="cgrid">
-  <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Reducir ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
+  <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Aviso de ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarma y música <span class="para">para </span>dormir</b><small>Música para dormirte, siesta y alarmas</small></span></button>
   <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
@@ -1140,9 +1140,9 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- REDUCIR RONQUIDOS -->
 <section id="reducir" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Reducir ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
-  <button class="big" id="startRed">🌙 Empezar a monitorear y reducir ronquidos</button>
+  <button class="big" id="startRed">🌙 Empezar a monitorear y avisar de ronquidos</button>
   <details class="instr card destacado"><summary><span>🎧 Aviso: estás roncando<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sAviso">no</b></summary>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
@@ -1470,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.1'; // v22.1: en la app Android, la música para dormir usa el servicio de reproducción (sigue sonando con la pantalla apagada), como los sonidos para tapar ronquidos
+const VERSION = 'v22.2'; // v22.2: «estás roncando» se dice una vez; solo vuelve tras otros 2 min seguros roncando (antes, cada 30 s); «Reducir ronquidos» pasa a «Aviso de ronquidos» y su botón enciende el aviso si estaba apagado
+// v22.1: // v22.1: en la app Android, la música para dormir usa el servicio de reproducción (sigue sonando con la pantalla apagada), como los sonidos para tapar ronquidos
 // v22.0: // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
 // v21.9: // v21.9: posponer la alarma, cada vez menos: la 1.ª vez 1/3/5/9 min, la 2.ª 1/3, luego solo 1 (también en la app Android 4.4)
 // v21.8: // v21.8: Saber si ronco (y Dormir con quien ronca) como Reducir ronquidos: «Activado/Desactivado» en el 2.º renglón, sin sí/no y desplegables más estrechos
@@ -1783,7 +1784,7 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
 // «Estás roncando» (se mira cada medio segundo mientras se monitorea):
 // 1.º aviso cuando llevas 2 minutos roncando (v13.6; antes 1); si sigues, otro cada 30 segundos de ronquido;
 // con 30 segundos seguidos sin roncar se vuelve a empezar (otra vez 1 minuto para el primer aviso).
-const AVISO_PRIMERO = 120, AVISO_SIGUE = 30, AVISO_PAUSA = 30;
+const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una vez; solo vuelve si sigues 2 min más roncando seguro (v22.2; antes cada 30 s)
 const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 function avisoTick(det, dt) {
@@ -1858,9 +1859,10 @@ $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localS
 pintaAltavoz();
 // Empezar desde Reducir ronquidos: la misma pantalla de monitoreo, con el aviso y el mensaje que tengas activados
 $('startRed').onclick = async () => {
-  const algo = VOZ_OK && (cfg.avisoRonco || (MSG.on && MSG.texto.trim()));
-  if (!algo && !await confirma(VOZ_OK ? 'No tienes activado ni «Avisarme si ronco» ni «Un mensaje en la noche». ¿Empezar a monitorear igualmente?'
-    : 'El aviso y el mensaje necesitan la app de Android. ¿Empezar a monitorear igualmente?', 'Empezar')) return;
+  if (VOZ_OK && !cfg.avisoRonco) { // el botón dice «avisar de ronquidos»: si el aviso estaba apagado, se enciende
+    $('avisoRonco2').checked = true; $('avisoRonco2').onchange(); toast('🎧 Aviso «estás roncando» activado');
+  }
+  if (!VOZ_OK && !await confirma('El aviso y el mensaje necesitan la app de Android. ¿Empezar a monitorear igualmente?', 'Empezar')) return;
   nightFrom = 'reducir'; // al terminar, la noche se abre y «atrás» vuelve aquí
   $('startBtn').onclick();
 };
@@ -5547,7 +5549,7 @@ const FICHAS = [
    p: ['Boca arriba, la lengua y el paladar caen hacia atrás y estrechan el paso del aire. De lado, el aire pasa mejor y se ronca menos.',
        'Truco: una almohada detrás de la espalda, o una pelota de tenis cosida en la espalda del pijama, para no darte la vuelta.',
        'Elevar un poco la cabecera de la cama también ayuda.'],
-   prueba: 'Activa en Reducir ronquidos el aviso «estás roncando»: te recordará cambiar de postura.',
+   prueba: 'Activa en Aviso de ronquidos el aviso «estás roncando»: te recordará cambiar de postura.',
    f: ['Sleep Foundation: How to Stop Snoring', 'https://www.sleepfoundation.org/snoring/how-to-stop-snoring'],
    q: '¿Cómo puedo acostumbrarme a dormir de lado?'}
 ];
@@ -5689,6 +5691,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.2', '27 oct 2026', ['🎧 «Estás roncando» se dice una sola vez; vuelve solo si sigues 2 minutos más roncando', '«Reducir ronquidos» ahora se llama «Aviso de ronquidos»; su botón enciende el aviso si estaba apagado']],
   ['v22.1', '27 oct 2026', ['En la app Android, la música para dormir sigue sonando con la pantalla apagada']],
   ['v22.0', '27 oct 2026', ['⏰ Después de posponer, la alarma progresiva sube en 5 segundos (no despacio otra vez)']],
   ['v21.9', '27 oct 2026', ['⏰ Posponer la alarma, cada vez menos: la 1.ª vez hasta 9 min, la 2.ª hasta 3 y luego 1']],
