@@ -1007,7 +1007,6 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="periodo"><span>Últimos</span><div class="cumin" id="periodo"><button type="button" data-d="7">7 días</button><button type="button" data-d="30">30 días</button><button type="button" data-d="90">90 días</button><button type="button" data-d="0">Todo</button></div></div>
   <div class="card" id="mananaCard" hidden></div>
   <div class="card">
-    <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
     <div id="statBody"></div>
   </div>
   <div class="card"><div style="font-weight:600">📉 Tus minutos roncando <small id="lineaPer" style="font-weight:400;color:var(--muted)"></small></div><div id="lineaBody"></div></div>
@@ -1015,6 +1014,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card avcard" id="avStats" hidden></div>
   <div class="card">
     <div style="font-weight:600">🌍 Media de tu país</div>
+    <div class="strow"><label for="pais">Tu país</label><select id="pais"></select></div>
     <div id="paisBody" class="stnote"></div>
   </div>
 </section>
@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.8'; // v23.8: filtro de grabaciones con embudo a la izquierda y varias a la vez (p. ej. ronquidos + tos); «Todos» quita el filtro
+const VERSION = 'v23.9'; // v23.9: «🌍 Tu país» se elige abajo, en «Media de tu país» (es donde se usa), no arriba de las cifras
+// v23.8: // v23.8: filtro de grabaciones con embudo a la izquierda y varias a la vez (p. ej. ronquidos + tos); «Todos» quita el filtro
 // v23.7: // v23.7: «Revisar con el detector nuevo» (admin) solo sale en las noches grabadas o revisadas antes de la última mejora del detector (reglas o modelo aprendido)
 // v23.6: // v23.6: Estadísticas sin «Panel de tu última noche» (ya está en cada noche); «Tus minutos roncando (30 días)» con el periodo elegido
 // v23.5: // v23.5: al abrir una pantalla, la «i» y todos los desplegables salen plegados (al volver de una noche, se queda como estaba); la «i» de Estadísticas: el tiempo de las grabaciones lo eliges tú en Ajustes → Noches guardadas
@@ -5808,6 +5809,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.9', '27 oct 2026', ['🌍 «Tu país» se elige abajo, en «Media de tu país»']],
   ['v23.8', '27 oct 2026', ['🔻 Filtro de grabaciones: elige varios a la vez (por ejemplo, ronquidos y tos)']],
   ['v23.7', '27 oct 2026', ['«Revisar con el detector nuevo» solo sale en noches anteriores a la última mejora del detector']],
   ['v23.6', '27 oct 2026', ['📊 Estadísticas más claras: sin el panel de la última noche, y «Tus minutos roncando» dice de qué periodo es']],
