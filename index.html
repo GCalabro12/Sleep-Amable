@@ -190,6 +190,11 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #cuSalir{margin-top:4px}
 #cuBorForm .cpin{margin:8px 0}
 #ask{position:fixed;inset:0;z-index:70;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+#profAviso{position:fixed;inset:0;z-index:69;background:#000b;display:flex;align-items:flex-end;justify-content:center} #profAviso[hidden]{display:none}
+#profAviso .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:20px 16px 24px;max-height:100vh;overflow-y:auto}
+#profAviso h2{margin:0 0 6px;font-size:19px} #profAviso p{margin:0 0 10px;font-size:15px;line-height:1.45}
+#profAviso img{display:block;width:100%;max-height:30vh;object-fit:contain;border-radius:14px;margin:0 0 12px}
+#profAviso .btn{margin-top:8px}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px}
 #ask h2{margin:0 0 6px;font-size:20px}
 #ask .finrow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
@@ -1388,6 +1393,16 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="big" id="bvEmpezar" type="button" disabled>Empezar</button>
   </div>
 </div>
+<div id="profAviso" hidden>
+  <div class="sheet">
+    <h2>🌙 Has elegido «Medir las fases del sueño»</h2>
+    <p>Para ello, pon el móvil <b>sobre el colchón</b>, en la esquina junto a la almohada, <b>enchufado</b> y con la pantalla hacia arriba.</p>
+    <img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada">
+    <button class="big" id="profYa">✅ Ya lo he puesto</button>
+    <button class="btn wide" id="profHoy">Desactivar solo esta noche</button>
+    <button class="btn wide" id="profNo">Desactivar «Medir las fases del sueño»</button>
+  </div>
+</div>
 <div id="ask" hidden>
   <div class="sheet">
     <h2 id="askT"></h2>
@@ -1484,7 +1499,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.6'; // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
+const VERSION = 'v22.7'; // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
+// v22.6: // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
 // v22.5: // v22.5: Aviso de ronquidos: debajo de «Empezar…», «ℹ️ Cómo funciona» (explicación + probar la voz) y, siempre a la vista, el deslizador «Avisos por: 🎧 Auricular | 🔊 Altavoz»; «¿Quieres un mensaje en la noche?»
 // v22.4: // v22.4: Aviso de ronquidos se ve igual en la web que en la app Android (sin textos ni bloqueos «solo en la app»); también el reto de la alarma; arreglo: el botón azul decía «Desactivado» también en el móvil
 // v22.3: // v22.3: el botón azul se llama «Avisos por altavoz o por auricular»; sin interruptor del aviso «estás roncando»: avisa en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos» (desde «Saber si ronco», no); el texto dice que se repite tras otros 2 min
@@ -2443,7 +2459,7 @@ async function startListening() {
 
   Object.assign(live, {stream, ctx, night, saver, det, src, lp1, lastFrame: Date.now()});
   movEmpezar(night);
-  if (cfg.profundo) setTimeout(() => toast('🛏️ Recuerda: el móvil sobre el colchón, junto a la almohada'), 1500);
+  if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
   $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').textContent = ''; $('lwarn').hidden = true;
@@ -2602,7 +2618,7 @@ async function stopListening(auto) {
   try { await live.lock?.release(); } catch {}
   live.lock = null;
   AND?.noche(false); // «No molestar» y wifi vuelven a como estaban
-  avisarNoche = false;
+  avisarNoche = false; $('profAviso').hidden = true;
   if (AND) await todoComoAntes();
   $('listen').classList.remove('on');
   const night = live.night, id = night.id;
@@ -2704,10 +2720,19 @@ async function miraVersion() {
     }
   } catch {}
 }
+// 🛏️ Ventana fija al empezar con «Medir las fases del sueño»: pon el móvil en el colchón, o desactívalo (esta noche o siempre)
+function profAvisoAbre(night) {
+  $('profAviso').hidden = false; wake();
+  const cierra = msg => { $('profAviso').hidden = true; wake(); if (msg) toast(msg); };
+  const sinFases = () => { night.profundo = false; DB.put('noches', night).catch(console.error); };
+  $('profYa').onclick = () => cierra();
+  $('profHoy').onclick = () => { sinFases(); cierra('Esta noche no se miden las fases del sueño'); };
+  $('profNo').onclick = () => { sinFases(); ponProfundo(false); cierra('«Medir las fases del sueño» desactivado'); };
+}
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
-  live.dimT = setTimeout(() => { if (prueba || !$('ask').hidden) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
+  live.dimT = setTimeout(() => { if (prueba || !$('ask').hidden || !$('profAviso').hidden) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
 }
 $('listen').addEventListener('pointerdown', e => {
   if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
@@ -5713,6 +5738,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.7', '27 oct 2026', ['🛏️ Con «Medir las fases del sueño», al empezar sale una ventana con el móvil en el colchón: ya lo he puesto, desactivar solo esta noche o desactivarlo']],
   ['v22.6', '27 oct 2026', ['«ℹ️ Cómo funciona» arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje', 'Dormir con quien ronca: el sonido puede apagarse al sonar la alarma']],
   ['v22.5', '27 oct 2026', ['Aviso de ronquidos: «Cómo funciona» debajo del botón, y el deslizador «Avisos por: Auricular | Altavoz» siempre a la vista', '«¿Quieres un mensaje en la noche?»']],
   ['v22.4', '27 oct 2026', ['Aviso de ronquidos: el botón azul vuelve a decir «Activado»', 'La web se ve igual que la app Android (aviso, mensaje y reto de la alarma)']],
