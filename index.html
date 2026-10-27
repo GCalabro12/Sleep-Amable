@@ -1024,6 +1024,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
+  <details class="instr card siempreAbierto" id="guiaDet" open><summary><span>🎧 Relajaciones para dormir</span></summary><div id="guiaBody"></div></details>
   <details class="instr card" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
   <div class="sepgrueso"></div>
   <div class="card">
@@ -1511,7 +1512,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.1'; // v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
+const VERSION = 'v25.2'; // v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
+// v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
 // v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
 // v24.9: // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
 // v24.8: // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
@@ -2790,8 +2792,13 @@ $('avisoPor').onclick = () => {
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
-  live.dimT = setTimeout(() => { if (prueba || !$('ask').hidden || !$('profAviso').hidden) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
+  if (!live.night || live.parando) return; // solo mientras monitorea (si no, al acabar la noche podía quedarse el brillo al mínimo)
+  live.dimT = setTimeout(() => { if (!live.night || live.parando) return; if (prueba || !$('ask').hidden || !$('profAviso').hidden) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
 }
+// Sin monitorear, el brillo siempre es el normal del móvil (al abrir la app y al volver a ella)
+const brilloNormal = () => { if (!live.night) { clearTimeout(live.dimT); try { AND?.atenuar?.(false); } catch {} } };
+brilloNormal();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') brilloNormal(); });
 $('listen').addEventListener('pointerdown', e => {
   if ($('listen').classList.contains('dim')) { e.preventDefault(); e.stopPropagation(); wake(); }
   else wake();
@@ -3186,30 +3193,36 @@ function musToca(c) {
     const queda = c.guia ? Math.max(0, (isFinite(au.duration) ? au.duration : c.min * 60) - au.currentTime) : (MUS.fin - Date.now()) / 1000;
     if (!c.guia && queda <= CUNA_FADE && MUS.au) MUS.au.volume = Math.max(0, cunaVol * queda / CUNA_FADE);
     if (!c.guia && queda <= 0) { musPara(false); return; }
-    const q = $('musQueda'); if (q) q.textContent = `quedan ${Math.floor(queda / 60)}:${String(Math.floor(queda % 60)).padStart(2, '0')}`;
+    const q = document.querySelector('.musQueda'); if (q) q.textContent = `quedan ${Math.floor(queda / 60)}:${String(Math.floor(queda % 60)).padStart(2, '0')}`;
   }, 250);
   pintaMusica();
 }
 function pintaMusica() {
-  const box = $('musBody'); if (!box) return;
+  const box = $('musBody'), gbox = $('guiaBody'); if (!box || !gbox) return;
   $('musSum').hidden = true; // lo que suena ya se ve dentro, con su cuenta atrás y ■
-  box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
-    ${MUS.c ? `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">${MUS.c.guia ? '🎧' : '🎵'} ${MUS.c.icon} ${MUS.c.name} · <span id="musQueda"></span></span><button type="button" id="musStop" aria-label="Parar">■</button></div>` : ''}
-    <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="musVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
-    <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
-    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}</button>`).join('')}</div>
-    <p class="cutit">🎧 Relajaciones guiadas</p>
-    <p class="note" style="margin:2px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
+  const suena = `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">${MUS.c?.guia ? '🎧' : '🎵'} ${MUS.c?.icon} ${MUS.c?.name} · <span class="musQueda"></span></span><button type="button" class="musStop" aria-label="Parar">■</button></div>`;
+  const vol = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" class="musVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>`;
+  // 🎧 Relajaciones guiadas: su propia tarjeta, abierta y arriba del todo
+  gbox.innerHTML = `<p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
+    ${MUS.c?.guia ? suena : ''}${vol}
     <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}</div>`;
-  $('musVol').oninput = e => { cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {} if (MUS.au && (MUS.c?.guia || MUS.fin - Date.now() > CUNA_FADE * 1000)) MUS.au.volume = cunaVol; };
+  box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
+    ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
+    <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
+    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}</button>`).join('')}</div>`;
+  document.querySelectorAll('.musVol').forEach(r => r.oninput = e => {
+    cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
+    document.querySelectorAll('.musVol').forEach(o => { if (o !== e.target) o.value = e.target.value; });
+    if (MUS.au && (MUS.c?.guia || MUS.fin - Date.now() > CUNA_FADE * 1000)) MUS.au.volume = cunaVol;
+  });
   box.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
     cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
     if (MUS.au) MUS.fin = Date.now() + cunaMin * 60e3; // la que suena vuelve a contar con los minutos nuevos
     pintaMusica();
   });
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
-  box.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
-  if ($('musStop')) $('musStop').onclick = () => musPara(true);
+  gbox.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
+  document.querySelectorAll('.musStop').forEach(b => b.onclick = () => musPara(true));
 }
 pintaMusica();
 
@@ -5581,6 +5594,7 @@ function show(id, plegar = true) {
     sec.querySelectorAll('.hbox').forEach(b => b.hidden = true);
     sec.querySelectorAll('.hinfo.on').forEach(b => b.classList.remove('on'));
     sec.querySelectorAll('details[open]').forEach(d => d.open = false);
+    sec.querySelectorAll('details.siempreAbierto').forEach(d => d.open = true); // (las relajaciones, siempre a la vista)
     try { lunaDetAbierto = false; } catch {}
   }
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
@@ -5883,6 +5897,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.2', '27 oct 2026', ['🔆 Arreglado: después de monitorear, la pantalla se quedaba oscura en la app', '🎧 Las relajaciones guiadas, en su propia tarjeta arriba del todo']],
   ['v25.1', '27 oct 2026', ['🎧 Relajaciones guiadas para dormir, en «Música para dormir»: la primera es «Dinero en calma»']],
   ['v25.0', '27 oct 2026', ['💨 Respiraciones con su icono gris también en «Detector actualizado»']],
   ['v24.9', '27 oct 2026', ['🧠 El detector común se actualiza también al volver a la app']],
