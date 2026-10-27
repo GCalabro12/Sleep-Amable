@@ -990,6 +990,11 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="stats" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
+  <details class="hist instr card" id="misDet">
+    <summary><span>📚 Historial de grabaciones</span><small id="misN"></small></summary>
+    <div class="ncal" data-desde="stats"></div>
+    <div id="nights2"></div>
+  </details>
   <div class="card" id="mananaCard" hidden></div>
   <div class="card">
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
@@ -998,11 +1003,6 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card"><div style="font-weight:600">📉 Tus minutos roncando</div><div id="lineaBody"></div></div>
   <div class="card"><div style="font-weight:600">🏷️ Qué te hace roncar más</div><div id="efeBody"></div></div>
   <div class="card avcard" id="avStats" hidden></div>
-  <details class="card ajd" id="misDet">
-    <summary>📚 Mis noches <small id="misN"></small></summary>
-    <div class="ncal" data-desde="stats"></div>
-    <div id="nights2"></div>
-  </details>
   <div class="card">
     <div style="font-weight:600">🌍 Media de tu país</div>
     <div id="paisBody" class="stnote"></div>
@@ -1499,7 +1499,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.8'; // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
+const VERSION = 'v22.9'; // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
+// v22.8: // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
 // v22.7: // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
 // v22.6: // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
 // v22.5: // v22.5: Aviso de ronquidos: debajo de «Empezar…», «ℹ️ Cómo funciona» (explicación + probar la voz) y, siempre a la vista, el deslizador «Avisos por: 🎧 Auricular | 🔊 Altavoz»; «¿Quieres un mensaje en la noche?»
@@ -3689,7 +3690,7 @@ async function renderHome() {
   const ns = await podar((await DB.all('noches')).filter(n => !PEND.has(n.id)).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
   $('histN').textContent = $('histN3').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
-  $('misN').textContent = ns.length ? `(${ns.length})` : '';
+  $('misN').textContent = $('histN').textContent; // como en los otros historiales: (N noches)
   for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats'], ['nights3', 'reducir']]) {
     $(lista).innerHTML = ns.length ? '' : '<div class="empty">Aún no hay noches grabadas.</div>';
     for (const n of ns) {
@@ -5739,6 +5740,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.9', '27 oct 2026', ['📊 Estadísticas empieza con «Historial de grabaciones»']],
   ['v22.8', '27 oct 2026', ['💬 El mensaje en la noche dice Activado o Desactivado en cuanto tocas su interruptor']],
   ['v22.7', '27 oct 2026', ['🛏️ Con «Medir las fases del sueño», al empezar sale una ventana con el móvil en el colchón: ya lo he puesto, desactivar solo esta noche o desactivarlo']],
   ['v22.6', '27 oct 2026', ['«ℹ️ Cómo funciona» arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje', 'Dormir con quien ronca: el sonido puede apagarse al sonar la alarma']],
