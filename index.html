@@ -1509,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.4'; // v23.4: la «i» de Estadísticas explica qué encontrarás (horas, regularidad, roncando por hora, línea, qué te hace roncar más) y cuánto se guardan los datos
+const VERSION = 'v23.5'; // v23.5: al abrir una pantalla, la «i» y todos los desplegables salen plegados (al volver de una noche, se queda como estaba); la «i» de Estadísticas: el tiempo de las grabaciones lo eliges tú en Ajustes → Noches guardadas
+// v23.4: // v23.4: la «i» de Estadísticas explica qué encontrarás (horas, regularidad, roncando por hora, línea, qué te hace roncar más) y cuánto se guardan los datos
 // v23.3: // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
 // v23.2: // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
 // v23.1: // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
@@ -3509,7 +3510,7 @@ function renderStatsHome(ns) {
     😴 <b>Roncando por hora</b>: los minutos que roncas por cada hora de sueño (mejor 3 o menos).<br>
     📉 <b>Tus minutos roncando</b>: la línea de cada noche; lo bueno es que baje.<br>
     🏷️ <b>Qué te hace roncar más</b>: compara las noches con cada etiqueta (alcohol, cena fuerte…) con las demás.<br><br>
-    <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: ${gu ? `las últimas <b>${gu} noches</b>` : '<b>todas tus noches</b>'}, con sus grabaciones (se cambia en Ajustes → Noches guardadas). Las grabaciones nunca salen del móvil.<br>
+    <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: cuánto tiempo guardas tus grabaciones lo eliges tú en <b>Ajustes → Noches guardadas</b> (ahora: ${gu ? `las últimas ${gu} noches` : 'todas'}). Las grabaciones nunca salen del móvil.<br>
     ☁️ En tu cuenta: los números de cada noche (horas, minutos roncando…), mientras tengas la cuenta.`;
   const desde = statDias ? Date.now() - statDias * 864e5 : 0;
   ns = ns.filter(n => n.inicio >= desde);
@@ -4233,7 +4234,7 @@ async function recuentaNoche(id, revisada) {
   if (n.tos != null || de('tos').length) n.tos = de('tos').length;
   await DB.put('noches', n);
 }
-$('backBtn').onclick = () => { plSetList([]); show(nightFrom); renderHome(); nightFrom = 'home'; };
+$('backBtn').onclick = () => { plSetList([]); show(nightFrom, false); renderHome(); nightFrom = 'home'; }; // (al volver de una noche, la lista sigue abierta)
 
 // ---------- Reproductor de la noche (fijo abajo, aunque hagas scroll) ----------
 // Suena la lista que se ve (según el filtro), una tras otra; la velocidad vale para todas.
@@ -5483,9 +5484,16 @@ function estadoRed() {
   });
 }
 for (const id of ['reducir', 'home', 'mask']) new MutationObserver(estadoRed).observe(document.getElementById(id), {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class']});
-function show(id) {
+function show(id, plegar = true) {
   requestAnimationFrame(encajaLeyenda); // títulos que van en un renglón
   for (const x of ['menu', 'home', 'reducir', 'mask', 'night', 'stats', 'alarma', 'ajustes', 'utiles', 'luna', 'aprende']) $(x).hidden = x !== id;
+  if (plegar && id !== 'night') { // cada pantalla se abre con todo plegado: la «i» y los desplegables
+    const sec = $(id);
+    sec.querySelectorAll('.hbox').forEach(b => b.hidden = true);
+    sec.querySelectorAll('.hinfo.on').forEach(b => b.classList.remove('on'));
+    sec.querySelectorAll('details[open]').forEach(d => d.open = false);
+    try { lunaDetAbierto = false; } catch {}
+  }
   // La barra de abajo ya no se usa: Alarmas, Estadísticas y Ajustes están en la pantalla de inicio
   $('tabs').hidden = true;
   document.body.classList.remove('tabs-on');
@@ -5786,6 +5794,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.5', '27 oct 2026', ['Cada pantalla se abre con la información y los desplegables plegados']],
   ['v23.4', '27 oct 2026', ['ⓘ En Estadísticas: qué significa cada cifra']],
   ['v23.3', '27 oct 2026', ['🔔 «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)»']],
   ['v23.2', '27 oct 2026', ['📊 Estadísticas de los últimos 7, 30 o 90 días, o de todo', 'ⓘ En Estadísticas: cuánto tiempo se guardan tus datos', '💬 «¿Quieres otro aviso en la noche?»']],
