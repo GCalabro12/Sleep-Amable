@@ -1509,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.6'; // v23.6: Estadísticas sin «Panel de tu última noche» (ya está en cada noche); «Tus minutos roncando (30 días)» con el periodo elegido
+const VERSION = 'v23.7'; // v23.7: «Revisar con el detector nuevo» (admin) solo sale en las noches grabadas o revisadas antes de la última mejora del detector (reglas o modelo aprendido)
+// v23.6: // v23.6: Estadísticas sin «Panel de tu última noche» (ya está en cada noche); «Tus minutos roncando (30 días)» con el periodo elegido
 // v23.5: // v23.5: al abrir una pantalla, la «i» y todos los desplegables salen plegados (al volver de una noche, se queda como estaba); la «i» de Estadísticas: el tiempo de las grabaciones lo eliges tú en Ajustes → Noches guardadas
 // v23.4: // v23.4: la «i» de Estadísticas explica qué encontrarás (horas, regularidad, roncando por hora, línea, qué te hace roncar más) y cuánto se guardan los datos
 // v23.3: // v23.3: «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)», en un renglón
@@ -2356,13 +2357,13 @@ async function autoAjuste(forzar = false) {
   if (!sesion?.admin) return null;
   try {
     const r = await calculaAjuste(); if (!r.m) return r;
-    if (r.m.n > r.antes) { cfg.strict = r.m.t; cfg.brK = r.m.k; }
+    if (r.m.n > r.antes) { if (cfg.strict !== r.m.t || cfg.brK !== r.m.k) cfg.detCambio = Date.now(); cfg.strict = r.m.t; cfg.brK = r.m.k; } // (detCambio: el detector ha cambiado)
     cfg.aj = {f: Date.now(), n: r.evs.length, ok: Math.max(r.m.n, r.antes), fab: r.acierta(.35, 0)};
     try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
     const firma = r.evs.length + ':' + r.evs.filter(e => e.vec?.length).length + ':' + r.evs.filter(e => e.tipo === 'ronquido').length;
     if (forzar || MODELO?.firma !== firma) { // 🧠 el modelo, solo si hay revisiones nuevas (tarda unos segundos)
       const m = await aprendeModelo(r.evs);
-      if (m) { MODELO = {...m, firma}; try { localStorage.setItem('ronquino-modelo', JSON.stringify(MODELO)); } catch {} }
+      if (m) { MODELO = {...m, firma}; try { localStorage.setItem('ronquino-modelo', JSON.stringify(MODELO)); } catch {} if (m.usar) { cfg.detCambio = Date.now(); try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} } }
     }
     pintaStrict(); pintaAprendido(); pintaAjNota();
     return r;
@@ -3665,7 +3666,7 @@ async function borrarNocheConDeshacer(n) {
 // ⋮ Menú de cada noche del historial (de momento solo «Borrar»)
 function menuNoche(n, el) {
   const m = $('nMenu'), r = el.getBoundingClientRect();
-  $('nmRevisar').hidden = !sesion?.admin; // revisar con el detector: solo el administrador
+  $('nmRevisar').hidden = !(sesion?.admin && hayDetectorNuevo(n)); // revisar con el detector: solo el administrador y si hay uno más nuevo
   $('nmUltima').textContent = n.revisada ? `✅ Revisada el ${new Date(n.revisada).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}).replace('.', '')} a las ${hhmm(n.revisada)}` : 'Sin revisar todavía';
   m.hidden = false;
   m.style.top = Math.min(innerHeight - m.offsetHeight - 10, r.bottom + 4) + 'px';
@@ -3788,12 +3789,16 @@ $('ruidosBtn').onclick = () => { verRuidos(true); irASinRevisar(); };
 $('ruidosCerrar').onclick = () => verRuidos(false);
 $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
+// 🔄 ¿Hay un detector más nuevo que el que analizó esta noche? Solo si se grabó (o se revisó) antes de la última mejora
+const DET_CODIGO = new Date(2026, 9, 26, 23, 0).getTime(); // última mejora de las reglas del detector (v19.4–v20.2)
+const hayDetectorNuevo = n => !!n && Math.max(n.inicio || 0, n.revisada || 0) < Math.max(DET_CODIGO, cfg.detCambio || 0);
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
   $('night').classList.remove('ruidos'); PL.ini = 0; // siempre se abre por el resumen
   $('tlCard').classList.remove('abierta'); $('tlTri').classList.remove('up'); requestAnimationFrame(encajaLeyenda); // con el registro plegado
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
-  cur = await DB.get('noches', id); pintaRevisada(); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
+  cur = await DB.get('noches', id); pintaRevisada();
+  $('reNight').hidden = !(sesion?.admin && hayDetectorNuevo(cur)); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = 'todos';
   show('night');
@@ -4213,7 +4218,7 @@ $('reNight').onclick = async () => {
   const parada = REV.parar; REV.id = null; REV.parar = false; $('reParar').hidden = true;
   const txt = Object.entries(cambios).map(([k, n]) => `${n} ${k.replace('ronquido', 'ronquido').replace('otro', 'respiración/otro')}`).join(' · ');
   const fecha = parada ? null : Date.now(); // a medias no cuenta como revisada
-  if (cur?.id === id && !$('night').hidden) { if (fecha) cur.revisada = fecha; await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); pintaRevisada(); }
+  if (cur?.id === id && !$('night').hidden) { if (fecha) { cur.revisada = fecha; $('reNight').hidden = true; } await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); pintaRevisada(); }
   else { await recuentaNoche(id, fecha); renderHome(); toast(parada ? '⏹ Revisión detenida' : '✅ Noche revisada con el detector nuevo'); }
   $('reTxt').textContent = parada ? `⏹ Revisión detenida: ${hechas} de ${evs.length} revisadas${txt ? `. Cambios: ${txt}` : ''}.`
     : txt ? `✅ Revisada. Cambios: ${txt}` : '✅ Revisada: no ha cambiado nada.';
@@ -5339,7 +5344,7 @@ const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '
 function pintaCuenta() {
   $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el administrador
   $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el administrador
-  $('reNight').hidden = !sesion?.admin; // «Revisar esta noche con el detector nuevo»: también
+  if (!sesion?.admin) $('reNight').hidden = true; // «Revisar esta noche con el detector nuevo»: también (y solo si hay uno más nuevo: en openNight)
   pintaAjNota(); // «🎯 Detector actualizado con tus revisiones el …»: también solo el administrador
   $('sCuenta').textContent = '· ' + (sesion ? (sesion.nombre || sesion.email) : 'sin cuenta');
   $('dondeSe').textContent = sesion ? 'tus noches se guardan en este móvil y en tu cuenta' : 'todo se guarda en este móvil';
@@ -5795,6 +5800,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.7', '27 oct 2026', ['«Revisar con el detector nuevo» solo sale en noches anteriores a la última mejora del detector']],
   ['v23.6', '27 oct 2026', ['📊 Estadísticas más claras: sin el panel de la última noche, y «Tus minutos roncando» dice de qué periodo es']],
   ['v23.5', '27 oct 2026', ['Cada pantalla se abre con la información y los desplegables plegados']],
   ['v23.4', '27 oct 2026', ['ⓘ En Estadísticas: qué significa cada cifra']],
