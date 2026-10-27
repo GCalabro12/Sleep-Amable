@@ -805,7 +805,7 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .ev .acts svg{width:23px;height:23px}
 .ev .acts{gap:4px;align-items:center}
 .ev .bot .meta{white-space:nowrap}
-.avnote{font-size:13px;color:#F472B6;margin-top:6px}
+.avnote{font-size:13px;color:#F472B6;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev audio{width:100%;margin-top:8px;height:36px}
 .ev.playing{outline:none}
 .ev.aqui{outline:3px solid #FBBF24;outline-offset:2px;transition:outline-color 1s} /* aquí te quedaste */
@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.4'; // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
+const VERSION = 'v24.5'; // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
+// v24.4: // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
 // v24.3: // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
 // v24.2: // v24.2: onda de la grabación: el color de cada tramo fuerte sigue a izquierda y derecha mientras las rayas sigan grandes (más del 45 % del pico), para ver el ronquido entero
 // v24.1: // v24.1: la etiqueta «Respiración» con 💨 (gris), no con la carita amarilla, que se confundía con ronquido
@@ -4119,7 +4120,7 @@ function renderList() {
     if (suyos.length) {
       d.classList.add('avisado');
       const nota = document.createElement('div'); nota.className = 'avnote';
-      nota.textContent = `🎧 Al acabar se dijo «estás roncando» (${evHora(cur, suyos[0])})`;
+      nota.textContent = `🎧 Aviso «estás roncando» · ${evHora(cur, suyos[0])}`;
       d.querySelector('.evbody').append(nota); suyos.forEach(t => usados.add(t));
     }
     $('evList').append(d);
@@ -4384,6 +4385,14 @@ function plOnda() {
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
   }
   g.globalAlpha = 1;
+  // 🎧 dónde se dijo «estás roncando» (si fue justo al acabar, al final): raya rosa con «aviso»
+  if (e && dur) for (const t of cur?.avisoT || []) {
+    if (t < e.off || t > e.off + dur + 10) continue;
+    const xa = Math.max(1, Math.min(w - 2, (t - e.off) / dur * w));
+    g.fillStyle = '#F472B6'; g.fillRect(xa - 1, 0, 2, h);
+    g.font = '600 9px system-ui, sans-serif'; g.textBaseline = 'top'; g.textAlign = xa > w - 30 ? 'right' : 'left';
+    g.fillText('aviso', xa > w - 30 ? xa - 4 : xa + 4, 1);
+  }
   if (e?.seg && hecho > 0) { g.fillStyle = '#fff'; g.fillRect(Math.min(w - 2, hecho * w), 0, 2, h); } // por dónde va
 }
 async function plOndaNueva() { const e = PL.list[PL.i]; plOnda(); if (e) { await plPicos(e); if (PL.list[PL.i] === e) plOnda(); } }
@@ -5829,6 +5838,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.5', '27 oct 2026', ['🎧 «Aviso «estás roncando» · hora» en un renglón, y una raya «aviso» en la onda donde se dijo']],
   ['v24.4', '27 oct 2026', ['🎨 La onda siempre enseña con su color la etiqueta de la grabación (si dice ronquido, se ve amarillo)']],
   ['v24.3', '27 oct 2026', ['🌙 Fases del sueño: «Despierto» solo con movimientos fuertes, no por sonidos; la ⓘ explica cómo se mide']],
   ['v24.2', '27 oct 2026', ['🎨 En la onda de cada grabación, el color abarca el ronquido entero (no solo una raya)']],
