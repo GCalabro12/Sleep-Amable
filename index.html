@@ -1160,9 +1160,9 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu aviso de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, pon «Avisos por» en <b>Altavoz</b> y sonará por el altavoz del móvil.</div>
-  <button class="big" id="startRed">🌙 Empezar a monitorear y avisar de ronquidos</button>
+  <button class="big" id="startRed">🌙 Monitorear y avisar de ronquidos</button>
   <details class="instr card" id="avisoComo"><summary><span>ℹ️ Cómo funciona</span></summary>
-    <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Empezar a monitorear y avisar de ronquidos»</b>.</span></div>
+    <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
@@ -1504,7 +1504,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.0'; // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
+const VERSION = 'v23.1'; // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
+// v23.0: // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
 // v22.9: // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
 // v22.8: // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
 // v22.7: // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
@@ -1847,6 +1848,7 @@ let MSG = {on: false, texto: '', modo: 'cada', cada: 2, horas: ['03:00'], junto:
 try { Object.assign(MSG, JSON.parse(localStorage.getItem('ronquino-mensaje') || '{}')); } catch {}
 const msgGuarda = () => { try { localStorage.setItem('ronquino-mensaje', JSON.stringify(MSG)); } catch {} };
 function pintaMsg() {
+  $('startRed').textContent = MSG.on ? '🌙 Monitorear y avisar de ronquidos y otro aviso' : '🌙 Monitorear y avisar de ronquidos';
   $('msgOn').checked = MSG.on;
   $('sMsg').textContent = MSG.on ? (MSG.texto.trim() ? 'sí' : 'sin texto') : 'no'; $('sMsg').classList.toggle('si', !!MSG.on);
   if (document.activeElement !== $('msgTx')) $('msgTx').value = MSG.texto;
@@ -5758,6 +5760,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.1', '27 oct 2026', ['El botón dice «Monitorear y avisar de ronquidos», y «… y otro aviso» si tienes el aviso en la noche']],
   ['v23.0', '27 oct 2026', ['🎧 En el monitoreo con aviso de ronquidos: «Avisos por auricular» o «por altavoz»; tócalo para cambiarlo', '💬 «¿Quieres un aviso en la noche?»: decimos aviso en vez de mensaje']],
   ['v22.9', '27 oct 2026', ['📊 Estadísticas empieza con «Historial de grabaciones»']],
   ['v22.8', '27 oct 2026', ['💬 El mensaje en la noche dice Activado o Desactivado en cuanto tocas su interruptor']],
