@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.6'; // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
+const VERSION = 'v24.7'; // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
+// v24.6: // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
 // v24.5: // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
 // v24.4: // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
 // v24.3: // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
@@ -1846,7 +1847,7 @@ function avisoTick(det, dt) {
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
   const e = det.ev;
   const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR) && decide(e.sn, e.vo, e.br) === 'ronquido' && Math.max(...e.sn) >= AVISO_SEGURO
-    && (APR.decide(huellaMedia(e))?.tipo ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa
+    && ((sesion?.admin ? APR.decide(huellaMedia(e))?.tipo : null) ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa (administrador)
   if (ronca) { A.ronc += dt; A.sil = 0; }
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
   if (A.ronc < (A.insiste ? AVISO_SIGUE : AVISO_PRIMERO)) return;
@@ -2230,7 +2231,7 @@ class Detector {
     let tipo = tipoFuerte(e, seg) || decide(e.sn, e.vo, e.br, e.co), aprendido = false;
     const vec = huellaMedia(e), md = vec ? tipoModelo({vec, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co)}) : null;
     if (md) { if (md.tipo !== tipo) { tipo = md.tipo; aprendido = true; } } // 🧠 el modelo de tu huella, si se usa
-    else { const ap = APR.decide(vec); if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; } } // si no, lo que has enseñado, si está claro
+    else if (sesion?.admin) { const ap = APR.decide(vec); if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; } } // si no, lo que has enseñado, si está claro (solo el administrador)
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
@@ -4069,7 +4070,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix && sesion?.admin ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -5839,6 +5840,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.7', '27 oct 2026', ['🧠 «Según tus revisiones» solo lo ve el administrador']],
   ['v24.6', '27 oct 2026', ['🧠 «aprendido» ahora dice «según tus revisiones»']],
   ['v24.5', '27 oct 2026', ['🎧 «Aviso «estás roncando» · hora» en un renglón, y una raya «aviso» en la onda donde se dijo']],
   ['v24.4', '27 oct 2026', ['🎨 La onda siempre enseña con su color la etiqueta de la grabación (si dice ronquido, se ve amarillo)']],
