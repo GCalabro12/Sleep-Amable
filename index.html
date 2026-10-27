@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.3'; // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
+const VERSION = 'v24.4'; // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
+// v24.3: // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
 // v24.2: // v24.2: onda de la grabación: el color de cada tramo fuerte sigue a izquierda y derecha mientras las rayas sigan grandes (más del 45 % del pico), para ver el ronquido entero
 // v24.1: // v24.1: la etiqueta «Respiración» con 💨 (gris), no con la carita amarilla, que se confundía con ronquido
 // v24.0: // v24.0: Fases del sueño: los ciclos se separan con una línea punteada bien visible y su número más grande; debajo, «cada franja numerada es un ciclo»
@@ -4351,27 +4352,33 @@ function plOnda() {
   // (ronquido, voz, tos); como mucho los 5 tramos más fuertes. Lo bajito queda en gris. Lo ya oído, más vivo
   const fuerte = new Array(n).fill(null); // la letra (r/v/t) con que se pinta cada raya, o nada
   const letra = i => e?.seg && dur ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : 'o';
+  const tramosDe = ok => { const r = []; for (let i = 0; i < n;) { if (!ok(i)) { i++; continue; } let j = i, m = 0; while (j < n && ok(j)) { m = Math.max(m, p[j]); j++; } r.push({i, j, m}); i = j; } return r; };
+  const marca = (t, L, ref) => { // y sigue a los lados mientras las rayas sean grandes: se ve el ronquido (o la voz) entero
+    let a = t.i, b = t.j;
+    while (a > 0 && p[a - 1] >= ref * .45 && !fuerte[a - 1]) a--;
+    while (b < n && p[b] >= ref * .45 && !fuerte[b]) b++;
+    for (let k = a; k < b; k++) fuerte[k] = L;
+  };
+  // 1) La etiqueta de la grabación siempre se ve con su color: sus segundos más fuertes; si no tiene ninguno
+  //    (la etiqueta la puso el 🧠 modelo mirando la grabación entera), la parte más fuerte
+  const L0 = {ronquido: 'r', voz: 'v', tos: 't'}[e?.tipo];
+  if (L0 && e?._picos && dur) {
+    let m0 = 0; for (let i = 0; i < n; i++) if (letra(i) === L0) m0 = Math.max(m0, p[i]);
+    let ts = m0 ? tramosDe(i => letra(i) === L0 && p[i] >= m0 * .8) : [];
+    if (!ts.length) { m0 = Math.max(...p); ts = tramosDe(i => p[i] >= m0 * .8); }
+    ts.sort((a, b) => b.m - a.m).slice(0, 3).forEach(t => marca(t, L0, m0));
+  }
+  // 2) Lo demás fuerte (rayas del 80 al 100 % de lo más fuerte que sea ronquido, voz o tos), sin tapar lo de antes; como mucho 5 tramos
   if (e?.seg) {
-    // el 80 % se mide sobre lo más fuerte que sea ronquido, voz o tos (si lo más fuerte era un golpe, no se pintaba nada)
     let mL = 0; for (let i = 0; i < n; i++) if (letra(i) !== 'o') mL = Math.max(mL, p[i]);
-    const ok = i => letra(i) !== 'o' && p[i] >= mL * .8, tramos = [];
-    for (let i = 0; i < n;) {
-      if (!mL || !ok(i)) { i++; continue; }
-      let j = i, m = 0; while (j < n && ok(j)) { m = Math.max(m, p[j]); j++; }
-      tramos.push({i, j, m}); i = j;
-    }
-    tramos.sort((a, b) => b.m - a.m).slice(0, 5).forEach(t => {
+    if (mL) tramosDe(i => letra(i) !== 'o' && p[i] >= mL * .8 && !fuerte[i]).sort((a, b) => b.m - a.m).slice(0, 5).forEach(t => {
       const cu = {}; for (let k = t.i; k < t.j; k++) cu[letra(k)] = (cu[letra(k)] || 0) + 1;
-      const L = Object.keys(cu).sort((a, b) => cu[b] - cu[a])[0]; // lo que es el tramo
-      let a = t.i, b = t.j; // y sigue a los lados mientras las rayas sean grandes: se ve el ronquido (o la voz) entero
-      while (a > 0 && p[a - 1] >= mL * .45 && !fuerte[a - 1]) a--;
-      while (b < n && p[b] >= mL * .45 && !fuerte[b]) b++;
-      for (let k = a; k < b; k++) fuerte[k] = L;
+      marca(t, Object.keys(cu).sort((a, b) => cu[b] - cu[a])[0], mL); // lo que es el tramo
     });
   }
   for (let i = 0; i < n; i++) {
     const bh = Math.max(2, p[i] * (h - 4)), ya = (i + .5) / n <= hecho;
-    const c = e?.seg && dur ? (fuerte[i] || 'o') : null;
+    const c = fuerte[i] || (e?.seg && dur ? 'o' : null);
     g.fillStyle = c ? SEGCOL[c] : ya ? '#A78BFA' : '#475569';
     g.globalAlpha = c && !ya ? .5 : 1;
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
@@ -5822,6 +5829,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.4', '27 oct 2026', ['🎨 La onda siempre enseña con su color la etiqueta de la grabación (si dice ronquido, se ve amarillo)']],
   ['v24.3', '27 oct 2026', ['🌙 Fases del sueño: «Despierto» solo con movimientos fuertes, no por sonidos; la ⓘ explica cómo se mide']],
   ['v24.2', '27 oct 2026', ['🎨 En la onda de cada grabación, el color abarca el ronquido entero (no solo una raya)']],
   ['v24.1', '27 oct 2026', ['💨 La etiqueta «Respiración» ya no es amarilla como la de ronquido']],
