@@ -33,7 +33,7 @@ header .ver{flex:none;margin-left:auto;align-self:flex-start;display:flex;flex-d
 #home .estsub,#mask .estsub{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
 #home .estsub.on,#mask .estsub.on{color:#86EFAC}
 #reducir summary small:not(.estsub){display:none !important} /* lo dice el 2.º renglón (Activado · …) */
-#reducir .estsub{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
+#reducir .estsub{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
 #reducir .estsub.on{color:#86EFAC}
 #reducir details.destacado .estsub{color:#BFDBFE} #reducir details.destacado .estsub.on{color:#86EFAC}
 #reducir details.destacado{background:#1E3A8A;border-color:#3B82F6} /* lo principal: el aviso «estás roncando» */
@@ -631,6 +631,10 @@ details.hist[open] summary{margin-bottom:10px}
 @keyframes rq-p2{0%,40%{opacity:.15}45%,90%{opacity:1}95%,100%{opacity:.15}}
 @keyframes rq-p3{0%,65%{opacity:.15}70%,90%{opacity:1}95%,100%{opacity:.15}}
 .flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
+/* Monitoreo con aviso: por dónde suenan los avisos; al tocar, cambia */
+.avisopor{display:block;margin:4px auto 6px;background:#1E3A8A;border:1px solid #3B82F6;color:#E0E7FF;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.avisopor small{font-weight:400;color:#BFDBFE;margin-left:6px}
+.avisopor.falta small{color:#FCD34D}
 .flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
 .flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
 .flag.on{font-weight:700}
@@ -928,7 +932,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco</b><small>Graba la noche y detecta tus ronquidos con IA</small></span></button>
   <div class="cgrid">
-  <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Aviso de ronquidos</b><small>Aviso por auriculares y un mensaje en la noche</small></span></button>
+  <button class="choice f" data-go="reducir"><span class="ic">🛌</span><span><b class="tt">Aviso de ronquidos</b><small>Aviso si roncas y un aviso en la noche</small></span></button>
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
   <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarma y música <span class="para">para </span>dormir</b><small>Música para dormirte, siesta y alarmas</small></span></button>
   <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
@@ -1155,7 +1159,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="reducir" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
-  <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, pon «Avisos por» en <b>Altavoz</b> y sonará por el altavoz del móvil.</div>
+  <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu aviso de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, pon «Avisos por» en <b>Altavoz</b> y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y avisar de ronquidos</button>
   <details class="instr card" id="avisoComo"><summary><span>ℹ️ Cómo funciona</span></summary>
     <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Empezar a monitorear y avisar de ronquidos»</b>.</span></div>
@@ -1164,14 +1168,14 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
     <small id="altavozTx" class="auTx">Solo por los auriculares</small></div>
-  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres un mensaje en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
+  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres un aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
     <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
       <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
-      <button class="btn wide" id="msgTest" style="margin-top:10px">▶ Probar el mensaje</button>
+      <button class="btn wide" id="msgTest" style="margin-top:10px">▶ Probar el aviso</button>
     </details>
     <div class="row"><label for="msgOn">Activado</label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
-    <details class="subdet"><summary><span>📝 Qué te digo</span><small id="msgSumTx"></small></summary>
-      <input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua" aria-label="Qué te digo">
+    <details class="subdet"><summary><span>📝 Qué te aviso</span><small id="msgSumTx"></small></summary>
+      <input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua" aria-label="Qué te aviso">
       <div class="msgsug" id="msgSug"></div>
     </details>
     <details class="subdet"><summary><span>⏰ Cuándo</span><small id="msgSumCu"></small></summary>
@@ -1180,7 +1184,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="msgHoras"></div>
     </details>
     <details class="subdet"><summary><span>🔗 Juntarlo con el aviso de ronquido</span><small id="msgSumJu"></small></summary>
-    <div class="row"><label for="msgJunto">Activado<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora del mensaje, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
+    <div class="row"><label for="msgJunto">Activado<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora de tu aviso, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
     </details>
   </details>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
@@ -1486,6 +1490,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
@@ -1499,7 +1504,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.9'; // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
+const VERSION = 'v23.0'; // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
+// v22.9: // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
 // v22.8: // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
 // v22.7: // v22.7: al empezar con «Medir las fases del sueño», ventana fija con el móvil en el colchón: «Ya lo he puesto», «Desactivar solo esta noche» o «Desactivar Medir las fases del sueño» (antes, un aviso que se iba solo)
 // v22.6: // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
@@ -1775,6 +1781,7 @@ $('levInfo').onclick = () => aviso('🚶 Cada vez que te levantes por la noche (
 // De noche, si no oyes nada, así sabes que es porque no has roncado, no porque fallen. Solo en la app Android.
 function pintaAudi() {
   const b = $('audiBtn'); if (!b) return;
+  b.hidden = $('audiInfo').hidden = false; // (en el HTML empiezan ocultos)
   let con = false; try { con = !!AND?.auriculares?.(); } catch {}
   b.disabled = !con; $('audiSub').textContent = 'conéctalos primero'; $('audiSub').hidden = con;
 }
@@ -1867,7 +1874,7 @@ function msgResumen() {
 $('msgTx').oninput = () => { MSG.texto = $('msgTx').value; msgGuarda(); msgResumen(); $('sMsg').textContent = MSG.on ? (MSG.texto.trim() ? 'sí' : 'sin texto') : 'no'; $('sMsg').classList.toggle('si', !!MSG.on); };
 $('msgJunto').onchange = () => { MSG.junto = $('msgJunto').checked; msgGuarda(); msgResumen(); };
 $('msgTest').onclick = () => {
-  if (!MSG.texto.trim()) { aviso('Escribe primero qué quieres que te diga, o toca una de las sugerencias.'); return; }
+  if (!MSG.texto.trim()) { aviso('Escribe primero tu aviso, o toca una de las sugerencias.'); return; }
   AND?.prepararVoz?.();
   if (!decirNoche(MSG.texto.trim())) aviso(SIN_VOZ);
 };
@@ -1902,7 +1909,7 @@ const msgActivo = () => VOZ_OK && MSG.on && !!MSG.texto.trim() && !!live.night;
 function msgDicho(t) {
   live.msg.dichos.add(t);
   live.night.mensajes = (live.night.mensajes || 0) + 1;
-  $('lastEv').textContent = `💬 Te he dicho tu mensaje a las ${hhmm(Date.now())}`;
+  $('lastEv').textContent = `💬 Te he dicho tu aviso a las ${hhmm(Date.now())}`;
 }
 // Cada medio segundo mientras se monitorea
 function msgTick() {
@@ -2466,7 +2473,7 @@ async function startListening() {
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
   $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').textContent = ''; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
-  $('listen').classList.add('on');
+  $('listen').classList.add('on'); pintaAvisoPor();
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
   await keepAwake();
   wake();
@@ -2484,15 +2491,11 @@ async function startListening() {
     vigilaDespertar(det);
     avisoTick(det, .5); msgTick();
     { const sig = msgActivo() && live.msg ? live.msg.plan.find(t => !live.msg.dichos.has(t)) : null;
-      $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').textContent = `💬 Mensaje ${hhmm(sig)}`; }
+      $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').textContent = `💬 Aviso ${hhmm(sig)}`; }
     { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
       $('bloque').classList.toggle('on', en);
       $('bloque').textContent = !en && det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : ''; } // grabando: ya lo dice la lucecita
-    if (AND?.auriculares) { // con «Avisarme si ronco»: «Avisa si ronco» (en color si hay auriculares); si no, solo «Auriculares» cuando estén puestos
-      const au = !!AND.auriculares(), av = VOZ_OK && avisarNoche;
-      $('fAur').textContent = av ? (au ? '🎧 Avisa si ronco' : cfg.altavoz ? '🔊 Avisa si ronco · por el altavoz' : '🎧 Avisa si ronco · falta auriculares') : '🎧 Auriculares';
-      $('fAur').hidden = !av && !au; $('fAur').classList.toggle('on', au);
-    }
+    pintaAvisoPor();
     // el micrófono se ha parado (p. ej. al conectar los pinganillos): se vuelve a encender solo
     if (Date.now() - (live.lastFrame || Date.now()) > 8000) { live.lastFrame = Date.now(); reiniciaMic(); }
     // iconos de arriba: en color solo si están activados
@@ -2731,6 +2734,21 @@ function profAvisoAbre(night) {
   $('profHoy').onclick = () => { sinFases(); cierra('Esta noche no se miden las fases del sueño'); };
   $('profNo').onclick = () => { sinFases(); ponProfundo(false); cierra('«Medir las fases del sueño» desactivado'); };
 }
+// 🎧/🔊 En el monitoreo con aviso: por dónde suenan los avisos (se cambia tocándolo); la lucecita «Auriculares» dice si están puestos
+function pintaAvisoPor() {
+  let au = false; try { au = !!AND?.auriculares?.(); } catch {}
+  $('fAur').textContent = '🎧 Auriculares'; $('fAur').hidden = !au; $('fAur').classList.toggle('on', au);
+  const b = $('avisoPor'); b.hidden = !avisarNoche; if (b.hidden) return;
+  const falta = !cfg.altavoz && !au;
+  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta los auriculares' : 'toca para cambiar'}</small>`;
+  if (b.innerHTML !== html) b.innerHTML = html;
+  b.classList.toggle('falta', falta);
+}
+$('avisoPor').onclick = () => {
+  cfg.altavoz = !cfg.altavoz; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  pintaAltavoz(); pintaAvisoPor();
+  toast(cfg.altavoz ? '🔊 Los avisos sonarán por el altavoz (si no llevas auriculares)' : '🎧 Los avisos sonarán solo por los auriculares');
+};
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
@@ -5431,7 +5449,7 @@ function estadoRed() {
     let t = on ? (al ? 'Activada' : 'Activado') : (al ? 'Desactivada' : 'Desactivado');
     if (al && on && est.textContent !== 'no') t += ' · ' + est.textContent; // la hora de la alarma
     else if (fases) t += ' · junto con los sonidos';
-    else if (est.id === 'sMsg' && on && est.textContent === 'sin texto') t += ' · escribe en «Qué te digo»'; // (auriculares o altavoz: se elige en «Avisos por»)
+    else if (est.id === 'sMsg' && on && est.textContent === 'sin texto') t += ' · pendiente escribir aviso'; // (auriculares o altavoz: se elige en «Avisos por»)
     if (sub.textContent !== t) sub.textContent = t; // (solo si cambia: si no, el observador se llamaría sin parar)
     if (sub.classList.contains('on') !== on) sub.classList.toggle('on', on);
   });
@@ -5740,6 +5758,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.0', '27 oct 2026', ['🎧 En el monitoreo con aviso de ronquidos: «Avisos por auricular» o «por altavoz»; tócalo para cambiarlo', '💬 «¿Quieres un aviso en la noche?»: decimos aviso en vez de mensaje']],
   ['v22.9', '27 oct 2026', ['📊 Estadísticas empieza con «Historial de grabaciones»']],
   ['v22.8', '27 oct 2026', ['💬 El mensaje en la noche dice Activado o Desactivado en cuanto tocas su interruptor']],
   ['v22.7', '27 oct 2026', ['🛏️ Con «Medir las fases del sueño», al empezar sale una ventana con el móvil en el colchón: ya lo he puesto, desactivar solo esta noche o desactivarlo']],
