@@ -598,6 +598,9 @@ details.hist[open] summary{margin-bottom:10px}
 .cumin{display:flex;gap:8px;flex:1}
 .cumin button{flex:1;padding:9px 0;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:15px}
 .cumin button.on{border-color:#A78BFA;background:#312E81;color:#fff}
+/* Estadísticas: de qué periodo son las cifras */
+.periodo{display:flex;align-items:center;gap:10px;margin:0 0 14px} .periodo>span{font-size:14px;color:var(--muted);flex:none}
+.periodo .cumin button{padding:8px 0;font-size:14px;white-space:nowrap}
 #pCuna .cunas{margin-top:14px}
 .msgsug{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
 .msgsug button{background:#111827;border:1px solid #334155;border-radius:14px;padding:6px 10px;color:#C4B5FD;font-size:13px}
@@ -993,12 +996,14 @@ body.pl-on .wrap{padding-bottom:190px}
 <!-- ESTADÍSTICAS -->
 <section id="stats" hidden>
   <button class="back" data-go="menu">← Inicio</button>
-  <h1 style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small></h1>
+  <h1 class="htit" style="font-size:21px;margin:0 0 12px">📊 Estadísticas <small id="statN" style="font-size:14px;color:var(--muted);font-weight:400"></small><button type="button" class="hinfo" aria-label="Información">i</button></h1>
+  <div class="hbox" id="statInfo" hidden></div>
   <details class="hist instr card" id="misDet">
     <summary><span>📚 Historial de grabaciones</span><small id="misN"></small></summary>
     <div class="ncal" data-desde="stats"></div>
     <div id="nights2"></div>
   </details>
+  <div class="periodo"><span>Últimos</span><div class="cumin" id="periodo"><button type="button" data-d="7">7 días</button><button type="button" data-d="30">30 días</button><button type="button" data-d="90">90 días</button><button type="button" data-d="0">Todo</button></div></div>
   <div class="card" id="mananaCard" hidden></div>
   <div class="card">
     <div class="strow" style="margin-top:0"><label for="pais">🌍 Tu país</label><select id="pais"></select></div>
@@ -1168,7 +1173,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
     <small id="altavozTx" class="auTx">Solo por los auriculares</small></div>
-  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres un aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
+  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres otro aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
     <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
       <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
       <button class="btn wide" id="msgTest" style="margin-top:10px">▶ Probar el aviso</button>
@@ -1504,7 +1509,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v23.1'; // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
+const VERSION = 'v23.2'; // v23.2: Estadísticas: debajo del historial, «Últimos: 7 días · 30 días · 90 días · Todo» (las cifras, la línea y las etiquetas son de ese periodo); «i» junto al título: qué cuenta y cuánto tiempo se guardan tus datos; «¿Quieres otro aviso en la noche?»
+// v23.1: // v23.1: el botón dice «Monitorear y avisar de ronquidos» (y «… y otro aviso» si está activado el aviso en la noche)
 // v23.0: // v23.0: monitoreo con aviso de ronquidos: botón «🎧 Avisos por auricular / 🔊 Avisos por altavoz»; al tocarlo cambia de uno a otro (y avisa si faltan los auriculares); «mensaje» pasa a «aviso» (¿Quieres un aviso en la noche?, Qué te aviso, pendiente escribir aviso); arreglo: vuelve «Prueba audífonos» (desde v22.4 no salía)
 // v22.9: // v22.9: Estadísticas empieza con «📚 Historial de grabaciones» (antes «Mis noches», más abajo), igual que en Saber si ronco y Aviso de ronquidos
 // v22.8: // v22.8: «¿Quieres un mensaje en la noche?» dice Activado/Desactivado según su interruptor (aunque falte escribir el mensaje) y ya no repite «auriculares o altavoz» (se elige en «Avisos por»)
@@ -3306,7 +3312,7 @@ function tarjetaManana(n, prev, titulo) {
 }
 // 📉 Minutos roncando de las últimas noches (hasta 14): lo bueno es que la línea baje hacia 0
 function lineaRonquido(ok) {
-  const ns = ok.slice(0, 14).sort((a, b) => a.inicio - b.inicio); // de la más antigua (izquierda) a la última
+  const ns = ok.slice().sort((a, b) => a.inicio - b.inicio); // de la más antigua (izquierda) a la última (todas las del periodo)
   if (ns.length < 2) return '<div class="stnote">En cuanto tengas 2 noches de más de 3 horas, aquí verás la línea de tus minutos roncando.</div>';
   const W = 320, H = 146, pl = 30, pr = 8, pt = 10, pb = 38;
   const v = ns.map(n => (n.segRonquido || 0) / 60), max = Math.max(10, ...v);
@@ -3319,7 +3325,7 @@ function lineaRonquido(ok) {
   return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutos roncando de las últimas noches">
     ${marcas.map(m => `<line x1="${pl}" x2="${W - pr}" y1="${y(m)}" y2="${y(m)}" class="rej"/><text x="${pl - 6}" y="${y(m) + 4}" text-anchor="end">${m}</text>`).join('')}
     <polyline points="${pts}" class="lin"/>
-    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="4" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><circle cx="${x(i)}" cy="${y(m)}" r="14" class="toque" data-i="${i}" data-t="${fecha(ns[i]).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}: ${Math.round(m)} min roncando"/><text x="${x(i)}" y="${H - 20}" text-anchor="middle">${dia(ns[i])}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${fecha(ns[i]).getDate()}</text>`).join('')}
+    ${v.map((m, i) => `<circle cx="${x(i)}" cy="${y(m)}" r="${ns.length > 30 ? 2.5 : 4}" class="pt ${m <= 15 ? 'ok' : m <= 45 ? 'mid' : 'bad'}"/><circle cx="${x(i)}" cy="${y(m)}" r="14" class="toque" data-i="${i}" data-t="${fecha(ns[i]).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}: ${Math.round(m)} min roncando"/><text x="${x(i)}" y="${H - 20}" text-anchor="middle">${dia(ns[i])}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${fecha(ns[i]).getDate()}</text>`).join('')}
   </svg>
   <div class="lmes">${meses}</div>
   <div class="ltoque" id="lToque">👆 Toca un punto para ver sus minutos</div>
@@ -3486,9 +3492,22 @@ function pintaCalma(n, evs) {
   box.querySelector('.calmatit').onclick = () => { const a = box.classList.toggle('abierta'); box.querySelector('.tri').classList.toggle('up', a); requestAnimationFrame(encajaLeyenda); };
 }
 
+// 📊 Periodo de las estadísticas: últimos 7, 30 o 90 días, o todo lo guardado
+let statDias = 30; try { const g = localStorage.getItem('ronquino-periodo'); if (g != null) statDias = +g; } catch {}
+document.querySelectorAll('#periodo [data-d]').forEach(b => b.onclick = () => {
+  statDias = +b.dataset.d; try { localStorage.setItem('ronquino-periodo', String(statDias)); } catch {}
+  renderHome();
+});
 function renderStatsHome(ns) {
-  // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan). Las últimas 14.
-  const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3).slice(0, 14);
+  document.querySelectorAll('#periodo [data-d]').forEach(b => b.classList.toggle('on', +b.dataset.d === statDias));
+  let gu = 0; try { gu = guardar; } catch {} // (por si se pinta antes de leer el ajuste)
+  $('statInfo').innerHTML = `Las cifras, la línea y «Qué te hace roncar más» son de las noches del periodo que eliges debajo del historial. Solo cuentan las noches de más de 3 horas (las pruebas no).<br><br>
+    <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: ${gu ? `las últimas <b>${gu} noches</b>` : '<b>todas tus noches</b>'}, con sus grabaciones (se cambia en Ajustes → Noches guardadas). Las grabaciones nunca salen del móvil.<br>
+    ☁️ En tu cuenta: los números de cada noche (horas, minutos roncando…), mientras tengas la cuenta.`;
+  const desde = statDias ? Date.now() - statDias * 864e5 : 0;
+  ns = ns.filter(n => n.inicio >= desde);
+  // Noches de verdad: con micrófono, terminadas y de 3 horas o más (las pruebas no cuentan), del periodo elegido
+  const ok = ns.filter(n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3);
   $('statN').textContent = ok.length ? `(${ok.length} ${ok.length === 1 ? 'noche' : 'noches'})` : '';
   $('mananaCard').hidden = !ok.length;
   if (ok.length) $('mananaCard').innerHTML = tarjetaManana(ok[0], ok.slice(1), '☀️ Panel de tu última noche');
@@ -3497,7 +3516,7 @@ function renderStatsHome(ns) {
     $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
     $('lToque').textContent = c.dataset.t.charAt(0).toUpperCase() + c.dataset.t.slice(1);
   });
-  $('efeBody').innerHTML = efectoEtiquetas(ns.filter(nocheValida).slice(0, 60));
+  $('efeBody').innerHTML = efectoEtiquetas(ns.filter(nocheValida));
   if (!ok.length) {
     comunidad(ok, 0, 0, 0); renderAvisoStats(ns);
     $('statBody').innerHTML = `<div class="moontip">${luna('saluda', true)}<div class="bubble"><p>¡Hola! Soy la luna 🌙. En cuanto grabes alguna noche de más de 3 horas, te cuento cuánto duermes, si eres regular y cuánto roncas.</p></div></div>`;
@@ -5760,6 +5779,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v23.2', '27 oct 2026', ['📊 Estadísticas de los últimos 7, 30 o 90 días, o de todo', 'ⓘ En Estadísticas: cuánto tiempo se guardan tus datos', '💬 «¿Quieres otro aviso en la noche?»']],
   ['v23.1', '27 oct 2026', ['El botón dice «Monitorear y avisar de ronquidos», y «… y otro aviso» si tienes el aviso en la noche']],
   ['v23.0', '27 oct 2026', ['🎧 En el monitoreo con aviso de ronquidos: «Avisos por auricular» o «por altavoz»; tócalo para cambiarlo', '💬 «¿Quieres un aviso en la noche?»: decimos aviso en vez de mensaje']],
   ['v22.9', '27 oct 2026', ['📊 Estadísticas empieza con «Historial de grabaciones»']],
