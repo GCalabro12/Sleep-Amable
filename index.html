@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.5'; // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
+const VERSION = 'v24.6'; // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
+// v24.5: // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
 // v24.4: // v24.4: la onda siempre enseña la etiqueta de la grabación con su color (ronquido amarillo, tos roja…): sus segundos más fuertes, o la parte más fuerte si la etiqueta la puso el 🧠 modelo; después, lo demás fuerte
 // v24.3: // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
 // v24.2: // v24.2: onda de la grabación: el color de cada tramo fuerte sigue a izquierda y derecha mientras las rayas sigan grandes (más del 45 % del pico), para ver el ronquido entero
@@ -4068,7 +4069,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta corregida con lo que le has enseñado">🧠 aprendido</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -5838,6 +5839,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.6', '27 oct 2026', ['🧠 «aprendido» ahora dice «según tus revisiones»']],
   ['v24.5', '27 oct 2026', ['🎧 «Aviso «estás roncando» · hora» en un renglón, y una raya «aviso» en la onda donde se dijo']],
   ['v24.4', '27 oct 2026', ['🎨 La onda siempre enseña con su color la etiqueta de la grabación (si dice ronquido, se ve amarillo)']],
   ['v24.3', '27 oct 2026', ['🌙 Fases del sueño: «Despierto» solo con movimientos fuertes, no por sonidos; la ⓘ explica cómo se mide']],
