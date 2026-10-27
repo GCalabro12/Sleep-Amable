@@ -1143,8 +1143,8 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu mensaje de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, activa «Aviso por altavoz o auricular» y sonará por el altavoz del móvil.</div>
   <button class="big" id="startRed">🌙 Empezar a monitorear y avisar de ronquidos</button>
-  <details class="instr card destacado"><summary><span>🎧 Aviso: estás roncando<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sAviso">no</b></summary>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos.</span><label class="swt"><input type="checkbox" id="avisoRonco2"><i></i></label></div>
+  <details class="instr card destacado"><summary><span>🎧 Avisos por altavoz o por auricular<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sAviso">no</b></summary>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Solo suena por los auriculares Bluetooth, con el volumen al menos a tres cuartos. Se activa al tocar <b>«Empezar a monitorear y avisar de ronquidos»</b>.</span></div>
     <button class="btn wide avisoTest" style="margin-top:8px">▶ Probar la voz</button>
   <div class="row" style="margin:10px 0 0"><label for="altavoz" style="min-width:0;flex:1"><span class="unalinea" style="font-weight:600;font-size:16px">🔊 Aviso por altavoz o auricular</span><small id="altavozTx">Ahora: solo por los auriculares</small></label><label class="swt"><input type="checkbox" id="altavoz"><i></i></label></div>
   </details>
@@ -1470,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.2'; // v22.2: «estás roncando» se dice una vez; solo vuelve tras otros 2 min seguros roncando (antes, cada 30 s); «Reducir ronquidos» pasa a «Aviso de ronquidos» y su botón enciende el aviso si estaba apagado
+const VERSION = 'v22.3'; // v22.3: el botón azul se llama «Avisos por altavoz o por auricular»; sin interruptor del aviso «estás roncando»: avisa en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos» (desde «Saber si ronco», no); el texto dice que se repite tras otros 2 min
+// v22.2: // v22.2: «estás roncando» se dice una vez; solo vuelve tras otros 2 min seguros roncando (antes, cada 30 s); «Reducir ronquidos» pasa a «Aviso de ronquidos» y su botón enciende el aviso si estaba apagado
 // v22.1: // v22.1: en la app Android, la música para dormir usa el servicio de reproducción (sigue sonando con la pantalla apagada), como los sonidos para tapar ronquidos
 // v22.0: // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
 // v21.9: // v21.9: posponer la alarma, cada vez menos: la 1.ª vez 1/3/5/9 min, la 2.ª 1/3, luego solo 1 (también en la app Android 4.4)
@@ -1714,19 +1715,12 @@ function decirNoche(texto) {
 }
 const SIN_VOZ = '🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie. Si duermes solo, activa «Aviso por altavoz o auricular» en Reducir ronquidos.';
 function pintaAviso() {
-  for (const id of ['avisoRonco2']) { $(id).checked = VOZ_OK && !!cfg.avisoRonco; $(id).disabled = !VOZ_OK; }
-  $('sAviso').textContent = VOZ_OK && cfg.avisoRonco ? 'sí' : 'no'; $('sAviso').classList.toggle('si', $('sAviso').textContent === 'sí');
+  $('sAviso').textContent = VOZ_OK ? 'sí' : 'no'; // sin interruptor: avisa en las noches que empiezan desde aquí $('sAviso').classList.toggle('si', $('sAviso').textContent === 'sí');
   if (!VOZ_OK) document.querySelectorAll('.avisoTx').forEach(x => x.textContent = AND
     ? '📲 Necesita la app Android 2.8 o más nueva: actualízala en Inicio.'
     : '📲 Solo en la app Android: desde el navegador no se puede saber si llevas auriculares.');
   document.querySelectorAll('.avisoTest').forEach(b => b.hidden = !VOZ_OK);
 }
-for (const id of ['avisoRonco2']) $(id).onchange = () => {
-  cfg.avisoRonco = $(id).checked;
-  try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
-  if (cfg.avisoRonco) { AND.prepararVoz(); AND.pedirBluetooth?.(); }
-  pintaAviso();
-};
 document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
   AND.prepararVoz();
   if (!decirNoche(FRASE)) aviso(SIN_VOZ);
@@ -1785,10 +1779,11 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
 // 1.º aviso cuando llevas 2 minutos roncando (v13.6; antes 1); si sigues, otro cada 30 segundos de ronquido;
 // con 30 segundos seguidos sin roncar se vuelve a empezar (otra vez 1 minuto para el primer aviso).
 const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una vez; solo vuelve si sigues 2 min más roncando seguro (v22.2; antes cada 30 s)
+let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
 const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 function avisoTick(det, dt) {
-  if (!VOZ_OK || !cfg.avisoRonco || !live.night) return;
+  if (!VOZ_OK || !avisarNoche || !live.night) return;
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
   const e = det.ev;
   const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR) && decide(e.sn, e.vo, e.br) === 'ronquido' && Math.max(...e.sn) >= AVISO_SEGURO
@@ -1859,12 +1854,11 @@ $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localS
 pintaAltavoz();
 // Empezar desde Reducir ronquidos: la misma pantalla de monitoreo, con el aviso y el mensaje que tengas activados
 $('startRed').onclick = async () => {
-  if (VOZ_OK && !cfg.avisoRonco) { // el botón dice «avisar de ronquidos»: si el aviso estaba apagado, se enciende
-    $('avisoRonco2').checked = true; $('avisoRonco2').onchange(); toast('🎧 Aviso «estás roncando» activado');
-  }
+  if (VOZ_OK) { avisarNoche = true; AND.prepararVoz(); AND.pedirBluetooth?.(); } // esta noche, con el aviso «estás roncando»
   if (!VOZ_OK && !await confirma('El aviso y el mensaje necesitan la app de Android. ¿Empezar a monitorear igualmente?', 'Empezar')) return;
   nightFrom = 'reducir'; // al terminar, la noche se abre y «atrás» vuelve aquí
-  $('startBtn').onclick();
+  await $('startBtn').onclick();
+  if (!live.night) avisarNoche = false; // no pudo empezar
 };
 // Horas del mensaje en esta noche (en milisegundos), hasta 14 horas después de empezar
 function msgPlan(n) {
@@ -1886,7 +1880,7 @@ function msgDicho(t) {
 function msgTick() {
   if (!msgActivo()) return;
   const M = live.msg || (live.msg = {dichos: new Set(), plan: msgPlan(live.night)});
-  const now = Date.now(), espera = MSG.junto && cfg.avisoRonco ? 15 * 60e3 : 0;
+  const now = Date.now(), espera = MSG.junto && avisarNoche ? 15 * 60e3 : 0;
   const t = M.plan.find(t => !M.dichos.has(t) && now >= t + espera);
   if (t == null) return;
   if (decirNoche(MSG.texto.trim())) msgDicho(t);
@@ -2425,7 +2419,7 @@ async function startListening() {
   const night = newNight('micro');
   if (cfg.profundo) night.profundo = true; // 🌙 por la mañana sale su curva de sueño profundo y ligero
   await DB.put('noches', night);
-  if (VOZ_OK && (cfg.avisoRonco || MSG.on)) AND.prepararVoz();
+  if (VOZ_OK && (avisarNoche || MSG.on)) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
     $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
@@ -2467,7 +2461,7 @@ async function startListening() {
       $('bloque').classList.toggle('on', en);
       $('bloque').textContent = !en && det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : ''; } // grabando: ya lo dice la lucecita
     if (AND?.auriculares) { // con «Avisarme si ronco»: «Avisa si ronco» (en color si hay auriculares); si no, solo «Auriculares» cuando estén puestos
-      const au = !!AND.auriculares(), av = VOZ_OK && cfg.avisoRonco;
+      const au = !!AND.auriculares(), av = VOZ_OK && avisarNoche;
       $('fAur').textContent = av ? (au ? '🎧 Avisa si ronco' : cfg.altavoz ? '🔊 Avisa si ronco · por el altavoz' : '🎧 Avisa si ronco · falta auriculares') : '🎧 Auriculares';
       $('fAur').hidden = !av && !au; $('fAur').classList.toggle('on', au);
     }
@@ -2598,6 +2592,7 @@ async function stopListening(auto) {
   try { await live.lock?.release(); } catch {}
   live.lock = null;
   AND?.noche(false); // «No molestar» y wifi vuelven a como estaban
+  avisarNoche = false;
   if (AND) await todoComoAntes();
   $('listen').classList.remove('on');
   const night = live.night, id = night.id;
@@ -5691,6 +5686,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.3', '27 oct 2026', ['🎧 El botón azul se llama «Avisos por altavoz o por auricular»', '🎧 Sin interruptor: el aviso «estás roncando» funciona en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos»']],
   ['v22.2', '27 oct 2026', ['🎧 «Estás roncando» se dice una sola vez; vuelve solo si sigues 2 minutos más roncando', '«Reducir ronquidos» ahora se llama «Aviso de ronquidos»; su botón enciende el aviso si estaba apagado']],
   ['v22.1', '27 oct 2026', ['En la app Android, la música para dormir sigue sonando con la pantalla apagada']],
   ['v22.0', '27 oct 2026', ['⏰ Después de posponer, la alarma progresiva sube en 5 segundos (no despacio otra vez)']],
