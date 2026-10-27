@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.9'; // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
+const VERSION = 'v25.0'; // v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
+// v24.9: // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
 // v24.8: // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
 // v24.7: // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
 // v24.6: // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
@@ -2395,7 +2396,7 @@ async function autoAjuste(forzar = false) {
 function textoAjuste() {
   const a = cfg.aj, m = MODELO;
   let t = `🔄 Detector actualizado con tus ${a.n} grabaciones revisadas (${ajFecha()}).\n\n• Regla ajustada: acierta ${a.ok} de ${a.n} (de fábrica, ${a.fab}).`;
-  if (m) t += `\n• 🧠 Modelo de tu huella, examinado con grabaciones que no había visto: acierta ${m.ok} de ${m.n}.\n   😴 Ronquidos reconocidos: ${m.rq} de ${m.nr}.\n   😮‍💨 Respiraciones y otros que no confunde con ronquido: ${m.rs} de ${m.no}.\n\n${m.usar ? '✅ Se usa el modelo de tu huella: acierta más que la regla.' : 'Se sigue usando la regla: el modelo aún no acierta más (con más revisiones aprenderá mejor).'}`;
+  if (m) t += `\n• 🧠 Modelo de tu huella, examinado con grabaciones que no había visto: acierta ${m.ok} de ${m.n}.\n   😴 Ronquidos reconocidos: ${m.rq} de ${m.nr}.\n   💨 Respiraciones y otros que no confunde con ronquido: ${m.rs} de ${m.no}.\n\n${m.usar ? '✅ Se usa el modelo de tu huella: acierta más que la regla.' : 'Se sigue usando la regla: el modelo aún no acierta más (con más revisiones aprenderá mejor).'}`;
   else t += '\n\n🧠 El modelo de tu huella necesita al menos 30 grabaciones revisadas con huella (las grabadas desde la versión 12.3, o las de noches pasadas tras «Revisar esta noche»).';
   return t + '\n\nPara corregir una noche pasada, ábrela y pulsa «Revisar esta noche con el detector nuevo».';
 }
@@ -5871,6 +5872,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.0', '27 oct 2026', ['💨 Respiraciones con su icono gris también en «Detector actualizado»']],
   ['v24.9', '27 oct 2026', ['🧠 El detector común se actualiza también al volver a la app']],
   ['v24.8', '27 oct 2026', ['🧠 El detector mejora para todos con las grabaciones que revisa el equipo de Amable Sleep']],
   ['v24.7', '27 oct 2026', ['🧠 «Según tus revisiones» solo lo ve el administrador']],
