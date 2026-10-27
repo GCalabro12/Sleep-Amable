@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.8'; // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
+const VERSION = 'v24.9'; // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
+// v24.8: // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
 // v24.7: // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
 // v24.6: // v24.6: «🧠 aprendido» pasa a «🧠 según tus revisiones»
 // v24.5: // v24.5: en la grabación, «🎧 Aviso «estás roncando» · 02:29» en un renglón; en la onda del reproductor, una raya rosa «aviso» donde se dijo
@@ -5262,6 +5263,12 @@ async function subeModeloComun() {
   try { await apiCuenta('/modelo', {modelo: MODELO}); localStorage.setItem('ronquino-modelo-subido', MODELO.firma); toast('🧠 Detector compartido con todos'); } catch {}
 }
 setTimeout(() => { bajaModeloComun(); subeModeloComun(); }, 6000);
+let comunBajado = Date.now();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  subeModeloComun(); // (si ya está subido, no hace nada)
+  if (Date.now() - comunBajado > 3600e3) { comunBajado = Date.now(); bajaModeloComun(); }
+});
 // Qué noches ya están subidas (y cómo eran): solo se vuelve a subir la que ha cambiado
 const subKey = () => 'ronquino-subidas-' + (sesion?.id || '');
 function leeSubidas() { try { return JSON.parse(localStorage.getItem(subKey()) || '{}'); } catch { return {}; } }
@@ -5864,6 +5871,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.9', '27 oct 2026', ['🧠 El detector común se actualiza también al volver a la app']],
   ['v24.8', '27 oct 2026', ['🧠 El detector mejora para todos con las grabaciones que revisa el equipo de Amable Sleep']],
   ['v24.7', '27 oct 2026', ['🧠 «Según tus revisiones» solo lo ve el administrador']],
   ['v24.6', '27 oct 2026', ['🧠 «aprendido» ahora dice «según tus revisiones»']],
