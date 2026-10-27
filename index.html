@@ -1512,7 +1512,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.2'; // v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
+const VERSION = 'v25.3'; // v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
+// v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
 // v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
 // v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
 // v24.9: // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
@@ -3043,7 +3044,7 @@ function muteTick() {
   $('muteRest').hidden = !sinGrabar;
   if (sinGrabar) $('muteRest').textContent = `Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')}`;
   if (live.cuna) {
-    const k = live.cuna, left = Math.max(0, cunaSeg() - k.played);
+    const k = live.cuna, left = Math.max(0, cunaLen(k) - k.played);
     $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
       : `🎵 Sin grabar mientras suena la música · quedan ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
   }
@@ -3074,14 +3075,16 @@ let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
 try { const m = +localStorage.getItem('ronquino-cunamin'); if ([5, 10, 15].includes(m)) cunaMin = m; } catch {}
 try { const v = localStorage.getItem('ronquino-cunavol'); if (v !== null) cunaVol = Math.min(1, Math.max(.05, +v)); } catch {}
 const cunaSeg = () => cunaMin * 60;
+// Lo que dura la que suena en el monitoreo: una relajación guiada suena entera; las demás, los minutos elegidos
+const cunaLen = k => k?.c?.guia ? (isFinite(k.au.duration) && k.au.duration > 0 ? k.au.duration : k.c.min * 60) : cunaSeg();
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
-const cunaSel = () => CUNAS.find(c => c.id === cunaId) || null;
+const cunaSel = () => [...CUNAS, ...GUIAS].find(c => c.id === cunaId) || null;
 // Escuchar una canción de cuna en la lista, antes de elegirla
 let cunaPrev = null; // {id, au}
 function playCunaPrev(x) {
   stopCunaPrev();
   const au = new Audio(x.file || (noise.urls[x.noise] ||= makeNoise(x.noise)));
-  au.loop = true; au.volume = cunaVol; au.play().catch(() => {});
+  au.loop = !x.guia; au.volume = cunaVol; au.play().catch(() => {});
   cunaPrev = {id: x.id, au};
 }
 function stopCunaPrev() {
@@ -3096,24 +3099,27 @@ function renderCunas() {
     $('cunaBody').innerHTML = 'Aún no hay música para dormir: la estamos haciendo con Suno y aparecerá aquí.';
     return;
   }
-  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena ${cunaMin} minutos y se va apagando en 5 segundos; mientras suena, no se graba.</div>
+  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena ${cunaMin} minutos y se va apagando en 5 segundos (las relajaciones suenan enteras); mientras suena, no se graba.</div>
     <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
     <div class="cunas"></div>`;
   $('cunaVolIn').oninput = e => {
     cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
     if (cunaPrev) cunaPrev.au.volume = cunaVol;
-    if (live.cuna && live.cuna.played < cunaSeg() - CUNA_FADE) live.cuna.au.volume = cunaVol;
+    if (live.cuna && (live.cuna.c.guia || live.cuna.played < cunaSeg() - CUNA_FADE)) live.cuna.au.volume = cunaVol;
   };
   $('cunaBody').querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
     cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
     renderCunas(); muteTick();
   });
   const box = $('cunaBody').querySelector('.cunas');
-  for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS]) {
+  const gbox = document.createElement('div'); gbox.className = 'cunas';
+  const tit = document.createElement('p'); tit.className = 'cutit'; tit.textContent = '🎧 Relajaciones guiadas';
+  box.after(tit, gbox);
+  for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS, ...GUIAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
     const sounding = cunaPrev && cunaPrev.id === x.id;
-    b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : ''}`;
+    b.innerHTML = `<b>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : x.guia ? `<small>${x.min} min</small>` : ''}`;
     b.onclick = () => {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
       if (live.night) { // monitoreando: suena ya y se cierra el desplegable
@@ -3127,16 +3133,17 @@ function renderCunas() {
       if (sounding || !x.id) stopCunaPrev(); else playCunaPrev(x);
       renderCunas();
     };
-    box.append(b);
+    (x.guia ? gbox : box).append(b);
   }
 }
 function playCuna(c) {
-  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = cunaVol;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
   au.play().catch(() => {});
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
+  if (c.guia) au.onended = () => { if (live.cuna?.au === au) endCuna(); }; // la relajación acaba sola
   live.det.muteUntil = Infinity;
   $('lcuna').hidden = false;
-  $('lcuna').innerHTML = `<span class="cuname">🎵 ${c.icon} ${c.name}</span><button id="cunaPause" aria-label="Pausar">❚❚</button><button id="cunaStop" aria-label="Parar">■</button>`;
+  $('lcuna').innerHTML = `<span class="cuname">${c.guia ? '🎧' : '🎵'} ${c.icon} ${c.name}</span><button id="cunaPause" aria-label="Pausar">❚❚</button><button id="cunaStop" aria-label="Parar">■</button>`;
   // Pausar: la canción se queda donde está (y su cuenta de 5 minutos también) para probar la sensibilidad; «Seguir» la reanuda
   $('cunaPause').onclick = () => {
     const k = live.cuna; if (!k) return;
@@ -3150,9 +3157,9 @@ function playCuna(c) {
     const k = live.cuna, now = Date.now();
     if (!k.paused) k.played += (now - k.last) / 1000;
     k.last = now;
-    const t = k.played;
-    if (t >= cunaSeg() - CUNA_FADE) au.volume = Math.max(0, cunaVol * (cunaSeg() - t) / CUNA_FADE);
-    if (t >= cunaSeg()) endCuna();
+    const t = k.played, L = cunaLen(k);
+    if (!c.guia && t >= L - CUNA_FADE) au.volume = Math.max(0, cunaVol * (L - t) / CUNA_FADE);
+    if (t >= L + (c.guia ? 3 : 0)) endCuna(); // (la relajación ya trae su fundido; si «ended» no llega, se para igual)
   }, 100);
   muteTick();
 }
@@ -5897,6 +5904,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.3', '27 oct 2026', ['🎧 «Dinero en calma» también en la música al empezar a monitorear']],
   ['v25.2', '27 oct 2026', ['🔆 Arreglado: después de monitorear, la pantalla se quedaba oscura en la app', '🎧 Las relajaciones guiadas, en su propia tarjeta arriba del todo']],
   ['v25.1', '27 oct 2026', ['🎧 Relajaciones guiadas para dormir, en «Música para dormir»: la primera es «Dinero en calma»']],
   ['v25.0', '27 oct 2026', ['💨 Respiraciones con su icono gris también en «Detector actualizado»']],
@@ -6106,7 +6114,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, TLV, makeNoise, ALS, alCheck}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck}; // para pruebas
 </script>
 </body>
 </html>
