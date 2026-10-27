@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.0'; // v24.0: Fases del sueño: los ciclos se separan con una línea punteada bien visible y su número más grande; debajo, «cada franja numerada es un ciclo»
+const VERSION = 'v24.1'; // v24.1: la etiqueta «Respiración» con 💨 (gris), no con la carita amarilla, que se confundía con ronquido
+// v24.0: // v24.0: Fases del sueño: los ciclos se separan con una línea punteada bien visible y su número más grande; debajo, «cada franja numerada es un ciclo»
 // v23.9: // v23.9: «🌍 Tu país» se elige abajo, en «Media de tu país» (es donde se usa), no arriba de las cifras
 // v23.8: // v23.8: filtro de grabaciones con embudo a la izquierda y varias a la vez (p. ej. ronquidos + tos); «Todos» quita el filtro
 // v23.7: // v23.7: «Revisar con el detector nuevo» (admin) solo sale en las noches grabadas o revisadas antes de la última mejora del detector (reglas o modelo aprendido)
@@ -2838,7 +2839,7 @@ const PR_GUIA = [
   {id: 'r-fuerte', t: '😴 Ronquido fuerte', esp: 'ronquido'},
   {id: 'r-suave', t: '😴 Ronquido suave', esp: 'ronquido'},
   {id: 'r-resp', t: '😴 Ronquido con su respiración (inspira roncando y espira)', esp: 'ronquido'},
-  {id: 'resp', t: '😮‍💨 Respirar fuerte, sin roncar', esp: 'otro'},
+  {id: 'resp', t: '💨 Respirar fuerte, sin roncar', esp: 'otro'},
   {id: 'voz-alta', t: '🗣️ Hablar en voz normal o alta', esp: 'voz'},
   {id: 'voz-baja', t: '🗣️ Hablar en voz baja', esp: 'voz'},
   {id: 'silencio', t: '🤫 Silencio: no hagas nada', esp: 'otro'},
@@ -4043,7 +4044,7 @@ const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const ICO_BAJAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
 const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>';
 const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
-const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '😮‍💨 Respiración' : '🔊 ' + es(e.top);
+const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : '🔊 ' + es(e.top);
 function renderList() {
   const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : e.tipo === k));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
@@ -4425,7 +4426,7 @@ function pintaValorar(e) {
   const box = $('plVal'); box.hidden = !e || !sesion?.admin; if (box.hidden) return; // valorar si acierta: solo el administrador
   // Las 5 opciones a la vista, con la de la IA marcada (en verde, si ya la revisaste): tocar la misma = acierta; otra = queda corregida.
   // Al tocar cualquiera, salta sola a la siguiente grabación. En horizontal se ve también la etiqueta
-  const OPS = [['ronquido', '😴', 'Ronquido'], ['voz', '🗣️', 'Voz'], ['tos', '🫁', 'Tos'], ['resp', '😮‍💨', 'Respiración'], ['otro', '🔊', 'Otro']];
+  const OPS = [['ronquido', '😴', 'Ronquido'], ['voz', '🗣️', 'Voz'], ['tos', '🫁', 'Tos'], ['resp', '💨', 'Respiración'], ['otro', '🔊', 'Otro']];
   const act = e.tipo === 'otro' && e.sub === 'respiracion' ? 'resp' : e.tipo, hecha = e.val === 'ok' || e.fix;
   box.innerHTML = `<span class="plvTag">${tagTxt(e)} · </span><div class="plops">${OPS.map(([t, ic, tx]) => `<button type="button" data-t="${t}" class="${t === act ? (hecha ? 'on' : 'ia') : ''}"><span>${ic}</span>${tx}</button>`).join('')}</div>`;
   box.querySelectorAll('[data-t]').forEach(b => b.onclick = async () => {
@@ -5810,6 +5811,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.1', '27 oct 2026', ['💨 La etiqueta «Respiración» ya no es amarilla como la de ronquido']],
   ['v24.0', '27 oct 2026', ['🔄 Fases del sueño: los ciclos se ven separados por una línea punteada y numerados']],
   ['v23.9', '27 oct 2026', ['🌍 «Tu país» se elige abajo, en «Media de tu país»']],
   ['v23.8', '27 oct 2026', ['🔻 Filtro de grabaciones: elige varios a la vez (por ejemplo, ronquidos y tos)']],
