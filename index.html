@@ -1510,7 +1510,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v24.2'; // v24.2: onda de la grabación: el color de cada tramo fuerte sigue a izquierda y derecha mientras las rayas sigan grandes (más del 45 % del pico), para ver el ronquido entero
+const VERSION = 'v24.3'; // v24.3: Fases del sueño: «Despierto» solo por movimiento fuerte (o «Me levanté»), nunca por sonidos (coche, ronquido, voces); los sonidos como mucho hacen el sueño más ligero. La «i» explica cómo se mide
+// v24.2: // v24.2: onda de la grabación: el color de cada tramo fuerte sigue a izquierda y derecha mientras las rayas sigan grandes (más del 45 % del pico), para ver el ronquido entero
 // v24.1: // v24.1: la etiqueta «Respiración» con 💨 (gris), no con la carita amarilla, que se confundía con ronquido
 // v24.0: // v24.0: Fases del sueño: los ciclos se separan con una línea punteada bien visible y su número más grande; debajo, «cada franja numerada es un ciclo»
 // v23.9: // v23.9: «🌍 Tu país» se elige abajo, en «Media de tu país» (es donde se usa), no arriba de las cifras
@@ -3414,15 +3415,17 @@ function curvaCalma(n, evs) {
   const bruto = mv.map((m, b) => Math.min(1, (m * 3 + ru[b] / 20 + vo[b] * .3) / 6));
   const suave = a => a.map((x, b) => (a[b - 1] ?? x) * .25 + x * .5 + (a[b + 1] ?? x) * .25);
   const v = suave(suave(bruto)); // suavizada (dos pasadas) para que se lea como una curva
-  // Se durmió: el primer momento con 15 minutos seguidos de calma; se despertó: el último
+  // Se durmió: el primer momento con 15 minutos seguidos de calma; se despertó: el último.
+  // Si hay movimientos medidos, solo cuentan ellos: un coche, un ronquido o una voz no te despiertan en el gráfico (v24.3)
+  const vm = suave(suave(mv.map(m => Math.min(1, m * 3 / 6)))), base = (n.mov || []).length ? vm : v;
   let dormido = null, despierto = null;
-  for (let b = 0; b + 2 < B; b++) if (v[b] < .25 && v[b + 1] < .25 && v[b + 2] < .25) { dormido = b; break; }
-  for (let b = B - 1; b >= 2; b--) if (v[b] < .25 && v[b - 1] < .25 && v[b - 2] < .25) { despierto = b + 1; break; }
+  for (let b = 0; b + 2 < B; b++) if (base[b] < .25 && base[b + 1] < .25 && base[b + 2] < .25) { dormido = b; break; }
+  for (let b = B - 1; b >= 2; b--) if (base[b] < .25 && base[b - 1] < .25 && base[b - 2] < .25) { despierto = b + 1; break; }
   const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
   // En bloques (como en los estudios que comparan movimiento con laboratorio): poco movimiento = profundo, algo = ligero;
-  // despierto solo si te mueves mucho (5 o más movimientos en 5 min; en el laboratorio, despierto ≈ 11 y REM ≈ 2,6), hablas o pulsas «Me levanté», o antes de dormirte y después de despertar
+  // despierto solo si te mueves mucho (5 o más movimientos en 5 min; en el laboratorio, despierto ≈ 11 y REM ≈ 2,6), pulsas «Me levanté»,
+  // o antes de dormirte y después de despertar. Los sonidos (voces, ruidos, ronquidos) no: se puede hablar en sueños
   const hab = new Array(B).fill(false);
-  for (const e of evs) if (e.tipo === 'voz') { const b = Math.floor(e.off / 300); if (b >= 0 && b < B) hab[b] = true; }
   for (const t of n.levantadas || []) { const b = Math.floor(t / 300); if (b >= 0 && b < B) hab[b] = true; }
   const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] >= 5 || hab[b] ? 3 : x >= .25 ? 1 : 0);
   // REM: suele llegar justo después de un profundo largo. Si a 20 min o más de profundo les siguen 20 min o más de ligero,
@@ -3485,7 +3488,7 @@ function pintaCalma(n, evs) {
     ? `😵 <b>Despertaste en sueño profundo</b>${cerca.length ? ` · mejor hacia las <b>${cerca.join('</b> o las <b>')}</b>` : ''}`
     : '👍 <b>Despertaste en sueño ligero</b>';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span class="unalinea" style="flex:1;min-width:0"><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button><span class="pldato">Profundo ${pc(0)} %</span><i class="tri"></i></div>
-    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos y los ruidos de la noche: cuanto más quieto, más profundo. Si te mueves mucho, hablas o pulsas «Me levanté», cuenta como despierto. El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
+    <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos: cuanto más quieto, más profundo. El móvil sobre el colchón nota con su acelerómetro cada vez que el colchón se mueve (en la mesilla, con el 📡 sonar).<br><br><b>Despierto</b> solo sale cuando te mueves mucho (5 o más movimientos en 5 minutos, como dar vueltas o levantarte), al pulsar «Me levanté», antes de dormirte y después de despertarte. Los sonidos (un coche, un ronquido, hablar en sueños) no cuentan como despierto: como mucho, hacen el sueño más ligero. Por eso «despierto» quiere decir despierto o muy inquieto.<br><br> El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
       ${[3, 2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
@@ -5819,6 +5822,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v24.3', '27 oct 2026', ['🌙 Fases del sueño: «Despierto» solo con movimientos fuertes, no por sonidos; la ⓘ explica cómo se mide']],
   ['v24.2', '27 oct 2026', ['🎨 En la onda de cada grabación, el color abarca el ronquido entero (no solo una raya)']],
   ['v24.1', '27 oct 2026', ['💨 La etiqueta «Respiración» ya no es amarilla como la de ronquido']],
   ['v24.0', '27 oct 2026', ['🔄 Fases del sueño: los ciclos se ven separados por una línea punteada y numerados']],
