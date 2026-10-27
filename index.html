@@ -213,6 +213,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .cuna b{display:block;font-size:26px;font-weight:400}
 .cuna.on{border-color:#A78BFA;background:#312E81}
 .cuna small{display:block;font-size:11px;color:#C4B5FD;margin-top:2px}
+.cutit{margin:18px 0 0;font-size:15px;font-weight:600;color:#E0E7FF}
 details.hist summary{cursor:pointer;font-size:17px;font-weight:700;padding:2px 0}
 /* Barra de abajo */
 #tabs{position:fixed;left:0;right:0;bottom:0;z-index:14;display:flex;justify-content:center;background:#0F1529f5;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
@@ -1510,7 +1511,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.0'; // v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
+const VERSION = 'v25.1'; // v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
+// v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
 // v24.9: // v24.9: el modelo común también se sube (administrador) y se baja (todos, como mucho cada hora) al volver a la app, no solo al abrirla
 // v24.8: // v24.8: 🧠 modelo común: el que aprende el administrador con sus revisiones se sube a la cuenta y lo usan todos (solo cuando está seguro, 75 % o más)
 // v24.7: // v24.7: lo aprendido de las revisiones (cambiar etiquetas y el chip «🧠 según tus revisiones») solo para el administrador
@@ -3056,6 +3058,10 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
   {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador'},
   {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora'}
 ];
+// 🎧 Relajaciones guiadas (en «Música para dormir»): la voz de Gustavo con «Mar en calma» de fondo. Suenan enteras una vez (ya traen su fundido).
+const GUIAS = [ // {id, icon, name, min, file}
+  {id: 'g-dinero', icon: '💰', name: 'Dinero en calma', min: 13, file: 'audios/dinero-en-calma.mp3', guia: true}
+];
 const CUNA_FADE = 5;
 let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
 try { const m = +localStorage.getItem('ronquino-cunamin'); if ([5, 10, 15].includes(m)) cunaMin = m; } catch {}
@@ -3171,14 +3177,15 @@ function musPara(suave) {
 function musToca(c) {
   if (MUS.c?.id === c.id) { musPara(true); return; } // otro toque a la que suena: se para
   musPara(false); stopCunaPrev();
-  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = cunaVol;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
   au.play().catch(() => {});
   AND?.ruido(true); // en la app Android: sigue sonando con la pantalla apagada (servicio de reproducción)
-  Object.assign(MUS, {au, c, fin: Date.now() + cunaMin * 60e3});
+  Object.assign(MUS, {au, c, fin: Date.now() + (c.guia ? c.min : cunaMin) * 60e3});
+  if (c.guia) au.onended = () => { if (MUS.au === au) musPara(false); };
   MUS.t = setInterval(() => {
-    const queda = (MUS.fin - Date.now()) / 1000;
-    if (queda <= CUNA_FADE && MUS.au) MUS.au.volume = Math.max(0, cunaVol * queda / CUNA_FADE);
-    if (queda <= 0) { musPara(false); return; }
+    const queda = c.guia ? Math.max(0, (isFinite(au.duration) ? au.duration : c.min * 60) - au.currentTime) : (MUS.fin - Date.now()) / 1000;
+    if (!c.guia && queda <= CUNA_FADE && MUS.au) MUS.au.volume = Math.max(0, cunaVol * queda / CUNA_FADE);
+    if (!c.guia && queda <= 0) { musPara(false); return; }
     const q = $('musQueda'); if (q) q.textContent = `quedan ${Math.floor(queda / 60)}:${String(Math.floor(queda % 60)).padStart(2, '0')}`;
   }, 250);
   pintaMusica();
@@ -3187,17 +3194,21 @@ function pintaMusica() {
   const box = $('musBody'); if (!box) return;
   $('musSum').hidden = true; // lo que suena ya se ve dentro, con su cuenta atrás y ■
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
-    ${MUS.c ? `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">🎵 ${MUS.c.icon} ${MUS.c.name} · <span id="musQueda"></span></span><button type="button" id="musStop" aria-label="Parar">■</button></div>` : ''}
+    ${MUS.c ? `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">${MUS.c.guia ? '🎧' : '🎵'} ${MUS.c.icon} ${MUS.c.name} · <span id="musQueda"></span></span><button type="button" id="musStop" aria-label="Parar">■</button></div>` : ''}
     <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="musVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
-    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}</button>`).join('')}</div>`;
-  $('musVol').oninput = e => { cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {} if (MUS.au && MUS.fin - Date.now() > CUNA_FADE * 1000) MUS.au.volume = cunaVol; };
+    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}</button>`).join('')}</div>
+    <p class="cutit">🎧 Relajaciones guiadas</p>
+    <p class="note" style="margin:2px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
+    <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}</div>`;
+  $('musVol').oninput = e => { cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {} if (MUS.au && (MUS.c?.guia || MUS.fin - Date.now() > CUNA_FADE * 1000)) MUS.au.volume = cunaVol; };
   box.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
     cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
     if (MUS.au) MUS.fin = Date.now() + cunaMin * 60e3; // la que suena vuelve a contar con los minutos nuevos
     pintaMusica();
   });
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
+  box.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
   if ($('musStop')) $('musStop').onclick = () => musPara(true);
 }
 pintaMusica();
@@ -5872,6 +5883,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.1', '27 oct 2026', ['🎧 Relajaciones guiadas para dormir, en «Música para dormir»: la primera es «Dinero en calma»']],
   ['v25.0', '27 oct 2026', ['💨 Respiraciones con su icono gris también en «Detector actualizado»']],
   ['v24.9', '27 oct 2026', ['🧠 El detector común se actualiza también al volver a la app']],
   ['v24.8', '27 oct 2026', ['🧠 El detector mejora para todos con las grabaciones que revisa el equipo de Amable Sleep']],
