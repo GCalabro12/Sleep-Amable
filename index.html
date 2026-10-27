@@ -1470,7 +1470,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.0'; // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
+const VERSION = 'v22.1'; // v22.1: en la app Android, la música para dormir usa el servicio de reproducción (sigue sonando con la pantalla apagada), como los sonidos para tapar ronquidos
+// v22.0: // v22.0: tras posponer, la alarma progresiva vuelve a sonar subiendo en 5 s (no despacio otra vez); app Android 4.5
 // v21.9: // v21.9: posponer la alarma, cada vez menos: la 1.ª vez 1/3/5/9 min, la 2.ª 1/3, luego solo 1 (también en la app Android 4.4)
 // v21.8: // v21.8: Saber si ronco (y Dormir con quien ronca) como Reducir ronquidos: «Activado/Desactivado» en el 2.º renglón, sin sí/no y desplegables más estrechos
 // v21.7: // v21.7: monitoreo: tocar «⏰ hora» abre un desplegable para activar, desactivar o cambiar la alarma sin salir
@@ -3073,6 +3074,7 @@ const MUS = {au: null, c: null, fin: 0, t: null};
 function musPara(suave) {
   if (!MUS.au) return;
   const au = MUS.au; clearInterval(MUS.t); MUS.au = null; MUS.c = null;
+  setTimeout(() => { if (AND && !MUS.au && noise.au.paused) AND.ruido(false); }, 1500); // suelta el servicio (si no suena otra cosa)
   if (!suave) { au.pause(); pintaMusica(); return; }
   const v0 = au.volume, t0 = Date.now();
   const f = setInterval(() => { const k = (Date.now() - t0) / 1000; au.volume = Math.max(0, v0 * (1 - k)); if (k >= 1) { clearInterval(f); au.pause(); } }, 50);
@@ -3083,6 +3085,7 @@ function musToca(c) {
   musPara(false); stopCunaPrev();
   const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = true; au.volume = cunaVol;
   au.play().catch(() => {});
+  AND?.ruido(true); // en la app Android: sigue sonando con la pantalla apagada (servicio de reproducción)
   Object.assign(MUS, {au, c, fin: Date.now() + cunaMin * 60e3});
   MUS.t = setInterval(() => {
     const queda = (MUS.fin - Date.now()) / 1000;
@@ -5686,6 +5689,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.1', '27 oct 2026', ['En la app Android, la música para dormir sigue sonando con la pantalla apagada']],
   ['v22.0', '27 oct 2026', ['⏰ Después de posponer, la alarma progresiva sube en 5 segundos (no despacio otra vez)']],
   ['v21.9', '27 oct 2026', ['⏰ Posponer la alarma, cada vez menos: la 1.ª vez hasta 9 min, la 2.ª hasta 3 y luego 1']],
   ['v21.8', '26 oct 2026', ['Saber si ronco y Dormir con quien ronca: cada opción dice si está Activada o Desactivada, como en Reducir ronquidos']],
