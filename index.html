@@ -353,6 +353,7 @@ details.instr>summary.dos>span:first-child,details.ajd>summary.dos>span:first-ch
 summary.dos:has(>span>small){position:relative}
 summary.dos>span:first-child>small{padding-right:84px}
 summary.dos:has(>span>small)>.estado{position:absolute;right:24px;bottom:-3px}
+#sndDet>summary>.estado{position:absolute;right:24px;top:-2px;bottom:auto} #sndDet>summary{position:relative} #sndDet>summary>span:first-child>small{padding-right:0}
 details>summary.dos:has(>span>small)::after{position:absolute;right:0;bottom:6px}
 details.hist>summary>small{margin-left:auto;flex:none;font-weight:400;color:var(--muted)}
 details.hist>summary:has(>small)::after{margin-left:0}
@@ -946,9 +947,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
 
   <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
-  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
+  <details class="instr card"><summary><span>ℹ️ Cómo funciona</span></summary>
   <div class="dosdib">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
     <figure><img src="luna/movil-colchon.webp" alt="El móvil sobre el colchón, en la esquina junto a la almohada"><figcaption><i class="icos" aria-hidden="true"></i> En el colchón, junto a la almohada: también mide las fases del sueño</figcaption></figure>
@@ -963,6 +962,8 @@ body.pl-on .wrap{padding-bottom:190px}
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
   </details>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
+  <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
 
   <button class="btn wide" id="fileBtn" style="margin-top:16px" hidden>📂 Analizar una grabación (máx. ~1 hora)</button>
   <input type="file" id="fileIn" accept="audio/*,video/*" hidden>
@@ -1159,7 +1160,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
     <small id="altavozTx" class="auTx">Solo por los auriculares</small></div>
   <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres un mensaje en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
-    <div class="row"><label for="msgOn">Activado<small id="msgTxInfo">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina…</small></label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
+    <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
+      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
+      <button class="btn wide" id="msgTest" style="margin-top:10px">▶ Probar el mensaje</button>
+    </details>
+    <div class="row"><label for="msgOn">Activado</label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
     <details class="subdet"><summary><span>📝 Qué te digo</span><small id="msgSumTx"></small></summary>
       <input class="cpin" id="msgTx" maxlength="120" placeholder="Por ejemplo: bebe un poco de agua" aria-label="Qué te digo">
       <div class="msgsug" id="msgSug"></div>
@@ -1172,7 +1177,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <details class="subdet"><summary><span>🔗 Juntarlo con el aviso de ronquido</span><small id="msgSumJu"></small></summary>
     <div class="row"><label for="msgJunto">Activado<small>Si te aviso de que roncas hasta 15 minutos antes o después de la hora del mensaje, te lo digo a la vez, para despertarte solo una vez. Si no roncas, te lo digo 15 minutos después.</small></label><label class="swt"><input type="checkbox" id="msgJunto"><i></i></label></div>
     </details>
-    <button class="btn wide" id="msgTest" style="margin-top:12px">▶ Probar el mensaje</button>
   </details>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
@@ -1188,17 +1192,17 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" id="maskBack">← Inicio</button>
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🎧 Dormir con quien ronca<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Si duermes al lado de alguien que ronca: sonidos suaves (ruido marrón, lluvia…) que tapan los ronquidos por los auriculares.</div>
-  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
-  <details class="instr card"><summary>📖 Instrucciones de uso</summary>
+  <details class="instr card"><summary><span>ℹ️ Cómo funciona</span></summary>
     <ol class="steps">
       <li>Ponte <b>auriculares cómodos para dormir</b>. Mejor si tienen <b>cancelación de ruido</b> (ANC): quitan buena parte del ronquido antes de que suene nada.</li>
       <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
       <li>Sube el volumen poco a poco <b>solo hasta dejar de notar los ronquidos</b>. Cuanto más bajo, mejor para tus oídos.</li>
       <li>Activa <b>🌙 No molestar</b> para que no te despierten notificaciones. Si pones el modo avión, vuelve a encender el <b>Bluetooth</b> si tus auriculares son inalámbricos.</li>
       <li>🔋 <b>Carga los pinganillos al 100 %</b> antes de acostarte: duran unas 4 horas de noche. Si no están llenos, la app te lo dice por ellos al empezar el sonido.</li>
-      <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (por ejemplo, a las 2 o 4 horas): así duran más los pinganillos y descansan tus oídos.</li>
+      <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (a las 2 o 4 horas, o <b>al sonar la alarma</b>): así duran más los pinganillos y descansan tus oídos.</li>
     </ol>
   </details>
+  <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card" id="sndDet"><summary><span>🌊 Sonidos neutros<small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Toca uno para oírlo 5 segundos</small></span><b class="estado si" id="sndSel"></b></summary>
     <div class="sounds" id="sounds"></div>
   </details>
@@ -1208,7 +1212,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="row" style="margin-top:0"><label for="vol">🔈 Volumen</label><span id="volTxt"></span></div>
     <input type="range" id="vol" min="1" max="100" step="1">
     <div class="row" style="flex-wrap:wrap"><label for="tmr">⏲️ Apagar después de</label>
-      <select id="tmr"><option value="0">Nunca (toda la noche)</option><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select><small style="flex-basis:100%;margin-top:-4px">Se apaga poco a poco, sin despertarte.</small></div>
+      <select id="tmr"><option value="0">Nunca (toda la noche)</option><option value="al">Al sonar la alarma</option><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select><small style="flex-basis:100%;margin-top:-4px">Se apaga poco a poco, sin despertarte.</small></div>
   </div>
   <p class="note">Funciona sin internet y con la pantalla apagada. En iPhone el volumen se ajusta con los botones del móvil.</p>
   <details class="cfg card" hidden><!-- quitado a petición de Gustavo; se deja para no romper el código -->
@@ -1480,7 +1484,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v22.5'; // v22.5: Aviso de ronquidos: debajo de «Empezar…», «ℹ️ Cómo funciona» (explicación + probar la voz) y, siempre a la vista, el deslizador «Avisos por: 🎧 Auricular | 🔊 Altavoz»; «¿Quieres un mensaje en la noche?»
+const VERSION = 'v22.6'; // v22.6: «ℹ️ Cómo funciona» (antes «Instrucciones de uso») arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje; «Apagar después de: Al sonar la alarma»; el sonido elegido ya no tapa el subtítulo
+// v22.5: // v22.5: Aviso de ronquidos: debajo de «Empezar…», «ℹ️ Cómo funciona» (explicación + probar la voz) y, siempre a la vista, el deslizador «Avisos por: 🎧 Auricular | 🔊 Altavoz»; «¿Quieres un mensaje en la noche?»
 // v22.4: // v22.4: Aviso de ronquidos se ve igual en la web que en la app Android (sin textos ni bloqueos «solo en la app»); también el reto de la alarma; arreglo: el botón azul decía «Desactivado» también en el móvil
 // v22.3: // v22.3: el botón azul se llama «Avisos por altavoz o por auricular»; sin interruptor del aviso «estás roncando»: avisa en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos» (desde «Saber si ronco», no); el texto dice que se repite tras otros 2 min
 // v22.2: // v22.2: «estás roncando» se dice una vez; solo vuelve tras otros 2 min seguros roncando (antes, cada 30 s); «Reducir ronquidos» pasa a «Aviso de ronquidos» y su botón enciende el aviso si estaba apagado
@@ -4558,8 +4563,25 @@ function stopNoise() {
   fadeTo(0, 1500, () => { noise.au.pause(); renderNoise(); });
   renderNoise();
 }
+// ⏰ La próxima alarma o siesta activada (ms), o 0 si no hay
+function proxAlarma() {
+  try {
+    const ts = ALS.list.filter(a => a.on).map(a => proxima(a.hora));
+    if (ALS.siesta.fin > Date.now()) ts.push(ALS.siesta.fin);
+    return ts.length ? Math.min(...ts) : 0;
+  } catch { return 0; }
+}
 function setTimer() {
-  clearTimeout(noise.endT); noise.endAt = 0;
+  clearTimeout(noise.endT); noise.endAt = 0; noise.alAl = false;
+  if ($('tmr').value === 'al') { // se va apagando el último minuto y calla justo cuando suena la alarma
+    const t = proxAlarma();
+    if (t && playing()) {
+      noise.endAt = t; noise.alAl = true;
+      const fade = Math.min(60e3, Math.max(1000, t - Date.now()));
+      noise.endT = setTimeout(() => fadeTo(0, fade, () => { noise.au.pause(); noise.endAt = 0; renderNoise(); }), Math.max(0, t - Date.now() - fade));
+    } else if (!t) toast('⏰ No tienes ninguna alarma activada: el sonido sigue toda la noche');
+    renderNoise(); return;
+  }
   const min = +$('tmr').value;
   if (min && playing()) {
     noise.endAt = Date.now() + min * 60e3;
@@ -4572,7 +4594,7 @@ function renderNoise() {
   $('playBtn').classList.toggle('on', playing());
   $('vol').value = noise.vol;
   $('volTxt').textContent = noise.vol + '%' + (noise.vol > 60 ? ' · ⚠️ alto para toda la noche' : '');
-  $('ntxt').textContent = playing() ? (noise.endAt ? `Sonando · se apagará hacia las ${hhmm(noise.endAt)}` : 'Sonando toda la noche · que descanses 🌙') : '';
+  $('ntxt').textContent = playing() ? (noise.endAt ? (noise.alAl ? `Sonando · se apagará al sonar la alarma (${hhmm(noise.endAt)})` : `Sonando · se apagará hacia las ${hhmm(noise.endAt)}`) : 'Sonando toda la noche · que descanses 🌙') : '';
 }
 $('maskBack').onclick = () => show('menu');
 $('goMask').onclick = () => { show('mask'); renderSounds(); renderNoise(); };
@@ -5691,6 +5713,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v22.6', '27 oct 2026', ['«ℹ️ Cómo funciona» arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje', 'Dormir con quien ronca: el sonido puede apagarse al sonar la alarma']],
   ['v22.5', '27 oct 2026', ['Aviso de ronquidos: «Cómo funciona» debajo del botón, y el deslizador «Avisos por: Auricular | Altavoz» siempre a la vista', '«¿Quieres un mensaje en la noche?»']],
   ['v22.4', '27 oct 2026', ['Aviso de ronquidos: el botón azul vuelve a decir «Activado»', 'La web se ve igual que la app Android (aviso, mensaje y reto de la alarma)']],
   ['v22.3', '27 oct 2026', ['🎧 El botón azul se llama «Avisos por altavoz o por auricular»', '🎧 Sin interruptor: el aviso «estás roncando» funciona en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos»']],
