@@ -617,7 +617,8 @@ details.hist[open] summary{margin-bottom:10px}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:10px;padding:3px 8px;font-size:11px;line-height:1.15;position:absolute;right:0;top:50%;transform:translateY(-50%)} /* estrecho, a la derecha de la hora */
 .clockfila{position:relative;width:100%}
-.alhora{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#FCD34D;background:#1F2937;border:1px solid #CA8A04;border-radius:10px;padding:4px 9px;cursor:pointer}
+.alhora{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#FCD34D;background:#1F2937;border:1px solid #CA8A04;border-radius:10px;padding:4px 9px;cursor:pointer;line-height:1.15;text-align:center}
+.alhora small{display:block;font-size:11px;font-weight:600;color:#FDE68A;opacity:.85;white-space:nowrap} /* cuánto falta para que suene (v26.3) */
 #pAl [data-mas]{display:none} /* «Tono y reto» está en Alarmas: aquí, solo activar y cambiar la hora */ /* ⏰ hora de la alarma */
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
 .audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
@@ -1529,7 +1530,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.2'; // v26.2: aviso «estás roncando»: solo cuenta el ronquido de los últimos 20 s (2+ segundos seguros), no la grabación entera por 1 segundo suelto
+const VERSION = 'v26.3'; // v26.3: monitoreo: debajo de la hora de la alarma, en el mismo recuadro, cuánto falta («falta 7:30»); el botón de los pinganillos no hace nada de noche (sinBotonAuric)
+// v26.2: // v26.2: aviso «estás roncando»: solo cuenta el ronquido de los últimos 20 s (2+ segundos seguros), no la grabación entera por 1 segundo suelto
 // v26.1: // v26.1: gráfico de grabaciones: debajo de cada grabación, su propia onda (la del reproductor), no el bloque gris de 1 minuto
 // v26.0: // v26.0: gráfico de grabaciones: las horas de abajo caen en su minuto exacto (antes, hasta 59 s corridas, y no cuadraban con el reproductor)
 // v25.9: icono nuevo de pantalla completa (esquinas con flechas, blanco sobre fondo translúcido), según el dibujo de Gustavo
@@ -2549,10 +2551,15 @@ async function startListening() {
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
   await keepAwake();
   wake();
-  renderLiveSens();
+  renderLiveSens(); sinBotonAuric();
   live.timer = setInterval(() => {
     $('clock').textContent = hhmm(Date.now());
-    { const act = ALS.list.filter(a => a.on).map(a => a.hora).sort(), t = act.length ? '⏰ ' + act[0] : '⏰'; if ($('alHora').textContent !== t) $('alHora').textContent = t; } // la hora de la alarma, a la izquierda (tocarla: el desplegable)
+    { // la próxima alarma, a la izquierda, y debajo cuánto falta («falta 7:30») (v26.3) (tocarla: el desplegable)
+      const sig = ALS.list.filter(a => a.on).map(a => ({h: a.hora, t: proxima(a.hora)})).sort((a, b) => a.t - b.t)[0];
+      const m = sig ? Math.max(0, Math.ceil((sig.t - Date.now()) / 60e3)) : 0;
+      const f = !sig ? '' : `falta ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; // horas:minutos («falta 7:30»)
+      const t = sig ? `⏰ ${sig.h}<small>${f}</small>` : '⏰';
+      if ($('alHora').innerHTML !== t) $('alHora').innerHTML = t; }
     $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
@@ -3167,7 +3174,14 @@ function renderCunas() {
     (x.guia ? gbox : box).append(b);
   }
 }
+// 🎧 El botón (o el toque) de los pinganillos no hace nada de noche: al cambiártelos de oreja o darte la vuelta,
+// no se para ni el monitoreo ni la música ni el ruido (v26.3)
+function sinBotonAuric() {
+  if (!('mediaSession' in navigator)) return;
+  for (const a of ['play', 'pause', 'stop', 'nexttrack', 'previoustrack', 'seekbackward', 'seekforward']) try { navigator.mediaSession.setActionHandler(a, () => {}); } catch {}
+}
 function playCuna(c) {
+  sinBotonAuric();
   const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
   au.play().catch(() => {});
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
@@ -3221,7 +3235,7 @@ function musPara(suave) {
 }
 function musToca(c) {
   if (MUS.c?.id === c.id) { musPara(true); return; } // otro toque a la que suena: se para
-  musPara(false); stopCunaPrev();
+  musPara(false); stopCunaPrev(); sinBotonAuric();
   const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
   au.play().catch(() => {});
   AND?.ruido(true); // en la app Android: sigue sonando con la pantalla apagada (servicio de reproducción)
@@ -4831,8 +4845,7 @@ async function startNoise(swap) {
   if ('mediaSession' in navigator) {
     const x = SOUNDS.find(s => s.id === noise.id);
     navigator.mediaSession.metadata = new MediaMetadata({title: 'Ruido ' + x.n.toLowerCase(), artist: 'Amable Sleep'});
-    navigator.mediaSession.setActionHandler('pause', stopNoise);
-    navigator.mediaSession.setActionHandler('play', () => startNoise());
+    sinBotonAuric(); // (antes, el botón de los pinganillos paraba el ruido)
   }
 }
 function stopNoise() {
@@ -6021,6 +6034,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.3', '28 oct 2026', ['⏰ Al monitorear, debajo de la hora de la alarma ves cuánto falta para que suene (horas:minutos)', '🎧 Tocar los pinganillos (al cambiártelos de oreja) ya no para la música, el ruido ni el monitoreo']],
   ['v26.2', '28 oct 2026', ['🎧 El aviso «estás roncando» ya no salta por un ruido suelto: solo si roncas de verdad en ese momento']],
   ['v26.1', '28 oct 2026', ['Gráfico de grabaciones: debajo de cada grabación se ve su propia onda, igual que en el reproductor']],
   ['v26.0', '28 oct 2026', ['Gráfico de grabaciones: las horas de abajo ya cuadran con la hora de cada grabación']],
