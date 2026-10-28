@@ -745,7 +745,7 @@ canvas{width:100%;height:90px;display:block}
 .grwrap{position:relative}
 .grande{position:fixed!important;inset:0;z-index:950;margin:0!important;border-radius:0!important;border:0!important;overflow:auto;background:var(--bg,#0B1020)!important;padding:8px 10px!important}
 .grande .btnGrande{position:fixed;top:8px;right:10px;bottom:auto;font-size:18px}
-#tlCard.grande #tl{height:calc(100vh - 96px)}
+#tlCard.grande #tl{height:calc(100vh - 96px - var(--plh, 0px))} /* el reproductor de abajo no tapa las horas */
 #tlCard.grande .legend{margin-top:4px}
 #tlCard.grande .tlruidos,#calmaCard.grande > :not(.calmatit):not(.grwrap){display:none!important}
 #calmaCard.grande .calma{width:100%;margin:6px 0 0}
@@ -1529,7 +1529,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.9'; // v25.9: icono nuevo de pantalla completa (esquinas con flechas, blanco sobre fondo translúcido), según el dibujo de Gustavo
+const VERSION = 'v26.0'; // v26.0: gráfico de grabaciones: las horas de abajo caen en su minuto exacto (antes, hasta 59 s corridas, y no cuadraban con el reproductor)
+// v25.9: icono nuevo de pantalla completa (esquinas con flechas, blanco sobre fondo translúcido), según el dibujo de Gustavo
 // v25.8: app 4.6: ⤢ pone el gráfico en horizontal sola y sin barras del sistema
 // v25.7: en el gráfico de grabaciones, los avisos «estás roncando» son una raya rosa en la mitad del alto, sin punto
 // v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
@@ -3885,12 +3886,17 @@ function grande(card, on) {
     else if (document.fullscreenElement) { try { screen.orientation?.unlock?.(); } catch {} document.exitFullscreen().catch(() => {}); }
   } catch {}
   if (on && typeof AND?.horizontal !== 'function') setTimeout(() => { if (innerHeight > innerWidth) toast('📱 Gira el móvil para verlo más grande'); }, 900);
-  const redibuja = () => { if (card.id === 'calmaCard' && card._args) pintaCalma(...card._args); else if (card.id === 'tlCard' && !$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } };
+  const redibuja = () => {
+    const pl = $('pl'); card.style.setProperty('--plh', pl && !pl.hidden && pl.offsetHeight ? pl.offsetHeight + 'px' : '0px');
+    if (card.id === 'calmaCard' && card._args) pintaCalma(...card._args); else if (card.id === 'tlCard' && !$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } };
   requestAnimationFrame(redibuja); setTimeout(redibuja, 500);
   if (!on) card.scrollIntoView({block: 'start'});
 }
 document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) document.querySelectorAll('.grande').forEach(c => grande(c, false)); });
-addEventListener('resize', () => { const c = $('calmaCard'); if (c.classList.contains('grande') && c._args) pintaCalma(...c._args); });
+addEventListener('resize', () => {
+  const c = $('calmaCard'); if (c.classList.contains('grande') && c._args) pintaCalma(...c._args);
+  const t = $('tlCard'); if (t.classList.contains('grande')) { const pl = $('pl'); t.style.setProperty('--plh', pl && !pl.hidden && pl.offsetHeight ? pl.offsetHeight + 'px' : '0px'); }
+});
 $('tlGrande').onclick = ev => {
   ev.stopPropagation(); const c = $('tlCard');
   if (!c.classList.contains('abierta')) { c.classList.add('abierta'); $('tlTri').classList.add('up'); }
@@ -4150,9 +4156,12 @@ function drawTimeline(total) {
   }
   g.fillStyle = '#64748B'; g.font = `${11 * dpr}px system-ui`; g.textBaseline = 'bottom';
   const step = [60, 120, 300, 600, 900, 1800, 3600, 7200].find(st => TLV.span / st <= 6) || 7200;
-  for (let t = Math.ceil(TLV.start / step) * step; t <= TLV.start + TLV.span; t += step) {
+  // Las horas, en su minuto exacto del reloj (antes se contaban desde el inicio y podían salir hasta 59 s corridas) (v26.0)
+  let s0 = 0; if (cur.fuente === 'micro') { const d0 = new Date(cur.inicio); s0 = d0.getHours() * 3600 + d0.getMinutes() * 60 + d0.getSeconds() + d0.getMilliseconds() / 1000; }
+  for (let t = Math.ceil((TLV.start + s0) / step) * step - s0; t <= TLV.start + TLV.span; t += step) {
     const x = X(t); if (x > W - 30 * dpr) break;
-    g.fillText(cur.fuente === 'micro' ? hhmm(cur.inicio + t * 1000) : dur(t), x, H);
+    g.fillText(cur.fuente === 'micro' ? hhmm(cur.inicio + Math.round(t) * 1000 + 500) : dur(t), x, H);
+    if (cur.fuente === 'micro') { g.fillStyle = '#64748B55'; g.fillRect(x, base, Math.max(1, dpr), 4 * dpr); g.fillStyle = '#64748B'; } // rayita: dónde cae la hora
   }
   if (TLV.span < curTotal - 1) { // barrita: qué parte de la noche se ve
     g.fillStyle = '#1F2937'; g.fillRect(0, H - 2 * dpr, W, 2 * dpr);
@@ -5976,6 +5985,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.0', '28 oct 2026', ['Gráfico de grabaciones: las horas de abajo ya cuadran con la hora de cada grabación']],
   ['v25.9', '28 oct 2026', ['Icono nuevo de pantalla completa: esquinas con flechas, en blanco']],
   ['v25.8', '28 oct 2026', ['📱 App 4.6: el botón ⤢ gira la pantalla sola y el gráfico ocupa toda la pantalla']],
   ['v25.7', '28 oct 2026', ['Gráfico de grabaciones: cada aviso «estás roncando» es una raya rosa en la mitad, sin el punto de abajo']],
