@@ -1529,7 +1529,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.1'; // v26.1: gráfico de grabaciones: debajo de cada grabación, su propia onda (la del reproductor), no el bloque gris de 1 minuto
+const VERSION = 'v26.2'; // v26.2: aviso «estás roncando»: solo cuenta el ronquido de los últimos 20 s (2+ segundos seguros), no la grabación entera por 1 segundo suelto
+// v26.1: // v26.1: gráfico de grabaciones: debajo de cada grabación, su propia onda (la del reproductor), no el bloque gris de 1 minuto
 // v26.0: // v26.0: gráfico de grabaciones: las horas de abajo caen en su minuto exacto (antes, hasta 59 s corridas, y no cuadraban con el reproductor)
 // v25.9: icono nuevo de pantalla completa (esquinas con flechas, blanco sobre fondo translúcido), según el dibujo de Gustavo
 // v25.8: app 4.6: ⤢ pone el gráfico en horizontal sola y sin barras del sistema
@@ -1879,7 +1880,12 @@ function avisoTick(det, dt) {
   if (!VOZ_OK || !avisarNoche || !live.night) return;
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
   const e = det.ev;
-  const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR) && decide(e.sn, e.vo, e.br) === 'ronquido' && Math.max(...e.sn) >= AVISO_SEGURO
+  // Solo cuenta lo que suena AHORA: en los últimos 20 segundos, 2 o más segundos de ronquido seguro (al roncar se repite
+  // con cada respiración). Antes bastaba 1 segundo seguro en toda la grabación y contaba la grabación entera,
+  // aunque el resto fuera silencio: así se colaban avisos sin roncar (v26.2)
+  const ult = a => a.slice(-20);
+  const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR)
+    && ult(e.sn).filter(v => v >= AVISO_SEGURO).length >= 2 && decide(ult(e.sn), ult(e.vo), ult(e.br)) === 'ronquido'
     && ((sesion?.admin ? APR.decide(huellaMedia(e))?.tipo : null) ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa (administrador)
   if (ronca) { A.ronc += dt; A.sil = 0; }
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
@@ -6015,6 +6021,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.2', '28 oct 2026', ['🎧 El aviso «estás roncando» ya no salta por un ruido suelto: solo si roncas de verdad en ese momento']],
   ['v26.1', '28 oct 2026', ['Gráfico de grabaciones: debajo de cada grabación se ve su propia onda, igual que en el reproductor']],
   ['v26.0', '28 oct 2026', ['Gráfico de grabaciones: las horas de abajo ya cuadran con la hora de cada grabación']],
   ['v25.9', '28 oct 2026', ['Icono nuevo de pantalla completa: esquinas con flechas, en blanco']],
