@@ -1274,7 +1274,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa">⤢</button></div>
-    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
+    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1528,7 +1528,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.6'; // v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
+const VERSION = 'v25.7'; // v25.7: en el gráfico de grabaciones, los avisos «estás roncando» son una raya rosa en la mitad del alto, sin punto
+// v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
 // v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
 // v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
 // v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
@@ -4125,10 +4126,10 @@ function drawTimeline(total) {
   g.fillStyle = '#34D399';
   for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x, top, Math.max(1.5 * dpr, 1), base - top); }
   g.fillStyle = '#F472B6';
-  for (const t of cur.avisoT || []) {
+  for (const t of cur.avisoT || []) { // una raya rosa en la mitad del alto (sin punto): no se confunde con los movimientos (v25.7)
     const x = X(t); if (x < -4 * dpr || x > W) continue;
-    g.fillRect(x - dpr, top, 2 * dpr, base - top);
-    g.beginPath(); g.arc(x, base - 4 * dpr, 4 * dpr, 0, 7); g.fill();
+    const alto = base - top;
+    g.fillRect(x - dpr, top + alto * .25, 2.5 * dpr, alto * .5);
   }
   $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
   $('lgFila').hidden = $('lgMov').hidden && $('lgAv').hidden;
@@ -5968,6 +5969,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.7', '28 oct 2026', ['Gráfico de grabaciones: cada aviso «estás roncando» es una raya rosa en la mitad, sin el punto de abajo']],
   ['v25.6', '28 oct 2026', ['⤢ Pantalla completa en el gráfico de grabaciones y en el de fases del sueño (el botón de abajo a la derecha)', 'Los avisos que salen un momento se cierran al tocarlos (y el del 🚶, también tocándolo otra vez)']],
   ['v25.5', '28 oct 2026', ['Fases del sueño arregladas: darte la vuelta (por ejemplo tras el aviso «cambia de posición») ya no cuenta como estar despierto el resto de la noche; también en las noches pasadas']],
   ['v25.4', '28 oct 2026', ['Fases del sueño más anchas: los nombres van encima de los bloques', '🚶 En las fases, donde te levantaste: tócalo y te dice la hora']],
