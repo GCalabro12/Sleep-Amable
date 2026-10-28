@@ -1515,7 +1515,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.4'; // v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
+const VERSION = 'v25.5'; // v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
+// v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
 // v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
 // v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
 // v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
@@ -3468,17 +3469,20 @@ function curvaCalma(n, evs) {
   const v = suave(suave(bruto)); // suavizada (dos pasadas) para que se lea como una curva
   // Se durmió: el primer momento con 15 minutos seguidos de calma; se despertó: el último.
   // Si hay movimientos medidos, solo cuentan ellos: un coche, un ronquido o una voz no te despiertan en el gráfico (v24.3)
-  const vm = suave(suave(mv.map(m => Math.min(1, m * 3 / 6)))), base = (n.mov || []).length ? vm : v;
+  // Dormido = como mucho 2 movimientos en 5 min: darse la vuelta (p. ej. tras el aviso «cambia de posición») no es despertarse (v25.5;
+  // antes bastaba un movimiento cada pocos minutos para que todo lo de después contara como «despierto»)
+  const calma = (n.mov || []).length ? b => mv[b] <= 2 : b => v[b] < .25;
   let dormido = null, despierto = null;
-  for (let b = 0; b + 2 < B; b++) if (base[b] < .25 && base[b + 1] < .25 && base[b + 2] < .25) { dormido = b; break; }
-  for (let b = B - 1; b >= 2; b--) if (base[b] < .25 && base[b - 1] < .25 && base[b - 2] < .25) { despierto = b + 1; break; }
+  for (let b = 0; b + 2 < B; b++) if (calma(b) && calma(b + 1) && calma(b + 2)) { dormido = b; break; }
+  for (let b = B - 1; b >= 2; b--) if (calma(b) && calma(b - 1) && calma(b - 2)) { despierto = b + 1; break; }
   const tranq = v.filter(x => x < .25).length * 5, inq = (B - v.filter(x => x < .25).length) * 5;
   // En bloques (como en los estudios que comparan movimiento con laboratorio): poco movimiento = profundo, algo = ligero;
   // despierto solo si te mueves mucho (5 o más movimientos en 5 min; en el laboratorio, despierto ≈ 11 y REM ≈ 2,6), pulsas «Me levanté»,
   // o antes de dormirte y después de despertar. Los sonidos (voces, ruidos, ronquidos) no: se puede hablar en sueños
   const hab = new Array(B).fill(false);
   for (const t of n.levantadas || []) { const b = Math.floor(t / 300); if (b >= 0 && b < B) hab[b] = true; }
-  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] >= 5 || hab[b] ? 3 : x >= .25 ? 1 : 0);
+  const v1 = suave(bruto); // (una sola pasada: una vuelta aislada hace ligero su rato, no también los de alrededor)
+  const niv = v.map((x, b) => (dormido != null && b < dormido) || (despierto != null && b >= despierto) || mv[b] >= 5 || hab[b] ? 3 : mv[b] >= 1 || v1[b] >= .3 ? 1 : 0);
   // REM: suele llegar justo después de un profundo largo. Si a 20 min o más de profundo les siguen 20 min o más de ligero,
   // la primera mitad de ese ligero (tras 5 min) se marca como REM
   for (let b = 0; b < B;) {
@@ -5919,6 +5923,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.5', '28 oct 2026', ['Fases del sueño arregladas: darte la vuelta (por ejemplo tras el aviso «cambia de posición») ya no cuenta como estar despierto el resto de la noche; también en las noches pasadas']],
   ['v25.4', '28 oct 2026', ['Fases del sueño más anchas: los nombres van encima de los bloques', '🚶 En las fases, donde te levantaste: tócalo y te dice la hora']],
   ['v25.3', '27 oct 2026', ['🎧 «Dinero en calma» también en la música al empezar a monitorear']],
   ['v25.2', '27 oct 2026', ['🔆 Arreglado: después de monitorear, la pantalla se quedaba oscura en la app', '🎧 Las relajaciones guiadas, en su propia tarjeta arriba del todo']],
