@@ -485,7 +485,10 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .calma .lin{fill:none;stroke:#C4B5FD;stroke-width:2;stroke-linejoin:round}
 .calma .lim{stroke:#A78BFA;stroke-opacity:.75;stroke-width:1.3;stroke-dasharray:3 3} /* separa los ciclos */
 .calma text{fill:#64748B;font-size:11px}
-.calma .et{fill:#94A3B8;font-size:10.5px}
+.calma .et{fill:#E2E8F0;font-size:10.5px;font-weight:600;paint-order:stroke;stroke:#0F172A;stroke-width:3px;stroke-linejoin:round;pointer-events:none} /* encima de los bloques, legible */
+.calma .lev{cursor:pointer}
+.calma .lev text{font-size:14px;fill:#fff}
+#calmaCard .calma{width:calc(100% + 24px);margin:8px -12px 0} /* casi de borde a borde de la tarjeta */
 .calma .cic{fill:#C4B5FD;font-size:12px;font-weight:700}
 .calma .ini{fill:#C4B5FD;font-weight:700}
 .calmadatos{display:flex;gap:8px;margin-top:6px}
@@ -1512,7 +1515,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.3'; // v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
+const VERSION = 'v25.4'; // v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
+// v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
 // v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
 // v25.1: 🎧 relajaciones guiadas en «Música para dormir»: la primera, «Dinero en calma» (voz de Gustavo + «Mar en calma»)
 // v25.0: en «Detector actualizado», las respiraciones con 💨 (gris), como en las etiquetas
@@ -3499,7 +3503,8 @@ function pintaCalma(n, evs) {
   }
   box.hidden = !c || n.fuente !== 'micro' || !pidio; if (box.hidden) return;
   // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
-  const W = 320, H = 154, pl = 58, pr = 6, pt = 16, fila = 24, w = W - pl - pr, hB = fila * 4;
+  // Lo más ancho posible: los nombres de las filas van encima de los bloques, no a su izquierda (v25.4)
+  const W = 320, H = 154, pl = 2, pr = 2, pt = 16, fila = 24, w = W - pl - pr, hB = fila * 4;
   const x = b => pl + w * b / c.B;
   const COL = ['#6366F1', '#A78BFA', '#22D3EE', '#FB923C'], FIL = ['Profundo', 'Ligero', 'REM', 'Despierto'];
   const yF = k => pt + (3 - k) * fila; // fila del nivel k (despierto arriba, REM, ligero, profundo abajo)
@@ -3518,6 +3523,11 @@ function pintaCalma(n, evs) {
       + (x(b2) - x(b) > 14 ? `<text x="${((x(b) + x(b2)) / 2).toFixed(1)}" y="${pt - 5}" text-anchor="middle" class="cic">${k + 1}</text>` : ''));
   }
   const nCiclos = Math.round((c.B - c0) / 18 * 10) / 10;
+  // 🚶 Cada vez que te levantaste («Me levanté» o luz + movimiento), en su sitio de la fila «Despierto»; al tocarlo dice la hora
+  const levs = (n.levantadas || []).map((t, i) => {
+    const xs = pl + w * Math.min(1, Math.max(0, t / 60 / (c.B * 5)));
+    return `<g class="lev" data-lev="${i}"><rect x="${(xs - 10).toFixed(1)}" y="${pt - 2}" width="20" height="${fila + 4}" fill="transparent"/><text x="${xs.toFixed(1)}" y="${yF(3) + fila / 2 + 5}" text-anchor="middle">🚶</text></g>`;
+  });
   // marcas de hora cada 1 o 2 horas
   const marcas = []; const paso = c.B * 5 > 420 ? 120 : 60;
   const d0 = new Date(c.ini); const primera = Math.ceil((d0.getHours() * 60 + d0.getMinutes()) / paso) * paso - (d0.getHours() * 60 + d0.getMinutes());
@@ -3538,14 +3548,19 @@ function pintaCalma(n, evs) {
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos: cuanto más quieto, más profundo. El móvil sobre el colchón nota con su acelerómetro cada vez que el colchón se mueve (en la mesilla, con el 📡 sonar).<br><br><b>Despierto</b> solo sale cuando te mueves mucho (5 o más movimientos en 5 minutos, como dar vueltas o levantarte), al pulsar «Me levanté», antes de dormirte y después de despertarte. Los sonidos (un coche, un ronquido, hablar en sueños) no cuentan como despierto: como mucho, hacen el sueño más ligero. Por eso «despierto» quiere decir despierto o muy inquieto.<br><br> El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
-      ${[3, 2, 1, 0].map(k => `<text x="0" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
       ${bloques.join('')}
+      ${[3, 2, 1, 0].map(k => `<text x="4" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
+      ${levs.join('')}
       ${marcas.join('')}
     </svg>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos · cada franja numerada es un ciclo</div>
     <div class="calmadatos tresdat cuatro"><span class="fp">Profundo<b>${hm3(min(0))} · ${pc(0)} %</b><small>normal: 10-20 %</small></span><span class="fr">REM<b>${hm3(min(2))} · ${pc(2)} %</b><small>normal: 10-25 %</small></span><span class="fl">Ligero<b>${hm3(min(1))} · ${pc(1)} %</b><small>normal: 45-55 %</small></span><span class="fd">Despierto<b>${hm3(min(3))} · ${pc(3)} %</b><small>normal: 5-20 %</small></span></div>
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
+  box.querySelectorAll('.calma .lev').forEach(g => g.onclick = ev => {
+    ev.stopPropagation(); const i = +g.dataset.lev;
+    toast(`🚶 Te levantaste (${i + 1}) · ${hhmm(n.inicio + n.levantadas[i] * 1000)}`);
+  });
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
   $('calmaInfo').onclick = ev => { ev.stopPropagation(); box.classList.add('abierta'); box.querySelector('.tri').classList.add('up'); const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
   // plegada: se ve el título y el % de profundo; al tocarla se abre (y se cierra)
@@ -5904,6 +5919,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.4', '28 oct 2026', ['Fases del sueño más anchas: los nombres van encima de los bloques', '🚶 En las fases, donde te levantaste: tócalo y te dice la hora']],
   ['v25.3', '27 oct 2026', ['🎧 «Dinero en calma» también en la música al empezar a monitorear']],
   ['v25.2', '27 oct 2026', ['🔆 Arreglado: después de monitorear, la pantalla se quedaba oscura en la app', '🎧 Las relajaciones guiadas, en su propia tarjeta arriba del todo']],
   ['v25.1', '27 oct 2026', ['🎧 Relajaciones guiadas para dormir, en «Música para dormir»: la primera es «Dinero en calma»']],
