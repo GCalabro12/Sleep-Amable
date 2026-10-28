@@ -424,7 +424,8 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
-#toast{pointer-events:none} /* solo informa: los toques pasan a lo que hay debajo */
+#toast{pointer-events:none;z-index:1000} /* oculto, los toques pasan a lo que hay debajo */
+#toast:not(.fuera){pointer-events:auto;cursor:pointer} /* a la vista: tocarlo lo cierra (v25.6) */
 body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el reproductor abierto, a mitad de pantalla: no tapa ¿Acierta? ni ▶ */
 #napScr{position:fixed;inset:0;z-index:35;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 #napScr .nclock{font-size:72px;font-weight:200;color:#CBD5E1;font-variant-numeric:tabular-nums}
@@ -738,6 +739,18 @@ canvas{width:100%;height:90px;display:block}
 #night.ruidos #tlTit{cursor:default}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
+/* ⤢ Pantalla completa (como en YouTube) para el gráfico de grabaciones y el de fases del sueño */
+.btnGrande{position:absolute;right:4px;bottom:4px;z-index:3;width:34px;height:34px;border-radius:10px;border:1px solid #475569;background:#0F172Acc;color:#E0E7FF;font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.grwrap{position:relative}
+.grande{position:fixed!important;inset:0;z-index:950;margin:0!important;border-radius:0!important;border:0!important;overflow:auto;background:var(--bg,#0B1020)!important;padding:8px 10px!important}
+.grande .btnGrande{position:fixed;top:8px;right:10px;bottom:auto;font-size:18px}
+#tlCard.grande #tl{height:calc(100vh - 96px)}
+#tlCard.grande .legend{margin-top:4px}
+#tlCard.grande .tlruidos,#calmaCard.grande > :not(.calmatit):not(.grwrap){display:none!important}
+#calmaCard.grande .calma{width:100%;margin:6px 0 0}
+#calmaCard.grande .calmatit,#tlCard.grande .tltit{padding-right:44px}
+#calmaCard.plg:not(.abierta) .btnGrande,#tlCard:not(.abierta) .btnGrande{display:none}
+html.hayGrande #pl{z-index:960}
 @media (orientation:landscape) and (max-height:600px){#tl{height:52vh}.tlcard{box-shadow:none}.wrap:has(#night:not([hidden])){max-width:none}} /* en horizontal, la noche usa todo el ancho */
 #tlHead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#F8FAFC;box-shadow:0 0 6px #F8FAFC;pointer-events:none}
 .ncal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 10px 8px;margin:8px 0 12px}
@@ -1260,7 +1273,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
-    <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div></div>
+    <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa">⤢</button></div>
     <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;border-radius:50%"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
@@ -1515,7 +1528,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.5'; // v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
+const VERSION = 'v25.6'; // v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
+// v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
 // v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
 // v25.3: las relajaciones guiadas también en «Elige para esta noche» (la música al empezar a monitorear)
 // v25.2: arreglado: al acabar el monitoreo, la pantalla podía quedarse oscura (brillo al mínimo) en la app
@@ -3508,7 +3522,10 @@ function pintaCalma(n, evs) {
   box.hidden = !c || n.fuente !== 'micro' || !pidio; if (box.hidden) return;
   // 🧱 Hipnograma: una fila por nivel (despierto arriba, profundo abajo), bloques de 5 min juntados; detrás, franjas con los ciclos de ~90 min
   // Lo más ancho posible: los nombres de las filas van encima de los bloques, no a su izquierda (v25.4)
-  const W = 320, H = 154, pl = 2, pr = 2, pt = 16, fila = 24, w = W - pl - pr, hB = fila * 4;
+  // ⤢ En pantalla completa, el dibujo es más ancho para llenar la pantalla (v25.6)
+  box._args = [n, evs]; const G = box.classList.contains('grande');
+  const H = 154, W = G ? Math.max(320, Math.round(H * innerWidth / Math.max(150, innerHeight - 64))) : 320;
+  const pl = 2, pr = 2, pt = 16, fila = 24, w = W - pl - pr, hB = fila * 4;
   const x = b => pl + w * b / c.B;
   const COL = ['#6366F1', '#A78BFA', '#22D3EE', '#FB923C'], FIL = ['Profundo', 'Ligero', 'REM', 'Despierto'];
   const yF = k => pt + (3 - k) * fila; // fila del nivel k (despierto arriba, REM, ligero, profundo abajo)
@@ -3550,26 +3567,28 @@ function pintaCalma(n, evs) {
     : '👍 <b>Despertaste en sueño ligero</b>';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span class="unalinea" style="flex:1;min-width:0"><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button><span class="pldato">Profundo ${pc(0)} %</span><i class="tri"></i></div>
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos: cuanto más quieto, más profundo. El móvil sobre el colchón nota con su acelerómetro cada vez que el colchón se mueve (en la mesilla, con el 📡 sonar).<br><br><b>Despierto</b> solo sale cuando te mueves mucho (5 o más movimientos en 5 minutos, como dar vueltas o levantarte), al pulsar «Me levanté», antes de dormirte y después de despertarte. Los sonidos (un coche, un ronquido, hablar en sueños) no cuentan como despierto: como mucho, hacen el sueño más ligero. Por eso «despierto» quiere decir despierto o muy inquieto.<br><br> El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
+    <div class="grwrap"><button type="button" class="btnGrande" id="calmaGrande" aria-label="${G ? 'Salir de pantalla completa' : 'Pantalla completa'}">${G ? '✕' : '⤢'}</button>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
       ${bloques.join('')}
       ${[3, 2, 1, 0].map(k => `<text x="4" y="${yF(k) + fila / 2 + 4}" class="et">${FIL[k]}</text>`).join('')}
       ${levs.join('')}
       ${marcas.join('')}
-    </svg>
+    </svg></div>
     <div class="stnote" style="margin-top:2px">🔄 ${String(nCiclos).replace('.', ',')} ciclos de unos 90 minutos · cada franja numerada es un ciclo</div>
     <div class="calmadatos tresdat cuatro"><span class="fp">Profundo<b>${hm3(min(0))} · ${pc(0)} %</b><small>normal: 10-20 %</small></span><span class="fr">REM<b>${hm3(min(2))} · ${pc(2)} %</b><small>normal: 10-25 %</small></span><span class="fl">Ligero<b>${hm3(min(1))} · ${pc(1)} %</b><small>normal: 45-55 %</small></span><span class="fd">Despierto<b>${hm3(min(3))} · ${pc(3)} %</b><small>normal: 5-20 %</small></span></div>
     <div class="stnote" style="margin-top:8px">Dormiste: <b>${hhmm(n.inicio)}</b> · Despertaste: <b>${hhmm(n.fin)}</b></div>
     <div class="stnote" style="margin-top:6px">${despTxt}</div>`;
   box.querySelectorAll('.calma .lev').forEach(g => g.onclick = ev => {
-    ev.stopPropagation(); const i = +g.dataset.lev;
-    toast(`🚶 Te levantaste (${i + 1}) · ${hhmm(n.inicio + n.levantadas[i] * 1000)}`);
+    ev.stopPropagation(); const i = +g.dataset.lev, txt = `🚶 Te levantaste (${i + 1}) · ${hhmm(n.inicio + n.levantadas[i] * 1000)}`;
+    if (!$('toast').classList.contains('fuera') && $('toast').textContent === txt) toastFuera(); else toast(txt); // otro toque lo cierra
   });
   // ⓘ la explicación, al tocar la i (desde el empezar del monitoreo hasta el fin)
   $('calmaInfo').onclick = ev => { ev.stopPropagation(); box.classList.add('abierta'); box.querySelector('.tri').classList.add('up'); const b = $('calmaBox'); b.hidden = !b.hidden; $('calmaInfo').classList.toggle('on', !b.hidden); };
   // plegada: se ve el título y el % de profundo; al tocarla se abre (y se cierra)
-  box.classList.add('plg'); box.classList.remove('abierta'); requestAnimationFrame(encajaLeyenda); // títulos en un renglón
-  box.querySelector('.calmatit').onclick = () => { const a = box.classList.toggle('abierta'); box.querySelector('.tri').classList.toggle('up', a); requestAnimationFrame(encajaLeyenda); };
+  box.classList.add('plg'); box.classList.toggle('abierta', G); requestAnimationFrame(encajaLeyenda); // títulos en un renglón
+  $('calmaGrande').onclick = ev => { ev.stopPropagation(); grande(box, !box.classList.contains('grande')); };
+  box.querySelector('.calmatit').onclick = () => { if (box.classList.contains('grande')) return; const a = box.classList.toggle('abierta'); box.querySelector('.tri').classList.toggle('up', a); requestAnimationFrame(encajaLeyenda); };
 }
 
 // 📊 Periodo de las estadísticas: últimos 7, 30 o 90 días, o todo lo guardado
@@ -3846,8 +3865,31 @@ function verRuidos(on) {
   requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); }); // (si estaba plegado, el gráfico se dibuja ahora)
 }
 // 🎙️ Registro de grabaciones: en el resumen de la noche va plegado; al tocar el título se abre
+// ⤢ Pantalla completa (como en YouTube): el gráfico llena la pantalla en horizontal; ✕ (o atrás) vuelve
+function grande(card, on) {
+  if (!card) return;
+  card.classList.toggle('grande', on);
+  document.documentElement.classList.toggle('hayGrande', !!document.querySelector('.grande'));
+  const b = card.querySelector('.btnGrande'); if (b) { b.textContent = on ? '✕' : '⤢'; b.setAttribute('aria-label', on ? 'Salir de pantalla completa' : 'Pantalla completa'); }
+  try {
+    if (typeof AND?.horizontal === 'function') AND.horizontal(on); // app Android: gira sola
+    else if (on) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
+    else if (document.fullscreenElement) { try { screen.orientation?.unlock?.(); } catch {} document.exitFullscreen().catch(() => {}); }
+  } catch {}
+  if (on && typeof AND?.horizontal !== 'function') setTimeout(() => { if (innerHeight > innerWidth) toast('📱 Gira el móvil para verlo más grande'); }, 900);
+  const redibuja = () => { if (card.id === 'calmaCard' && card._args) pintaCalma(...card._args); else if (card.id === 'tlCard' && !$('night').hidden) { drawTimeline(timelineTotal()); tlSticky(); } };
+  requestAnimationFrame(redibuja); setTimeout(redibuja, 500);
+  if (!on) card.scrollIntoView({block: 'start'});
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) document.querySelectorAll('.grande').forEach(c => grande(c, false)); });
+addEventListener('resize', () => { const c = $('calmaCard'); if (c.classList.contains('grande') && c._args) pintaCalma(...c._args); });
+$('tlGrande').onclick = ev => {
+  ev.stopPropagation(); const c = $('tlCard');
+  if (!c.classList.contains('abierta')) { c.classList.add('abierta'); $('tlTri').classList.add('up'); }
+  grande(c, !c.classList.contains('grande'));
+};
 $('tlTit').onclick = () => {
-  if ($('night').classList.contains('ruidos')) return;
+  if ($('night').classList.contains('ruidos') || $('tlCard').classList.contains('grande')) return;
   const a = $('tlCard').classList.toggle('abierta'); $('tlTri').classList.toggle('up', a);
   if (a) requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); });
 };
@@ -4845,6 +4887,8 @@ function toast(t) {
   $('toast').textContent = t; $('toast').classList.remove('fuera');
   clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.add('fuera'), 3500);
 }
+const toastFuera = () => { clearTimeout(toastT); $('toast').classList.add('fuera'); };
+$('toast').onclick = toastFuera;
 const tonoTxt = id => { const t = TONOS.find(x => x.id === id) || TONOS[0]; return `${t.icon} ${t.name} ▾`; };
 let tonoPrev = null; // {id, au}
 function pararPrev() { if (tonoPrev) { tonoPrev.au.pause(); tonoPrev.au.src = ''; tonoPrev = null; } }
@@ -5630,6 +5674,7 @@ function show(id, plegar = true) {
   if (id === 'stats') $('misDet').ontoggle = () => requestAnimationFrame(() => document.querySelectorAll('#nights2 .when').forEach(fitLine));
   if (id === 'luna') lunaAbrir();
   requestAnimationFrame(ajustaTitulos);
+  document.querySelectorAll('.grande').forEach(c => grande(c, false)); // al cambiar de pantalla, sale de la pantalla completa
   try { if (AND && typeof AND.girar === 'function') AND.girar(id === 'night'); } catch {} // 📱 solo la noche se gira en horizontal
   window.scrollTo(0, 0);
 }
@@ -5923,6 +5968,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.6', '28 oct 2026', ['⤢ Pantalla completa en el gráfico de grabaciones y en el de fases del sueño (el botón de abajo a la derecha)', 'Los avisos que salen un momento se cierran al tocarlos (y el del 🚶, también tocándolo otra vez)']],
   ['v25.5', '28 oct 2026', ['Fases del sueño arregladas: darte la vuelta (por ejemplo tras el aviso «cambia de posición») ya no cuenta como estar despierto el resto de la noche; también en las noches pasadas']],
   ['v25.4', '28 oct 2026', ['Fases del sueño más anchas: los nombres van encima de los bloques', '🚶 En las fases, donde te levantaste: tócalo y te dice la hora']],
   ['v25.3', '27 oct 2026', ['🎧 «Dinero en calma» también en la música al empezar a monitorear']],
