@@ -1528,7 +1528,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.7'; // v25.7: en el gráfico de grabaciones, los avisos «estás roncando» son una raya rosa en la mitad del alto, sin punto
+const VERSION = 'v25.8'; // v25.8: app 4.6: ⤢ pone el gráfico en horizontal sola y sin barras del sistema
+// v25.7: en el gráfico de grabaciones, los avisos «estás roncando» son una raya rosa en la mitad del alto, sin punto
 // v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
 // v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
 // v25.4: fases del sueño de borde a borde (nombres encima de los bloques) y 🚶 donde te levantaste (al tocarlo, la hora)
@@ -5969,6 +5970,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.8', '28 oct 2026', ['📱 App 4.6: el botón ⤢ gira la pantalla sola y el gráfico ocupa toda la pantalla']],
   ['v25.7', '28 oct 2026', ['Gráfico de grabaciones: cada aviso «estás roncando» es una raya rosa en la mitad, sin el punto de abajo']],
   ['v25.6', '28 oct 2026', ['⤢ Pantalla completa en el gráfico de grabaciones y en el de fases del sueño (el botón de abajo a la derecha)', 'Los avisos que salen un momento se cierran al tocarlos (y el del 🚶, también tocándolo otra vez)']],
   ['v25.5', '28 oct 2026', ['Fases del sueño arregladas: darte la vuelta (por ejemplo tras el aviso «cambia de posición») ya no cuenta como estar despierto el resto de la noche; también en las noches pasadas']],
@@ -6145,7 +6147,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '4.5';
+const APK_ULTIMA = '4.6';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
