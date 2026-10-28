@@ -740,7 +740,8 @@ canvas{width:100%;height:90px;display:block}
 .tlbox{position:relative;cursor:pointer}
 #tl{touch-action:none}
 /* ⤢ Pantalla completa (como en YouTube) para el gráfico de grabaciones y el de fases del sueño */
-.btnGrande{position:absolute;right:4px;bottom:4px;z-index:3;width:34px;height:34px;border-radius:10px;border:1px solid #475569;background:#0F172Acc;color:#E0E7FF;font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.btnGrande{position:absolute;right:4px;bottom:4px;z-index:3;width:36px;height:36px;border-radius:10px;border:0;background:#ffffff26;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+.btnGrande svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .grwrap{position:relative}
 .grande{position:fixed!important;inset:0;z-index:950;margin:0!important;border-radius:0!important;border:0!important;overflow:auto;background:var(--bg,#0B1020)!important;padding:8px 10px!important}
 .grande .btnGrande{position:fixed;top:8px;right:10px;bottom:auto;font-size:18px}
@@ -1273,7 +1274,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card solo-resumen" id="calmaCard" hidden></div>
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
-    <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa">⤢</button></div>
+    <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa"></button></div>
     <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
@@ -1528,7 +1529,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v25.8'; // v25.8: app 4.6: ⤢ pone el gráfico en horizontal sola y sin barras del sistema
+const VERSION = 'v25.9'; // v25.9: icono nuevo de pantalla completa (esquinas con flechas, blanco sobre fondo translúcido), según el dibujo de Gustavo
+// v25.8: app 4.6: ⤢ pone el gráfico en horizontal sola y sin barras del sistema
 // v25.7: en el gráfico de grabaciones, los avisos «estás roncando» son una raya rosa en la mitad del alto, sin punto
 // v25.6: ⤢ pantalla completa (como en YouTube) en el gráfico de grabaciones y en el de fases del sueño
 // v25.5: fases del sueño: darse la vuelta (hasta 2 movimientos en 5 min) ya no hace que el resto de la noche salga «despierto»
@@ -3569,7 +3571,7 @@ function pintaCalma(n, evs) {
     : '👍 <b>Despertaste en sueño ligero</b>';
   box.innerHTML = `<div class="calmatit" style="display:flex;align-items:center;gap:8px"><span class="unalinea" style="flex:1;min-width:0"><i class="icos" aria-hidden="true"></i> Fases del sueño <small>estimado</small></span><button type="button" class="hinfo" id="calmaInfo" aria-label="Información">i</button><span class="pldato">Profundo ${pc(0)} %</span><i class="tri"></i></div>
     <div class="hbox" id="calmaBox" hidden style="margin:10px 0 4px;background:var(--card2);font-size:14px">Se estima con tus movimientos: cuanto más quieto, más profundo. El móvil sobre el colchón nota con su acelerómetro cada vez que el colchón se mueve (en la mesilla, con el 📡 sonar).<br><br><b>Despierto</b> solo sale cuando te mueves mucho (5 o más movimientos en 5 minutos, como dar vueltas o levantarte), al pulsar «Me levanté», antes de dormirte y después de despertarte. Los sonidos (un coche, un ronquido, hablar en sueños) no cuentan como despierto: como mucho, hacen el sueño más ligero. Por eso «despierto» quiere decir despierto o muy inquieto.<br><br> El <b>REM</b> (cuando sueñas) suele llegar después de un rato de sueño profundo: por eso se marca al empezar el sueño ligero que viene después. Las franjas numeradas son <b>ciclos de sueño de unos 90 min</b> (de 70 a 120 min), contados desde que te dormiste.<br><br>Lo normal en una noche: <b>ligero</b>, la mitad (45-55 %); <b>REM</b>, del 10 al 25 %; <b>profundo</b>, del 10 al 20 %, sobre todo al principio; <b>despierto</b>, del 5 al 20 %.<br><br>Las fases exactas solo las mide un estudio del sueño.${c.conMov ? '' : ' <b>Para medirlo mejor, deja el móvil sobre el colchón, en una esquina junto a la almohada</b>, donde no lo aplastes (no debajo de la almohada: enchufado se calienta y el micro oye peor). O activa el 📡 sonar en Ajustes.'}</div>
-    <div class="grwrap"><button type="button" class="btnGrande" id="calmaGrande" aria-label="${G ? 'Salir de pantalla completa' : 'Pantalla completa'}">${G ? '✕' : '⤢'}</button>
+    <div class="grwrap"><button type="button" class="btnGrande" id="calmaGrande" aria-label="${G ? 'Salir de pantalla completa' : 'Pantalla completa'}">${G ? ICO_SALIR : ICO_GRANDE}</button>
     <svg class="calma" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sueño profundo, ligero, REM y despierto a lo largo de la noche, en bloques">
       ${ciclos.join('')}
       ${bloques.join('')}
@@ -3867,12 +3869,16 @@ function verRuidos(on) {
   requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); }); // (si estaba plegado, el gráfico se dibuja ahora)
 }
 // 🎙️ Registro de grabaciones: en el resumen de la noche va plegado; al tocar el título se abre
-// ⤢ Pantalla completa (como en YouTube): el gráfico llena la pantalla en horizontal; ✕ (o atrás) vuelve
+// ⤢ Pantalla completa (como en YouTube): el gráfico llena la pantalla en horizontal; el mismo botón (o atrás) vuelve
+// Icono (dibujo de Gustavo): dos esquinas con su flecha en diagonal hacia fuera; para salir, las flechas hacia dentro
+const ICO_GRANDE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h8v8M11 21H3v-8M13.5 10.5l4-4M13.5 6.5h4v4M10.5 13.5l-4 4M6.5 13.5v4h4"/></svg>';
+const ICO_SALIR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h8v8M11 21H3v-8M17.5 6.5l-4 4M13.5 6.5v4h4M6.5 17.5l4-4M10.5 17.5v-4h-4"/></svg>';
+$('tlGrande').innerHTML = ICO_GRANDE;
 function grande(card, on) {
   if (!card) return;
   card.classList.toggle('grande', on);
   document.documentElement.classList.toggle('hayGrande', !!document.querySelector('.grande'));
-  const b = card.querySelector('.btnGrande'); if (b) { b.textContent = on ? '✕' : '⤢'; b.setAttribute('aria-label', on ? 'Salir de pantalla completa' : 'Pantalla completa'); }
+  const b = card.querySelector('.btnGrande'); if (b) { b.innerHTML = on ? ICO_SALIR : ICO_GRANDE; b.setAttribute('aria-label', on ? 'Salir de pantalla completa' : 'Pantalla completa'); }
   try {
     if (typeof AND?.horizontal === 'function') AND.horizontal(on); // app Android: gira sola
     else if (on) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
@@ -5970,6 +5976,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v25.9', '28 oct 2026', ['Icono nuevo de pantalla completa: esquinas con flechas, en blanco']],
   ['v25.8', '28 oct 2026', ['📱 App 4.6: el botón ⤢ gira la pantalla sola y el gráfico ocupa toda la pantalla']],
   ['v25.7', '28 oct 2026', ['Gráfico de grabaciones: cada aviso «estás roncando» es una raya rosa en la mitad, sin el punto de abajo']],
   ['v25.6', '28 oct 2026', ['⤢ Pantalla completa en el gráfico de grabaciones y en el de fases del sueño (el botón de abajo a la derecha)', 'Los avisos que salen un momento se cierran al tocarlos (y el del 🚶, también tocándolo otra vez)']],
