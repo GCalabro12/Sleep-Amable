@@ -1532,7 +1532,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.8'; // v26.8: movimiento: como mucho uno por minuto (se cuenta y se dibuja así); la rayita verde sale de la base del volumen y es 3 veces más alta
+const VERSION = 'v26.9'; // v26.9: onda del reproductor: en grabaciones casi en silencio ya no se pinta todo del color de la etiqueta (solo las rayas fuertes)
+// v26.8: // v26.8: movimiento: como mucho uno por minuto (se cuenta y se dibuja así); la rayita verde sale de la base del volumen y es 3 veces más alta
 // v26.7: // v26.7: puntuación más suave (ronquido y movimiento); movimientos a menos de 1 min = uno; en el gráfico, el movimiento es una rayita verde abajo; en la onda del reproductor, raya verde «movim.»
 // v26.6: // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
 // v26.5: // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
@@ -4543,9 +4544,11 @@ function plOnda() {
   const letra = i => e?.seg && dur ? e.seg[Math.floor((i + .5) / n * dur)] || 'o' : 'o';
   const tramosDe = ok => { const r = []; for (let i = 0; i < n;) { if (!ok(i)) { i++; continue; } let j = i, m = 0; while (j < n && ok(j)) { m = Math.max(m, p[j]); j++; } r.push({i, j, m}); i = j; } return r; };
   const marca = (t, L, ref) => { // y sigue a los lados mientras las rayas sean grandes: se ve el ronquido (o la voz) entero
-    let a = t.i, b = t.j;
-    while (a > 0 && p[a - 1] >= ref * .45 && !fuerte[a - 1]) a--;
-    while (b < n && p[b] >= ref * .45 && !fuerte[b]) b++;
+    // (v26.9) solo sigue por rayas de verdad (más del 18 % del alto): en una grabación casi en silencio, el «suelo»
+    // de todas las rayas pasaba el 45 % y se pintaba la grabación entera de amarillo
+    let a = t.i, b = t.j; const lim = Math.max(ref * .45, .18);
+    while (a > 0 && p[a - 1] >= lim && !fuerte[a - 1]) a--;
+    while (b < n && p[b] >= lim && !fuerte[b]) b++;
     for (let k = a; k < b; k++) fuerte[k] = L;
   };
   // 1) La etiqueta de la grabación siempre se ve con su color: sus segundos más fuertes; si no tiene ninguno
@@ -6058,6 +6061,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.9', '29 oct 2026', ['🎨 En la onda de la grabación, el color solo va donde suena fuerte (antes, en grabaciones casi en silencio, salía todo amarillo)']],
   ['v26.8', '29 oct 2026', ['🏃 Movimiento: como mucho uno por minuto, también en el gráfico', '🟢 La rayita verde sale de donde empieza el volumen y es más alta']],
   ['v26.7', '29 oct 2026', ['⭐ La puntuación castiga menos el ronquido y el movimiento', '🏃 Los movimientos seguidos (menos de 1 minuto) cuentan como uno', '🟢 En el gráfico, el movimiento es una rayita verde abajo; y en la onda de la grabación, una raya verde «movim.»']],
   ['v26.6', '29 oct 2026', ['💜 Monitoreo: el «Panel de monitoreo» tiene su fondo morado claro', '🔊 «Avisos por» va lo primero del panel, en gris', 'Los botones de «Elige para esta noche», en gris como «Prueba audífonos»']],
