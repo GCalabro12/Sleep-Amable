@@ -1532,7 +1532,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.9'; // v26.9: onda del reproductor: en grabaciones casi en silencio ya no se pinta todo del color de la etiqueta (solo las rayas fuertes)
+const VERSION = 'v27.0'; // v27.0: minutos roncando (y de voces): solo los tramos donde suena de verdad, no la grabación entera de 2 min; las noches de antes se recalculan al abrirlas
+// v26.9: // v26.9: onda del reproductor: en grabaciones casi en silencio ya no se pinta todo del color de la etiqueta (solo las rayas fuertes)
 // v26.8: // v26.8: movimiento: como mucho uno por minuto (se cuenta y se dibuja así); la rayita verde sale de la base del volumen y es 3 veces más alta
 // v26.7: // v26.7: puntuación más suave (ronquido y movimiento); movimientos a menos de 1 min = uno; en el gráfico, el movimiento es una rayita verde abajo; en la onda del reproductor, raya verde «movim.»
 // v26.6: // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
@@ -2161,6 +2162,15 @@ const IA = {
 // fuerte se queda en «otro» (respiración), que es lo que más se confundía.
 // Qué es cada segundo de una grabación: una letra por segundo (r ronquido, v voz, t tos, o otro)
 const SEGC = {ronquido: 'r', voz: 'v', tos: 't', otro: 'o'}, SEGT = {r: 'ronquido', v: 'voz', t: 'tos', o: 'otro'};
+// Los segundos de verdad de ronquido (L 'r') o de voz ('v') de una grabación: no los 2 minutos enteros, sino los tramos
+// donde suena, juntando los huecos de hasta 5 s entre uno y otro (lo que dura una respiración). Si no se sabe qué es
+// cada segundo (grabaciones viejas o etiqueta puesta a mano sin ningún segundo así), cuenta entera, como antes (v27.0)
+function segReales(e, L) {
+  const s = e.seg || ''; let tot = 0, a = -1, b = -1;
+  for (let i = 0; i < s.length; i++) if (s[i] === L) { if (a < 0 || i - b > 5) { if (a >= 0) tot += b - a + 1; a = i; } b = i; }
+  if (a >= 0) tot += b - a + 1;
+  return tot ? Math.min(tot, e.dur) : e.dur;
+}
 const segDe = (sn, vo, br, co) => sn.map((_, i) => SEGC[decide([sn[i]], [vo[i]], [br[i] || 0], [co[i] || 0])]).join('');
 // La etiqueta de la parte más fuerte: lo que es el segundo con más volumen (mirando también el de antes y el de después)
 function tipoFuerte(e, seg) {
@@ -2490,8 +2500,8 @@ function makeSaver(night, onChange) {
   let chain = Promise.resolve();
   return {
     event(ev) {
-      if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += ev.dur; }
-      else if (ev.tipo === 'voz') { night.voces++; night.segVoz = (night.segVoz || 0) + ev.dur; }
+      if (ev.tipo === 'ronquido') { night.ronquidos++; night.segRonquido += segReales(ev, 'r'); }
+      else if (ev.tipo === 'voz') { night.voces++; night.segVoz = (night.segVoz || 0) + segReales(ev, 'v'); }
       else if (ev.tipo === 'tos') night.tos = (night.tos || 0) + 1;
       else night.otros++;
       const rec = {noche: night.id, off: ev.off, dur: ev.dur, tipo: ev.tipo, sn: ev.sn, vo: ev.vo, br: ev.br, co: ev.co || 0, top: ev.top, peak: ev.peak, est: ev.est, blob: wavBlob(ev.audio),
@@ -3967,6 +3977,10 @@ async function openNight(id) {
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada();
   $('reNight').hidden = !(sesion?.admin && hayDetectorNuevo(cur)); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
+  { // las noches de antes de v27.0 contaban las grabaciones enteras: al abrirlas, los minutos de ronquido y voz se recalculan
+    const r = curEvs.filter(e => e.tipo === 'ronquido').reduce((a, e) => a + segReales(e, 'r'), 0), v = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
+    if (curEvs.length && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
+  }
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = new Set();
   show('night');
@@ -4388,9 +4402,9 @@ $('selShare').onclick = async () => {
 const timelineTotal = () => ((cur.fin || (cur.inicio + cur.timeline.length * 60e3)) - cur.inicio) / 1000;
 async function recount() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
-  cur.ronquidos = s.length; cur.segRonquido = s.reduce((a, e) => a + e.dur, 0);
+  cur.ronquidos = s.length; cur.segRonquido = s.reduce((a, e) => a + segReales(e, 'r'), 0);
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
-  cur.segVoz = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + e.dur, 0);
+  cur.segVoz = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
   if (cur.tos != null || curEvs.some(e => e.tipo === 'tos')) cur.tos = curEvs.filter(e => e.tipo === 'tos').length;
   await DB.put('noches', cur);
 }
@@ -4441,8 +4455,8 @@ async function recuentaNoche(id, revisada) {
   const n = await DB.get('noches', id); if (!n) return;
   if (revisada) n.revisada = revisada;
   const evs = await DB.byNight(id), de = t => evs.filter(e => e.tipo === t);
-  n.ronquidos = de('ronquido').length; n.segRonquido = de('ronquido').reduce((a, e) => a + e.dur, 0);
-  n.voces = de('voz').length; n.segVoz = de('voz').reduce((a, e) => a + e.dur, 0); n.otros = de('otro').length;
+  n.ronquidos = de('ronquido').length; n.segRonquido = de('ronquido').reduce((a, e) => a + segReales(e, 'r'), 0);
+  n.voces = de('voz').length; n.segVoz = de('voz').reduce((a, e) => a + segReales(e, 'v'), 0); n.otros = de('otro').length;
   if (n.tos != null || de('tos').length) n.tos = de('tos').length;
   await DB.put('noches', n);
 }
@@ -4525,6 +4539,7 @@ async function plSegs(e) {
     if (cambia) { e.tipo = tf; delete e.sub; }
     const {_url, _picos, _pico, _segando, _en, ...rec} = e; await DB.put('eventos', rec);
     if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
+    else if (e.tipo === 'ronquido' || e.tipo === 'voz') { await recount(); renderStats(); } // ya se sabe qué segundos son ronquido: los minutos, de verdad
     if (PL.list[PL.i] === e) plOnda();
   } catch {}
   e._segando = false;
@@ -6061,6 +6076,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.0', '29 oct 2026', ['😴 Los minutos roncando cuentan solo cuando roncas de verdad, no la grabación entera (las noches de antes se corrigen al abrirlas)']],
   ['v26.9', '29 oct 2026', ['🎨 En la onda de la grabación, el color solo va donde suena fuerte (antes, en grabaciones casi en silencio, salía todo amarillo)']],
   ['v26.8', '29 oct 2026', ['🏃 Movimiento: como mucho uno por minuto, también en el gráfico', '🟢 La rayita verde sale de donde empieza el volumen y es más alta']],
   ['v26.7', '29 oct 2026', ['⭐ La puntuación castiga menos el ronquido y el movimiento', '🏃 Los movimientos seguidos (menos de 1 minuto) cuentan como uno', '🟢 En el gráfico, el movimiento es una rayita verde abajo; y en la onda de la grabación, una raya verde «movim.»']],
