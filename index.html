@@ -588,7 +588,7 @@ details.hist[open] summary{margin-bottom:10px}
 #listen .inner > *{width:100%}
 #listen .inner > #stopBtn,#listen .inner > .mutefila{width:auto;align-self:center}
 .lgrupo{display:flex;flex-direction:column;align-items:center} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
-.lgrupo.panelMon{background:#A78BFA26;border-radius:16px;padding:8px 8px 10px} /* morado claro: de «Panel de monitoreo» para abajo, todo es el panel (v26.6) */
+.lgrupo.panelMon{background:#A78BFA26;border:2.5px solid #8B5CF6;border-radius:16px;padding:8px 8px 10px} /* v28.2: borde morado, como la barra «Panel de monitoreo» */ /* morado claro: de «Panel de monitoreo» para abajo, todo es el panel (v26.6) */
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
@@ -623,6 +623,7 @@ details.hist[open] summary{margin-bottom:10px}
 #pruebaBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #pruebaBtn{flex:none;margin:0;background:#B91C1C;border:1px solid #F87171;color:#fff;font-weight:700;border-radius:10px;padding:3px 8px;font-size:11px;line-height:1.15;position:absolute;right:0;top:50%;transform:translateY(-50%)} /* estrecho, a la derecha de la hora */
 .clockfila{position:relative;width:100%}
+.clockfila .clock{padding-left:48px} /* v28.2: sin «Probar detección», la hora un poco más a la derecha (lejos de la alarma) */
 .alhora{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#FCD34D;background:#1F2937;border:1px solid #CA8A04;border-radius:10px;padding:4px 9px;cursor:pointer;line-height:1.15;text-align:center}
 .alhora small{display:block;font-size:11px;font-weight:600;color:#FDE68A;opacity:.85;white-space:nowrap} /* cuánto falta para que suene (v26.3) */
 #pAl [data-mas]{display:none} /* «Tono y reto» está en Alarmas: aquí, solo activar y cambiar la hora */ /* ⏰ hora de la alarma */
@@ -1529,7 +1530,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lgrupo panelMon">
     <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
     <button type="button" class="avisopor" id="avisoPor" hidden></button>
-    <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
+    <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
@@ -1545,7 +1546,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.1'; // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
+const VERSION = 'v28.2'; // v28.2: monitoreo: fuera «Probar detección»; el panel con borde morado; la hora un poco más a la derecha
+// v28.1: // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
 // v28.0: // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
 // v27.9: // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
 // v27.8: // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
@@ -2929,7 +2931,7 @@ let prueba = false, pruebas = [];
 try { pruebas = JSON.parse(localStorage.getItem('ronquino-pruebas') || '[]'); } catch {}
 const pct = v => Math.round((v || 0) * 100);
 const PR_SEG = 6;
-$('pruebaBtn').onclick = () => {
+if ($('pruebaBtn')) $('pruebaBtn').onclick = () => { // (v28.2: el botón ya no está en el monitoreo)
   panel(null); prueba = true; $('pPrueba').hidden = false; $('prRes').hidden = true;
   if (live.det) { live.prMute = live.det.muteUntil; live.det.muteUntil = Infinity; } // mientras pruebas, la noche no graba
   pintaMic(); pintaGuia(); pintaPruebas(); wake();
@@ -5676,7 +5678,7 @@ window.googleNativo = (token, error) => {
 // En Ajustes: tu nombre, email y contraseña (con «Cambiar»), salir y borrar la cuenta
 const escT = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function pintaCuenta() {
-  $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: solo el administrador
+  if ($('pruebaBtn')) $('pruebaBtn').hidden = !sesion?.admin; // «Probar detección»: quitado del monitoreo (v28.2)
   $('aprDet').hidden = !sesion?.admin; // «Lo que ha aprendido la IA»: también solo el administrador
   if (!sesion?.admin) $('reNight').hidden = true; // «Revisar esta noche con el detector nuevo»: también (y solo si hay uno más nuevo: en openNight)
   pintaAjNota(); // «🎯 Detector actualizado con tus revisiones el …»: también solo el administrador
@@ -6136,6 +6138,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.2', '29 oct 2026', ['💜 Monitoreo: el panel con borde morado; la hora un poco más a la derecha', 'Fuera el botón «Probar detección»']],
   ['v28.1', '29 oct 2026', ['🎧 El aviso «estás roncando» se dice justo después de un ronquido, no en un silencio', 'Cuenta solo el tiempo que roncas de verdad']],
   ['v28.0', '29 oct 2026', ['😴 Tabla del ronquido: «% población»']],
   ['v27.9', '29 oct 2026', ['😴 Explicación del ronquido más corta']],
