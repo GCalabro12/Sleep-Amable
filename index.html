@@ -1534,7 +1534,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.3'; // v27.3: = v27.2 publicado de nuevo sin el 🔇
+const VERSION = 'v27.4'; // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
+// v27.3: // v27.3: = v27.2 publicado de nuevo sin el 🔇
 // v27.2: // v27.2: aviso de sonidos: fuera «Sobre todo: …» (los nombres de la IA, como «león» o «tigre», confundían) y sin el icono 🔇 delante
 // v27.1: // v27.1: aviso de sonidos que no son ronquido ni voz: qué pueden ser (respiraciones fuertes, ruidos de fuera…), que no cuentan y que menos de 100 es normal
 // v27.0: // v27.0: minutos roncando (y de voces): solo los tramos donde suena de verdad, no la grabación entera de 2 min; las noches de antes se recalculan al abrirlas
@@ -3978,7 +3979,7 @@ const hayDetectorNuevo = n => !!n && Math.max(n.inicio || 0, n.revisada || 0) < 
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
   $('night').classList.remove('ruidos'); PL.ini = 0; // siempre se abre por el resumen
-  $('tlCard').classList.remove('abierta'); $('tlTri').classList.remove('up'); requestAnimationFrame(encajaLeyenda); // con el registro plegado
+  $('tlCard').classList.add('abierta'); $('tlTri').classList.add('up'); requestAnimationFrame(encajaLeyenda); // el gráfico de grabaciones, desplegado (v27.4; antes plegado)
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada();
   $('reNight').hidden = !(sesion?.admin && hayDetectorNuevo(cur)); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
@@ -3995,6 +3996,7 @@ async function openNight(id) {
 
     + (n.restaurada ? ' · ☁️ recuperada de tu cuenta, sin las grabaciones' : '');
   renderStats(); drawTimeline(total); renderList();
+  requestAnimationFrame(() => { if (cur === n) { drawTimeline(timelineTotal()); tlSticky(); } }); // ya con su tamaño en pantalla
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
   const antes = (await DB.all('noches')).filter(x => x.inicio < n.inicio).sort((a, b) => b.inicio - a.inicio);
   $('nScore').innerHTML = nocheValida(n) ? tarjetaManana(n, antes, '📋 Panel de puntuación') : '';
@@ -6082,6 +6084,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.4', '29 oct 2026', ['🎙️ Al abrir una noche, el gráfico de grabaciones ya sale desplegado']],
   ['v27.2', '29 oct 2026', ['El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…) ni el icono del altavoz tachado']],
   ['v27.1', '29 oct 2026', ['🔇 Sonidos que no son ronquido ni voz: qué pueden ser, que no cuentan para la puntuación y que menos de 100 es normal']],
   ['v27.0', '29 oct 2026', ['😴 Los minutos roncando cuentan solo cuando roncas de verdad, no la grabación entera (las noches de antes se corrigen al abrirlas)']],
