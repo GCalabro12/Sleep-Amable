@@ -593,6 +593,8 @@ details.hist[open] summary{margin-bottom:10px}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
 .monit .tres i{background:#fff}
+#lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
+.ltop{column-gap:10px}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#1E293B;border-color:#475569;color:#E0E7FF}
@@ -602,6 +604,7 @@ details.hist[open] summary{margin-bottom:10px}
 #pCuna{top:72px;left:0;right:0;bottom:0;max-height:none;border-radius:20px 20px 0 0;background:#0B1020;padding:16px 16px 28px;font-size:15px}
 .pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
 .pchead button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px}
+#pCuna .pchead{position:sticky;top:-16px;z-index:2;background:#0B1020;margin:-16px -16px 8px;padding:16px 16px 8px} /* v28.3: el título y la ✕ siempre a la vista al bajar por las músicas */
 .lpanel .lpx{float:right;width:40px;height:40px;margin:0 0 6px 10px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px} /* ✕ para cerrar */
 .cuctl{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:15px;color:#E0E7FF}
 .cuctl>span:first-child{flex:none;min-width:96px}
@@ -1546,7 +1549,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.2'; // v28.2: monitoreo: fuera «Probar detección»; el panel con borde morado; la hora un poco más a la derecha
+const VERSION = 'v28.3'; // v28.3: monitoreo: 🌙 y ✈️ juntos, 🎵 a la derecha; en «Música para dormir», la ✕ siempre visible
+// v28.2: // v28.2: monitoreo: fuera «Probar detección»; el panel con borde morado; la hora un poco más a la derecha
 // v28.1: // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
 // v28.0: // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
 // v27.9: // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
@@ -6138,6 +6142,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.3', '29 oct 2026', ['🌙 ✈️ juntos y 🎵 a la derecha', '🎵 En la música para dormir, la ✕ de cerrar siempre se ve']],
   ['v28.2', '29 oct 2026', ['💜 Monitoreo: el panel con borde morado; la hora un poco más a la derecha', 'Fuera el botón «Probar detección»']],
   ['v28.1', '29 oct 2026', ['🎧 El aviso «estás roncando» se dice justo después de un ronquido, no en un silencio', 'Cuenta solo el tiempo que roncas de verdad']],
   ['v28.0', '29 oct 2026', ['😴 Tabla del ronquido: «% población»']],
