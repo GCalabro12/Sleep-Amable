@@ -243,15 +243,14 @@ body.tabs-on .wrap{padding-bottom:84px}
 #alList .alcard+.alcard::before{content:'';position:absolute;left:-18px;right:-18px;top:-17px;height:2px;background:#A78BFA;opacity:.55} /* entre alarma y alarma */
 .sepgrueso{height:5px;background:#A78BFA;margin:6px -16px 18px} /* entre música, siesta y alarmas: de lado a lado del móvil */
 /* Banners de «Alarma y música»: la línea morada ensanchada, con el título dentro, de lado a lado del móvil */
-#alarma>details.banda{padding:0;margin:0 0 10px}
-#alarma .banda>summary,.bandaT{margin:0 -16px;padding:12px 18px;background:#A78BFA;color:#1E1033;font-weight:800;font-size:17px}
-.bandaT{margin:0 -16px 10px}
-#alarma .banda>summary{margin:0 -18px} /* el desplegable lleva 2 px de margen a cada lado */
+#alarma>details.banda.card{padding:0;margin:0 -8px 12px;border:2px solid #A78BFA;border-radius:16px 16px 0 0;background:transparent} /* el cartel envuelve lo de abajo */
+#alarma .banda>summary{padding:12px 16px;background:#A78BFA;color:#1E1033;font-weight:800;font-size:17px;border-radius:13px 13px 0 0}
 #alarma .banda>summary::after{border-top-color:#1E1033}
 #alarma .banda[open]>summary::after{border-bottom-color:#1E1033}
 #alarma .banda>summary .estado{background:#1E1033;color:#C4B5FD}
 #alarma .banda>summary .estado.si{background:#14532D;color:#86EFAC}
-#alarma .banda>div{padding:4px 2px 6px}
+#alarma .banda>div{padding:6px 10px 8px}
+#alarma .banda .card{border:0;background:transparent;padding:10px 2px;margin-bottom:6px}
 .sepfino{height:1px;background:#A78BFA;opacity:.5;margin:2px 0 10px}
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
 .alcard.off{opacity:.55}
@@ -1074,7 +1073,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
   <details class="instr card banda siempreAbierto" id="guiaDet" open><summary><span>🎧 Relajaciones para dormir</span></summary><div id="guiaBody"></div></details>
   <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
-  <div class="bandaT">⏰ Despertadores</div>
+  <details class="instr card banda siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)">
@@ -1101,6 +1100,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="alList"></div>
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
+  </div></details>
   <div class="moontip" hidden><div class="bubble" id="alInfo"></div></div><!-- quitado (Gustavo): ya se sabe que suenan con la app cerrada -->
 </section>
 
@@ -1560,7 +1560,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.7'; // v28.7: «Alarma y música»: banners morados de lado a lado con el título dentro: 🎧 Relajaciones para dormir y 🎵 Música para dormir (desplegables) y ⏰ Despertadores (siesta y alarmas)
+const VERSION = 'v28.8'; // v28.8: «Alarma y música»: «⏰ Despertadores» también se pliega; cada cartel envuelve lo de abajo con borde morado y esquinas de arriba redondeadas
+// v28.7: «Alarma y música»: banners morados de lado a lado con el título dentro: 🎧 Relajaciones para dormir y 🎵 Música para dormir (desplegables) y ⏰ Despertadores (siesta y alarmas)
 // v28.6: nueva relajación guiada «Seguro y sin miedo» (6 min)
 // v28.5: nueva relajación guiada «Sentirte querido» (7 min, voz de Gustavo + Mar en calma)
 // v28.4: presentación: fuera «debajo de la almohada no…»; «tus grabaciones se quedan solo en tu móvil: no se suben a internet ni se publican»
@@ -6159,6 +6160,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.8', '29 oct 2026', ['«Alarma y música»: Despertadores también se pliega, y cada cartel envuelve lo suyo con las esquinas redondeadas']],
   ['v28.7', '29 oct 2026', ['«Alarma y música»: títulos más claros en banners morados: Relajaciones, Música para dormir y Despertadores']],
   ['v28.6', '29 oct 2026', ['🌙 Nueva relajación para dormir: «Seguro y sin miedo», 6 minutos']],
   ['v28.5', '29 oct 2026', ['💛 Nueva relajación para dormir: «Sentirte querido», 7 minutos']],
