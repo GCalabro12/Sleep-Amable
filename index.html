@@ -583,13 +583,14 @@ details.hist[open] summary{margin-bottom:10px}
 #listen .inner > *{width:100%}
 #listen .inner > #stopBtn,#listen .inner > .mutefila{width:auto;align-self:center}
 .lgrupo{display:flex;flex-direction:column;align-items:center} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
+.lgrupo.panelMon{background:#A78BFA26;border-radius:16px;padding:8px 8px 10px} /* morado claro: de «Panel de monitoreo» para abajo, todo es el panel (v26.6) */
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
 .monit .tres i{background:#fff}
-.lico{width:58px;height:50px;border-radius:16px;border:1px solid #1F2937;background:#0B1020;font-size:22px;color:#94A3B8;padding:0}
+.lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
-.lico.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
+.lico.on{background:#1E293B;border-color:#475569;color:#E0E7FF}
 .lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
 .lpanel{position:absolute;top:108px;left:14px;right:14px;z-index:3;background:#111827;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
@@ -641,8 +642,8 @@ details.hist[open] summary{margin-bottom:10px}
 @keyframes rq-p3{0%,65%{opacity:.15}70%,90%{opacity:1}95%,100%{opacity:.15}}
 .flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
 /* Monitoreo con aviso: por dónde suenan los avisos; al tocar, cambia */
-.avisopor{display:block;margin:4px auto 6px;background:#1E3A8A;border:1px solid #3B82F6;color:#E0E7FF;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;cursor:pointer}
-.avisopor small{font-weight:400;color:#BFDBFE;margin-left:6px}
+.avisopor{display:block;margin:0 auto 6px;background:#1E293B;border:1px solid #475569;color:#E2E8F0;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.avisopor small{font-weight:400;color:#94A3B8;margin-left:6px}
 .avisopor.falta small{color:#FCD34D}
 .flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
 .flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
@@ -680,7 +681,7 @@ details.hist[open] summary{margin-bottom:10px}
 .meter i{display:block;height:100%;width:0;background:#475569;transition:width .2s}
 .meter i.hot{background:var(--snore)}
 .lsens{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px;font-size:13px;color:var(--dim)}
-.lsens button{background:#111827;border:1px solid #1F2937;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
+.lsens button{background:#111827;border:1px solid #475569;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
 .mutefila{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 8px}
@@ -1512,12 +1513,12 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
     <button id="stopBtn">☀️ Fin monitoreo sueño</button>
-    <div class="lgrupo">
+    <div class="lgrupo panelMon">
     <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
+    <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div><button type="button" id="pruebaBtn" hidden>Probar<br>detección</button></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
-    <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
@@ -1531,7 +1532,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.5'; // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
+const VERSION = 'v26.6'; // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
+// v26.5: // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
 // v26.4: // v26.4: alarma: tras posponer 2 veces ya no sale «Posponer» (a levantarse); reto de pasos: 30 (antes 20) (app 4.7)
 // v26.3: // v26.3: monitoreo: debajo de la hora de la alarma, en el mismo recuadro, cuánto falta («falta 7:30»); el botón de los pinganillos no hace nada de noche (sinBotonAuric)
 // v26.2: // v26.2: aviso «estás roncando»: solo cuenta el ronquido de los últimos 20 s (2+ segundos seguros), no la grabación entera por 1 segundo suelto
@@ -6040,6 +6042,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.6', '29 oct 2026', ['💜 Monitoreo: el «Panel de monitoreo» tiene su fondo morado claro', '🔊 «Avisos por» va lo primero del panel, en gris', 'Los botones de «Elige para esta noche», en gris como «Prueba audífonos»']],
   ['v26.5', '29 oct 2026', ['☀️ Al monitorear, a las 6 horas «Fin monitoreo sueño» se pone rojo', '🎧 «Prueba audífonos», en gris como «Me levanté»']],
   ['v26.4', '28 oct 2026', ['⏰ Después de posponer la alarma 2 veces, ya no se puede posponer más: toca levantarse', '🚶 El reto de la alarma ahora es caminar 30 pasos (antes 20)']],
   ['v26.3', '28 oct 2026', ['⏰ Al monitorear, debajo de la hora de la alarma ves cuánto falta para que suene (horas:minutos)', '🎧 Tocar los pinganillos (al cambiártelos de oreja) ya no para la música, el ruido ni el monitoreo']],
