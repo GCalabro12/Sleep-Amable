@@ -1545,7 +1545,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.9'; // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
+const VERSION = 'v28.0'; // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
+// v27.9: // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
 // v27.8: // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
 // v27.7: // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
 // v27.6: // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
@@ -3424,9 +3425,9 @@ const RONQ_TABLA = [
 const notaRonq = pct => pct <= 10 ? 100 - pct : pct <= 20 ? 90 - (pct - 10) * 1.5 : pct <= 30 ? 74 - (pct - 20) * 2.4 : Math.max(20, 49 - (pct - 30) * 1.45);
 function tablaRonq(pct) {
   const fila = RONQ_TABLA.findIndex(r => pct < r.hasta);
-  return `<table class="tronq"><tr><th>Tiempo roncando</th><th>Parte de la noche</th><th>Personas</th><th></th></tr>
+  return `<table class="tronq"><tr><th>Tiempo roncando</th><th>Parte de la noche</th><th>% población</th><th></th></tr>
     ${RONQ_TABLA.map((r, i) => `<tr${i === fila ? ' class="tu"' : ''}><td>${r.t}</td><td>${r.p}</td><td>${r.gente}</td><td><i class="pt ${r.c}"></i></td></tr>`).join('')}</table>
-    <p class="note" style="margin:6px 0 0">Los tiempos, para una noche de 8 horas. «Personas»: cuántas roncan así (estudio con 12.287 personas). ${fila >= 0 ? 'En morado, tu noche.' : ''}</p>`;
+    <p class="note" style="margin:6px 0 0">Los tiempos, para una noche de 8 horas. «% población»: cuántas personas roncan así (estudio con 12.287 personas). ${fila >= 0 ? 'En morado, tu noche.' : ''}</p>`;
 }
 const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
 const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
@@ -6126,6 +6127,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.0', '29 oct 2026', ['😴 Tabla del ronquido: «% población»']],
   ['v27.9', '29 oct 2026', ['😴 Explicación del ronquido más corta']],
   ['v27.8', '29 oct 2026', ['🔻 «Filtrar grabaciones por»: los filtros en un desplegable', 'Filtros nuevos: 🏃 Movimientos y 🎧 Avisos']],
   ['v27.7', '29 oct 2026', ['🎧 Avisos «estás roncando»: botón «Oír grabaciones» con las grabaciones de cada aviso', 'Fuera los textos que no se entendían']],
