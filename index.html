@@ -1545,7 +1545,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.0'; // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
+const VERSION = 'v28.1'; // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
+// v28.0: // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
 // v27.9: // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
 // v27.8: // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
 // v27.7: // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
@@ -1917,21 +1918,29 @@ function avisoTick(det, dt) {
   // Solo cuenta lo que suena AHORA: en los últimos 20 segundos, 2 o más segundos de ronquido seguro (al roncar se repite
   // con cada respiración). Antes bastaba 1 segundo seguro en toda la grabación y contaba la grabación entera,
   // aunque el resto fuera silencio: así se colaban avisos sin roncar (v26.2)
+  // v28.1: antes, cada ronquido seguía contando 20 segundos (la ventana): con un ronquido cada 15–20 s el contador sumaba
+  // como si roncaras sin parar, y el aviso saltaba cuando llegaba a 2 minutos, aunque en ese momento hubiera silencio.
+  // Ahora: cada segundo de ronquido seguro cuenta solo hasta 6 s después (lo que dura una respiración), y el aviso
+  // espera al siguiente ronquido para decirse justo detrás de él
+  const now = det.samples / SR, mudo = det.muteUntil > now;
+  if (e !== A.ev) { A.ev = e; A.n = 0; }
+  if (e && !mudo) while (A.n < e.sn.length) { const i = A.n++; if (e.sn[i] >= AVISO_SEGURO && decide([e.sn[i]], [e.vo[i]], [e.br[i] || 0]) === 'ronquido') A.ultR = now; }
   const ult = a => a.slice(-20);
-  const ronca = !!e && e.sn.length > 0 && !(det.muteUntil > det.samples / SR)
+  const ronca = !!e && e.sn.length > 0 && !mudo && now - (A.ultR ?? -1e9) <= 6
     && ult(e.sn).filter(v => v >= AVISO_SEGURO).length >= 2 && decide(ult(e.sn), ult(e.vo), ult(e.br)) === 'ronquido'
     && ((sesion?.admin ? APR.decide(huellaMedia(e))?.tipo : null) ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa (administrador)
   if (ronca) { A.ronc += dt; A.sil = 0; }
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
   if (A.ronc < (A.insiste ? AVISO_SIGUE : AVISO_PRIMERO)) return;
+  if (now - A.ultR > 1.5) return; // ya toca avisar: se espera al próximo ronquido, para decírtelo justo detrás
   A.ronc = 0; A.insiste = true;
   const tm = msgConAviso(); // ¿toca también el mensaje de la noche? va en el mismo aviso
   if (decirNoche(tm == null ? FRASE : FRASE + ' ' + MSG.texto.trim())) {
     if (tm != null) msgDicho(tm);
-    const now = Date.now();
+    const ahora = Date.now();
     live.night.avisos = (live.night.avisos || 0) + 1;
-    (live.night.avisoT ||= []).push(Math.round((now - live.night.inicio) / 1000));
-    $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(now)}`;
+    (live.night.avisoT ||= []).push(Math.round(det.samples / SR)); // con el reloj de las grabaciones (como su «off»): el del móvil se desfasaba unos segundos y la raya rosa salía antes del ronquido (v28.1)
+    $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(ahora)}`;
   }
 }
 
@@ -6127,6 +6136,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.1', '29 oct 2026', ['🎧 El aviso «estás roncando» se dice justo después de un ronquido, no en un silencio', 'Cuenta solo el tiempo que roncas de verdad']],
   ['v28.0', '29 oct 2026', ['😴 Tabla del ronquido: «% población»']],
   ['v27.9', '29 oct 2026', ['😴 Explicación del ronquido más corta']],
   ['v27.8', '29 oct 2026', ['🔻 «Filtrar grabaciones por»: los filtros en un desplegable', 'Filtros nuevos: 🏃 Movimientos y 🎧 Avisos']],
