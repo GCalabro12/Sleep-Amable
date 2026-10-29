@@ -1278,7 +1278,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa"></button></div>
-    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
+    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:6px;border-radius:1px;vertical-align:-2px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1532,7 +1532,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.6'; // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
+const VERSION = 'v26.7'; // v26.7: puntuación más suave (ronquido y movimiento); movimientos a menos de 1 min = uno; en el gráfico, el movimiento es una rayita verde abajo; en la onda del reproductor, raya verde «movim.»
+// v26.6: // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
 // v26.5: // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
 // v26.4: // v26.4: alarma: tras posponer 2 veces ya no sale «Posponer» (a levantarse); reto de pasos: 30 (antes 20) (app 4.7)
 // v26.3: // v26.3: monitoreo: debajo de la hora de la alarma, en el mismo recuadro, cuánto falta («falta 7:30»); el botón de los pinganillos no hace nada de noche (sinBotonAuric)
@@ -3375,6 +3376,8 @@ let lunaDetAbierto = true; try { lunaDetAbierto = localStorage.getItem('ronquino
 // ---------- ☀️ Tarjeta de la mañana, 📉 línea de ronquido y 🏷️ etiquetas ----------
 // Puntuación de una noche (0-100) con 4 partes: horas, ronquido, regularidad y calma (movimientos).
 // prev = las noches anteriores (para la regularidad). Solo noches con micrófono de 3 horas o más.
+// Las veces que te moviste: las marcas a menos de 1 minuto de la anterior son el mismo movimiento (darse la vuelta deja varias) (v26.7)
+function movVeces(n) { let c = 0, u = -1e9; for (const t of n.mov || []) { if (t - u >= 60) c++; u = t; } return c; }
 const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
 const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
 function puntuacion(n, prev) {
@@ -3382,7 +3385,8 @@ function puntuacion(n, prev) {
   const partes = [];
   const sDur = h >= 7 && h <= 9 ? 100 : h < 7 ? Math.max(0, 100 - (7 - h) * 25) : Math.max(0, 100 - (h - 9) * 20);
   partes.push({k: 'horas', t: '🕒 Horas', v: `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`, s: sDur, peso: 35});
-  partes.push({k: 'ronq', t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(0, 100 - porHora * 8), peso: 35});
+  // v26.7: menos castigo: antes 30 min de ronquido por hora daban 0; ahora 55 (las grabaciones cuentan enteras y el ronquido sale de más)
+  partes.push({k: 'ronq', t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(10, 100 - porHora * 1.5), peso: 35});
   const ant = prev.filter(nocheValida).slice(0, 7);
   if (ant.length >= 2) {
     const media = ant.reduce((a, x) => a + minDesdeMediodia(x.inicio), 0) / ant.length;
@@ -3390,8 +3394,9 @@ function puntuacion(n, prev) {
     partes.push({k: 'reg', t: '⏰ Regularidad', v: dif <= 5 ? 'a tu hora' : `±${dif} min`, s: Math.max(0, 100 - dif * 1.2), peso: 15});
   }
   if (n.mov) {
-    const m = n.mov.length;
-    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, s: Math.max(0, 100 - (m / h) * 10), peso: 15});
+    const m = movVeces(n);
+    // v26.7: menos castigo: hasta 5 por hora es normal; antes 10 por hora ya daban 0
+    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, s: Math.max(20, 100 - Math.max(0, m / h - 5) * 2.5), peso: 15});
   }
   const pesos = partes.reduce((a, p) => a + p.peso, 0);
   return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
@@ -4137,7 +4142,7 @@ const EXP_PARTE = {
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
-  calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
+  calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (m) aviso(EXP_PARTE[m.dataset.mexp]); });
 // Recuadros de la noche: al tocarlos explican qué cuentan
@@ -4193,8 +4198,8 @@ function drawTimeline(total) {
     }
   }
   // 🛏️ movimientos (azul) y avisos de voz «estás roncando» (amarillo): líneas de abajo arriba
-  g.fillStyle = '#34D399';
-  for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x, top, Math.max(1.5 * dpr, 1), base - top); }
+  g.fillStyle = '#34D399'; // movimiento: una rayita verde abajo, bajo las barras (v26.7; antes de arriba abajo)
+  for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x - dpr, base + dpr, 2 * dpr, 6 * dpr); }
   g.fillStyle = '#F472B6';
   for (const t of cur.avisoT || []) { // una raya rosa en la mitad del alto (sin punto): no se confunde con los movimientos (v25.7)
     const x = X(t); if (x < -4 * dpr || x > W) continue;
@@ -4565,6 +4570,14 @@ function plOnda() {
     g.fillRect(i * bw + bw * .2, (h - bh) / 2, Math.max(1.5, bw * .6), bh);
   }
   g.globalAlpha = 1;
+  // 🏃 dónde te moviste durante la grabación: raya verde con «movim.» abajo (v26.7)
+  if (e && dur) for (const t of cur?.mov || []) {
+    if (t < e.off - 1 || t > e.off + dur) continue;
+    const xm = Math.max(1, Math.min(w - 2, (t - e.off) / dur * w));
+    g.fillStyle = '#34D399'; g.fillRect(xm - 1, 0, 2, h);
+    g.font = '600 9px system-ui, sans-serif'; g.textBaseline = 'bottom'; g.textAlign = xm > w - 36 ? 'right' : 'left';
+    g.fillText('movim.', xm > w - 36 ? xm - 4 : xm + 4, h);
+  }
   // 🎧 dónde se dijo «estás roncando» (si fue justo al acabar, al final): raya rosa con «aviso»
   if (e && dur) for (const t of cur?.avisoT || []) {
     if (t < e.off || t > e.off + dur + 10) continue;
@@ -6042,6 +6055,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.7', '29 oct 2026', ['⭐ La puntuación castiga menos el ronquido y el movimiento', '🏃 Los movimientos seguidos (menos de 1 minuto) cuentan como uno', '🟢 En el gráfico, el movimiento es una rayita verde abajo; y en la onda de la grabación, una raya verde «movim.»']],
   ['v26.6', '29 oct 2026', ['💜 Monitoreo: el «Panel de monitoreo» tiene su fondo morado claro', '🔊 «Avisos por» va lo primero del panel, en gris', 'Los botones de «Elige para esta noche», en gris como «Prueba audífonos»']],
   ['v26.5', '29 oct 2026', ['☀️ Al monitorear, a las 6 horas «Fin monitoreo sueño» se pone rojo', '🎧 «Prueba audífonos», en gris como «Me levanté»']],
   ['v26.4', '28 oct 2026', ['⏰ Después de posponer la alarma 2 veces, ya no se puede posponer más: toca levantarse', '🚶 El reto de la alarma ahora es caminar 30 pasos (antes 20)']],
