@@ -833,6 +833,9 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .ev .acts svg{width:23px;height:23px}
 .ev .acts{gap:4px;align-items:center}
 .ev .bot .meta{white-space:nowrap}
+/* v27.6: la hora y los minutos a la izquierda, corazón · papelera · cuadradito en medio, y ▶ a la derecha */
+.ev .bot .play.big{order:9}
+.ev .bot .acts{margin:0 auto}
 .avnote{font-size:13px;color:#F472B6;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev audio{width:100%;margin-top:8px;height:36px}
 .ev.playing{outline:none}
@@ -1539,7 +1542,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.5'; // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
+const VERSION = 'v27.6'; // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
+// v27.5: // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
 // v27.4: // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
 // v27.3: // v27.3: = v27.2 publicado de nuevo sin el 🔇
 // v27.2: // v27.2: aviso de sonidos: fuera «Sobre todo: …» (los nombres de la IA, como «león» o «tigre», confundían) y sin el icono 🔇 delante
@@ -6105,6 +6109,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.6', '29 oct 2026', ['▶ En cada grabación, el botón de escuchar va a la derecha; la hora, a la izquierda']],
   ['v27.5', '29 oct 2026', ['😴 La puntuación del ronquido va según la parte de la noche que roncas', 'Toca «Ronquido» en el panel de puntuación: verás cuánto ronca la gente y dónde está tu noche']],
   ['v27.4', '29 oct 2026', ['🎙️ Al abrir una noche, el gráfico de grabaciones ya sale desplegado']],
   ['v27.2', '29 oct 2026', ['El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…) ni el icono del altavoz tachado']],
