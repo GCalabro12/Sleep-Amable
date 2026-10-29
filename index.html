@@ -789,6 +789,9 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-size:14px}
 .chip.on{background:#312E81;border-color:#4338CA}
 #chips .embudo{display:inline-flex;align-items:center;color:#A78BFA;padding:0 2px 0 0;flex:none}
+.filtrohead{display:flex;align-items:center;gap:8px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
+.filtrohead small{margin-left:auto;font-weight:400;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chipsbox{display:flex;gap:6px;flex-wrap:wrap;width:100%;margin-top:2px}
 .ev{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--other);border-radius:12px;padding:8px 8px 6px 12px;margin-bottom:6px}
 .ev .play.big{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:linear-gradient(135deg,#7C3AED,#4338CA);color:#fff;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 0 4px;box-shadow:0 4px 14px #4338ca66}
 .ev.playing .play.big{background:linear-gradient(135deg,#F59E0B,#B45309);padding-left:0}
@@ -1542,7 +1545,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.7'; // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
+const VERSION = 'v27.8'; // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
+// v27.7: // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
 // v27.6: // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
 // v27.5: // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
 // v27.4: // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
@@ -4013,7 +4017,7 @@ async function openNight(id) {
     if (curEvs.length && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
   }
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
-  filter = new Set();
+  filter = new Set(); FILTRO.abierto = false;
   show('night');
   const n = cur, total = ((n.fin || (n.inicio + n.timeline.length * 60e3)) - n.inicio) / 1000;
   $('nTitle').textContent = nightName(n); $('nTitle').style.fontSize = ''; requestAnimationFrame(() => fitLine($('nTitle')));
@@ -4127,6 +4131,8 @@ function textoEfecto(fx) {
 }
 // La grabación que hizo saltar un aviso: el aviso se dice al acabar de grabarla (hasta 10 s después)
 const conAviso = e => (cur?.avisoT || []).some(t => t >= e.off && t <= e.off + e.dur + 10);
+const conMov = e => movMarcas(cur || {}).some(t => t >= e.off && t <= e.off + e.dur); // te moviste mientras se grababa (v27.8)
+const FILTRO = {abierto: false}; // el desplegable «Filtrar grabaciones por»
 function renderAvisoNoche() {
   const fx = efectoAvisos(cur, curEvs);
   $('avCard').hidden = !fx.length;
@@ -4161,12 +4167,15 @@ function renderStats() {
   $('tlN').textContent = curEvs.length;
   $('ruidosN').textContent = curEvs.length ? `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}: ronquidos, voces, tos…` : 'Esta noche no se grabó nada';
   renderAvisoNoche();
-  const c = {todos: curEvs.length, aviso: curEvs.filter(conAviso).length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
-  const lbl = {todos: 'Todos', aviso: '🎧 Con aviso', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
-  // 🔻 Filtro: se pueden elegir varios a la vez (ronquidos + tos…); «Todos» lo quita
-  $('chips').innerHTML = '<span class="embudo" aria-label="Filtro"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 5h18l-7 8v5l-4 2v-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>';
+  const c = {todos: curEvs.length, aviso: curEvs.filter(conAviso).length, mov: curEvs.filter(conMov).length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
+  const lbl = {todos: 'Todos', aviso: '🎧 Avisos', mov: '🏃 Movimientos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
+  // 🔻 Filtro: un desplegable «Filtrar grabaciones por» (v27.8); se pueden elegir varios a la vez (ronquidos + tos…); «Todos» lo quita
+  const elegidos = filter.size ? [...filter].map(k => lbl[k]).join(' + ') : 'todas';
+  $('chips').innerHTML = `<button type="button" class="filtrohead"><span class="embudo" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 5h18l-7 8v5l-4 2v-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>Filtrar grabaciones por<small>${elegidos}</small><i class="tri${FILTRO.abierto ? ' up' : ''}"></i></button><div class="chipsbox"${FILTRO.abierto ? '' : ' hidden'}></div>`;
+  $('chips').querySelector('.filtrohead').onclick = () => { FILTRO.abierto = !FILTRO.abierto; renderStats(); };
+  const caja = $('chips').querySelector('.chipsbox');
   for (const k of Object.keys(lbl)) {
-    if ((k === 'otro' || k === 'fav' || k === 'tos' || k === 'aviso') && !c[k] && !filter.has(k)) continue;
+    if ((k === 'otro' || k === 'fav' || k === 'tos' || k === 'aviso' || k === 'mov') && !c[k] && !filter.has(k)) continue;
     const on = k === 'todos' ? !filter.size : filter.has(k);
     const b = document.createElement('button'); b.className = 'chip' + (on ? ' on' : '');
     b.textContent = `${lbl[k]} (${c[k]})`;
@@ -4174,7 +4183,7 @@ function renderStats() {
       if (k === 'todos') filter.clear(); else if (filter.has(k)) filter.delete(k); else filter.add(k);
       sel.clear(); renderStats(); renderList();
     };
-    $('chips').append(b);
+    caja.append(b);
   }
 }
 
@@ -4295,7 +4304,7 @@ const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
 const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : '🔊 ' + es(e.top);
 function renderList() {
-  const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : k === 'aviso' ? conAviso(e) : e.tipo === k));
+  const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : k === 'aviso' ? conAviso(e) : k === 'mov' ? conMov(e) : e.tipo === k));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
   $('selbar').hidden = !list.length;
   $('evList').innerHTML = list.length ? '' : !curEvs.length && cur?.restaurada
@@ -6116,6 +6125,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.8', '29 oct 2026', ['🔻 «Filtrar grabaciones por»: los filtros en un desplegable', 'Filtros nuevos: 🏃 Movimientos y 🎧 Avisos']],
   ['v27.7', '29 oct 2026', ['🎧 Avisos «estás roncando»: botón «Oír grabaciones» con las grabaciones de cada aviso', 'Fuera los textos que no se entendían']],
   ['v27.6', '29 oct 2026', ['▶ En cada grabación, el botón de escuchar va a la derecha; la hora, a la izquierda']],
   ['v27.5', '29 oct 2026', ['😴 La puntuación del ronquido va según la parte de la noche que roncas', 'Toca «Ronquido» en el panel de puntuación: verás cuánto ronca la gente y dónde está tu noche']],
