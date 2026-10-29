@@ -623,7 +623,7 @@ details.hist[open] summary{margin-bottom:10px}
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
 .audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
 .audifila:not(:has(button:not([hidden]))){display:none}
-#audiBtn{flex:none;margin:0;background:#1E3A8A;border:1px solid #3B82F6;color:#BFDBFE;font-weight:700;border-radius:16px;padding:8px 16px;font-size:15px} /* azul, como «Avisa si ronco» */
+#audiBtn{flex:none;margin:0;background:#1E293B;border:1px solid #475569;color:#E2E8F0;font-weight:700;border-radius:16px;padding:8px 16px;font-size:15px} /* gris, como «Me levanté» (v26.5; antes azul) */
 #audiBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
 #audiBtn:disabled{opacity:.45;background:#1F2937;border-color:#475569}
 .linfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
@@ -695,6 +695,7 @@ details.hist[open] summary{margin-bottom:10px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
 .state:empty,.last:empty{display:none}
 #stopBtn{margin:0;background:#111827;border:1.5px solid #6D5BD0;color:#C4B5FD;padding:12px 26px;border-radius:14px}
+#stopBtn.rojo{background:#B91C1C;border-color:#F87171;color:#fff} /* a las 6 horas de monitorear: se ve que ya toca terminar (v26.5) */
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
 /* Noche */
 .back{background:none;border:0;color:var(--muted);padding:6px 0;margin-bottom:6px}
@@ -1530,7 +1531,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.4'; // v26.4: alarma: tras posponer 2 veces ya no sale «Posponer» (a levantarse); reto de pasos: 30 (antes 20) (app 4.7)
+const VERSION = 'v26.5'; // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
+// v26.4: // v26.4: alarma: tras posponer 2 veces ya no sale «Posponer» (a levantarse); reto de pasos: 30 (antes 20) (app 4.7)
 // v26.3: // v26.3: monitoreo: debajo de la hora de la alarma, en el mismo recuadro, cuánto falta («falta 7:30»); el botón de los pinganillos no hace nada de noche (sinBotonAuric)
 // v26.2: // v26.2: aviso «estás roncando»: solo cuenta el ronquido de los últimos 20 s (2+ segundos seguros), no la grabación entera por 1 segundo suelto
 // v26.1: // v26.1: gráfico de grabaciones: debajo de cada grabación, su propia onda (la del reproductor), no el bloque gris de 1 minuto
@@ -2553,8 +2555,10 @@ async function startListening() {
   await keepAwake();
   wake();
   renderLiveSens(); sinBotonAuric();
+  $('stopBtn').classList.remove('rojo');
   live.timer = setInterval(() => {
     $('clock').textContent = hhmm(Date.now());
+    $('stopBtn').classList.toggle('rojo', Date.now() - night.inicio >= 6 * 3600e3); // 6 horas monitoreando: «Fin monitoreo sueño» en rojo
     { // la próxima alarma, a la izquierda, y debajo cuánto falta («falta 7:30») (v26.3) (tocarla: el desplegable)
       const sig = ALS.list.filter(a => a.on).map(a => ({h: a.hora, t: proxima(a.hora)})).sort((a, b) => a.t - b.t)[0];
       const m = sig ? Math.max(0, Math.ceil((sig.t - Date.now()) / 60e3)) : 0;
@@ -6036,6 +6040,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.5', '29 oct 2026', ['☀️ Al monitorear, a las 6 horas «Fin monitoreo sueño» se pone rojo', '🎧 «Prueba audífonos», en gris como «Me levanté»']],
   ['v26.4', '28 oct 2026', ['⏰ Después de posponer la alarma 2 veces, ya no se puede posponer más: toca levantarse', '🚶 El reto de la alarma ahora es caminar 30 pasos (antes 20)']],
   ['v26.3', '28 oct 2026', ['⏰ Al monitorear, debajo de la hora de la alarma ves cuánto falta para que suene (horas:minutos)', '🎧 Tocar los pinganillos (al cambiártelos de oreja) ya no para la música, el ruido ni el monitoreo']],
   ['v26.2', '28 oct 2026', ['🎧 El aviso «estás roncando» ya no salta por un ruido suelto: solo si roncas de verdad en ese momento']],
