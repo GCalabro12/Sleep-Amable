@@ -1549,7 +1549,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.4'; // v28.4: presentación: fuera «debajo de la almohada no…»; «tus grabaciones se quedan solo en tu móvil: no se suben a internet ni se publican»
+const VERSION = 'v28.5'; // v28.5: nueva relajación guiada «Sentirte querido» (7 min, voz de Gustavo + Mar en calma)
+// v28.4: presentación: fuera «debajo de la almohada no…»; «tus grabaciones se quedan solo en tu móvil: no se suben a internet ni se publican»
 // v28.3: // v28.3: monitoreo: 🌙 y ✈️ juntos, 🎵 a la derecha; en «Música para dormir», la ✕ siempre visible
 // v28.2: // v28.2: monitoreo: fuera «Probar detección»; el panel con borde morado; la hora un poco más a la derecha
 // v28.1: // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
@@ -3165,7 +3166,8 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
 ];
 // 🎧 Relajaciones guiadas (en «Música para dormir»): la voz de Gustavo con «Mar en calma» de fondo. Suenan enteras una vez (ya traen su fundido).
 const GUIAS = [ // {id, icon, name, min, file}
-  {id: 'g-dinero', icon: '💰', name: 'Dinero en calma', min: 13, file: 'audios/dinero-en-calma.mp3', guia: true}
+  {id: 'g-dinero', icon: '💰', name: 'Dinero en calma', min: 13, file: 'audios/dinero-en-calma.mp3', guia: true},
+  {id: 'g-querido', icon: '💛', name: 'Sentirte querido', min: 7, file: 'audios/sentirte-querido.mp3', guia: true}
 ];
 const CUNA_FADE = 5;
 let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
@@ -6143,6 +6145,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.5', '29 oct 2026', ['💛 Nueva relajación para dormir: «Sentirte querido», 7 minutos']],
   ['v28.4', '29 oct 2026', ['🔒 Presentación más clara: tus grabaciones se quedan solo en tu móvil']],
   ['v28.3', '29 oct 2026', ['🌙 ✈️ juntos y 🎵 a la derecha', '🎵 En la música para dormir, la ✕ de cerrar siempre se ve']],
   ['v28.2', '29 oct 2026', ['💜 Monitoreo: el panel con borde morado; la hora un poco más a la derecha', 'Fuera el botón «Probar detección»']],
