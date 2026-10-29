@@ -448,6 +448,11 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .mp b{font-size:16px}
 .mp[data-mexp]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mp.ok{border-color:#4ADE80} .mp.mid{border-color:#FBBF24} .mp.bad{border-color:#F87171}
+.tronq{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px;text-align:left}
+.tronq th{font-weight:600;color:var(--muted);font-size:12px;padding:4px 4px;border-bottom:1px solid #334155}
+.tronq td{padding:6px 4px;border-bottom:1px solid #1F2937}
+.tronq tr.tu td{background:#4C1D9580;font-weight:700}
+.tronq .pt{display:inline-block;width:12px;height:12px;border-radius:50%} .pt.ok{background:#4ADE80} .pt.mid{background:#FBBF24} .pt.bad{background:#F87171}
 .mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
 .mpartes.motrosf{margin-top:8px}
 .mpartes:not(.tresp) .mp:only-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* un recuadro solo: centrado en su fila */
@@ -1534,7 +1539,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.4'; // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
+const VERSION = 'v27.5'; // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
+// v27.4: // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
 // v27.3: // v27.3: = v27.2 publicado de nuevo sin el 🔇
 // v27.2: // v27.2: aviso de sonidos: fuera «Sobre todo: …» (los nombres de la IA, como «león» o «tigre», confundían) y sin el icono 🔇 delante
 // v27.1: // v27.1: aviso de sonidos que no son ronquido ni voz: qué pueden ser (respiraciones fuertes, ruidos de fuera…), que no cuentan y que menos de 100 es normal
@@ -3398,6 +3404,20 @@ let lunaDetAbierto = true; try { lunaDetAbierto = localStorage.getItem('ronquino
 // en v26.7 se encadenaban y en el gráfico seguían saliendo todas)
 function movMarcas(n) { const r = []; for (const t of n.mov || []) if (!r.length || t - r.at(-1) >= 60) r.push(t); return r; }
 const movVeces = n => movMarcas(n).length;
+// 😴 Puntos del ronquido según la parte de la noche que roncaste (v27.5), con lo que se sabe de la gente que ronca
+// (estudio de 12.287 personas con sensor bajo el colchón): menos del 10 %, lo normal; 10–20 %, moderado; 20–30 %, fuerte; más, muy fuerte
+const RONQ_TABLA = [
+  {hasta: 10, t: 'Menos de 45 min', p: 'menos del 10 %', gente: '71 %', c: 'ok'},
+  {hasta: 20, t: '45 min a 1 h 30', p: '10–20 %', gente: '15 %', c: 'ok'},
+  {hasta: 30, t: '1 h 30 a 2 h 20', p: '20–30 %', gente: '7 %', c: 'mid'},
+  {hasta: 101, t: 'Más de 2 h 20', p: 'más del 30 %', gente: '7 %', c: 'bad'}];
+const notaRonq = pct => pct <= 10 ? 100 - pct : pct <= 20 ? 90 - (pct - 10) * 1.5 : pct <= 30 ? 74 - (pct - 20) * 2.4 : Math.max(20, 49 - (pct - 30) * 1.45);
+function tablaRonq(pct) {
+  const fila = RONQ_TABLA.findIndex(r => pct < r.hasta);
+  return `<table class="tronq"><tr><th>Tiempo roncando</th><th>Parte de la noche</th><th>Personas</th><th></th></tr>
+    ${RONQ_TABLA.map((r, i) => `<tr${i === fila ? ' class="tu"' : ''}><td>${r.t}</td><td>${r.p}</td><td>${r.gente}</td><td><i class="pt ${r.c}"></i></td></tr>`).join('')}</table>
+    <p class="note" style="margin:6px 0 0">Los tiempos, para una noche de 8 horas. «Personas»: cuántas roncan así (estudio con 12.287 personas). ${fila >= 0 ? 'En morado, tu noche.' : ''}</p>`;
+}
 const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
 const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
 function puntuacion(n, prev) {
@@ -3406,7 +3426,7 @@ function puntuacion(n, prev) {
   const sDur = h >= 7 && h <= 9 ? 100 : h < 7 ? Math.max(0, 100 - (7 - h) * 25) : Math.max(0, 100 - (h - 9) * 20);
   partes.push({k: 'horas', t: '🕒 Horas', v: `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`, s: sDur, peso: 35});
   // v26.7: menos castigo: antes 30 min de ronquido por hora daban 0; ahora 55 (las grabaciones cuentan enteras y el ronquido sale de más)
-  partes.push({k: 'ronq', t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: Math.max(10, 100 - porHora * 1.5), peso: 35});
+  partes.push({k: 'ronq', t: '😴 Ronquido', v: `${Math.round(ronq)} min`, s: notaRonq(porHora / 60 * 100), pct: porHora / 60 * 100, peso: 35});
   const ant = prev.filter(nocheValida).slice(0, 7);
   if (ant.length >= 2) {
     const media = ant.reduce((a, x) => a + minDesdeMediodia(x.inicio), 0) / ant.length;
@@ -3425,7 +3445,7 @@ const colorNota = s => s >= 75 ? 'ok' : s >= 50 ? 'mid' : 'bad';
 // Cómo se enseñan las partes: arriba Horas y Regularidad; debajo Ronquido, Voces y Tos; y «Otros datos» (movimiento…)
 function mananaPartes(n, partes) {
   const P = k => partes.find(p => p.k === k);
-  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}" role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b></div>` : '';
+  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''} role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b></div>` : '';
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
   const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
@@ -4163,14 +4183,15 @@ function pintaRuido(n) {
 // Las partes de la puntuación de la noche: al tocarlas explican qué significan
 const EXP_PARTE = {
   horas: 'Cuánto duró tu noche: desde que tocaste «Empezar a monitorear» hasta «Fin monitoreo sueño». Lo bueno para un adulto es dormir de 7 a 9 horas.',
-  ronq: 'Los minutos que roncaste esta noche. Cuantos menos minutos por cada hora de sueño, mejor puntuación.',
+  ronq: 'El tiempo que roncaste de verdad esta noche (los segundos con ronquido, no las grabaciones enteras). La puntuación depende de qué parte de la noche roncaste:',
   reg: 'Cuánto cambió la hora de acostarte comparada con tus últimas noches. «±20 min» quiere decir que te acostaste unos 20 minutos antes o después de lo normal. Acostarte siempre a la misma hora ayuda a dormir mejor.',
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
-document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (m) aviso(EXP_PARTE[m.dataset.mexp]); });
+document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return; aviso(EXP_PARTE[m.dataset.mexp]);
+  if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0); }); // 😴 con la tabla de cuánto ronca la gente (v27.5)
 // Recuadros de la noche: al tocarlos explican qué cuentan
 const EXP_TILE = {
   ronq: 'Cuántas grabaciones guardó la IA porque oyó un ronquido. Cada grabación junta los ronquidos seguidos: una puede durar unos segundos o varios minutos.',
@@ -6084,6 +6105,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.5', '29 oct 2026', ['😴 La puntuación del ronquido va según la parte de la noche que roncas', 'Toca «Ronquido» en el panel de puntuación: verás cuánto ronca la gente y dónde está tu noche']],
   ['v27.4', '29 oct 2026', ['🎙️ Al abrir una noche, el gráfico de grabaciones ya sale desplegado']],
   ['v27.2', '29 oct 2026', ['El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…) ni el icono del altavoz tachado']],
   ['v27.1', '29 oct 2026', ['🔇 Sonidos que no son ronquido ni voz: qué pueden ser, que no cuentan para la puntuación y que menos de 100 es normal']],
