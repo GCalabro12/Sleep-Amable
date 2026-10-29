@@ -1545,7 +1545,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.8'; // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
+const VERSION = 'v27.9'; // v27.9: «Ronquido» del panel de puntuación: «Los minutos que roncaste esta noche…» (sin el paréntesis)
+// v27.8: // v27.8: filtros en un desplegable «Filtrar grabaciones por»; filtros nuevos «🏃 Movimientos» y «🎧 Avisos»
 // v27.7: // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
 // v27.6: // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
 // v27.5: // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
@@ -4203,7 +4204,7 @@ function pintaRuido(n) {
 // Las partes de la puntuación de la noche: al tocarlas explican qué significan
 const EXP_PARTE = {
   horas: 'Cuánto duró tu noche: desde que tocaste «Empezar a monitorear» hasta «Fin monitoreo sueño». Lo bueno para un adulto es dormir de 7 a 9 horas.',
-  ronq: 'El tiempo que roncaste de verdad esta noche (los segundos con ronquido, no las grabaciones enteras). La puntuación depende de qué parte de la noche roncaste:',
+  ronq: 'Los minutos que roncaste esta noche. La puntuación depende de qué parte de la noche roncaste:',
   reg: 'Cuánto cambió la hora de acostarte comparada con tus últimas noches. «±20 min» quiere decir que te acostaste unos 20 minutos antes o después de lo normal. Acostarte siempre a la misma hora ayuda a dormir mejor.',
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
@@ -6125,6 +6126,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.9', '29 oct 2026', ['😴 Explicación del ronquido más corta']],
   ['v27.8', '29 oct 2026', ['🔻 «Filtrar grabaciones por»: los filtros en un desplegable', 'Filtros nuevos: 🏃 Movimientos y 🎧 Avisos']],
   ['v27.7', '29 oct 2026', ['🎧 Avisos «estás roncando»: botón «Oír grabaciones» con las grabaciones de cada aviso', 'Fuera los textos que no se entendían']],
   ['v27.6', '29 oct 2026', ['▶ En cada grabación, el botón de escuchar va a la derecha; la hora, a la izquierda']],
