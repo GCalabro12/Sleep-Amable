@@ -1278,7 +1278,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa"></button></div>
-    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:6px;border-radius:1px;vertical-align:-2px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
+    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1532,7 +1532,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v26.7'; // v26.7: puntuación más suave (ronquido y movimiento); movimientos a menos de 1 min = uno; en el gráfico, el movimiento es una rayita verde abajo; en la onda del reproductor, raya verde «movim.»
+const VERSION = 'v26.8'; // v26.8: movimiento: como mucho uno por minuto (se cuenta y se dibuja así); la rayita verde sale de la base del volumen y es 3 veces más alta
+// v26.7: // v26.7: puntuación más suave (ronquido y movimiento); movimientos a menos de 1 min = uno; en el gráfico, el movimiento es una rayita verde abajo; en la onda del reproductor, raya verde «movim.»
 // v26.6: // v26.6: monitoreo: «Panel de monitoreo» con fondo morado claro hasta abajo; «Aviso por» arriba del panel y en gris; los iconos de «Elige para esta noche» en gris con bordes como «Prueba audífonos»
 // v26.5: // v26.5: monitoreo: a las 6 horas «Fin monitoreo sueño» con fondo rojo; «Prueba audífonos» gris como «Me levanté»
 // v26.4: // v26.4: alarma: tras posponer 2 veces ya no sale «Posponer» (a levantarse); reto de pasos: 30 (antes 20) (app 4.7)
@@ -3376,8 +3377,10 @@ let lunaDetAbierto = true; try { lunaDetAbierto = localStorage.getItem('ronquino
 // ---------- ☀️ Tarjeta de la mañana, 📉 línea de ronquido y 🏷️ etiquetas ----------
 // Puntuación de una noche (0-100) con 4 partes: horas, ronquido, regularidad y calma (movimientos).
 // prev = las noches anteriores (para la regularidad). Solo noches con micrófono de 3 horas o más.
-// Las veces que te moviste: las marcas a menos de 1 minuto de la anterior son el mismo movimiento (darse la vuelta deja varias) (v26.7)
-function movVeces(n) { let c = 0, u = -1e9; for (const t of n.mov || []) { if (t - u >= 60) c++; u = t; } return c; }
+// Los movimientos que cuentan: como mucho uno por minuto (darse la vuelta deja varias marcas: es un movimiento) (v26.8;
+// en v26.7 se encadenaban y en el gráfico seguían saliendo todas)
+function movMarcas(n) { const r = []; for (const t of n.mov || []) if (!r.length || t - r.at(-1) >= 60) r.push(t); return r; }
+const movVeces = n => movMarcas(n).length;
 const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
 const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
 function puntuacion(n, prev) {
@@ -4198,8 +4201,8 @@ function drawTimeline(total) {
     }
   }
   // 🛏️ movimientos (azul) y avisos de voz «estás roncando» (amarillo): líneas de abajo arriba
-  g.fillStyle = '#34D399'; // movimiento: una rayita verde abajo, bajo las barras (v26.7; antes de arriba abajo)
-  for (const t of cur.mov || []) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x - dpr, base + dpr, 2 * dpr, 6 * dpr); }
+  g.fillStyle = '#34D399'; // movimiento: rayita verde que sale de donde empieza el volumen, uno por minuto como mucho (v26.8)
+  for (const t of movMarcas(cur)) { const x = X(t); if (x >= -2 && x <= W) g.fillRect(x - dpr, base - 18 * dpr, 2 * dpr, 18 * dpr); }
   g.fillStyle = '#F472B6';
   for (const t of cur.avisoT || []) { // una raya rosa en la mitad del alto (sin punto): no se confunde con los movimientos (v25.7)
     const x = X(t); if (x < -4 * dpr || x > W) continue;
@@ -4571,7 +4574,7 @@ function plOnda() {
   }
   g.globalAlpha = 1;
   // 🏃 dónde te moviste durante la grabación: raya verde con «movim.» abajo (v26.7)
-  if (e && dur) for (const t of cur?.mov || []) {
+  if (e && dur && cur) for (const t of movMarcas(cur)) {
     if (t < e.off - 1 || t > e.off + dur) continue;
     const xm = Math.max(1, Math.min(w - 2, (t - e.off) / dur * w));
     g.fillStyle = '#34D399'; g.fillRect(xm - 1, 0, 2, h);
@@ -6055,6 +6058,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v26.8', '29 oct 2026', ['🏃 Movimiento: como mucho uno por minuto, también en el gráfico', '🟢 La rayita verde sale de donde empieza el volumen y es más alta']],
   ['v26.7', '29 oct 2026', ['⭐ La puntuación castiga menos el ronquido y el movimiento', '🏃 Los movimientos seguidos (menos de 1 minuto) cuentan como uno', '🟢 En el gráfico, el movimiento es una rayita verde abajo; y en la onda de la grabación, una raya verde «movim.»']],
   ['v26.6', '29 oct 2026', ['💜 Monitoreo: el «Panel de monitoreo» tiene su fondo morado claro', '🔊 «Avisos por» va lo primero del panel, en gris', 'Los botones de «Elige para esta noche», en gris como «Prueba audífonos»']],
   ['v26.5', '29 oct 2026', ['☀️ Al monitorear, a las 6 horas «Fin monitoreo sueño» se pone rojo', '🎧 «Prueba audífonos», en gris como «Me levanté»']],
