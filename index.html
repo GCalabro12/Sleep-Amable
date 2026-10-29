@@ -1542,7 +1542,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.6'; // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
+const VERSION = 'v27.7'; // v27.7: avisos «estás roncando»: botón «🎧 Oír grabaciones» (las que hicieron saltar el aviso) y filtro «Con aviso»; fuera lo de 10 min antes/después y lo de cada 30 s
+// v27.6: // v27.6: cada grabación: hora y minutos a la izquierda, corazón/papelera/cuadradito en medio y ▶ a la derecha
 // v27.5: // v27.5: puntuación del ronquido por parte de la noche (<10 % verde, 10–20 % verde, 20–30 % amarillo, >30 % rojo); al tocar «Ronquido», la tabla con el tiempo, la parte de la noche y cuántas personas roncan así
 // v27.4: // v27.4: al abrir una noche, el «Gráfico de grabaciones» sale desplegado
 // v27.3: // v27.3: = v27.2 publicado de nuevo sin el 🔇
@@ -4124,13 +4125,19 @@ function textoEfecto(fx) {
   return `<div class="avl">En los 10 minutos de antes roncaste <b>${m(antes)}</b>${n > 1 ? ' en total' : ''}; en los 10 de después, <b>${m(despues)}</b>${cambio == null ? '' : cambio < 0 ? ` (<b>${-cambio} % menos</b>)` : cambio > 0 ? ` (${cambio} % más)` : ' (igual)'}.</div>
     <div class="avl">Dejaste de roncar al menos 5 minutos en <b>${paro} de ${n}</b> ${n === 1 ? 'aviso' : 'avisos'}${(n && movio) || fx.some(x => x.movio) ? ` y te moviste justo después en <b>${movio} de ${n}</b>` : ''}.</div>`;
 }
+// La grabación que hizo saltar un aviso: el aviso se dice al acabar de grabarla (hasta 10 s después)
+const conAviso = e => (cur?.avisoT || []).some(t => t >= e.off && t <= e.off + e.dur + 10);
 function renderAvisoNoche() {
   const fx = efectoAvisos(cur, curEvs);
   $('avCard').hidden = !fx.length;
   $('avCard').open = false; // plegado: se abre al tocarlo
+  // v27.7: sin «10 minutos antes / después» (no se entendía); «🎧 Oír grabaciones» enseña abajo solo las de los avisos
+  const nAv = curEvs.filter(conAviso).length;
   if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
-    <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>` + textoEfecto(fx)
-    + `<div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido. Cuentan los minutos que roncas, no el número de grabaciones. Si sigues roncando, te lo repite cada 30 segundos, hasta que pases 30 segundos sin roncar.${cur.inicio < AVISO2_DESDE ? ' Esta noche aún saltaba al minuto y con el 85 %.' : ''}</div>`;
+    <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>
+    ${nAv ? `<button type="button" class="btn" id="avOir" style="margin:8px 0 2px">🎧 Oír grabaciones (${nAv})</button>` : ''}
+    <div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido.</div>`;
+  if ($('avOir')) $('avOir').onclick = () => { filter = new Set(['aviso']); sel.clear(); verRuidos(true); renderStats(); renderList(); };
   requestAnimationFrame(ajustaTitulos);
 }
 const AVISO2_DESDE = new Date(2026, 9, 25, 19, 0).getTime(); // desde la v13.6, 2 minutos (antes 1)
@@ -4154,12 +4161,12 @@ function renderStats() {
   $('tlN').textContent = curEvs.length;
   $('ruidosN').textContent = curEvs.length ? `${curEvs.length} ${curEvs.length === 1 ? 'grabación' : 'grabaciones'}: ronquidos, voces, tos…` : 'Esta noche no se grabó nada';
   renderAvisoNoche();
-  const c = {todos: curEvs.length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
-  const lbl = {todos: 'Todos', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
+  const c = {todos: curEvs.length, aviso: curEvs.filter(conAviso).length, fav: curEvs.filter(e => e.fav).length, ronquido: s.length, voz: curEvs.filter(e => e.tipo === 'voz').length, tos: curEvs.filter(e => e.tipo === 'tos').length, otro: curEvs.filter(e => e.tipo === 'otro').length};
+  const lbl = {todos: 'Todos', aviso: '🎧 Con aviso', fav: '★ Favoritas', ronquido: '😴 Ronquidos', voz: '🗣️ Voces', tos: '🫁 Tos', otro: '🔊 Otros'};
   // 🔻 Filtro: se pueden elegir varios a la vez (ronquidos + tos…); «Todos» lo quita
   $('chips').innerHTML = '<span class="embudo" aria-label="Filtro"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 5h18l-7 8v5l-4 2v-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>';
   for (const k of Object.keys(lbl)) {
-    if ((k === 'otro' || k === 'fav' || k === 'tos') && !c[k] && !filter.has(k)) continue;
+    if ((k === 'otro' || k === 'fav' || k === 'tos' || k === 'aviso') && !c[k] && !filter.has(k)) continue;
     const on = k === 'todos' ? !filter.size : filter.has(k);
     const b = document.createElement('button'); b.className = 'chip' + (on ? ' on' : '');
     b.textContent = `${lbl[k]} (${c[k]})`;
@@ -4288,7 +4295,7 @@ const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
 const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : '🔊 ' + es(e.top);
 function renderList() {
-  const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : e.tipo === k));
+  const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : k === 'aviso' ? conAviso(e) : e.tipo === k));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
   $('selbar').hidden = !list.length;
   $('evList').innerHTML = list.length ? '' : !curEvs.length && cur?.restaurada
@@ -4296,7 +4303,7 @@ function renderList() {
     : '<div class="empty">No se grabó nada de este tipo.</div>';
   $('reNight').style.display = curEvs.length ? '' : 'none'; // sin grabaciones no hay nada que revisar
   // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
-  const avisos = !filter.size || filter.has('ronquido') ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
+  const avisos = !filter.size || filter.has('ronquido') || filter.has('aviso') ? [...(cur.avisoT || [])].sort((a, b) => a - b) : [];
   const usados = new Set();
   const filaAviso = t => { const r = document.createElement('div'); r.className = 'avrow'; r.textContent = `🎧 ${evHora(cur, t)} · Aquí se dijo «estás roncando»`; $('evList').append(r); usados.add(t); };
   for (const e of list) {
@@ -6109,6 +6116,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v27.7', '29 oct 2026', ['🎧 Avisos «estás roncando»: botón «Oír grabaciones» con las grabaciones de cada aviso', 'Fuera los textos que no se entendían']],
   ['v27.6', '29 oct 2026', ['▶ En cada grabación, el botón de escuchar va a la derecha; la hora, a la izquierda']],
   ['v27.5', '29 oct 2026', ['😴 La puntuación del ronquido va según la parte de la noche que roncas', 'Toca «Ronquido» en el panel de puntuación: verás cuánto ronca la gente y dónde está tu noche']],
   ['v27.4', '29 oct 2026', ['🎙️ Al abrir una noche, el gráfico de grabaciones ya sale desplegado']],
