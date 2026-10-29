@@ -1401,7 +1401,7 @@ body.pl-on .wrap{padding-bottom:190px}
         <li>🎵 Música para dormirte y sonidos que tapan los ronquidos de quien duerme a tu lado.</li>
         <li>⏰ Alarmas que suben poco a poco y un reto para no volver a dormirte.</li>
         <li>💬 <b>Luna</b> te aconseja mirando tus noches.</li>
-        <li>🔒 Tus grabaciones <b>nunca salen de tu móvil</b>.</li>
+        <li>🔒 Tus grabaciones <b>se quedan solo en tu móvil</b>: no se suben a internet ni se publican, salvo que tú decidas compartir alguna.</li>
       </ul>
     </div>
     <div class="tslide">
@@ -1414,7 +1414,7 @@ body.pl-on .wrap{padding-bottom:190px}
         <li>📱 Deja el móvil <b>enchufado</b> y boca arriba, en la <b>mesilla</b> o <b>sobre el colchón</b>, cerca de tu cabeza.</li>
         <li>🌙 Toca <b>«Empezar a monitorear»</b> y duérmete. La pantalla se queda casi negra.</li>
         <li>☀️ Por la mañana, toca <b>«Fin monitoreo sueño»</b> y mira cómo has dormido.</li>
-        <li><i class="icos" aria-hidden="true"></i> En el <b>colchón</b>, en la esquina junto a la almohada, mide también las <b>fases del sueño</b>. Debajo de la almohada no: se calienta y oye peor.</li>
+        <li><i class="icos" aria-hidden="true"></i> En el <b>colchón</b>, en la esquina junto a la almohada, mide también las <b>fases del sueño</b>.</li>
       </ul>
     </div>
   </div>
@@ -1549,7 +1549,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.3'; // v28.3: monitoreo: 🌙 y ✈️ juntos, 🎵 a la derecha; en «Música para dormir», la ✕ siempre visible
+const VERSION = 'v28.4'; // v28.4: presentación: fuera «debajo de la almohada no…»; «tus grabaciones se quedan solo en tu móvil: no se suben a internet ni se publican»
+// v28.3: // v28.3: monitoreo: 🌙 y ✈️ juntos, 🎵 a la derecha; en «Música para dormir», la ✕ siempre visible
 // v28.2: // v28.2: monitoreo: fuera «Probar detección»; el panel con borde morado; la hora un poco más a la derecha
 // v28.1: // v28.1: aviso «estás roncando»: cada ronquido cuenta solo 6 s (antes 20) y el aviso se dice justo después de un ronquido, no en un silencio; su hora se guarda con el reloj de las grabaciones (la raya rosa salía unos segundos desplazada)
 // v28.0: // v28.0: tabla del ronquido: la columna «Personas» pasa a «% población»
@@ -6142,6 +6143,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.4', '29 oct 2026', ['🔒 Presentación más clara: tus grabaciones se quedan solo en tu móvil']],
   ['v28.3', '29 oct 2026', ['🌙 ✈️ juntos y 🎵 a la derecha', '🎵 En la música para dormir, la ✕ de cerrar siempre se ve']],
   ['v28.2', '29 oct 2026', ['💜 Monitoreo: el panel con borde morado; la hora un poco más a la derecha', 'Fuera el botón «Probar detección»']],
   ['v28.1', '29 oct 2026', ['🎧 El aviso «estás roncando» se dice justo después de un ronquido, no en un silencio', 'Cuenta solo el tiempo que roncas de verdad']],
