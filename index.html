@@ -1534,7 +1534,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v27.2'; // v27.2: aviso de sonidos: fuera «Sobre todo: …» (los nombres de la IA, como «león» o «tigre», confundían)
+const VERSION = 'v27.3'; // v27.3: = v27.2 publicado de nuevo sin el 🔇
+// v27.2: // v27.2: aviso de sonidos: fuera «Sobre todo: …» (los nombres de la IA, como «león» o «tigre», confundían) y sin el icono 🔇 delante
 // v27.1: // v27.1: aviso de sonidos que no son ronquido ni voz: qué pueden ser (respiraciones fuertes, ruidos de fuera…), que no cuentan y que menos de 100 es normal
 // v27.0: // v27.0: minutos roncando (y de voces): solo los tramos donde suena de verdad, no la grabación entera de 2 min; las noches de antes se recalculan al abrirlas
 // v26.9: // v26.9: onda del reproductor: en grabaciones casi en silencio ya no se pinta todo del color de la etiqueta (solo las rayas fuertes)
@@ -4152,7 +4153,7 @@ function pintaRuido(n) {
   box.open = false;
   // v27.1: quien usa la app suele roncar o respirar fuerte: muchos de estos sonidos son suyos y es normal; no cuentan para la puntuación
   const normal = d < 100; box.classList.toggle('normal', normal);
-  box.innerHTML = `<summary><span>🔇 Esta noche hubo ${d} sonidos que no son ronquido ni voz${normal ? '<small>· normal</small>' : ''}</span></summary>
+  box.innerHTML = `<summary><span>Esta noche hubo ${d} sonidos que no son ronquido ni voz${normal ? '<small>· normal</small>' : ''}</span></summary>
     <p class="note" style="margin:8px 0 0">Son sonidos que la IA no reconoce como ronquido, tos o voz: respiraciones fuertes, ruidos de la boca o la garganta, ruidos de fuera (coches, vecinos, el viento…) u otros que no sabe qué son. <b>No cuentan para la puntuación.</b> Menos de 100 en una noche es normal.${normal ? '' : ' Son bastantes: mira si hay relojes con tictac, aparatos que hagan ruido u otras cosas que puedan despertarte y confundir a la IA.'}</p>`;
   requestAnimationFrame(ajustaTitulos);
 }
@@ -6081,7 +6082,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
-  ['v27.2', '29 oct 2026', ['🔇 El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…)']],
+  ['v27.2', '29 oct 2026', ['El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…) ni el icono del altavoz tachado']],
   ['v27.1', '29 oct 2026', ['🔇 Sonidos que no son ronquido ni voz: qué pueden ser, que no cuentan para la puntuación y que menos de 100 es normal']],
   ['v27.0', '29 oct 2026', ['😴 Los minutos roncando cuentan solo cuando roncas de verdad, no la grabación entera (las noches de antes se corrigen al abrirlas)']],
   ['v26.9', '29 oct 2026', ['🎨 En la onda de la grabación, el color solo va donde suena fuerte (antes, en grabaciones casi en silencio, salía todo amarillo)']],
