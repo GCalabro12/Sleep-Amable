@@ -201,6 +201,9 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #ask .finrow span{flex:1}
 #ask .finrow button{background:#312E81;border:0;color:#E0E7FF;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
 #ask .finrow.ok{color:#86EFAC}
+#ask .finrow.pend{position:relative}
+#ask .finrow.pend::after{content:'';position:absolute;inset:-3px;border:3px dashed #C4B5FD;border-radius:14px;pointer-events:none;animation:suenaYa 1s ease-in-out infinite} /* lo que sigue activo: el mismo reborde punteado de la grabación que suena */
+#askP:empty{display:none}
 #ask p{color:var(--muted);font-size:15px;margin:0 0 16px;white-space:pre-line}
 #ask.solo p{color:var(--text);font-size:17px;line-height:1.45}
 #prep .steps li{margin:10px 0}
@@ -1570,7 +1573,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.7'; // v29.7: Texto libre: Probar y Empezar en horizontal; tocar el icono lo activa como los demás audios (sin texto, abre el cuadro) y la flechita lo despliega
+const VERSION = 'v29.8'; // v29.8: ventana de buenos días: sin el texto largo; lo que sigue activo (No molestar…), con el reborde punteado en movimiento
+// v29.7: Texto libre: Probar y Empezar en horizontal; tocar el icono lo activa como los demás audios (sin texto, abre el cuadro) y la flechita lo despliega
 // v29.6: monitoreo: «No grabar» entre ✈️ y 🎵, en dos renglones
 // v29.5: monitoreo: «Audios para dormir» y «Música para dormir» en carteles desplegables, con ✍️ Texto libre; velocidad y Probar siempre a la vista; iconos dibujados de secador y ventilador, batidora más grande
 // v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
@@ -2832,13 +2836,13 @@ let finRefresh = null;
 function todoComoAntes() {
   if (!pendientes().length) return Promise.resolve();
   $('askT').textContent = '☀️ ¡Buenos días! Todo como antes';
-  $('askP').textContent = 'Amable Sleep ya ha quitado lo que puso por la noche. Esto lo tienes que hacer tú (Android no deja que una app lo haga sola):';
+  $('askP').textContent = '';
   $('askA').textContent = '✅ Listo'; $('askB').textContent = 'Más tarde';
   const pinta = () => {
     const p = pendientes();
     $('askList').innerHTML = p.length ? '' : '<div class="finrow ok"><span>✅ Todo vuelve a estar como antes</span></div>';
     for (const x of p) {
-      const d = document.createElement('div'); d.className = 'finrow';
+      const d = document.createElement('div'); d.className = 'finrow pend';
       d.innerHTML = `<span>${x.t}</span><button>${x.b}</button>`;
       d.querySelector('button').onclick = () => { x.f(); setTimeout(pinta, 1500); };
       $('askList').append(d);
@@ -6289,6 +6293,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.8', '30 oct 2026', ['Buenos días: ventana más clara; lo que sigue activo se ve con un reborde en movimiento']],
   ['v29.7', '30 oct 2026', ['✍️ Texto libre: toca el icono y empieza, como los demás audios; la flechita abre el cuadro']],
   ['v29.6', '30 oct 2026', ['Monitoreo más compacto: «No grabar» arriba, entre el avión y la música']],
   ['v29.5', '30 oct 2026', ['Monitoreo: audios y música separados en desplegables, y ✍️ Texto libre también aquí', 'Texto libre: velocidad y Probar siempre a la vista', 'Iconos nuevos de secador y ventilador']],
