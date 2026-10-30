@@ -251,6 +251,8 @@ body.tabs-on .wrap{padding-bottom:84px}
 #alarma .banda>summary .estado.si{background:#14532D;color:#86EFAC}
 #alarma .banda>div{padding:6px 10px 8px}
 #alarma .banda .card{border:0;background:transparent;padding:10px 2px;margin-bottom:6px}
+.tlbox{margin-top:10px}
+#tlTxt{display:block;width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0B1020;color:#E0E7FF;border:1px solid #475569;border-radius:12px;padding:10px;font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
 .sepfino{height:1px;background:#A78BFA;opacity:.5;margin:2px 0 10px}
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
 .alcard.off{opacity:.55}
@@ -1071,7 +1073,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
-  <details class="instr card banda siempreAbierto" id="guiaDet" open><summary><span>🎧 Relajaciones para dormir</span></summary><div id="guiaBody"></div></details>
+  <details class="instr card banda siempreAbierto" id="guiaDet" open><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
   <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
   <details class="instr card banda siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
   <div class="card">
@@ -1560,7 +1562,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v28.8'; // v28.8: «Alarma y música»: «⏰ Despertadores» también se pliega; cada cartel envuelve lo de abajo con borde morado y esquinas de arriba redondeadas
+const VERSION = 'v28.9'; // v28.9: «Relajaciones para dormir» pasa a «Audios para dormir»; nuevo ✍️ «Texto libre»: pegas un texto y te lo repite 5 minutos con música suave de fondo
+// v28.8: «Alarma y música»: «⏰ Despertadores» también se pliega; cada cartel envuelve lo de abajo con borde morado y esquinas de arriba redondeadas
 // v28.7: «Alarma y música»: banners morados de lado a lado con el título dentro: 🎧 Relajaciones para dormir y 🎵 Música para dormir (desplegables) y ⏰ Despertadores (siesta y alarmas)
 // v28.6: nueva relajación guiada «Seguro y sin miedo» (6 min)
 // v28.5: nueva relajación guiada «Sentirte querido» (7 min, voz de Gustavo + Mar en calma)
@@ -3184,6 +3187,10 @@ const GUIAS = [ // {id, icon, name, min, file}
   {id: 'g-querido', icon: '💛', name: 'Sentirte querido', min: 7, file: 'audios/sentirte-querido.mp3', guia: true},
   {id: 'g-seguro', icon: '🌙', name: 'Seguro y sin miedo', min: 6, file: 'audios/seguro-sin-miedo.mp3', guia: true}
 ];
+// ✍️ Texto libre (en «Relajaciones para dormir»): la persona pega un texto y la app se lo repite 5 minutos con música suave de fondo
+const TL_C = {id: 'tl', icon: '✍️', name: 'Texto libre', min: 5, file: 'audios/fondo-texto.mp3', guia: true, tl: true};
+const TL = {abierto: false, txt: '', t: null}, TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
+try { TL.txt = localStorage.getItem('ronquino-textolibre') || ''; } catch {}
 const CUNA_FADE = 5;
 let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
 try { const m = +localStorage.getItem('ronquino-cunamin'); if ([5, 10, 15].includes(m)) cunaMin = m; } catch {}
@@ -3228,7 +3235,7 @@ function renderCunas() {
   });
   const box = $('cunaBody').querySelector('.cunas');
   const gbox = document.createElement('div'); gbox.className = 'cunas';
-  const tit = document.createElement('p'); tit.className = 'cutit'; tit.textContent = '🎧 Relajaciones guiadas';
+  const tit = document.createElement('p'); tit.className = 'cutit'; tit.textContent = '🎧 Audios para dormir';
   box.after(tit, gbox);
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS, ...GUIAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
@@ -3300,8 +3307,29 @@ function endCuna(now) {
 // 🎵 Música para dormir sola (en «Alarma y música para dormir»): para quien solo quiere música, sin monitorear.
 // Suena los minutos elegidos (5, 10 o 15), se va apagando al final y usa el mismo volumen que en el monitoreo.
 const MUS = {au: null, c: null, fin: 0, t: null};
+const musVol = c => c?.tl ? cunaVol * TL_MUSICA : cunaVol;
+function tlPara() {
+  clearTimeout(TL.t);
+  try { AND?.callar?.(); } catch {}
+  try { if (!AND) speechSynthesis.cancel(); } catch {}
+}
+function tlDi() { // una repetición; la siguiente, tras la pausa. No empieza ninguna que no quepa: la música acaba sola
+  const au = MUS.au; if (!au || !MUS.c?.tl) return;
+  const t = sinEmojis(TL.txt), ms = 1500 + t.length * 90;
+  if (((isFinite(au.duration) ? au.duration : TL_C.min * 60) - au.currentTime) * 1000 < ms + 3000) return;
+  if (AND) {
+    if (!AND.decirDespacio?.(t)) AND.hablar?.(t); // con auriculares, más despacio; sin ellos, por el altavoz
+    TL.t = setTimeout(tlDi, ms + TL_PAUSA);
+  } else if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(t); u.lang = 'es-ES'; u.rate = .8;
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+    u.onend = () => { if (MUS.c?.tl) TL.t = setTimeout(tlDi, TL_PAUSA); };
+    speechSynthesis.speak(u);
+  }
+}
 function musPara(suave) {
   if (!MUS.au) return;
+  if (MUS.c?.tl) tlPara();
   const au = MUS.au; clearInterval(MUS.t); MUS.au = null; MUS.c = null;
   setTimeout(() => { if (AND && !MUS.au && noise.au.paused) AND.ruido(false); }, 1500); // suelta el servicio (si no suena otra cosa)
   if (!suave) { au.pause(); pintaMusica(); return; }
@@ -3312,11 +3340,12 @@ function musPara(suave) {
 function musToca(c) {
   if (MUS.c?.id === c.id) { musPara(true); return; } // otro toque a la que suena: se para
   musPara(false); stopCunaPrev(); sinBotonAuric();
-  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = musVol(c);
   au.play().catch(() => {});
   AND?.ruido(true); // en la app Android: sigue sonando con la pantalla apagada (servicio de reproducción)
   Object.assign(MUS, {au, c, fin: Date.now() + (c.guia ? c.min : cunaMin) * 60e3});
   if (c.guia) au.onended = () => { if (MUS.au === au) musPara(false); };
+  if (c.tl) { AND?.prepararVoz?.(); tlDi(); }
   MUS.t = setInterval(() => {
     const queda = c.guia ? Math.max(0, (isFinite(au.duration) ? au.duration : c.min * 60) - au.currentTime) : (MUS.fin - Date.now()) / 1000;
     if (!c.guia && queda <= CUNA_FADE && MUS.au) MUS.au.volume = Math.max(0, cunaVol * queda / CUNA_FADE);
@@ -3333,7 +3362,13 @@ function pintaMusica() {
   // 🎧 Relajaciones guiadas: su propia tarjeta, abierta y arriba del todo
   gbox.innerHTML = `<p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
     ${MUS.c?.guia ? suena : ''}${vol}
-    <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}</div>`;
+    <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}
+      <button type="button" class="cuna${MUS.c?.tl || TL.abierto ? ' on' : ''}" id="tlBtn"><b>${MUS.c?.tl ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small></button></div>
+    <div class="tlbox" id="tlBox"${TL.abierto ? '' : ' hidden'}>
+      <p class="note" style="margin:0 0 8px">Pega o escribe aquí tu texto y te lo repito 5 minutos con música suave de fondo.</p>
+      <textarea id="tlTxt" maxlength="1000" rows="4" placeholder="Pega aquí tu texto…"></textarea>
+      ${MUS.c?.tl ? '' : '<button type="button" class="btn wide" id="tlGo">▶️ Empezar</button>'}
+    </div>`;
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
     ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
@@ -3341,7 +3376,7 @@ function pintaMusica() {
   document.querySelectorAll('.musVol').forEach(r => r.oninput = e => {
     cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
     document.querySelectorAll('.musVol').forEach(o => { if (o !== e.target) o.value = e.target.value; });
-    if (MUS.au && (MUS.c?.guia || MUS.fin - Date.now() > CUNA_FADE * 1000)) MUS.au.volume = cunaVol;
+    if (MUS.au && (MUS.c?.guia || MUS.fin - Date.now() > CUNA_FADE * 1000)) MUS.au.volume = musVol(MUS.c);
   });
   box.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
     cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
@@ -3350,6 +3385,10 @@ function pintaMusica() {
   });
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
   gbox.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
+  $('tlTxt').value = TL.txt;
+  $('tlTxt').oninput = e => { TL.txt = e.target.value; try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
+  $('tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } TL.abierto = !TL.abierto; pintaMusica(); };
+  if ($('tlGo')) $('tlGo').onclick = () => { if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; } musToca(TL_C); };
   document.querySelectorAll('.musStop').forEach(b => b.onclick = () => musPara(true));
 }
 pintaMusica();
@@ -6160,6 +6199,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v28.9', '30 oct 2026', ['✍️ Nuevo en «Audios para dormir»: «Texto libre»: pega tu texto y te lo repito 5 minutos con música suave']],
   ['v28.8', '29 oct 2026', ['«Alarma y música»: Despertadores también se pliega, y cada cartel envuelve lo suyo con las esquinas redondeadas']],
   ['v28.7', '29 oct 2026', ['«Alarma y música»: títulos más claros en banners morados: Relajaciones, Música para dormir y Despertadores']],
   ['v28.6', '29 oct 2026', ['🌙 Nueva relajación para dormir: «Seguro y sin miedo», 6 minutos']],
