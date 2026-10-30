@@ -290,6 +290,9 @@ body.tabs-on .wrap{padding-bottom:84px}
 #reducir .auFila span{flex:1;font-size:15px;color:#BFDBFE;opacity:.7} #reducir .auFila span:first-child{text-align:right}
 #reducir .auFila span.on{opacity:1;color:#fff;font-weight:700}
 #reducir .auAl .swt i{background:#6D5BD0}
+#reducir .auRef{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid #3B82F6;font-size:15px;font-weight:600;color:#fff}
+#reducir .auRef>label:first-child{flex:1}
+#reducir .auRef small{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:#BFDBFE}
 #reducir .auTx{display:block;white-space:nowrap;text-align:center;margin-top:8px;font-size:12.5px;color:#BFDBFE}
 .swt input{opacity:0;width:0;height:0}
 .swt i{position:absolute;inset:0;background:#374151;border-radius:13px;transition:.2s}
@@ -1244,13 +1247,14 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu aviso de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, pon «Avisos por» en <b>Altavoz</b> y sonará por el altavoz del móvil.</div>
   <details class="instr card" id="avisoComo"><summary><span>ℹ️ Cómo funciona</span></summary>
-    <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.</span></div>
+    <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
   <button class="big" id="startRed">🌙 Monitorear y avisar de ronquidos</button>
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
-    <small id="altavozTx" class="auTx">Solo auricular, para no despertar a nadie</small></div>
+    <small id="altavozTx" class="auTx">Solo auricular, para no despertar a nadie</small>
+    <div class="auRef"><label for="refuerzo">🔁 Refuerzo de aviso<small>Lo repite cada 8 segundos hasta que toques la pantalla o te muevas (2 minutos como máximo).</small></label><label class="swt"><input type="checkbox" id="refuerzo"><i></i></label></div></div>
   <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres otro aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
     <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
       <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
@@ -1593,7 +1597,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.4'; // v30.4: monitoreo: títulos en morado apagado y «Fin monitoreo sueño» en amarillo apagado
+const VERSION = 'v30.5'; // v30.5: 🔁 Refuerzo de aviso: repite la frase cada 8 s hasta que tocas la pantalla o te mueves; consejo de la barbilla hacia arriba
+// v30.4: monitoreo: títulos en morado apagado y «Fin monitoreo sueño» en amarillo apagado
 // v30.3: monitoreo: ventana de 🌙✈️ más clara: qué elimina cada modo y que ninguno afecta al detector
 // v30.2: monitoreo: 🌙 y ✈️ en un botón, y botón «Sonar» con su ventana; en el colchón el sonar se apaga solo; sonar: un cambio que se queda ya no marca movimiento sin parar; noches con grabaciones: 7, 14 o 21, y los números se quedan; probar el sonar: 20 s y dice «movimiento»
 // v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
@@ -1988,6 +1993,15 @@ function avisoHora(h) {
   const b = $('lastEv'); b.hidden = false; b.textContent = `${cfg.altavoz ? '🔊 Aviso por altavoz' : '🎧 Aviso por auriculares'} ›`;
 }
 $('lastEv').onclick = () => aviso('Te he avisado a las:\n\n' + (live.avisoHoras || []).join('\n'));
+// 🔁 Refuerzo de aviso: tras el aviso, repite la frase hasta que tocas la pantalla o te mueves (como mucho 2 minutos)
+const REF_CADA = 8000, REF_VECES = 15;
+const refFrase = () => { const nom = (sesion?.nombre || '').trim().split(/\s+/)[0]; return `${nom ? nom + ', ' : ''}estás roncando. Toca la pantalla. De lado y barbilla arriba.`; };
+function refuerzoPara() { if (!live.ref) return; live.ref = null; try { AND?.callar?.(); } catch {} }
+function refuerzoTick() {
+  const R = live.ref; if (!R || Date.now() - R.t < REF_CADA) return;
+  if (R.n >= REF_VECES || !decirNoche(refFrase())) { live.ref = null; return; }
+  R.n++; R.t = Date.now();
+}
 function avisoTick(det, dt) {
   if (!VOZ_OK || !avisarNoche || !live.night) return;
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
@@ -2018,6 +2032,7 @@ function avisoTick(det, dt) {
     live.night.avisos = (live.night.avisos || 0) + 1;
     (live.night.avisoT ||= []).push(Math.round(det.samples / SR)); // con el reloj de las grabaciones (como su «off»): el del móvil se desfasaba unos segundos y la raya rosa salía antes del ronquido (v28.1)
     avisoHora(hhmm(ahora));
+    if (cfg.refuerzo) live.ref = {n: 0, t: ahora};
   }
 }
 
@@ -2069,6 +2084,8 @@ function pintaAltavoz() {
   $('altavozTx').textContent = cfg.altavoz ? 'Por el altavoz (si duermes solo)' : 'Solo auricular, para no despertar a nadie';
   $('auL').classList.toggle('on', !cfg.altavoz); $('auR').classList.toggle('on', !!cfg.altavoz);
 }
+$('refuerzo').checked = !!cfg.refuerzo;
+$('refuerzo').onchange = () => { cfg.refuerzo = $('refuerzo').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} };
 $('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaAltavoz(); };
 pintaAltavoz();
 // Empezar desde Reducir ronquidos: la misma pantalla de monitoreo, con el aviso y el mensaje que tengas activados
@@ -2686,7 +2703,7 @@ async function startListening() {
   movEmpezar(night);
   if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
-  Object.assign(live, {sonar: null, acel: [], sonarColchon: false, sonarManual: false}); if (cfg.sonar) sonarEmpieza(night);
+  Object.assign(live, {sonar: null, acel: [], sonarColchon: false, sonarManual: false, ref: null}); if (cfg.sonar) sonarEmpieza(night);
   pintaSonarBtn();
   $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
@@ -2713,7 +2730,7 @@ async function startListening() {
     if (ctx.state === 'suspended') ctx.resume();
     if (live.sonar && AND?.auriculares && Date.now() % 30000 < 500) live.sonar.vol(!AND.auriculares()); // con auriculares, sonar en silencio
     vigilaDespertar(det);
-    avisoTick(det, .5); msgTick();
+    avisoTick(det, .5); msgTick(); refuerzoTick();
     { const sig = msgActivo() && live.msg ? live.msg.plan.find(t => !live.msg.dichos.has(t)) : null;
       $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').textContent = `💬 Aviso ${hhmm(sig)}`; }
     { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
@@ -2776,6 +2793,7 @@ function sonarColchon(t) {
   if (a.filter(x => t - x <= 1800).length >= 3) { live.sonar.stop(); live.sonar = null; live.sonarColchon = true; pintaSonarBtn(); }
 }
 function marcaMov(night, t, porSonar) {
+  if (live.ref && (!porSonar || !cfg.altavoz || Date.now() - live.ref.t > 4500)) refuerzoPara(); // (por el altavoz, el sonar podría confundir la propia voz con un movimiento)
   live.ultMov = Date.now(); night.mov ||= [];
   if (!night.mov.length || t - night.mov.at(-1) >= 20) { night.mov.push(t); if (porSonar) night.movSonar = (night.movSonar || 0) + 1; }
 }
@@ -2794,7 +2812,7 @@ function movEmpezar(night) {
   };
   addEventListener('devicemotion', live.mov);
 }
-$('listen').addEventListener('pointerdown', () => { movToque = Date.now(); }, true);
+$('listen').addEventListener('pointerdown', () => { movToque = Date.now(); refuerzoPara(); }, true);
 
 // 🌅 ¿Se ha levantado? Luz encendida (sensor de luz, app Android 3.2) + movimiento → cuenta atrás de 5 minutos
 // y luego la pantalla «¿Quieres detener el monitoreo del sueño?». Si la luz se apaga, la cuenta se anula.
@@ -6219,7 +6237,7 @@ const FICHAS = [
    f: ['Sleep Foundation: Alcohol and Sleep', 'https://www.sleepfoundation.org/nutrition/alcohol-and-sleep'],
    q: '¿Cómo afectan el café y el alcohol a mi sueño y a mis ronquidos?'},
   {ic: '🛌', t: 'Dormir de lado',
-   p: ['Boca arriba, la lengua y el paladar caen hacia atrás y estrechan el paso del aire. De lado, el aire pasa mejor y se ronca menos.',
+   p: ['Boca arriba, la lengua y el paladar caen hacia atrás y estrechan el paso del aire. De lado, el aire pasa mejor y se ronca menos. Procura también dejar la barbilla hacia arriba: con la cabeza hacia abajo el paso del aire se estrecha.',
        'Truco: una almohada detrás de la espalda, o una pelota de tenis cosida en la espalda del pijama, para no darte la vuelta.',
        'Elevar un poco la cabecera de la cama también ayuda.'],
    prueba: 'Activa en Aviso de ronquidos el aviso «estás roncando»: te recordará cambiar de postura.',
@@ -6365,7 +6383,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.4', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
+  ['v30.5', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🔁 Refuerzo de aviso: te lo repite hasta que toques la pantalla o te muevas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
@@ -6420,7 +6438,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov}; // para pruebas
 </script>
 </body>
 </html>
