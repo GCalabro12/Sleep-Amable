@@ -605,7 +605,6 @@ details.hist[open] summary{margin-bottom:10px}
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
-.monit .tres i{background:#fff}
 #lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
 .ltop{column-gap:10px}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
@@ -682,7 +681,8 @@ details.hist[open] summary{margin-bottom:10px}
 #finQ .fq2{width:100%;max-width:420px;padding:16px;border-radius:18px;border:1px solid #6D5BD0;background:#1E1B4B;color:#E0E7FF;font-size:19px;margin-bottom:16px}
 #finQ .fqp{display:flex;gap:8px;width:100%;max-width:420px}
 #finQ .fqp button{flex:1;padding:14px 0;border-radius:16px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:17px}
-.clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1}
+.clock{font-size:clamp(42px,14vw,60px);font-weight:200;letter-spacing:2px;color:#CBD5E1;line-height:1.1;font-variant-numeric:tabular-nums}
+.clock small{font-size:.32em;letter-spacing:0;margin-left:4px;color:#94A3B8} /* los segundos, abajo a la derecha */
 .elapsed{color:var(--dim);margin-bottom:2px;font-size:14px}
 .duofila{display:flex;gap:10px;width:100%;margin:0} /* Prueba audífonos (izquierda) y Me levanté (derecha) */
 .duo{position:relative;flex:1;display:flex;min-width:0}
@@ -718,7 +718,9 @@ details.hist[open] summary{margin-bottom:10px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
 button.last{background:#1E293B;border:1px solid #475569;border-radius:10px;padding:7px 12px;color:#E2E8F0}
 .state:empty,.last:empty{display:none}
-#stopBtn{margin:0;background:#111827;border:1.5px solid #6D5BD0;color:#C4B5FD;padding:12px 26px;border-radius:14px}
+#stopBtn{margin:0;background:#111827;border:1.5px solid #3B82F6;color:#C4B5FD;padding:12px 26px;border-radius:14px}
+#stopBtn .tres i{background:#93C5FD}
+#stopBtn.rojo .tres i{background:#fff}
 #stopBtn.rojo{background:#B91C1C;border-color:#F87171;color:#fff} /* a las 6 horas de monitorear: se ve que ya toca terminar (v26.5) */
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
 /* Noche */
@@ -1544,9 +1546,9 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
-    <button id="stopBtn">☀️ Fin monitoreo sueño</button>
+    <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
     <div class="lgrupo panelMon">
-    <div class="monit">Panel de monitoreo<span class="tres"><i></i><i></i><i></i></span></div>
+    <div class="monit">Panel de monitoreo</div>
     <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
@@ -1564,7 +1566,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.3'; // v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
+const VERSION = 'v29.4'; // v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
+// v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
 // v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
 // v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
 // v29.0: iconos: los 4 de «Audios para dormir», amarillos (Seguro y sin miedo pasa de 🌙 a 😌); Luna dormida y Estrellitas, en otro color
@@ -2641,7 +2644,7 @@ async function startListening() {
   renderLiveSens(); sinBotonAuric();
   $('stopBtn').classList.remove('rojo');
   live.timer = setInterval(() => {
-    $('clock').textContent = hhmm(Date.now());
+    $('clock').innerHTML = `${hhmm(Date.now())}<small>${String(new Date().getSeconds()).padStart(2, '0')}</small>`;
     $('stopBtn').classList.toggle('rojo', Date.now() - night.inicio >= 6 * 3600e3); // 6 horas monitoreando: «Fin monitoreo sueño» en rojo
     { // la próxima alarma, a la izquierda, y debajo cuánto falta («falta 7:30») (v26.3) (tocarla: el desplegable)
       const sig = ALS.list.filter(a => a.on).map(a => ({h: a.hora, t: proxima(a.hora)})).sort((a, b) => a.t - b.t)[0];
@@ -6234,6 +6237,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.4', '30 oct 2026', ['Monitoreo: segundos junto a la hora y «Fin monitoreo sueño» con borde azul']],
   ['v29.3', '30 oct 2026', ['ℹ️ «Cómo funciona», justo debajo del título en todas las pantallas']],
   ['v29.2', '30 oct 2026', ['🎵 Iconos de música en azul, con una aspiradora y una batidora de verdad']],
   ['v29.1', '30 oct 2026', ['✍️ Texto libre: botón para probar y voz normal, lenta o muy lenta', 'Monitoreo: toca «Aviso por auriculares» para ver a qué horas te avisé']],
