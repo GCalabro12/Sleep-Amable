@@ -1281,14 +1281,15 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 6px">😴 Dormir siesta</h1>
   <p class="note" style="margin:0 0 12px">Solo una alarma y, si quieres, música de fondo. No se monitorea ni se graba nada.</p>
+  <button class="big" id="sieGo" style="margin-bottom:14px">😴 Empezar siesta</button>
   <div class="card">
+    <div style="font-weight:600;font-size:17px;margin-bottom:10px">⏰ Alarma</div>
     <div class="algrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:var(--muted)">
       <label>Duración<select id="sieMin" style="width:100%;margin-top:3px"><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
       <label>Tono<button class="tonobtn" id="sieSon" type="button"></button></label>
     </div>
   </div>
-  <div class="card"><b>🎵 Música de fondo</b><div id="sieMus"></div></div>
-  <button class="big" id="sieGo">😴 Empezar siesta</button>
+  <details class="instr card" id="sieDet"><summary><span>🎵 Música de fondo</span><b class="estado" id="sieSum"></b></summary><div id="sieMus"></div></details>
 </section>
 
 <!-- ALGUIEN RONCA A MI LADO -->
@@ -1606,7 +1607,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.6'; // v30.6: «Saber si ronco y avisos» junta los avisos (fuera la pantalla Aviso de ronquidos); nuevo 😴 «Dormir siesta» con alarma y música; sonar: la base del móvil hacia ti
+const VERSION = 'v30.7'; // v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
+// v30.6: «Saber si ronco y avisos» junta los avisos (fuera la pantalla Aviso de ronquidos); nuevo 😴 «Dormir siesta» con alarma y música; sonar: la base del móvil hacia ti
 // v30.5: 🔁 Refuerzo de aviso: repite la frase cada 8 s hasta que tocas la pantalla o te mueves; consejo de la barbilla hacia arriba
 // v30.4: monitoreo: títulos en morado apagado y «Fin monitoreo sueño» en amarillo apagado
 // v30.3: monitoreo: ventana de 🌙✈️ más clara: qué elimina cada modo y que ninguno afecta al detector
@@ -5576,7 +5578,8 @@ const SIE = {c: null, suena: false};
 try { SIE.c = localStorage.getItem('ronquino-siemus'); } catch {}
 function pintaSiesta() {
   $('sieMin').value = ALS.siesta.min; $('sieSon').textContent = tonoTxt(ALS.siesta.son);
-  const b = $('sieMus');
+  const b = $('sieMus'), sc = CUNAS.find(x => x.id === SIE.c);
+  $('sieSum').textContent = sc ? sc.name : 'no'; $('sieSum').classList.toggle('si', !!sc);
   b.innerHTML = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" id="sieVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
     <div class="cunas">${[{id: '', icon: '🚫', name: 'Ninguna'}, ...CUNAS].map(c => `<button type="button" class="cuna${(SIE.c || '') === c.id ? ' on' : ''}" data-s="${c.id}"><b>${cunaIco(c)}</b>${c.name}</button>`).join('')}</div>`;
@@ -6419,7 +6422,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.6', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
+  ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
