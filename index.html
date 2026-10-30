@@ -611,7 +611,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lgrupo.panelMon{background:#A78BFA26;border:2.5px solid #8B5CF6;border-radius:16px;padding:8px 8px 10px} /* v28.2: borde morado, como la barra «Panel de monitoreo» */ /* morado claro: de «Panel de monitoreo» para abajo, todo es el panel (v26.6) */
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
-.ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
+.ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#E9E5F5;background:#54478A;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas apagadas (v30.4) */
 #lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
 #muteBtn{margin:0 0 0 auto;height:50px;min-width:104px;padding:2px 8px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;line-height:1.2;white-space:nowrap} /* entre ✈️ y 🎵, en dos renglones (v29.6) */
 #muteBtn small{display:block;font-size:12px;color:#94A3B8}
@@ -735,7 +735,7 @@ details.hist[open] summary{margin-bottom:10px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
 button.last{background:#1E293B;border:1px solid #475569;border-radius:10px;padding:7px 12px;color:#E2E8F0}
 .state:empty,.last:empty{display:none}
-#stopBtn{margin:0;background:#111827;border:1.5px solid #3B82F6;color:#C4B5FD;padding:12px 26px;border-radius:14px}
+#stopBtn{margin:0;background:#5C4F1C;border:1.5px solid #3B82F6;color:#FDE68A;padding:12px 26px;border-radius:14px} /* amarillo apagado (v30.4) */
 #stopBtn .tres i{background:#93C5FD}
 #stopBtn.rojo .tres i{background:#fff}
 #stopBtn.rojo{background:#B91C1C;border-color:#F87171;color:#fff} /* a las 6 horas de monitorear: se ve que ya toca terminar (v26.5) */
@@ -1593,7 +1593,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.3'; // v30.3: monitoreo: ventana de 🌙✈️ más clara: qué elimina cada modo y que ninguno afecta al detector
+const VERSION = 'v30.4'; // v30.4: monitoreo: títulos en morado apagado y «Fin monitoreo sueño» en amarillo apagado
+// v30.3: monitoreo: ventana de 🌙✈️ más clara: qué elimina cada modo y que ninguno afecta al detector
 // v30.2: monitoreo: 🌙 y ✈️ en un botón, y botón «Sonar» con su ventana; en el colchón el sonar se apaga solo; sonar: un cambio que se queda ya no marca movimiento sin parar; noches con grabaciones: 7, 14 o 21, y los números se quedan; probar el sonar: 20 s y dice «movimiento»
 // v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
 // v30.0: «¿Algo especial esta noche?»: botones más pequeños y juntos; Movimiento: «sonar on / off» y cuánto notó el sonar
@@ -6364,7 +6365,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.3', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
+  ['v30.4', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
