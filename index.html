@@ -254,6 +254,9 @@ body.tabs-on .wrap{padding-bottom:84px}
 #alarma .banda>div,#pCuna .banda>div{padding:6px 10px 8px}
 #alarma .banda .card{border:0;background:transparent;padding:10px 2px;margin-bottom:6px}
 .tlbox{margin-top:10px}
+.tlBtns{display:flex;gap:8px;margin-top:10px}
+.tlBtns .btn{flex:1;margin:0}
+.tlFle{display:block;margin:2px auto -4px;padding:2px 0;font-size:15px;line-height:1;color:#C4B5FD}
 .tlTxt{display:block;width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0B1020;color:#E0E7FF;border:1px solid #475569;border-radius:12px;padding:10px;font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
 .sepfino{height:1px;background:#A78BFA;opacity:.5;margin:2px 0 10px}
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
@@ -1567,7 +1570,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.6'; // v29.6: monitoreo: «No grabar» entre ✈️ y 🎵, en dos renglones
+const VERSION = 'v29.7'; // v29.7: Texto libre: Probar y Empezar en horizontal; tocar el icono lo activa como los demás audios (sin texto, abre el cuadro) y la flechita lo despliega
+// v29.6: monitoreo: «No grabar» entre ✈️ y 🎵, en dos renglones
 // v29.5: monitoreo: «Audios para dormir» y «Música para dormir» en carteles desplegables, con ✍️ Texto libre; velocidad y Probar siempre a la vista; iconos dibujados de secador y ventilador, batidora más grande
 // v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
 // v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
@@ -3294,19 +3298,13 @@ function renderCunas() {
   const ninguna = {id: null, icon: '🚫', name: 'Ninguna'};
   for (const x of [ninguna, ...GUIAS]) boton(x, $('cgBox'));
   for (const x of [ninguna, ...CUNAS]) boton(x, $('cmBox'));
-  const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'cuna' + (tlSuena || cunaId === 'tl' || TL.abierto ? ' on' : '');
-  tb.innerHTML = `<b>${tlSuena ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small>`;
-  tb.onclick = () => {
-    if (tlSuena) { cunaId = null; try { localStorage.removeItem('ronquino-cuna'); } catch {} endCuna(true); renderCunas(); return; }
-    tlPara(); tlPruebaFin(); TL.abierto = !TL.abierto; renderCunas();
-  };
-  $('cgBox').append(tb);
-  tlEnlaza($('cgDet'), () => {
+  $('cgBox').insertAdjacentHTML('beforeend', tlIcono(tlSuena, tlSuena || cunaId === 'tl' || TL.abierto));
+  tlEnlaza($('cunaBody'), tlSuena, () => {
     cunaId = 'tl'; try { localStorage.setItem('ronquino-cuna', 'tl'); } catch {}
     if (live.cuna) endCuna(true);
     if (live.night && live.det) { playCuna(TL_C); $('lCuna').classList.add('on'); }
     renderCunas();
-  });
+  }, () => { cunaId = null; try { localStorage.removeItem('ronquino-cuna'); } catch {} endCuna(true); renderCunas(); }, renderCunas);
 }
 // 🎧 El botón (o el toque) de los pinganillos no hace nada de noche: al cambiártelos de oreja o darte la vuelta,
 // no se para ni el monitoreo ni la música ni el ruido (v26.3)
@@ -3397,13 +3395,14 @@ function tlProbar(btn) { // lo dice una vez, sin música, a la velocidad elegida
   AND?.prepararVoz?.(); tlHabla(t, tlPruebaFin);
 }
 // El cuadro del Texto libre, igual en «Alarma y música» y en el monitoreo: siempre con la velocidad y «Probar» a la vista
+const tlIcono = (suena, on) => `<button type="button" class="cuna tlBtn${on ? ' on' : ''}"><b>${suena ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small><span class="tlFle" role="button" aria-label="Desplegar">${TL.abierto ? '▴' : '▾'}</span></button>`;
 const tlCaja = suena => `<div class="tlbox"${TL.abierto ? '' : ' hidden'}>
       <p class="note" style="margin:0 0 8px">Pega o escribe aquí tu texto y te lo repito 5 minutos con música suave de fondo.</p>
       <textarea class="tlTxt" maxlength="1000" rows="4" placeholder="Pega aquí tu texto…"></textarea>
       <div class="cuctl"><span>🗣️ Voz</span><div class="cumin">${TL_VELS.map(([v, n]) => `<button type="button" data-v="${v}" class="${v === TL.vel ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-      ${suena ? '' : '<button type="button" class="btn wide tlProbar">🔊 Probar</button><button type="button" class="btn wide tlGo">▶️ Empezar</button>'}
+      ${suena ? '' : '<div class="tlBtns"><button type="button" class="btn tlProbar">🔊 Probar</button><button type="button" class="btn tlGo">▶️ Empezar</button></div>'}
     </div>`;
-function tlEnlaza(raiz, empezar) {
+function tlEnlaza(raiz, suena, empezar, parar, pinta) {
   const ta = raiz.querySelector('.tlTxt'), pr = raiz.querySelector('.tlProbar'), go = raiz.querySelector('.tlGo');
   ta.value = TL.txt;
   ta.oninput = e => { TL.txt = e.target.value; try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
@@ -3411,8 +3410,19 @@ function tlEnlaza(raiz, empezar) {
     TL.vel = +b.dataset.v; try { localStorage.setItem('ronquino-textovel', String(TL.vel)); } catch {}
     raiz.querySelectorAll('[data-v]').forEach(o => o.classList.toggle('on', o === b));
   });
+  const activa = () => { tlPara(); TL.prueba = false; empezar(); };
   if (pr) pr.onclick = () => tlProbar(pr);
-  if (go) go.onclick = () => { if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; } tlPara(); TL.prueba = false; empezar(); };
+  if (go) go.onclick = () => { if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; } activa(); };
+  raiz.querySelector('.tlBtn').onclick = () => { // como los demás audios: tocarlo lo activa; sin texto aún, se abre el cuadro para rellenarlo
+    if (suena) { parar(); return; }
+    if (TL.txt.trim()) { activa(); return; }
+    TL.abierto = true; pinta(); raiz.querySelector('.tlTxt').focus();
+  };
+  raiz.querySelector('.tlFle').onclick = e => {
+    e.stopPropagation();
+    if (!suena) { tlPara(); tlPruebaFin(); }
+    TL.abierto = !TL.abierto; pinta();
+  };
 }
 function musPara(suave) {
   if (!MUS.au) return;
@@ -3450,7 +3460,7 @@ function pintaMusica() {
   gbox.innerHTML = `<p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
     ${MUS.c?.guia ? suena : ''}${vol}
     <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}
-      <button type="button" class="cuna tlBtn${MUS.c?.tl || TL.abierto ? ' on' : ''}"><b>${MUS.c?.tl ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small></button></div>
+      ${tlIcono(MUS.c?.tl, MUS.c?.tl || TL.abierto)}</div>
     ${tlCaja(MUS.c?.tl)}`;
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
     ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
@@ -3468,8 +3478,7 @@ function pintaMusica() {
   });
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
   gbox.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
-  gbox.querySelector('.tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } tlPara(); tlPruebaFin(); TL.abierto = !TL.abierto; pintaMusica(); };
-  tlEnlaza(gbox, () => musToca(TL_C));
+  tlEnlaza(gbox, MUS.c?.tl, () => musToca(TL_C), () => musPara(true), pintaMusica);
   document.querySelectorAll('.musStop').forEach(b => b.onclick = () => musPara(true));
 }
 pintaMusica();
@@ -6280,6 +6289,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.7', '30 oct 2026', ['✍️ Texto libre: toca el icono y empieza, como los demás audios; la flechita abre el cuadro']],
   ['v29.6', '30 oct 2026', ['Monitoreo más compacto: «No grabar» arriba, entre el avión y la música']],
   ['v29.5', '30 oct 2026', ['Monitoreo: audios y música separados en desplegables, y ✍️ Texto libre también aquí', 'Texto libre: velocidad y Probar siempre a la vista', 'Iconos nuevos de secador y ventilador']],
   ['v29.4', '30 oct 2026', ['Monitoreo: segundos junto a la hora y «Fin monitoreo sueño» con borde azul']],
