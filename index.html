@@ -211,7 +211,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .cunas{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:4px}
 .cuna{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:13px;color:var(--text)}
 .cuna b{display:block;font-size:26px;font-weight:400}
-.cuna b.tinte{filter:hue-rotate(170deg)} /* música: otro color; el amarillo queda para «Audios para dormir» */
+.icosvg{width:1.15em;height:1.15em;vertical-align:-.2em}
 .cuna.on{border-color:#A78BFA;background:#312E81}
 .cuna small{display:block;font-size:11px;color:#C4B5FD;margin-top:2px}
 .cutit{margin:18px 0 0;font-size:15px;font-weight:600;color:#E0E7FF}
@@ -1564,7 +1564,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.1'; // v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
+const VERSION = 'v29.2'; // v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
+// v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
 // v29.0: iconos: los 4 de «Audios para dormir», amarillos (Seguro y sin miedo pasa de 🌙 a 😌); Luna dormida y Estrellitas, en otro color
 // v28.9: «Relajaciones para dormir» pasa a «Audios para dormir»; nuevo ✍️ «Texto libre»: pegas un texto y te lo repite 5 minutos con música suave de fondo
 // v28.8: «Alarma y música»: «⏰ Despertadores» también se pliega; cada cartel envuelve lo de abajo con borde morado y esquinas de arriba redondeadas
@@ -3179,17 +3180,21 @@ function muteTick() {
 // ---------- Música para dormir (antes «canciones de cuna»; hechas con Suno) ----------
 // Archivos en cuna/. Cada una suena los minutos elegidos (5, 10 o 15; se repite si es más corta) y se apaga en 5 segundos.
 // Mientras suena no se graba; al acabar empieza la escucha normal.
+// No hay emoji de aspiradora ni de batidora: dibujados aquí, en azul como el resto de la música
+const ICO_ASPIRADORA = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 5 C16 2 21 7 21 15" fill="none" stroke="#93C5FD" stroke-width="2.4" stroke-linecap="round"/><path d="M9 5 L6.5 26" fill="none" stroke="#BFDBFE" stroke-width="2.4" stroke-linecap="round"/><rect x="2" y="25.5" width="11" height="3.6" rx="1.8" fill="#60A5FA"/><rect x="15" y="14.5" width="15" height="11" rx="5.5" fill="#60A5FA"/><circle cx="20" cy="26" r="3.4" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.6"/></svg>';
+const ICO_BATIDORA = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="2.5" width="13" height="3.2" rx="1.6" fill="#93C5FD"/><path d="M8.5 7 H22.5 L20.5 21 H10.5 Z" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.8" stroke-linejoin="round"/><path d="M22 9.5 H26.5 V17 H21" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linejoin="round"/><path d="M12 18 L15.5 15.5 L19 18 M15.5 15.5 V20" fill="none" stroke="#BFDBFE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="8" y="22" width="15" height="7.5" rx="2.2" fill="#60A5FA"/><circle cx="15.5" cy="25.8" r="1.9" fill="#1E3A8A"/></svg>';
+const cunaIco = c => c.svg || (c.tinte ? `<span style="display:inline-block;filter:hue-rotate(${c.tinte}deg)">${c.icon}</span>` : c.icon); // la música, en tonos azules; el amarillo queda para «Audios para dormir»
 const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canciones de cuna – Amable Sleep»)
-  {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3', tinte: true},
-  {id: 'estrellitas', icon: '⭐', name: 'Estrellitas', file: 'cuna/estrellitas.mp3', tinte: true},
+  {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3', tinte: 170},
+  {id: 'estrellitas', icon: '⭐', name: 'Estrellitas', file: 'cuna/estrellitas.mp3', tinte: 170},
   {id: 'mar', icon: '🌊', name: 'Mar en calma', file: 'cuna/mar-en-calma.mp3'},
-  {id: 'bosque', icon: '🌲', name: 'Bosque dormido', file: 'cuna/bosque-dormido.mp3'},
+  {id: 'bosque', icon: '🌲', name: 'Bosque dormido', file: 'cuna/bosque-dormido.mp3', tinte: 95},
   {id: 'nubes', icon: '☁️', name: 'Nubes de algodón', file: 'cuna/nubes-de-algodon.mp3'},
   // Sonidos que crea la app (como los de Sleep as Android): no ocupan espacio ni gastan descargas
   {id: 'n-ventilador', icon: '🌀', name: 'Ventilador', noise: 'ventilador'},
-  {id: 'n-aspiradora', icon: '🧹', name: 'Aspiradora', noise: 'aspiradora'},
+  {id: 'n-aspiradora', icon: '🧹', name: 'Aspiradora', noise: 'aspiradora', svg: ICO_ASPIRADORA},
   {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador'},
-  {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora'}
+  {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora', svg: ICO_BATIDORA}
 ];
 // 🎧 Relajaciones guiadas (en «Música para dormir»): la voz de Gustavo con «Mar en calma» de fondo. Suenan enteras una vez (ya traen su fundido).
 const GUIAS = [ // {id, icon, name, min, file}
@@ -3225,7 +3230,7 @@ function stopCunaPrev() {
 }
 function renderCunas() {
   const c = cunaSel();
-  $('sCuna').textContent = c ? `${c.icon} ${c.name}` : 'ninguna';
+  $('sCuna').innerHTML = c ? `${cunaIco(c)} ${c.name}` : 'ninguna';
   if (!CUNAS.length) {
     $('cunaBody').innerHTML = 'Aún no hay música para dormir: la estamos haciendo con Suno y aparecerá aquí.';
     return;
@@ -3250,7 +3255,7 @@ function renderCunas() {
   for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS, ...GUIAS]) {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
     const sounding = cunaPrev && cunaPrev.id === x.id;
-    b.innerHTML = `<b${x.tinte ? ' class="tinte"' : ''}>${x.icon}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : x.guia ? `<small>${x.min} min</small>` : ''}`;
+    b.innerHTML = `<b>${cunaIco(x)}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : x.guia ? `<small>${x.min} min</small>` : ''}`;
     b.onclick = () => {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
       if (live.night) { // monitoreando: suena ya y se cierra el desplegable
@@ -3281,7 +3286,7 @@ function playCuna(c) {
   if (c.guia) au.onended = () => { if (live.cuna?.au === au) endCuna(); }; // la relajación acaba sola
   live.det.muteUntil = Infinity;
   $('lcuna').hidden = false;
-  $('lcuna').innerHTML = `<span class="cuname">${c.guia ? '🎧' : '🎵'} ${c.icon} ${c.name}</span><button id="cunaPause" aria-label="Pausar">❚❚</button><button id="cunaStop" aria-label="Parar">■</button>`;
+  $('lcuna').innerHTML = `<span class="cuname">${c.guia ? '🎧' : '🎵'} ${cunaIco(c)} ${c.name}</span><button id="cunaPause" aria-label="Pausar">❚❚</button><button id="cunaStop" aria-label="Parar">■</button>`;
   // Pausar: la canción se queda donde está (y su cuenta de 5 minutos también) para probar la sensibilidad; «Seguir» la reanuda
   $('cunaPause').onclick = () => {
     const k = live.cuna; if (!k) return;
@@ -3378,7 +3383,7 @@ function musToca(c) {
 function pintaMusica() {
   const box = $('musBody'), gbox = $('guiaBody'); if (!box || !gbox) return;
   $('musSum').hidden = true; // lo que suena ya se ve dentro, con su cuenta atrás y ■
-  const suena = `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">${MUS.c?.guia ? '🎧' : '🎵'} ${MUS.c?.icon} ${MUS.c?.name} · <span class="musQueda"></span></span><button type="button" class="musStop" aria-label="Parar">■</button></div>`;
+  const suena = `<div class="lcuna" style="display:flex;margin:12px 0 0"><span class="cuname">${MUS.c?.guia ? '🎧' : '🎵'} ${MUS.c ? cunaIco(MUS.c) : ''} ${MUS.c?.name} · <span class="musQueda"></span></span><button type="button" class="musStop" aria-label="Parar">■</button></div>`;
   const vol = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" class="musVol" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>`;
   // 🎧 Relajaciones guiadas: su propia tarjeta, abierta y arriba del todo
   gbox.innerHTML = `<p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
@@ -3396,7 +3401,7 @@ function pintaMusica() {
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
     ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
-    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b${c.tinte && MUS.c?.id !== c.id ? ' class="tinte"' : ''}>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}</button>`).join('')}</div>`;
+    <div class="cunas">${CUNAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-c="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : cunaIco(c)}</b>${c.name}</button>`).join('')}</div>`;
   document.querySelectorAll('.musVol').forEach(r => r.oninput = e => {
     cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
     document.querySelectorAll('.musVol').forEach(o => { if (o !== e.target) o.value = e.target.value; });
@@ -6228,6 +6233,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.2', '30 oct 2026', ['🎵 Iconos de música en azul, con una aspiradora y una batidora de verdad']],
   ['v29.1', '30 oct 2026', ['✍️ Texto libre: botón para probar y voz normal, lenta o muy lenta', 'Monitoreo: toca «Aviso por auriculares» para ver a qué horas te avisé']],
   ['v29.0', '30 oct 2026', ['Iconos más claros: amarillos en «Audios para dormir» y otro color en la música']],
   ['v28.9', '30 oct 2026', ['✍️ Nuevo en «Audios para dormir»: «Texto libre»: pega tu texto y te lo repito 5 minutos con música suave']],
