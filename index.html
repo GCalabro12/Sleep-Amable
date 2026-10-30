@@ -615,7 +615,12 @@ details.hist[open] summary{margin-bottom:10px}
 #lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
 #muteBtn{margin:0 0 0 auto;height:50px;min-width:104px;padding:2px 8px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;line-height:1.2;white-space:nowrap} /* entre ✈️ y 🎵, en dos renglones (v29.6) */
 #muteBtn small{display:block;font-size:12px;color:#94A3B8}
-.ltop{column-gap:10px}
+.ltop{column-gap:8px}
+#lDnd{width:66px;font-size:17px;white-space:nowrap}
+#lSonar{width:56px;font-size:13px;line-height:1.2;font-weight:600}
+#lSonar small{display:block;margin:0;font-size:12px}
+#lSonar.on{border-color:#38BDF8;color:#7DD3FC}
+#pSon p{margin:8px 0 0}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#1E293B;border-color:#475569;color:#E0E7FF}
@@ -682,8 +687,6 @@ details.hist[open] summary{margin-bottom:10px}
 .flag.on.m{color:#7DD3FC} .flag.on.m::before{background:#38BDF8;box-shadow:0 0 8px #38BDF8}
 .flag.on.l{color:#FDE68A} .flag.on.l::before{background:#FACC15;box-shadow:0 0 8px #FACC15}
 .flag.on.a::before{background:#60A5FA;box-shadow:0 0 8px #60A5FA}
-#fSonar{padding:2px 8px;font-size:13px;border-radius:10px;border:1px solid #475569;background:#1E293B;color:#94A3B8}
-#fSonar.on{color:#7DD3FC;border-color:#38BDF8;font-weight:700}
 .flag.cuenta{color:#E0E7FF} .flag.cuenta::before{display:none}
 #finQ{position:fixed;inset:0;z-index:40;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
 #finQ h2{font-size:27px;margin:0 0 8px;color:#FDE68A}
@@ -1170,9 +1173,9 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary>🏃 Ajustes movimiento</summary>
-    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo.</small></label>
+    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo. Es para la mesilla: en el colchón no hace falta y se apaga solo.</small></label>
       <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
-    <button class="btn wide" id="sonarTest">▶ Probar el sonar (10 s)</button>
+    <button class="btn wide" id="sonarTest">▶ Probar el sonar (20 s)</button>
     <p class="note" id="sonarRes" hidden></p>
   </details>
   <details class="card ajd">
@@ -1204,8 +1207,8 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary>💾 Noches guardadas <small id="sGuardar"></small></summary>
-    <div class="row"><label for="guardar">Cuántas noches guardar<small>Las más antiguas se borran solas, con sus grabaciones, para no llenar el móvil.</small></label>
-      <select id="guardar"><option value="7">7</option><option value="14">14</option><option value="30">30</option><option value="60">60</option><option value="0">Todas</option></select></div>
+    <div class="row"><label for="guardar">Noches con grabaciones<small>Las grabaciones más antiguas se borran solas para no llenar el móvil. Tus favoritas y los números de cada noche se quedan.</small></label>
+      <select id="guardar"><option value="7">Últimas 7</option><option value="14">Últimas 14</option><option value="21">Últimas 21</option></select></div>
   </details>
   <details class="card ajd">
     <summary>🤝 Compartir mis noches <small id="sShare"></small></summary>
@@ -1529,14 +1532,20 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="listen">
   <div class="ltop">
     <div class="ltit">Elige para esta noche</div>
-    <button class="lico" id="lDnd" aria-label="No molestar">🌙<small>▾</small></button>
-    <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
+    <button class="lico" id="lDnd" aria-label="No molestar y modo avión">🌙✈️<small>▾</small></button>
+    <button class="lico" id="lSonar" aria-label="Sonar">Sonar<small>off</small></button>
     <button id="muteBtn">❚❚ +30 s<small id="muteSub">No grabar</small><span id="muteRest" hidden></span></button>
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
   <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Audios y música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
-  <div class="lpanel" id="pAir" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
+  <div class="lpanel" id="pSon" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button>
+    <b>📡 Sonar</b>
+    <div class="row"><label for="sonSw">Activar el sonar</label><label class="swt"><input type="checkbox" id="sonSw"><i></i></label></div>
+    <p id="sonEst" hidden style="color:#7DD3FC">Se ha apagado solo: el móvil está en el colchón y ya nota tus movimientos.</p>
+    <p class="note">Nota si te mueves cuando el móvil está en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye; niños y mascotas pueden oírlo.</p>
+    <p class="note"><b>Uno u otro:</b> en la mesilla, usa el sonar. En el colchón no hace falta, porque el móvil nota tus movimientos él solo; si detecta que está ahí, el sonar se apaga solo para no contarlos de más.</p>
+  </div>
   <div class="lpanel" id="pAl" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px;color:#FCD34D">⏰ Alarma para despertarte</b><div class="alrapBody" style="clear:both;margin-top:10px"></div></div>
   <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
@@ -1565,7 +1574,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><button type="button" id="fSonar">📡 sonar off</button><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
@@ -1579,7 +1588,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.1'; // v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
+const VERSION = 'v30.2'; // v30.2: monitoreo: 🌙 y ✈️ en un botón, y botón «Sonar» con su ventana; en el colchón el sonar se apaga solo; sonar: un cambio que se queda ya no marca movimiento sin parar; noches con grabaciones: 7, 14 o 21, y los números se quedan; probar el sonar: 20 s y dice «movimiento»
+// v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
 // v30.0: «¿Algo especial esta noche?»: botones más pequeños y juntos; Movimiento: «sonar on / off» y cuánto notó el sonar
 // v29.9: «Texto libre» pasa a su propio cartel desplegable, ✍️ «Audio personalizado», en «Alarma y música» y en el monitoreo
 // v29.8: ventana de buenos días: sin el texto largo; lo que sigue activo (No molestar…), con el reborde punteado en movimiento
@@ -2097,11 +2107,12 @@ function msgConAviso() {
 
 // 📡 Sonar: el altavoz emite un tono de 19 kHz y el micrófono escucha su eco. Si algo se mueve cerca,
 // el eco cambia un poco de tono (efecto Doppler) y aparece energía a los lados del tono.
+const SONAR_CAMBIO = 15000; // ms seguidos de «movimiento» a partir de los que el sonar toma esa señal como la nueva normal
 class Sonar {
   constructor(ctx, src, onMov) {
     this.f0 = 19000; this.snr = -99; this.ok = ctx.sampleRate >= 44100;
     if (!this.ok) return;
-    this.ctx = ctx; this.onMov = onMov; this.base = null; this.last = 0;
+    this.ctx = ctx; this.onMov = onMov; this.base = null; this.last = 0; this.movDesde = 0;
     this.osc = ctx.createOscillator(); this.osc.frequency.value = this.f0;
     this.g = ctx.createGain(); this.g.gain.value = 0;
     this.osc.connect(this.g).connect(ctx.destination); this.osc.start();
@@ -2124,9 +2135,13 @@ class Sonar {
     if (!(this.snr > 15)) return; // el pitido no llega al micrófono
     const r = side / car;
     if (this.base == null || this.base > r * 50) { this.base = r; return; } // al empezar: el arranque del tono no cuenta
-    const mov = r > this.base * 3 && side > ruido * 4;
-    if (!mov) this.base = r < this.base ? this.base * .7 + r * .3 : this.base * .98 + r * .02; // baja deprisa, sube despacio
-    else if (Date.now() - this.last > 1000) { this.last = Date.now(); this.onMov?.(); }
+    const mov = r > this.base * 3 && side > ruido * 4, ahora = Date.now();
+    if (!mov) { this.movDesde = 0; this.base = r < this.base ? this.base * .7 + r * .3 : this.base * .98 + r * .02; } // baja deprisa, sube despacio
+    else {
+      this.movDesde ||= ahora;
+      if (ahora - this.movDesde > SONAR_CAMBIO) { this.base = r; this.movDesde = 0; return; } // tanto rato seguido no es moverse: cambió la habitación (v30.2)
+      if (ahora - this.last > 1000) { this.last = ahora; this.onMov?.(); }
+    }
   }
   stop() { clearInterval(this.t); try { this.osc?.stop(); } catch {} try { this.g?.disconnect(); this.an?.disconnect(); } catch {} }
 }
@@ -2139,8 +2154,11 @@ $('sonarTest').onclick = async () => {
   try { stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}}); }
   catch (e) { alert('No puedo usar el micrófono. (' + e.message + ')'); return; }
   const ctx = new AudioContext(); await ctx.resume();
-  let n = 0, snr = -99;
-  const s = new Sonar(ctx, ctx.createMediaStreamSource(stream), () => { n++; });
+  let n = 0, snr = -99, mudo = 0;
+  // Dice «movimiento» en voz alta, para probarlo con el móvil en la mesita sin ver la pantalla (mientras habla no cuenta: es su propia voz)
+  const di = texto => { if (AND?.hablar) AND.hablar(texto); else if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(texto); u.lang = 'es-ES'; speechSynthesis.speak(u); } };
+  AND?.prepararVoz?.();
+  const s = new Sonar(ctx, ctx.createMediaStreamSource(stream), () => { if (Date.now() < mudo) return; mudo = Date.now() + 2500; n++; di('Movimiento'); });
   const fin = () => { s.stop(); stream.getTracks().forEach(t => t.stop()); try { ctx.close(); } catch {} AND?.audioNormal?.(); $('sonarTest').disabled = false; };
   $('sonarRes').hidden = false;
   if (!s.ok) { fin(); $('sonarRes').textContent = '❌ Este móvil no puede emitir el pitido del sonar.'; return; }
@@ -2149,11 +2167,12 @@ $('sonarTest').onclick = async () => {
   await new Promise(res => {
     const iv = setInterval(() => {
       snr = Math.max(snr, s.snr);
-      const left = Math.ceil((10e3 - (Date.now() - t0)) / 1000);
+      const left = Math.ceil((20e3 - (Date.now() - t0)) / 1000);
       $('sonarRes').textContent = `👋 Deja el móvil quieto y mueve la mano a 30–50 cm de él… ${left} s · movimientos notados: ${n}`;
       if (left <= 0) { clearInterval(iv); res(); }
     }, 250);
   });
+  di('Fin de la prueba');
   fin();
   $('sonarRes').textContent = snr < 15
     ? '❌ Tu móvil no capta el pitido del sonar (su altavoz o su micrófono lo recortan). El movimiento se seguirá viendo con el móvil sobre el colchón.'
@@ -2184,6 +2203,11 @@ const DB = {
   get(s, k) { return this.tx(s, 'readonly', st => st.get(k)); },
   all(s) { return this.tx(s, 'readonly', st => st.getAll()); },
   byNight(id) { return this.tx('eventos', 'readonly', st => st.index('noche').getAll(id)); },
+  async borraGrab(id) { // solo las grabaciones (menos las favoritas); la noche se queda
+    const evs = (await this.byNight(id)).filter(e => !e.fav);
+    await this.tx('eventos', 'readwrite', st => { evs.forEach(e => st.delete(e.id)); });
+    const n = await this.get('noches', id); if (n) { n.sinGrab = true; await this.put('noches', n); }
+  },
   async delNight(id, motivo = 'sin motivo') {
     registraBorrado(id, motivo);
     const evs = await this.byNight(id);
@@ -2655,7 +2679,7 @@ async function startListening() {
   movEmpezar(night);
   if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
-  live.sonar = null; if (cfg.sonar) sonarEmpieza(night);
+  Object.assign(live, {sonar: null, acel: [], sonarColchon: false, sonarManual: false}); if (cfg.sonar) sonarEmpieza(night);
   pintaSonarBtn();
   $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
@@ -2692,7 +2716,7 @@ async function startListening() {
     // el micrófono se ha parado (p. ej. al conectar los pinganillos): se vuelve a encender solo
     if (Date.now() - (live.lastFrame || Date.now()) > 8000) { live.lastFrame = Date.now(); reiniciaMic(); }
     // iconos de arriba: en color solo si están activados
-    if (AND) { try { $('lDnd').classList.toggle('on', !!AND.dndActivo()); $('lAir').classList.toggle('on', !!(AND.modoAvion && AND.modoAvion())); } catch {} }
+    if (AND) { try { $('lDnd').classList.toggle('on', !!AND.dndActivo() || !!(AND.modoAvion && AND.modoAvion())); } catch {} }
     if (Date.now() % 60000 < 500 && AND?.micBluetooth?.()) AND.micMovil(); // que no grabe con el micro de los pinganillos
     // pinganillos puestos a mitad de noche: también se mira su batería
 
@@ -2719,21 +2743,31 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
 // 🛏️ Movimiento: con el móvil sobre el colchón, el acelerómetro nota cuándo te mueves o te das la vuelta.
 // Se apunta el segundo de la noche (como mucho una marca cada 20 s). Tocar la pantalla no cuenta.
 let movToque = 0;
-// 📡 Sonar: se enciende al empezar si está en Ajustes, y se cambia durante el monitoreo con «sonar on / off»
+// 📡 Sonar: se enciende al empezar si está en Ajustes, y se cambia durante el monitoreo con su botón
 function sonarEmpieza(night) {
   live.sonar = new Sonar(live.ctx, live.src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000), true));
   if (!live.sonar.ok) { live.sonar = null; night.sonar = false; return false; }
   night.sonar = true; return true;
 }
-function pintaSonarBtn() { const on = !!live.sonar; $('fSonar').textContent = `📡 sonar ${on ? 'on' : 'off'}`; $('fSonar').classList.toggle('on', on); }
-$('fSonar').onclick = () => {
-  if (!live.night) return;
-  if (live.sonar) { live.sonar.stop(); live.sonar = null; cfg.sonar = false; }
-  else if (sonarEmpieza(live.night)) cfg.sonar = true;
+function pintaSonarBtn() {
+  const on = !!live.sonar; $('lSonar').classList.toggle('on', on); $('lSonar').querySelector('small').textContent = on ? 'on' : 'off';
+  $('sonSw').checked = on; $('sonEst').hidden = !live.sonarColchon || on;
+}
+$('sonSw').onchange = () => {
+  if (!live.night) { pintaSonarBtn(); return; }
+  if (!$('sonSw').checked) { live.sonar?.stop(); live.sonar = null; cfg.sonar = false; }
+  else if (sonarEmpieza(live.night)) { cfg.sonar = true; live.sonarManual = true; live.sonarColchon = false; } // lo has encendido tú: ya no se apaga solo
   else toast('Este móvil no puede usar el sonar');
   $('sonarOn').checked = !!cfg.sonar; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
   pintaSonarBtn();
 };
+// Uno u otro: si el móvil se mueve de verdad 3 veces en media hora, está en el colchón y nota él solo los movimientos: el sonar se apaga
+function sonarColchon(t) {
+  if (!live.sonar || live.sonarManual) return;
+  const a = live.acel ||= []; if (a.length && t - a.at(-1) < 60) return;
+  a.push(t);
+  if (a.filter(x => t - x <= 1800).length >= 3) { live.sonar.stop(); live.sonar = null; live.sonarColchon = true; pintaSonarBtn(); }
+}
 function marcaMov(night, t, porSonar) {
   live.ultMov = Date.now(); night.mov ||= [];
   if (!night.mov.length || t - night.mov.at(-1) >= 20) { night.mov.push(t); if (porSonar) night.movSonar = (night.movSonar || 0) + 1; }
@@ -2748,7 +2782,7 @@ function movEmpezar(night) {
     pico = Math.max(pico, Math.abs(m - g));
     const t = Math.floor((Date.now() - night.inicio) / 1000);
     if (t === seg) return;
-    if (pico > .35 && Date.now() - movToque > 3000) marcaMov(night, t);
+    if (pico > .35 && Date.now() - movToque > 3000) { marcaMov(night, t); sonarColchon(t); }
     pico = 0; seg = t;
   };
   addEventListener('devicemotion', live.mov);
@@ -2980,7 +3014,7 @@ $('stopBtn').onclick = () => stopListening();
 $('startBtn').onclick = async () => {
   musPara(false); // si sonaba la música sola, se para: en la noche se elige arriba, en 🎵
   // Los desplegables de arriba de la pantalla de monitoreo: «No molestar», canción de cuna y modo avión
-  $('pDnd').append($('liDnd')); $('pAir').append($('liAir')); $('pCuna').append($('cunaBody'));
+  $('pDnd').append($('liDnd'), $('liAir')); $('pCuna').append($('cunaBody'));
   const ok = !!IA.clf;
   $('prepAir').className = ok ? 'ok' : 'no';
   $('prepAir').textContent = ok
@@ -2992,7 +3026,7 @@ $('startBtn').onclick = async () => {
   if (AND) renderPrep();
 };
 function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
-  for (const x of ['pDnd', 'pCuna', 'pAir', 'pAl']) $(x).hidden = x !== id || !$(x).hidden;
+  for (const x of ['pDnd', 'pCuna', 'pSon', 'pAl']) $(x).hidden = x !== id || !$(x).hidden;
   if (!$('pAl').hidden) pintaAlarmasRapidas();
   if (id && !$('pPrueba').hidden) $('pruebaX').onclick();
   if (!$('pCuna').hidden) renderCunas();
@@ -3000,7 +3034,7 @@ function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
 $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
 $('pCunaX').onclick = () => panel(null);
-$('lAir').onclick = () => panel('pAir');
+$('lSonar').onclick = () => panel('pSon');
 $('alHora').onclick = () => panel('pAl'); // ⏰ activar, desactivar o cambiar la alarma sin salir del monitoreo
 document.querySelectorAll('#listen .lpx').forEach(b => b.onclick = () => panel(null)); // ✕ cierra la ventana
 // 🧪 Probar detección (pantalla completa): graba 6 s con el micrófono de la noche, pita y dice qué ha oído.
@@ -3880,7 +3914,7 @@ function renderStatsHome(ns) {
     😴 <b>Roncando por hora</b>: los minutos que roncas por cada hora de sueño (mejor 3 o menos).<br>
     📉 <b>Tus minutos roncando</b>: la línea de cada noche; lo bueno es que baje.<br>
     🏷️ <b>Qué te hace roncar más</b>: compara las noches con cada etiqueta (alcohol, cena fuerte…) con las demás.<br><br>
-    <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: cuánto tiempo guardas tus grabaciones lo eliges tú en <b>Ajustes → Noches guardadas</b> (ahora: ${gu ? `las últimas ${gu} noches` : 'todas'}). Las grabaciones nunca salen del móvil.<br>
+    <b>¿Cuánto tiempo se guardan tus datos?</b><br>📱 En este móvil: cuántas noches guardas con sus grabaciones lo eliges tú en <b>Ajustes → Noches guardadas</b> (ahora: ${gu ? `las últimas ${gu}` : 'todas'}); los números de cada noche se quedan. Las grabaciones nunca salen del móvil.<br>
     ☁️ En tu cuenta: los números de cada noche (horas, minutos roncando…), mientras tengas la cuenta.`;
   const desde = statDias ? Date.now() - statDias * 864e5 : 0;
   ns = ns.filter(n => n.inicio >= desde);
@@ -4000,17 +4034,24 @@ async function vigilaNoches() {
   if (perdidas.length) registraBorrado(perdidas, 'desaparecida sin borrarla');
 }
 const apuntaIds = ns => { try { localStorage.setItem('ronquino-ids', JSON.stringify(ns.map(n => n.id))); } catch {} };
-let guardar = 0; try { guardar = +(localStorage.getItem('ronquino-guardar') || 0); } catch {}
+// Quien empieza ahora: las últimas 21 noches. Quien ya tenía noches sigue como estaba hasta que elija (no se le borra nada sin preguntar)
+let guardar = 0;
+try {
+  const g = localStorage.getItem('ronquino-guardar');
+  if (g != null) guardar = +g;
+  else if (!JSON.parse(localStorage.getItem('ronquino-ids') || '[]').length) { guardar = 21; localStorage.setItem('ronquino-guardar', '21'); }
+} catch {}
+if (![7, 14, 21].includes(guardar)) $('guardar').insertAdjacentHTML('beforeend', `<option value="${guardar}">${guardar ? 'Últimas ' + guardar : 'Todas'}</option>`);
 $('guardar').value = String(guardar); $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
-async function podar(ns) {
-  if (!guardar || ns.length <= guardar) return ns;
-  for (const n of ns.slice(guardar)) if (n.id !== live.night?.id) await DB.delNight(n.id, `límite de ${guardar} noches guardadas`);
-  return ns.slice(0, guardar);
+async function podar(ns) { // de las más antiguas se borran las grabaciones; la noche y sus números se quedan (Estadísticas de 30 y 90 días)
+  if (!guardar) return ns;
+  for (const n of ns.slice(guardar)) if (!n.sinGrab && !n.restaurada && n.id !== live.night?.id) { await DB.borraGrab(n.id); n.sinGrab = true; }
+  return ns;
 }
 $('guardar').onchange = async () => {
   const nuevo = +$('guardar').value;
-  const ns = await DB.all('noches'), sobran = nuevo ? Math.max(0, ns.length - nuevo) : 0;
-  if (sobran && !await confirma(`Se borrarán ${sobran === 1 ? 'la noche más antigua' : `las ${sobran} noches más antiguas`}, con sus grabaciones. ¿Seguro?`, '🗑️ Borrarlas')) { $('guardar').value = String(guardar); return; }
+  const ns = (await DB.all('noches')).sort((a, b) => b.id - a.id), sobran = nuevo ? ns.slice(nuevo).filter(n => !n.sinGrab && !n.restaurada).length : 0;
+  if (sobran && !await confirma(`Se borrarán las grabaciones de ${sobran === 1 ? 'la noche más antigua' : `las ${sobran} noches más antiguas`}, menos tus favoritas. Sus números se quedan. ¿Seguro?`, '🗑️ Borrarlas')) { $('guardar').value = String(guardar); return; }
   guardar = nuevo; try { localStorage.setItem('ronquino-guardar', String(guardar)); } catch {}
   $('sGuardar').textContent = '· ' + (guardar ? guardar : 'todas');
   renderHome();
@@ -4201,7 +4242,7 @@ async function openNight(id) {
   $('reNight').hidden = !(sesion?.admin && hayDetectorNuevo(cur)); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
   { // las noches de antes de v27.0 contaban las grabaciones enteras: al abrirlas, los minutos de ronquido y voz se recalculan
     const r = curEvs.filter(e => e.tipo === 'ronquido').reduce((a, e) => a + segReales(e, 'r'), 0), v = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
-    if (curEvs.length && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
+    if (curEvs.length && !cur.sinGrab && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
   }
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = new Set(); FILTRO.abierto = false;
@@ -4210,7 +4251,7 @@ async function openNight(id) {
   $('nTitle').textContent = nightName(n); $('nTitle').style.fontSize = ''; requestAnimationFrame(() => fitLine($('nTitle')));
   $('nSub').textContent = (n.fuente === 'micro' ? `${hhmm(n.inicio)} → ${n.fin ? hhmm(n.fin) : '¿?'} · ` : '') + dur(total)
 
-    + (n.restaurada ? ' · ☁️ recuperada de tu cuenta, sin las grabaciones' : '');
+    + (n.restaurada ? ' · ☁️ recuperada de tu cuenta, sin las grabaciones' : n.sinGrab ? ' · grabaciones antiguas borradas' : '');
   renderStats(); drawTimeline(total); renderList();
   requestAnimationFrame(() => { if (cur === n) { drawTimeline(timelineTotal()); tlSticky(); } }); // ya con su tamaño en pantalla
   // ☀️ la tarjeta de la mañana y las etiquetas de esta noche
@@ -4498,6 +4539,7 @@ function renderList() {
   $('selbar').hidden = !list.length;
   $('evList').innerHTML = list.length ? '' : !curEvs.length && cur?.restaurada
     ? '<div class="empty">☁️ Esta noche se recuperó de tu cuenta, que guarda solo los números. Las grabaciones se quedan en el móvil (o la app) donde se grabó: ábrela allí para oírlas.</div>'
+    : !curEvs.length && cur?.sinGrab ? '<div class="empty">💾 Las grabaciones de esta noche se borraron para no llenar el móvil. Sus números siguen aquí.</div>'
     : '<div class="empty">No se grabó nada de este tipo.</div>';
   $('reNight').style.display = curEvs.length ? '' : 'none'; // sin grabaciones no hay nada que revisar
   // 🎧 avisos «estás roncando»: se dicen al acabar la grabación que los provoca
@@ -4639,6 +4681,7 @@ $('selShare').onclick = async () => {
 };
 const timelineTotal = () => ((cur.fin || (cur.inicio + cur.timeline.length * 60e3)) - cur.inicio) / 1000;
 async function recount() {
+  if (cur.sinGrab) return; // sus grabaciones ya no están: los números de la noche no se tocan
   const s = curEvs.filter(e => e.tipo === 'ronquido');
   cur.ronquidos = s.length; cur.segRonquido = s.reduce((a, e) => a + segReales(e, 'r'), 0);
   cur.voces = curEvs.filter(e => e.tipo === 'voz').length; cur.otros = curEvs.filter(e => e.tipo === 'otro').length;
@@ -6315,7 +6358,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.1', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
+  ['v30.2', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
@@ -6370,7 +6413,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn}; // para pruebas
 </script>
 </body>
 </html>
