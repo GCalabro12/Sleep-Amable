@@ -212,6 +212,7 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .cuna{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:13px;color:var(--text)}
 .cuna b{display:block;font-size:26px;font-weight:400}
 .icosvg{width:1.15em;height:1.15em;vertical-align:-.2em}
+.icosvg.g{width:1.4em;height:1.4em;vertical-align:-.32em}
 .cuna.on{border-color:#A78BFA;background:#312E81}
 .cuna small{display:block;font-size:11px;color:#C4B5FD;margin-top:2px}
 .cutit{margin:18px 0 0;font-size:15px;font-weight:600;color:#E0E7FF}
@@ -244,16 +245,16 @@ body.tabs-on .wrap{padding-bottom:84px}
 #alList .alcard+.alcard::before{content:'';position:absolute;left:-18px;right:-18px;top:-17px;height:2px;background:#A78BFA;opacity:.55} /* entre alarma y alarma */
 .sepgrueso{height:5px;background:#A78BFA;margin:6px -16px 18px} /* entre música, siesta y alarmas: de lado a lado del móvil */
 /* Banners de «Alarma y música»: la línea morada ensanchada, con el título dentro, de lado a lado del móvil */
-#alarma>details.banda.card{padding:0;margin:0 -8px 12px;border:2px solid #A78BFA;border-radius:16px 16px 0 0;background:transparent} /* el cartel envuelve lo de abajo */
-#alarma .banda>summary{padding:12px 16px;background:#A78BFA;color:#1E1033;font-weight:800;font-size:17px;border-radius:13px 13px 0 0}
-#alarma .banda>summary::after{border-top-color:#1E1033}
-#alarma .banda[open]>summary::after{border-bottom-color:#1E1033}
-#alarma .banda>summary .estado{background:#1E1033;color:#C4B5FD}
-#alarma .banda>summary .estado.si{background:#14532D;color:#86EFAC}
-#alarma .banda>div{padding:6px 10px 8px}
+#alarma details.banda.card,#pCuna details.banda.card{padding:0;margin:0 -8px 12px;border:2px solid #A78BFA;border-radius:16px 16px 0 0;background:transparent} /* el cartel envuelve lo de abajo */
+#alarma .banda>summary,#pCuna .banda>summary{padding:12px 16px;background:#A78BFA;color:#1E1033;font-weight:800;font-size:17px;border-radius:13px 13px 0 0}
+#alarma .banda>summary::after,#pCuna .banda>summary::after{border-top-color:#1E1033}
+#alarma .banda[open]>summary::after,#pCuna .banda[open]>summary::after{border-bottom-color:#1E1033}
+#alarma .banda>summary .estado,#pCuna .banda>summary .estado{background:#1E1033;color:#C4B5FD}
+#alarma .banda>summary .estado.si,#pCuna .banda>summary .estado.si{background:#14532D;color:#86EFAC}
+#alarma .banda>div,#pCuna .banda>div{padding:6px 10px 8px}
 #alarma .banda .card{border:0;background:transparent;padding:10px 2px;margin-bottom:6px}
 .tlbox{margin-top:10px}
-#tlTxt{display:block;width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0B1020;color:#E0E7FF;border:1px solid #475569;border-radius:12px;padding:10px;font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
+.tlTxt{display:block;width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0B1020;color:#E0E7FF;border:1px solid #475569;border-radius:12px;padding:10px;font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
 .sepfino{height:1px;background:#A78BFA;opacity:.5;margin:2px 0 10px}
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
 .alcard.off{opacity:.55}
@@ -1521,7 +1522,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
-  <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
+  <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Audios y música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
   <div class="lpanel" id="pAir" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
   <div class="lpanel" id="pAl" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px;color:#FCD34D">⏰ Alarma para despertarte</b><div class="alrapBody" style="clear:both;margin-top:10px"></div></div>
   <div class="lcuna" id="lcuna" hidden></div>
@@ -1566,7 +1567,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.4'; // v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
+const VERSION = 'v29.5'; // v29.5: monitoreo: «Audios para dormir» y «Música para dormir» en carteles desplegables, con ✍️ Texto libre; velocidad y Probar siempre a la vista; iconos dibujados de secador y ventilador, batidora más grande
+// v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
 // v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
 // v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
 // v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
@@ -3184,9 +3186,11 @@ function muteTick() {
 // ---------- Música para dormir (antes «canciones de cuna»; hechas con Suno) ----------
 // Archivos en cuna/. Cada una suena los minutos elegidos (5, 10 o 15; se repite si es más corta) y se apaga en 5 segundos.
 // Mientras suena no se graba; al acabar empieza la escucha normal.
-// No hay emoji de aspiradora ni de batidora: dibujados aquí, en azul como el resto de la música
+// No hay emoji de aspiradora, batidora, secador ni ventilador: dibujados aquí, en azul como el resto de la música
+const ICO_SECADOR = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><path d="M11 15 H17 L15.5 28 Q15.3 29.5 13.8 29.5 H11.2 Q9.7 29.5 9.7 28 Z" fill="#3B82F6"/><rect x="2" y="5" width="21" height="12" rx="6" fill="#60A5FA"/><circle cx="8" cy="11" r="3.2" fill="#1E3A8A" stroke="#BFDBFE" stroke-width="1.4"/><path d="M22 6.5 L29 5 V17 L22 15.5 Z" fill="#93C5FD"/><path d="M12.5 19 V25" stroke="#BFDBFE" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const ICO_VENTILADOR = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><rect x="14.4" y="23" width="3.2" height="6" fill="#60A5FA"/><rect x="8.5" y="28" width="15" height="2.8" rx="1.4" fill="#93C5FD"/><circle cx="16" cy="13" r="11.4" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.9"/><g fill="#60A5FA"><ellipse cx="16" cy="7.6" rx="3" ry="5"/><ellipse cx="16" cy="7.6" rx="3" ry="5" transform="rotate(120 16 13)"/><ellipse cx="16" cy="7.6" rx="3" ry="5" transform="rotate(240 16 13)"/></g><circle cx="16" cy="13" r="2.2" fill="#BFDBFE"/></svg>';
 const ICO_ASPIRADORA = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 5 C16 2 21 7 21 15" fill="none" stroke="#93C5FD" stroke-width="2.4" stroke-linecap="round"/><path d="M9 5 L6.5 26" fill="none" stroke="#BFDBFE" stroke-width="2.4" stroke-linecap="round"/><rect x="2" y="25.5" width="11" height="3.6" rx="1.8" fill="#60A5FA"/><rect x="15" y="14.5" width="15" height="11" rx="5.5" fill="#60A5FA"/><circle cx="20" cy="26" r="3.4" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.6"/></svg>';
-const ICO_BATIDORA = '<svg class="icosvg" viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="2.5" width="13" height="3.2" rx="1.6" fill="#93C5FD"/><path d="M8.5 7 H22.5 L20.5 21 H10.5 Z" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.8" stroke-linejoin="round"/><path d="M22 9.5 H26.5 V17 H21" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linejoin="round"/><path d="M12 18 L15.5 15.5 L19 18 M15.5 15.5 V20" fill="none" stroke="#BFDBFE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="8" y="22" width="15" height="7.5" rx="2.2" fill="#60A5FA"/><circle cx="15.5" cy="25.8" r="1.9" fill="#1E3A8A"/></svg>';
+const ICO_BATIDORA = '<svg class="icosvg g" viewBox="5 1 24 30" aria-hidden="true"><rect x="9" y="2.5" width="13" height="3.2" rx="1.6" fill="#93C5FD"/><path d="M8.5 7 H22.5 L20.5 21 H10.5 Z" fill="#1E3A8A" stroke="#93C5FD" stroke-width="1.8" stroke-linejoin="round"/><path d="M22 9.5 H26.5 V17 H21" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linejoin="round"/><path d="M12 18 L15.5 15.5 L19 18 M15.5 15.5 V20" fill="none" stroke="#BFDBFE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="8" y="22" width="15" height="7.5" rx="2.2" fill="#60A5FA"/><circle cx="15.5" cy="25.8" r="1.9" fill="#1E3A8A"/></svg>';
 const cunaIco = c => c.svg || (c.tinte ? `<span style="display:inline-block;filter:hue-rotate(${c.tinte}deg)">${c.icon}</span>` : c.icon); // la música, en tonos azules; el amarillo queda para «Audios para dormir»
 const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canciones de cuna – Amable Sleep»)
   {id: 'luna', icon: '🌙', name: 'Luna dormida', file: 'cuna/luna-dormida.mp3', tinte: 170},
@@ -3195,9 +3199,9 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
   {id: 'bosque', icon: '🌲', name: 'Bosque dormido', file: 'cuna/bosque-dormido.mp3', tinte: 95},
   {id: 'nubes', icon: '☁️', name: 'Nubes de algodón', file: 'cuna/nubes-de-algodon.mp3'},
   // Sonidos que crea la app (como los de Sleep as Android): no ocupan espacio ni gastan descargas
-  {id: 'n-ventilador', icon: '🌀', name: 'Ventilador', noise: 'ventilador'},
+  {id: 'n-ventilador', icon: '🌀', name: 'Ventilador', noise: 'ventilador', svg: ICO_VENTILADOR},
   {id: 'n-aspiradora', icon: '🧹', name: 'Aspiradora', noise: 'aspiradora', svg: ICO_ASPIRADORA},
-  {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador'},
+  {id: 'n-secador', icon: '💨', name: 'Secador', noise: 'secador', svg: ICO_SECADOR},
   {id: 'n-batidora', icon: '🥤', name: 'Batidora', noise: 'batidora', svg: ICO_BATIDORA}
 ];
 // 🎧 Relajaciones guiadas (en «Música para dormir»): la voz de Gustavo con «Mar en calma» de fondo. Suenan enteras una vez (ya traen su fundido).
@@ -3208,7 +3212,8 @@ const GUIAS = [ // {id, icon, name, min, file}
 ];
 // ✍️ Texto libre (en «Relajaciones para dormir»): la persona pega un texto y la app se lo repite 5 minutos con música suave de fondo
 const TL_C = {id: 'tl', icon: '✍️', name: 'Texto libre', min: 5, file: 'audios/fondo-texto.mp3', guia: true, tl: true};
-const TL = {abierto: false, txt: '', t: null, vel: 1, prueba: false}, TL_VELS = [[1, 'Normal'], [.8, 'Lento'], [.6, 'Muy lento']], TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
+const CUI = {g: true, m: null}; // qué carteles están abiertos en el panel de música del monitoreo
+const TL = {abierto: false, txt: '', t: null, vel: 1, prueba: false, pBtn: null}, TL_VELS = [[1, 'Normal'], [.8, 'Lento'], [.6, 'Muy lento']], TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
 try { TL.txt = localStorage.getItem('ronquino-textolibre') || ''; const v = +localStorage.getItem('ronquino-textovel'); if (TL_VELS.some(x => x[0] === v)) TL.vel = v; } catch {}
 const CUNA_FADE = 5;
 let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
@@ -3218,7 +3223,7 @@ const cunaSeg = () => cunaMin * 60;
 // Lo que dura la que suena en el monitoreo: una relajación guiada suena entera; las demás, los minutos elegidos
 const cunaLen = k => k?.c?.guia ? (isFinite(k.au.duration) && k.au.duration > 0 ? k.au.duration : k.c.min * 60) : cunaSeg();
 let cunaId = null; try { cunaId = localStorage.getItem('ronquino-cuna'); } catch {}
-const cunaSel = () => [...CUNAS, ...GUIAS].find(c => c.id === cunaId) || null;
+const cunaSel = () => [...CUNAS, ...GUIAS, ...(TL.txt.trim() ? [TL_C] : [])].find(c => c.id === cunaId) || null;
 // Escuchar una canción de cuna en la lista, antes de elegirla
 let cunaPrev = null; // {id, au}
 function playCunaPrev(x) {
@@ -3239,24 +3244,34 @@ function renderCunas() {
     $('cunaBody').innerHTML = 'Aún no hay música para dormir: la estamos haciendo con Suno y aparecerá aquí.';
     return;
   }
-  $('cunaBody').innerHTML = `<div>${live.night ? 'Toca una y empieza a sonar' : 'Toca una para escucharla y elegirla (otro toque la para)'}: suena ${cunaMin} minutos y se va apagando en 5 segundos (las relajaciones suenan enteras); mientras suena, no se graba.</div>
-    <div class="cuctl"><span>🔊 Volumen</span><input type="range" id="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>
-    <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
-    <div class="cunas"></div>`;
-  $('cunaVolIn').oninput = e => {
+  // Igual que en «Alarma y música»: dos carteles desplegables (se recuerda cuál está abierto mientras se repinta)
+  CUI.m ??= CUNAS.some(x => x.id === cunaId);
+  const vol = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" class="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>`;
+  const tlSuena = live.cuna?.c.tl;
+  $('cunaBody').innerHTML = `
+    <details class="instr card banda" id="cgDet"${CUI.g ? ' open' : ''}><summary><span>🎧 Audios para dormir</span></summary><div>
+      <p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte, con música suave. Suena entera y termina sola; mientras suena, no se graba.</p>
+      ${vol}<div class="cunas" id="cgBox"></div>
+      ${tlCaja(tlSuena)}
+    </div></details>
+    <details class="instr card banda" id="cmDet"${CUI.m ? ' open' : ''}><summary><span>🎵 Música para dormir</span></summary><div>
+      <p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola; mientras suena, no se graba.</p>
+      ${vol}
+      <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
+      <div class="cunas" id="cmBox"></div>
+    </div></details>`;
+  $('cgDet').ontoggle = e => CUI.g = e.target.open; $('cmDet').ontoggle = e => CUI.m = e.target.open;
+  $('cunaBody').querySelectorAll('.cunaVolIn').forEach(r => r.oninput = e => {
     cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
+    $('cunaBody').querySelectorAll('.cunaVolIn').forEach(o => { if (o !== e.target) o.value = e.target.value; });
     if (cunaPrev) cunaPrev.au.volume = cunaVol;
-    if (live.cuna && (live.cuna.c.guia || live.cuna.played < cunaSeg() - CUNA_FADE)) live.cuna.au.volume = cunaVol;
-  };
+    if (live.cuna && (live.cuna.c.guia || live.cuna.played < cunaSeg() - CUNA_FADE)) live.cuna.au.volume = musVol(live.cuna.c);
+  });
   $('cunaBody').querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
     cunaMin = +b.dataset.m; try { localStorage.setItem('ronquino-cunamin', String(cunaMin)); } catch {}
     renderCunas(); muteTick();
   });
-  const box = $('cunaBody').querySelector('.cunas');
-  const gbox = document.createElement('div'); gbox.className = 'cunas';
-  const tit = document.createElement('p'); tit.className = 'cutit'; tit.textContent = '🎧 Audios para dormir';
-  box.after(tit, gbox);
-  for (const x of [{id: null, icon: '🚫', name: 'Ninguna'}, ...CUNAS, ...GUIAS]) {
+  const boton = (x, caja) => {
     const b = document.createElement('button'); b.className = 'cuna' + (cunaId === x.id ? ' on' : '');
     const sounding = cunaPrev && cunaPrev.id === x.id;
     b.innerHTML = `<b>${cunaIco(x)}</b>${x.name}${sounding ? '<small>🔊 sonando · ■</small>' : x.guia ? `<small>${x.min} min</small>` : ''}`;
@@ -3273,8 +3288,24 @@ function renderCunas() {
       if (sounding || !x.id) stopCunaPrev(); else playCunaPrev(x);
       renderCunas();
     };
-    (x.guia ? gbox : box).append(b);
-  }
+    caja.append(b);
+  };
+  const ninguna = {id: null, icon: '🚫', name: 'Ninguna'};
+  for (const x of [ninguna, ...GUIAS]) boton(x, $('cgBox'));
+  for (const x of [ninguna, ...CUNAS]) boton(x, $('cmBox'));
+  const tb = document.createElement('button'); tb.type = 'button'; tb.className = 'cuna' + (tlSuena || cunaId === 'tl' || TL.abierto ? ' on' : '');
+  tb.innerHTML = `<b>${tlSuena ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small>`;
+  tb.onclick = () => {
+    if (tlSuena) { cunaId = null; try { localStorage.removeItem('ronquino-cuna'); } catch {} endCuna(true); renderCunas(); return; }
+    tlPara(); tlPruebaFin(); TL.abierto = !TL.abierto; renderCunas();
+  };
+  $('cgBox').append(tb);
+  tlEnlaza($('cgDet'), () => {
+    cunaId = 'tl'; try { localStorage.setItem('ronquino-cuna', 'tl'); } catch {}
+    if (live.cuna) endCuna(true);
+    if (live.night && live.det) { playCuna(TL_C); $('lCuna').classList.add('on'); }
+    renderCunas();
+  });
 }
 // 🎧 El botón (o el toque) de los pinganillos no hace nada de noche: al cambiártelos de oreja o darte la vuelta,
 // no se para ni el monitoreo ni la música ni el ruido (v26.3)
@@ -3284,7 +3315,7 @@ function sinBotonAuric() {
 }
 function playCuna(c) {
   sinBotonAuric();
-  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = cunaVol;
+  const au = new Audio(c.file || (noise.urls[c.noise] ||= makeNoise(c.noise))); au.loop = !c.guia; au.volume = musVol(c);
   au.play().catch(() => {});
   live.cuna = {au, c, played: 0, last: Date.now(), paused: false};
   if (c.guia) au.onended = () => { if (live.cuna?.au === au) endCuna(); }; // la relajación acaba sola
@@ -3299,7 +3330,8 @@ function playCuna(c) {
     $('cunaPause').textContent = k.paused ? '▶' : '❚❚'; $('cunaPause').setAttribute('aria-label', k.paused ? 'Seguir' : 'Pausar');
     muteTick();
   };
-  $('cunaStop').onclick = () => endCuna(true);
+  $('cunaStop').onclick = () => { endCuna(true); if (!$('pCuna').hidden) renderCunas(); };
+  if (c.tl) { AND?.prepararVoz?.(); tlDi(); }
   live.cuna.timer = setInterval(() => {
     const k = live.cuna, now = Date.now();
     if (!k.paused) k.played += (now - k.last) / 1000;
@@ -3312,6 +3344,7 @@ function playCuna(c) {
 }
 function endCuna(now) {
   const k = live.cuna; if (!k) return;
+  if (k.c.tl) tlPara();
   clearInterval(k.timer);
   const stop = () => { k.au.pause(); k.au.src = ''; };
   if (now) { // parada a mano: se apaga en 1 segundo
@@ -3327,6 +3360,7 @@ function endCuna(now) {
 // Suena los minutos elegidos (5, 10 o 15), se va apagando al final y usa el mismo volumen que en el monitoreo.
 const MUS = {au: null, c: null, fin: 0, t: null};
 const musVol = c => c?.tl ? cunaVol * TL_MUSICA : cunaVol;
+const tlAu = () => MUS.c?.tl ? MUS.au : live.cuna?.c.tl ? live.cuna.au : null; // la música del Texto libre (en «Alarma y música» o monitoreando)
 function tlPara() {
   clearTimeout(TL.t);
   try { AND?.callar?.(); } catch {}
@@ -3345,17 +3379,39 @@ function tlHabla(t, fin) {
   }
 }
 function tlDi() { // una repetición; la siguiente, tras la pausa. No empieza ninguna que no quepa: la música acaba sola
-  const au = MUS.au; if (!au || !MUS.c?.tl) return;
+  const au = tlAu(); if (!au) return;
+  if (live.cuna?.paused) { TL.t = setTimeout(tlDi, 1000); return; } // en pausa, espera
   const t = sinEmojis(TL.txt);
   if (((isFinite(au.duration) ? au.duration : TL_C.min * 60) - au.currentTime) * 1000 < tlMs(t) + 3000) return;
-  tlHabla(t, () => { if (MUS.c?.tl) TL.t = setTimeout(tlDi, TL_PAUSA); });
+  tlHabla(t, () => { if (tlAu()) TL.t = setTimeout(tlDi, TL_PAUSA); });
 }
-function tlPruebaFin() { TL.prueba = false; if ($('tlProbar')) $('tlProbar').textContent = '🔊 Probar'; }
-function tlProbar() { // lo dice una vez, sin música, a la velocidad elegida
+function tlPruebaFin() { TL.prueba = false; if (TL.pBtn) TL.pBtn.textContent = '🔊 Probar'; }
+function tlProbar(btn) { // lo dice una vez, sin música, a la velocidad elegida
   tlPara();
   if (TL.prueba) { tlPruebaFin(); return; }
-  TL.prueba = true; $('tlProbar').textContent = '⏹ Parar';
-  AND?.prepararVoz?.(); tlHabla(sinEmojis(TL.txt), tlPruebaFin);
+  if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; }
+  TL.prueba = true; TL.pBtn = btn; btn.textContent = '⏹ Parar';
+  const t = sinEmojis(TL.txt);
+  if (live.det) live.det.mute(Math.ceil(tlMs(t) / 1000) + 2); // que la propia voz no se grabe
+  AND?.prepararVoz?.(); tlHabla(t, tlPruebaFin);
+}
+// El cuadro del Texto libre, igual en «Alarma y música» y en el monitoreo: siempre con la velocidad y «Probar» a la vista
+const tlCaja = suena => `<div class="tlbox"${TL.abierto ? '' : ' hidden'}>
+      <p class="note" style="margin:0 0 8px">Pega o escribe aquí tu texto y te lo repito 5 minutos con música suave de fondo.</p>
+      <textarea class="tlTxt" maxlength="1000" rows="4" placeholder="Pega aquí tu texto…"></textarea>
+      <div class="cuctl"><span>🗣️ Voz</span><div class="cumin">${TL_VELS.map(([v, n]) => `<button type="button" data-v="${v}" class="${v === TL.vel ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+      ${suena ? '' : '<button type="button" class="btn wide tlProbar">🔊 Probar</button><button type="button" class="btn wide tlGo">▶️ Empezar</button>'}
+    </div>`;
+function tlEnlaza(raiz, empezar) {
+  const ta = raiz.querySelector('.tlTxt'), pr = raiz.querySelector('.tlProbar'), go = raiz.querySelector('.tlGo');
+  ta.value = TL.txt;
+  ta.oninput = e => { TL.txt = e.target.value; try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
+  raiz.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+    TL.vel = +b.dataset.v; try { localStorage.setItem('ronquino-textovel', String(TL.vel)); } catch {}
+    raiz.querySelectorAll('[data-v]').forEach(o => o.classList.toggle('on', o === b));
+  });
+  if (pr) pr.onclick = () => tlProbar(pr);
+  if (go) go.onclick = () => { if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; } tlPara(); TL.prueba = false; empezar(); };
 }
 function musPara(suave) {
   if (!MUS.au) return;
@@ -3393,15 +3449,8 @@ function pintaMusica() {
   gbox.innerHTML = `<p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte en la cama, con música suave. Suena entera y termina sola.</p>
     ${MUS.c?.guia ? suena : ''}${vol}
     <div class="cunas">${GUIAS.map(c => `<button type="button" class="cuna${MUS.c?.id === c.id ? ' on' : ''}" data-g="${c.id}"><b>${MUS.c?.id === c.id ? '⏹' : c.icon}</b>${c.name}<small>${c.min} min</small></button>`).join('')}
-      <button type="button" class="cuna${MUS.c?.tl || TL.abierto ? ' on' : ''}" id="tlBtn"><b>${MUS.c?.tl ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small></button></div>
-    <div class="tlbox" id="tlBox"${TL.abierto ? '' : ' hidden'}>
-      <p class="note" style="margin:0 0 8px">Pega o escribe aquí tu texto y te lo repito 5 minutos con música suave de fondo.</p>
-      <textarea id="tlTxt" maxlength="1000" rows="4" placeholder="Pega aquí tu texto…"></textarea>
-      <div id="tlCtl"${TL.txt.trim() ? '' : ' hidden'}>
-        <div class="cuctl"><span>🗣️ Voz</span><div class="cumin">${TL_VELS.map(([v, n]) => `<button type="button" data-v="${v}" class="${v === TL.vel ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-        ${MUS.c?.tl ? '' : '<button type="button" class="btn wide" id="tlProbar">🔊 Probar</button><button type="button" class="btn wide" id="tlGo">▶️ Empezar</button>'}
-      </div>
-    </div>`;
+      <button type="button" class="cuna tlBtn${MUS.c?.tl || TL.abierto ? ' on' : ''}"><b>${MUS.c?.tl ? '⏹' : TL_C.icon}</b>${TL_C.name}<small>${TL_C.min} min</small></button></div>
+    ${tlCaja(MUS.c?.tl)}`;
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
     ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
     <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
@@ -3418,15 +3467,8 @@ function pintaMusica() {
   });
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
   gbox.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
-  $('tlTxt').value = TL.txt;
-  $('tlTxt').oninput = e => { TL.txt = e.target.value; $('tlCtl').hidden = !TL.txt.trim(); try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
-  gbox.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
-    TL.vel = +b.dataset.v; try { localStorage.setItem('ronquino-textovel', String(TL.vel)); } catch {}
-    gbox.querySelectorAll('[data-v]').forEach(o => o.classList.toggle('on', o === b));
-  });
-  if ($('tlProbar')) $('tlProbar').onclick = tlProbar;
-  $('tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } tlPara(); TL.prueba = false; TL.abierto = !TL.abierto; pintaMusica(); };
-  if ($('tlGo')) $('tlGo').onclick = () => { tlPara(); TL.prueba = false; musToca(TL_C); };
+  gbox.querySelector('.tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } tlPara(); tlPruebaFin(); TL.abierto = !TL.abierto; pintaMusica(); };
+  tlEnlaza(gbox, () => musToca(TL_C));
   document.querySelectorAll('.musStop').forEach(b => b.onclick = () => musPara(true));
 }
 pintaMusica();
@@ -6237,6 +6279,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.5', '30 oct 2026', ['Monitoreo: audios y música separados en desplegables, y ✍️ Texto libre también aquí', 'Texto libre: velocidad y Probar siempre a la vista', 'Iconos nuevos de secador y ventilador']],
   ['v29.4', '30 oct 2026', ['Monitoreo: segundos junto a la hora y «Fin monitoreo sueño» con borde azul']],
   ['v29.3', '30 oct 2026', ['ℹ️ «Cómo funciona», justo debajo del título en todas las pantallas']],
   ['v29.2', '30 oct 2026', ['🎵 Iconos de música en azul, con una aspiradora y una batidora de verdad']],
@@ -6487,7 +6530,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live}; // para pruebas
 </script>
 </body>
 </html>
