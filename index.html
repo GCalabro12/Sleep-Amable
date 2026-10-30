@@ -621,6 +621,11 @@ details.hist[open] summary{margin-bottom:10px}
 #lSonar small{display:block;margin:0;font-size:12px}
 #lSonar.on{border-color:#38BDF8;color:#7DD3FC}
 #pSon p{margin:8px 0 0}
+.modosIntro{margin:0 0 12px;font-weight:600;color:#E0E7FF}
+.modoL{margin-top:3px;color:#CBD5E1}
+#pDnd #liAir{display:block;margin-top:16px}
+#prepAir:empty{display:none}
+#prepAir{display:block;margin-top:6px}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#1E293B;border-color:#475569;color:#E0E7FF}
@@ -1537,7 +1542,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button id="muteBtn">❚❚ +30 s<small id="muteSub">No grabar</small><span id="muteRest" hidden></span></button>
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
-  <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
+  <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><p class="modosIntro">Ninguno de estos modos afecta al detector de ronquidos.</p></div>
   <div class="lpanel" id="pCuna" hidden><div class="pchead"><b>🎵 Audios y música para dormir</b><button type="button" id="pCunaX" aria-label="Cerrar">✕</button></div></div>
   <div class="lpanel" id="pSon" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button>
     <b>📡 Sonar</b>
@@ -1588,7 +1593,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.2'; // v30.2: monitoreo: 🌙 y ✈️ en un botón, y botón «Sonar» con su ventana; en el colchón el sonar se apaga solo; sonar: un cambio que se queda ya no marca movimiento sin parar; noches con grabaciones: 7, 14 o 21, y los números se quedan; probar el sonar: 20 s y dice «movimiento»
+const VERSION = 'v30.3'; // v30.3: monitoreo: ventana de 🌙✈️ más clara: qué elimina cada modo y que ninguno afecta al detector
+// v30.2: monitoreo: 🌙 y ✈️ en un botón, y botón «Sonar» con su ventana; en el colchón el sonar se apaga solo; sonar: un cambio que se queda ya no marca movimiento sin parar; noches con grabaciones: 7, 14 o 21, y los números se quedan; probar el sonar: 20 s y dice «movimiento»
 // v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
 // v30.0: «¿Algo especial esta noche?»: botones más pequeños y juntos; Movimiento: «sonar on / off» y cuánto notó el sonar
 // v29.9: «Texto libre» pasa a su propio cartel desplegable, ✍️ «Audio personalizado», en «Alarma y música» y en el monitoreo
@@ -3015,11 +3021,10 @@ $('startBtn').onclick = async () => {
   musPara(false); // si sonaba la música sola, se para: en la noche se elige arriba, en 🎵
   // Los desplegables de arriba de la pantalla de monitoreo: «No molestar», canción de cuna y modo avión
   $('pDnd').append($('liDnd'), $('liAir')); $('pCuna').append($('cunaBody'));
+  if (!AND) { $('liDnd').innerHTML = MODO_DND; $('liAir').innerHTML = MODO_AIR + '<span id="prepAir"></span>'; }
   const ok = !!IA.clf;
   $('prepAir').className = ok ? 'ok' : 'no';
-  $('prepAir').textContent = ok
-    ? 'Puedes ponerlo: el detector de ronquidos ya está cargado y Amable Sleep funciona sin internet ni wifi. Eso sí, tampoco te entrarán llamadas.'
-    : '⚠️ Todavía no: el detector aún se está cargando y necesita internet. Espera un poco antes de ponerlo.';
+  $('prepAir').textContent = ok ? '' : '⚠️ Espera un poco: el detector aún se está cargando y necesita internet.';
   await startListening();
   if (!live.night) return;
   renderCunas();
@@ -3170,14 +3175,16 @@ $('prepNo').onclick = () => { stopCunaPrev(); $('prep').hidden = true; AND?.rest
 
 // ---------- App Android: «No molestar» y wifi de verdad ----------
 let dndPedido = false; // tocó «Activar» y fue a dar el permiso
+const MODO_DND = '<b>🌙 Modo No molestar</b><div class="modoL">Elimina notificaciones y llamadas (no las alarmas).</div>';
+const MODO_AIR = '<b>✈️ Modo avión</b><div class="modoL">Elimina llamadas, wifi y datos móviles (no las alarmas). Sin internet, casi tampoco llegan notificaciones.</div>';
 function renderPrep() {
   const acceso = AND.hasDndAccess(), activo = AND.dndActivo(), mio = AND.dndMio();
   let btn, txt, on = false, off = false;
-  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quitará solo al tocar «☀️ Fin monitoreo sueño». Toca para quitarlo ya.'; }
-  else if (activo) { on = true; off = true; btn = '✅ Ya tienes «No molestar» puesto'; txt = 'Lo pusiste tú, así que Amable Sleep lo deja como está.'; }
-  else if (!acceso) { btn = '🌙 Activar «No molestar»'; txt = 'La primera vez Android te pide permiso: busca <b>Amable Sleep</b> en la lista, actívalo y vuelve a la app.'; }
-  else { btn = '🌙 Activar «No molestar»'; txt = 'Amable Sleep lo pone ahora y lo quita al terminar la noche.'; }
-  $('liDnd').innerHTML = `<b>🌙 «No molestar»</b>: ninguna notificación ni llamada te despierta ni se cuela en las grabaciones. Las alarmas suenan según cómo lo tengas configurado.
+  if (mio) { on = true; btn = '✅ «No molestar» activado'; txt = 'Se quita solo al terminar la noche.'; }
+  else if (activo) { on = true; off = true; btn = '✅ Ya tienes «No molestar» puesto'; txt = 'Lo pusiste tú: se queda como está.'; }
+  else if (!acceso) { btn = '🌙 Activar «No molestar»'; txt = 'La primera vez te pedirá permiso: busca <b>Amable Sleep</b> en la lista, actívalo y vuelve aquí.'; }
+  else { btn = '🌙 Activar «No molestar»'; txt = 'Se quita solo al terminar la noche.'; }
+  $('liDnd').innerHTML = `${MODO_DND}
     <button class="nat${on ? ' on' : ''}" id="dndBtn"${off ? ' disabled' : ''}>${btn}</button><div class="natTxt">${txt}</div>`;
   $('sDnd').textContent = on ? '✅' : '';
   $('lDnd').classList.toggle('on', on);
@@ -3189,8 +3196,8 @@ function renderPrep() {
   };
   // Modo avión: imposible desde una app
   const air = $('prepAir').outerHTML;
-  $('liAir').innerHTML = `<b>✈️ Modo avión: opcional.</b> Android no deja que ninguna app lo active (está prohibido desde Android 4.2): si lo quieres, ponlo tú desde los ajustes rápidos. ${air}
-    <button class="nat" id="airBtn">✈️ Abrir los ajustes del modo avión</button>`;
+  $('liAir').innerHTML = `${MODO_AIR}${air}
+    <button class="nat" id="airBtn">✈️ Abrir el modo avión</button>`;
   $('airBtn').onclick = () => AND.abrirModoAvion();
   // Wifi: hasta Android 9 Amable Sleep lo apaga y lo enciende; desde Android 10 solo puede abrir el panel
   const directo = AND.wifiDirecto(), wifiOn = AND.wifiEncendido(), wMio = AND.wifiMio();
@@ -3206,7 +3213,6 @@ function renderPrep() {
     else if (AND.wifiEncendido() && AND.apagarWifi() === 'error') alert('Android no ha dejado apagar el wifi. Apágalo tú desde los ajustes rápidos.');
     setTimeout(renderPrep, 800); // el wifi tarda un poco en cambiar
   };
-  $('prepNote').textContent = 'Amable Sleep pone y quita «No molestar» por ti. El modo avión no: Android no lo permite a ninguna app.';
 }
 // Android llama a esto al volver de sus ajustes (permiso de «No molestar», panel del wifi…)
 window.nativeVuelta = () => {
@@ -6358,7 +6364,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.2', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
+  ['v30.3', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
