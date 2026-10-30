@@ -600,13 +600,15 @@ details.hist[open] summary{margin-bottom:10px}
 #listen.on{display:flex}
 #listen .inner{transition:opacity 1.2s;margin:0;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:8px} /* repartido por la pantalla, sin un hueco grande arriba */
 #listen .inner > *{width:100%}
-#listen .inner > #stopBtn,#listen .inner > .mutefila{width:auto;align-self:center}
+#listen .inner > #stopBtn{width:auto;align-self:center}
 .lgrupo{display:flex;flex-direction:column;align-items:center} /* centrado si cabe; si no, empieza arriba (debajo de los iconos) */
 .lgrupo.panelMon{background:#A78BFA26;border:2.5px solid #8B5CF6;border-radius:16px;padding:8px 8px 10px} /* v28.2: borde morado, como la barra «Panel de monitoreo» */ /* morado claro: de «Panel de monitoreo» para abajo, todo es el panel (v26.6) */
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#fff;background:#8B5CF6;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas con letras blancas */
 #lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
+#muteBtn{margin:0 0 0 auto;height:50px;min-width:104px;padding:2px 8px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;line-height:1.2;white-space:nowrap} /* entre ✈️ y 🎵, en dos renglones (v29.6) */
+#muteBtn small{display:block;font-size:12px;color:#94A3B8}
 .ltop{column-gap:10px}
 .lico{width:58px;height:50px;border-radius:16px;border:1px solid #475569;background:#1E293B;font-size:22px;color:#94A3B8;padding:0}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
@@ -707,10 +709,8 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button{background:#111827;border:1px solid #475569;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
-.mutefila{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 8px}
-.mutefila .mute{margin:0}
-#muteRest{font-size:15px;font-weight:700;color:#FBBF24;white-space:nowrap;font-variant-numeric:tabular-nums}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
+#muteRest{display:block;font-size:12px;font-weight:700;color:#FBBF24;font-variant-numeric:tabular-nums}
 .lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin:-4px 0 12px;white-space:nowrap;width:100%;flex:none}
 .lcuna:not([hidden]){display:flex}
 .lcuna .cuname{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -1519,6 +1519,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="ltit">Elige para esta noche</div>
     <button class="lico" id="lDnd" aria-label="No molestar">🌙<small>▾</small></button>
     <button class="lico" id="lAir" aria-label="Modo avión">✈️<small>▾</small></button>
+    <button id="muteBtn">❚❚ +30 s<small id="muteSub">No grabar</small><span id="muteRest" hidden></span></button>
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button></div>
@@ -1537,7 +1538,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="prhist"><div class="prhh"><b>📋 Historial de pruebas <small id="prN"></small></b><button type="button" class="mute" id="prEnviar">📋 Copiar</button></div><div id="prHist"></div></div>
   </div>
   <div class="inner">
-    <div class="mutefila"><button class="mute" id="muteBtn">❚❚ No grabar +30 s</button><span id="muteRest" hidden></span></div>
     <div class="lgrupo">
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
     <div class="meter"><i id="lvl"></i></div>
@@ -1567,7 +1567,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.5'; // v29.5: monitoreo: «Audios para dormir» y «Música para dormir» en carteles desplegables, con ✍️ Texto libre; velocidad y Probar siempre a la vista; iconos dibujados de secador y ventilador, batidora más grande
+const VERSION = 'v29.6'; // v29.6: monitoreo: «No grabar» entre ✈️ y 🎵, en dos renglones
+// v29.5: monitoreo: «Audios para dormir» y «Música para dormir» en carteles desplegables, con ✍️ Texto libre; velocidad y Probar siempre a la vista; iconos dibujados de secador y ventilador, batidora más grande
 // v29.4: monitoreo: los tres puntitos pasan a «Fin monitoreo sueño», con borde azul; segundos pequeños junto a la hora
 // v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
 // v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
@@ -3171,9 +3172,9 @@ $('muteBtn').onclick = () => { if (live.det) { live.det.mute(30); muteTick(); } 
 function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
-  // A la derecha del botón, lo que falta (cada toque suma 30 s)
+  // En el botón, debajo, lo que falta (cada toque suma 30 s)
   const sinGrabar = rem > 0 && isFinite(rem) && !live.cuna;
-  $('muteRest').hidden = !sinGrabar;
+  $('muteRest').hidden = !sinGrabar; $('muteSub').hidden = sinGrabar;
   if (sinGrabar) $('muteRest').textContent = `Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')}`;
   if (live.cuna) {
     const k = live.cuna, left = Math.max(0, cunaLen(k) - k.played);
@@ -6279,6 +6280,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.6', '30 oct 2026', ['Monitoreo más compacto: «No grabar» arriba, entre el avión y la música']],
   ['v29.5', '30 oct 2026', ['Monitoreo: audios y música separados en desplegables, y ✍️ Texto libre también aquí', 'Texto libre: velocidad y Probar siempre a la vista', 'Iconos nuevos de secador y ventilador']],
   ['v29.4', '30 oct 2026', ['Monitoreo: segundos junto a la hora y «Fin monitoreo sueño» con borde azul']],
   ['v29.3', '30 oct 2026', ['ℹ️ «Cómo funciona», justo debajo del título en todas las pantallas']],
