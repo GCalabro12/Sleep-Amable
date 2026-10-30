@@ -682,6 +682,8 @@ details.hist[open] summary{margin-bottom:10px}
 .flag.on.m{color:#7DD3FC} .flag.on.m::before{background:#38BDF8;box-shadow:0 0 8px #38BDF8}
 .flag.on.l{color:#FDE68A} .flag.on.l::before{background:#FACC15;box-shadow:0 0 8px #FACC15}
 .flag.on.a::before{background:#60A5FA;box-shadow:0 0 8px #60A5FA}
+#fSonar{padding:2px 8px;font-size:13px;border-radius:10px;border:1px solid #475569;background:#1E293B;color:#94A3B8}
+#fSonar.on{color:#7DD3FC;border-color:#38BDF8;font-weight:700}
 .flag.cuenta{color:#E0E7FF} .flag.cuenta::before{display:none}
 #finQ{position:fixed;inset:0;z-index:40;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
 #finQ h2{font-size:27px;margin:0 0 8px;color:#FDE68A}
@@ -1156,7 +1158,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="cuentaBody"></div>
   </details>
   <details class="card ajd">
-    <summary>😴 Detector de ronquidos</summary>
+    <summary>😴 Ajustes ronquidos</summary>
     <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
       <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
     <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
@@ -1165,6 +1167,9 @@ body.pl-on .wrap{padding-bottom:190px}
       <select id="maxSec"><option value="30">30 s</option><option value="60">1 min</option><option value="120">2 min</option></select></div>
     <div class="row"><label for="strict">Separar ronquido de respiración<small>Estricto: solo cuenta como ronquido lo que suena claramente a ronquido</small></label>
       <select id="strict"><option value="0.25">Suave</option><option value="0.35">Normal</option><option value="0.5">Estricto</option></select></div>
+  </details>
+  <details class="card ajd">
+    <summary>🏃 Ajustes movimiento</summary>
     <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo.</small></label>
       <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
     <button class="btn wide" id="sonarTest">▶ Probar el sonar (10 s)</button>
@@ -1176,7 +1181,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="temas" id="temas"></div>
   </details>
   <details class="card ajd" id="aprDet" hidden>
-    <summary><span>🧠 Lo que ha aprendido la IA <small id="sApr"></small><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">solo administrador</small></span></summary>
+    <summary><span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-bottom:2px">solo administrador</small>🧠 Lo que ha aprendido la IA <small id="sApr"></small></span></summary>
     <div id="aprBody"></div>
   </details>
   <details class="card ajd" id="webDet">
@@ -1560,7 +1565,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><button type="button" id="fSonar">📡 sonar off</button><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
@@ -1574,7 +1579,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.0'; // v30.0: «¿Algo especial esta noche?»: botones más pequeños y juntos; Movimiento: «sonar on / off» y cuánto notó el sonar
+const VERSION = 'v30.1'; // v30.1: monitoreo: botón «sonar on / off»; Ajustes: «Ajustes ronquidos» y «Ajustes movimiento» (con el sonar); «solo administrador» encima del título; Novedades agrupadas cada 3 días
+// v30.0: «¿Algo especial esta noche?»: botones más pequeños y juntos; Movimiento: «sonar on / off» y cuánto notó el sonar
 // v29.9: «Texto libre» pasa a su propio cartel desplegable, ✍️ «Audio personalizado», en «Alarma y música» y en el monitoreo
 // v29.8: ventana de buenos días: sin el texto largo; lo que sigue activo (No molestar…), con el reborde punteado en movimiento
 // v29.7: Texto libre: Probar y Empezar en horizontal; tocar el icono lo activa como los demás audios (sin texto, abre el cuadro) y la flechita lo despliega
@@ -2649,7 +2655,8 @@ async function startListening() {
   movEmpezar(night);
   if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
-  if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000), true));
+  live.sonar = null; if (cfg.sonar) sonarEmpieza(night);
+  pintaSonarBtn();
   $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on'); pintaAvisoPor();
@@ -2712,6 +2719,21 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
 // 🛏️ Movimiento: con el móvil sobre el colchón, el acelerómetro nota cuándo te mueves o te das la vuelta.
 // Se apunta el segundo de la noche (como mucho una marca cada 20 s). Tocar la pantalla no cuenta.
 let movToque = 0;
+// 📡 Sonar: se enciende al empezar si está en Ajustes, y se cambia durante el monitoreo con «sonar on / off»
+function sonarEmpieza(night) {
+  live.sonar = new Sonar(live.ctx, live.src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000), true));
+  if (!live.sonar.ok) { live.sonar = null; night.sonar = false; return false; }
+  night.sonar = true; return true;
+}
+function pintaSonarBtn() { const on = !!live.sonar; $('fSonar').textContent = `📡 sonar ${on ? 'on' : 'off'}`; $('fSonar').classList.toggle('on', on); }
+$('fSonar').onclick = () => {
+  if (!live.night) return;
+  if (live.sonar) { live.sonar.stop(); live.sonar = null; cfg.sonar = false; }
+  else if (sonarEmpieza(live.night)) cfg.sonar = true;
+  else toast('Este móvil no puede usar el sonar');
+  $('sonarOn').checked = !!cfg.sonar; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  pintaSonarBtn();
+};
 function marcaMov(night, t, porSonar) {
   live.ultMov = Date.now(); night.mov ||= [];
   if (!night.mov.length || t - night.mov.at(-1) >= 20) { night.mov.push(t); if (porSonar) night.movSonar = (night.movSonar || 0) + 1; }
@@ -6291,211 +6313,11 @@ function ponTema() {
 ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
+// Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.0', '30 oct 2026', ['«¿Algo especial esta noche?»: botones más juntos, ocupan menos', 'Movimiento: ahora dice si el sonar estaba activado']],
-  ['v29.9', '30 oct 2026', ['✍️ Nuevo apartado «Audio personalizado»: pega tu texto y te lo repito con música suave']],
-  ['v29.8', '30 oct 2026', ['Buenos días: ventana más clara; lo que sigue activo se ve con un reborde en movimiento']],
-  ['v29.7', '30 oct 2026', ['✍️ Texto libre: toca el icono y empieza, como los demás audios; la flechita abre el cuadro']],
-  ['v29.6', '30 oct 2026', ['Monitoreo más compacto: «No grabar» arriba, entre el avión y la música']],
-  ['v29.5', '30 oct 2026', ['Monitoreo: audios y música separados en desplegables, y ✍️ Texto libre también aquí', 'Texto libre: velocidad y Probar siempre a la vista', 'Iconos nuevos de secador y ventilador']],
-  ['v29.4', '30 oct 2026', ['Monitoreo: segundos junto a la hora y «Fin monitoreo sueño» con borde azul']],
-  ['v29.3', '30 oct 2026', ['ℹ️ «Cómo funciona», justo debajo del título en todas las pantallas']],
-  ['v29.2', '30 oct 2026', ['🎵 Iconos de música en azul, con una aspiradora y una batidora de verdad']],
-  ['v29.1', '30 oct 2026', ['✍️ Texto libre: botón para probar y voz normal, lenta o muy lenta', 'Monitoreo: toca «Aviso por auriculares» para ver a qué horas te avisé']],
-  ['v29.0', '30 oct 2026', ['Iconos más claros: amarillos en «Audios para dormir» y otro color en la música']],
-  ['v28.9', '30 oct 2026', ['✍️ Nuevo en «Audios para dormir»: «Texto libre»: pega tu texto y te lo repito 5 minutos con música suave']],
-  ['v28.8', '29 oct 2026', ['«Alarma y música»: Despertadores también se pliega, y cada cartel envuelve lo suyo con las esquinas redondeadas']],
-  ['v28.7', '29 oct 2026', ['«Alarma y música»: títulos más claros en banners morados: Relajaciones, Música para dormir y Despertadores']],
-  ['v28.6', '29 oct 2026', ['🌙 Nueva relajación para dormir: «Seguro y sin miedo», 6 minutos']],
-  ['v28.5', '29 oct 2026', ['💛 Nueva relajación para dormir: «Sentirte querido», 7 minutos']],
-  ['v28.4', '29 oct 2026', ['🔒 Presentación más clara: tus grabaciones se quedan solo en tu móvil']],
-  ['v28.3', '29 oct 2026', ['🌙 ✈️ juntos y 🎵 a la derecha', '🎵 En la música para dormir, la ✕ de cerrar siempre se ve']],
-  ['v28.2', '29 oct 2026', ['💜 Monitoreo: el panel con borde morado; la hora un poco más a la derecha', 'Fuera el botón «Probar detección»']],
-  ['v28.1', '29 oct 2026', ['🎧 El aviso «estás roncando» se dice justo después de un ronquido, no en un silencio', 'Cuenta solo el tiempo que roncas de verdad']],
-  ['v28.0', '29 oct 2026', ['😴 Tabla del ronquido: «% población»']],
-  ['v27.9', '29 oct 2026', ['😴 Explicación del ronquido más corta']],
-  ['v27.8', '29 oct 2026', ['🔻 «Filtrar grabaciones por»: los filtros en un desplegable', 'Filtros nuevos: 🏃 Movimientos y 🎧 Avisos']],
-  ['v27.7', '29 oct 2026', ['🎧 Avisos «estás roncando»: botón «Oír grabaciones» con las grabaciones de cada aviso', 'Fuera los textos que no se entendían']],
-  ['v27.6', '29 oct 2026', ['▶ En cada grabación, el botón de escuchar va a la derecha; la hora, a la izquierda']],
-  ['v27.5', '29 oct 2026', ['😴 La puntuación del ronquido va según la parte de la noche que roncas', 'Toca «Ronquido» en el panel de puntuación: verás cuánto ronca la gente y dónde está tu noche']],
-  ['v27.4', '29 oct 2026', ['🎙️ Al abrir una noche, el gráfico de grabaciones ya sale desplegado']],
-  ['v27.2', '29 oct 2026', ['El aviso de sonidos ya no enseña los nombres raros de la IA («león», «tigre»…) ni el icono del altavoz tachado']],
-  ['v27.1', '29 oct 2026', ['🔇 Sonidos que no son ronquido ni voz: qué pueden ser, que no cuentan para la puntuación y que menos de 100 es normal']],
-  ['v27.0', '29 oct 2026', ['😴 Los minutos roncando cuentan solo cuando roncas de verdad, no la grabación entera (las noches de antes se corrigen al abrirlas)']],
-  ['v26.9', '29 oct 2026', ['🎨 En la onda de la grabación, el color solo va donde suena fuerte (antes, en grabaciones casi en silencio, salía todo amarillo)']],
-  ['v26.8', '29 oct 2026', ['🏃 Movimiento: como mucho uno por minuto, también en el gráfico', '🟢 La rayita verde sale de donde empieza el volumen y es más alta']],
-  ['v26.7', '29 oct 2026', ['⭐ La puntuación castiga menos el ronquido y el movimiento', '🏃 Los movimientos seguidos (menos de 1 minuto) cuentan como uno', '🟢 En el gráfico, el movimiento es una rayita verde abajo; y en la onda de la grabación, una raya verde «movim.»']],
-  ['v26.6', '29 oct 2026', ['💜 Monitoreo: el «Panel de monitoreo» tiene su fondo morado claro', '🔊 «Avisos por» va lo primero del panel, en gris', 'Los botones de «Elige para esta noche», en gris como «Prueba audífonos»']],
-  ['v26.5', '29 oct 2026', ['☀️ Al monitorear, a las 6 horas «Fin monitoreo sueño» se pone rojo', '🎧 «Prueba audífonos», en gris como «Me levanté»']],
-  ['v26.4', '28 oct 2026', ['⏰ Después de posponer la alarma 2 veces, ya no se puede posponer más: toca levantarse', '🚶 El reto de la alarma ahora es caminar 30 pasos (antes 20)']],
-  ['v26.3', '28 oct 2026', ['⏰ Al monitorear, debajo de la hora de la alarma ves cuánto falta para que suene (horas:minutos)', '🎧 Tocar los pinganillos (al cambiártelos de oreja) ya no para la música, el ruido ni el monitoreo']],
-  ['v26.2', '28 oct 2026', ['🎧 El aviso «estás roncando» ya no salta por un ruido suelto: solo si roncas de verdad en ese momento']],
-  ['v26.1', '28 oct 2026', ['Gráfico de grabaciones: debajo de cada grabación se ve su propia onda, igual que en el reproductor']],
-  ['v26.0', '28 oct 2026', ['Gráfico de grabaciones: las horas de abajo ya cuadran con la hora de cada grabación']],
-  ['v25.9', '28 oct 2026', ['Icono nuevo de pantalla completa: esquinas con flechas, en blanco']],
-  ['v25.8', '28 oct 2026', ['📱 App 4.6: el botón ⤢ gira la pantalla sola y el gráfico ocupa toda la pantalla']],
-  ['v25.7', '28 oct 2026', ['Gráfico de grabaciones: cada aviso «estás roncando» es una raya rosa en la mitad, sin el punto de abajo']],
-  ['v25.6', '28 oct 2026', ['⤢ Pantalla completa en el gráfico de grabaciones y en el de fases del sueño (el botón de abajo a la derecha)', 'Los avisos que salen un momento se cierran al tocarlos (y el del 🚶, también tocándolo otra vez)']],
-  ['v25.5', '28 oct 2026', ['Fases del sueño arregladas: darte la vuelta (por ejemplo tras el aviso «cambia de posición») ya no cuenta como estar despierto el resto de la noche; también en las noches pasadas']],
-  ['v25.4', '28 oct 2026', ['Fases del sueño más anchas: los nombres van encima de los bloques', '🚶 En las fases, donde te levantaste: tócalo y te dice la hora']],
-  ['v25.3', '27 oct 2026', ['🎧 «Dinero en calma» también en la música al empezar a monitorear']],
-  ['v25.2', '27 oct 2026', ['🔆 Arreglado: después de monitorear, la pantalla se quedaba oscura en la app', '🎧 Las relajaciones guiadas, en su propia tarjeta arriba del todo']],
-  ['v25.1', '27 oct 2026', ['🎧 Relajaciones guiadas para dormir, en «Música para dormir»: la primera es «Dinero en calma»']],
-  ['v25.0', '27 oct 2026', ['💨 Respiraciones con su icono gris también en «Detector actualizado»']],
-  ['v24.9', '27 oct 2026', ['🧠 El detector común se actualiza también al volver a la app']],
-  ['v24.8', '27 oct 2026', ['🧠 El detector mejora para todos con las grabaciones que revisa el equipo de Amable Sleep']],
-  ['v24.7', '27 oct 2026', ['🧠 «Según tus revisiones» solo lo ve el administrador']],
-  ['v24.6', '27 oct 2026', ['🧠 «aprendido» ahora dice «según tus revisiones»']],
-  ['v24.5', '27 oct 2026', ['🎧 «Aviso «estás roncando» · hora» en un renglón, y una raya «aviso» en la onda donde se dijo']],
-  ['v24.4', '27 oct 2026', ['🎨 La onda siempre enseña con su color la etiqueta de la grabación (si dice ronquido, se ve amarillo)']],
-  ['v24.3', '27 oct 2026', ['🌙 Fases del sueño: «Despierto» solo con movimientos fuertes, no por sonidos; la ⓘ explica cómo se mide']],
-  ['v24.2', '27 oct 2026', ['🎨 En la onda de cada grabación, el color abarca el ronquido entero (no solo una raya)']],
-  ['v24.1', '27 oct 2026', ['💨 La etiqueta «Respiración» ya no es amarilla como la de ronquido']],
-  ['v24.0', '27 oct 2026', ['🔄 Fases del sueño: los ciclos se ven separados por una línea punteada y numerados']],
-  ['v23.9', '27 oct 2026', ['🌍 «Tu país» se elige abajo, en «Media de tu país»']],
-  ['v23.8', '27 oct 2026', ['🔻 Filtro de grabaciones: elige varios a la vez (por ejemplo, ronquidos y tos)']],
-  ['v23.7', '27 oct 2026', ['«Revisar con el detector nuevo» solo sale en noches anteriores a la última mejora del detector']],
-  ['v23.6', '27 oct 2026', ['📊 Estadísticas más claras: sin el panel de la última noche, y «Tus minutos roncando» dice de qué periodo es']],
-  ['v23.5', '27 oct 2026', ['Cada pantalla se abre con la información y los desplegables plegados']],
-  ['v23.4', '27 oct 2026', ['ⓘ En Estadísticas: qué significa cada cifra']],
-  ['v23.3', '27 oct 2026', ['🔔 «Avisos por»: «Solo auricular, para no despertar a nadie» o «Por el altavoz (si duermes solo)»']],
-  ['v23.2', '27 oct 2026', ['📊 Estadísticas de los últimos 7, 30 o 90 días, o de todo', 'ⓘ En Estadísticas: cuánto tiempo se guardan tus datos', '💬 «¿Quieres otro aviso en la noche?»']],
-  ['v23.1', '27 oct 2026', ['El botón dice «Monitorear y avisar de ronquidos», y «… y otro aviso» si tienes el aviso en la noche']],
-  ['v23.0', '27 oct 2026', ['🎧 En el monitoreo con aviso de ronquidos: «Avisos por auricular» o «por altavoz»; tócalo para cambiarlo', '💬 «¿Quieres un aviso en la noche?»: decimos aviso en vez de mensaje']],
-  ['v22.9', '27 oct 2026', ['📊 Estadísticas empieza con «Historial de grabaciones»']],
-  ['v22.8', '27 oct 2026', ['💬 El mensaje en la noche dice Activado o Desactivado en cuanto tocas su interruptor']],
-  ['v22.7', '27 oct 2026', ['🛏️ Con «Medir las fases del sueño», al empezar sale una ventana con el móvil en el colchón: ya lo he puesto, desactivar solo esta noche o desactivarlo']],
-  ['v22.6', '27 oct 2026', ['«ℹ️ Cómo funciona» arriba en Saber si ronco y Dormir con quien ronca, y dentro del mensaje', 'Dormir con quien ronca: el sonido puede apagarse al sonar la alarma']],
-  ['v22.5', '27 oct 2026', ['Aviso de ronquidos: «Cómo funciona» debajo del botón, y el deslizador «Avisos por: Auricular | Altavoz» siempre a la vista', '«¿Quieres un mensaje en la noche?»']],
-  ['v22.4', '27 oct 2026', ['Aviso de ronquidos: el botón azul vuelve a decir «Activado»', 'La web se ve igual que la app Android (aviso, mensaje y reto de la alarma)']],
-  ['v22.3', '27 oct 2026', ['🎧 El botón azul se llama «Avisos por altavoz o por auricular»', '🎧 Sin interruptor: el aviso «estás roncando» funciona en las noches que empiezas con «Empezar a monitorear y avisar de ronquidos»']],
-  ['v22.2', '27 oct 2026', ['🎧 «Estás roncando» se dice una sola vez; vuelve solo si sigues 2 minutos más roncando', '«Reducir ronquidos» ahora se llama «Aviso de ronquidos»; su botón enciende el aviso si estaba apagado']],
-  ['v22.1', '27 oct 2026', ['En la app Android, la música para dormir sigue sonando con la pantalla apagada']],
-  ['v22.0', '27 oct 2026', ['⏰ Después de posponer, la alarma progresiva sube en 5 segundos (no despacio otra vez)']],
-  ['v21.9', '27 oct 2026', ['⏰ Posponer la alarma, cada vez menos: la 1.ª vez hasta 9 min, la 2.ª hasta 3 y luego 1']],
-  ['v21.8', '26 oct 2026', ['Saber si ronco y Dormir con quien ronca: cada opción dice si está Activada o Desactivada, como en Reducir ronquidos']],
-  ['v21.7', '26 oct 2026', ['Monitoreo: toca ⏰ junto a la hora para activar, quitar o cambiar la alarma sin salir']],
-  ['v21.6', '26 oct 2026', ['Monitoreo: a la izquierda de la hora, ⏰ y la hora de tu alarma']],
-  ['v21.5', '26 oct 2026', ['Reducir ronquidos: cada opción dice si está Activada o Desactivada', '«Aviso por altavoz o auricular» va dentro de «Aviso: estás roncando»']],
-  ['v21.4', '26 oct 2026', ['«Registro de grabaciones» ahora se llama «Gráfico de grabaciones»']],
-  ['v21.3', '26 oct 2026', ['Fases del sueño y Registro de grabaciones, cada uno en un renglón']],
-  ['v21.2', '26 oct 2026', ['Reducir ronquidos: primero y destacado «Aviso: estás roncando»; desplegables más estrechos y sin sí/no']],
-  ['v21.1', '26 oct 2026', ['La noche cabe mejor: «Fases del sueño» y «Registro de grabaciones» van plegadas; tócalas para abrirlas']],
-  ['v21.0', '26 oct 2026', ['«Aviso por altavoz o auricular» y «Medir las fases del sueño», cada uno en un renglón']],
-  ['v20.9', '26 oct 2026', ['Monitoreo: «Fin monitoreo sueño» encima del panel', 'Letra de las notas más grande', 'La noche, con menos frases: lo importante en corto']],
-  ['v20.8', '26 oct 2026', ['Inicio más visual: «Saber si ronco» grande y lo demás en baldosas de 2 en 2, sin frases; cabe sin bajar']],
-  ['v20.7', '26 oct 2026', ['Monitoreo más limpio: sin «Grabando bloque… quedan…»; basta la lucecita «Grabando»']],
-  ['v20.6', '26 oct 2026', ['«Prueba audífonos» y «Me levanté» pasan encima de «Panel de monitoreo»']],
-  ['v20.5', '26 oct 2026', ['Monitoreo: «Prueba audífonos» y «Me levanté», uno al lado del otro, justo encima de «Panel de monitoreo»', 'Monitoreo: «Elige para esta noche» y «Panel de monitoreo», barras moradas; rayas de separación más gruesas']],
-  ['v20.4', '26 oct 2026', ['Monitoreo: «Elige para esta noche» en violeta y del mismo tamaño que «Panel de monitoreo»']],
-  ['v20.3', '26 oct 2026', ['📅 Calendario de noches: cada noche, del color de su puntuación; toca el día para abrirla', 'Monitoreo: sin el hueco antes de «Fin monitoreo», que ya se ve sin bajar']],
-  ['v20.2', '26 oct 2026', ['Menos grabaciones por noche y más largas (hasta 2 min): un ronquido con pausas ya no sale en trocitos', 'En el monitoreo, Grabando y Movimiento son lucecitas (no parecen botones)']],
-  ['v20.1', '26 oct 2026', ['«Medir también las fases del sueño» (antes «el sueño profundo»)']],
-  ['v20.0', '26 oct 2026', ['Pantalla de monitoreo más ordenada: arriba lo que eliges para la noche; luego Me levanté, No grabar y Sensibilidad; abajo el Panel de monitoreo']],
-  ['v19.9', '26 oct 2026', ['🧠 El detector aprende un modelo propio con la huella completa de tus grabaciones revisadas (solo se usa si acierta más)']],
-  ['v19.8', '26 oct 2026', ['En «Ruidos», «Revisar esta noche» va arriba, antes de las grabaciones', '«¿Algo especial esta noche?»: selecciona si hubo algo diferente a lo habitual']],
-  ['v19.7', '26 oct 2026', ['En Ajustes: «Actualizar el detector con mis revisiones», con la fecha de la última vez y cuánto acierta']],
-  ['v19.6', '26 oct 2026', ['🎯 El detector se ajusta solo con lo que revisas (el botón solo enseña cómo va)', 'Leyenda del registro: los colores en un renglón']],
-  ['v19.5', '26 oct 2026', ['«Dormí solo» y «Dormí acompañado» en ¿Algo especial esta noche?', '🎯 Ajustar el detector, también dentro de cada noche']],
-  ['v19.4', '26 oct 2026', ['🎯 Ajustar el detector con tus revisiones: para no confundir tu respiración con ronquidos', '«Revisar esta noche» usa también lo que ha aprendido la IA']],
-  ['v19.3', '26 oct 2026', ['Arreglado: la onda volvía a salir toda gris en algunas grabaciones']],
-  ['v19.2', '26 oct 2026', ['↻ Desliza hacia abajo desde arriba para actualizar la app', 'En la onda, solo los tramos fuertes van de color (como mucho 5 por grabación)', 'Los botones de revisar caben enteros']],
-  ['v19.1', '26 oct 2026', ['La onda del reproductor se pinta por colores: qué parte es ronquido, voz o tos', 'Cada grabación lleva la etiqueta de su parte más fuerte']],
-  ['v19.0', '26 oct 2026', ['Noche recuperada de la cuenta: en «Ruidos» explica dónde están sus grabaciones', 'El salto al momento más fuerte ahora funciona también en Android']],
-  ['v18.9', '26 oct 2026', ['Arreglado: el icono podía abrir una versión vieja; ahora se pone al día también al abrirse']],
-  ['v18.8', '26 oct 2026', ['Al volver a la app desde el icono, se pone sola al día si hay versión nueva']],
-  ['v18.7', '26 oct 2026', ['Al abrir «Ruidos» vas directo a la siguiente después de la última revisada, y ▶ empieza ahí']],
-  ['v18.6', '26 oct 2026', ['La grabación que suena se ve mejor: reborde punteado que parpadea']],
-  ['v18.5', '26 oct 2026', ['Cada grabación empieza a sonar 1 segundo antes de su momento más fuerte']],
-  ['v18.4', '26 oct 2026', ['En el monitoreo, las ventanas de 🌙 No molestar y ✈️ Modo avión se cierran con su ✕']],
-  ['v18.3', '26 oct 2026', ['☁️ Si falta alguna noche que está en tu cuenta, al abrir la app vuelve sola', 'Se apunta qué borra cada noche, para encontrar por qué se perdían']],
-  ['v18.2', '26 oct 2026', ['¿Te equivocaste al revisar? La ✕ junto a «✓ Revisada» la deja otra vez sin revisar']],
-  ['v18.1', '26 oct 2026', ['Revisar es más rápido: bajo la grabación que suena, las 5 opciones a la vista; toca la buena y salta sola a la siguiente']],
-  ['v18.0', '26 oct 2026', ['Al corregir una grabación, nueva opción «😮‍💨 Respiración»']],
-  ['v17.9', '26 oct 2026', ['Al revisar grabaciones, el mensaje de «Apuntado» sale a mitad de pantalla y no tapa los botones']],
-  ['v17.8', '26 oct 2026', ['«Registro de grabaciones», más corto', 'Leyenda más ordenada: «estás roncando» junto a movimiento, y «pellizca para ampliar · gira el móvil» en un renglón']],
-  ['v17.7', '26 oct 2026', ['Fases del sueño más fieles: moverte un poco ya no cuenta como despierto (solo si te mueves mucho, hablas o pulsas «Me levanté»)', 'El REM sale aparte, en su propia fila', 'Cada fase con su porcentaje y lo normal']],
-  ['v17.6', '26 oct 2026', ['Títulos: «Panel de puntuación» al abrir una noche y «Panel de tu última noche» en Estadísticas']],
-  ['v17.5', '26 oct 2026', ['Tu última noche: fuera el rótulo «Otros datos»; Movimiento va justo debajo', 'Si un recuadro queda solo en su fila, sale centrado']],
-  ['v17.4', '26 oct 2026', ['El gráfico de los sonidos de la noche ya tiene título: «Registro de grabaciones etiquetadas»', 'Los recuadros pequeños (Horas, Regularidad, Ronquido…, y Profundo, Ligero y Despierto), centrados; y con el borde entero de su color']],
-  ['v17.3', '26 oct 2026', ['Fases del sueño: cualquier movimiento cuenta como despierto', '«Profundo y REM», y debajo de cada recuadro lo normal', 'En la ⓘ, cómo es una noche orientativa de 8 horas']],
-  ['v17.2', '26 oct 2026', ['«Fases del sueño»: el gráfico empieza con la hora en que empezaste; «Dormiste: … · Despertaste: …»', 'Los recuadros de profundo, ligero y despierto llevan su color, sin iconos']],
-  ['v17.1', '26 oct 2026', ['El aviso de ruido se abre como desplegable: primero cuántos sonidos hubo y, al tocarlo, qué revisar']],
-  ['v17.0', '26 oct 2026', ['Resumen de la noche más limpio: fuera los recuadros que repetían los datos de la puntuación']],
-  ['v16.9', '26 oct 2026', ['Las noches recuperadas de tu cuenta dicen que vuelven sin grabaciones']],
-  ['v16.8', '26 oct 2026', ['🗑️ Más difícil borrar por error: en ⋮ «Borrar» va abajo, en rojo, y luego tienes 8 s para «Deshacer»', '☁️ En Mi cuenta: «Recuperar noches de mi cuenta»']],
-  ['v16.7', '26 oct 2026', ['En ⋮ de cada noche: «Revisada el … a las …»']],
-  ['v16.6', '26 oct 2026', ['Las grabaciones que ya revisaste llevan «✓ Revisada» en verde: así sabes dónde te quedaste']],
-  ['v16.5', '26 oct 2026', ['«🔊 Ruidos ▲» para cerrar ahora está debajo de «pellizca para ampliar», en la parte fija']],
-  ['v16.4', '26 oct 2026', ['En ⋮ de cada noche: la fecha de la última revisión', '«⏹ Detener revisión» mientras revisa con el detector nuevo']],
-  ['v16.3', '26 oct 2026', ['«🔊 Ruidos» se abre y se cierra con su triangulito; dentro, el título queda fijo arriba con el gráfico']],
-  ['v16.2', '26 oct 2026', ['Vuelven los iconos en los títulos, como antes']],
-  ['v16.1', '26 oct 2026', ['Arreglado: «Revisar con el detector nuevo» desde ⋮ ahora enseña cómo avanza']],
-  ['v16.0', '26 oct 2026', ['Más limpia: los títulos de pantallas, tarjetas y desplegables ya no llevan iconos']],
-  ['v15.9', '26 oct 2026', ['La noche es ahora un resumen: las grabaciones están en «🔊 Ruidos», con «← Volver al análisis de la noche» siempre arriba']],
-  ['v15.8', '26 oct 2026', ['Mientras se revisa una noche con el detector nuevo, puedes ir a otras pantallas de la app', 'Al acabar, la noche dice cuándo se revisó (solo administrador)']],
-  ['v15.7', '26 oct 2026', ['«Revisar con el detector nuevo», en el menú ⋮ de cada noche y solo para el administrador']],
-  ['v15.6', '26 oct 2026', ['⋮ Cada noche del historial tiene sus tres puntitos, con la opción de borrarla']],
-  ['v15.5', '26 oct 2026', ['🗑️ En el historial, deja apretada una noche para borrarla', 'Al dejar el dedo apretado sobre un texto ya no sale «seleccionar»']],
-  ['v15.4', '26 oct 2026', ['Explicación de «Me levanté» más corta']],
-  ['v15.3', '26 oct 2026', ['«Prueba audífonos» ahora está debajo de «Avisa si ronco», en azul']],
-  ['v15.2', '26 oct 2026', ['El sueño profundo tiene su propio icono: tres franjas con los colores de despierto, ligero y profundo']],
-  ['v15.1', '26 oct 2026', ['🚶 «Me levanté» en el monitoreo: apunta cada vez que te levantas; por la mañana sale en Otros datos']],
-  ['v15.0', '26 oct 2026', ['🎧 «Prueba audífonos» lo dice una vez, más despacio y suave (app 4.3)', 'Arreglado: la pantalla del monitoreo vuelve a iluminarse aunque tengas un mensaje abierto', 'En el monitoreo, ronquido en amarillo y voces en azul, con sus iconos']],
-  ['v14.9', '26 oct 2026', ['Fuera los «ruidos descartados»: si tu habitación fue ruidosa, sale un aviso con los ruidos más frecuentes']],
-  ['v14.8', '26 oct 2026', ['🫁 La IA reconoce la tos: tiene sus propias grabaciones y su filtro', 'Tarjeta de la mañana más ordenada: Horas y Regularidad; Ronquido, Voces y Tos; y Otros datos', 'Arreglado: las grabaciones de voz no se contaban bien en la lista de noches']],
-  ['v14.7', '26 oct 2026', ['🎧 En el monitoreo: «Prueba audífonos», para comprobar de noche que tus audífonos suenan']],
-  ['v14.6', '25 oct 2026', ['En Mi cuenta pone «Tipo de cuenta» en vez de «Papel»']],
-  ['v14.5', '25 oct 2026', ['En Mi cuenta pone «Administrador de la app»']],
-  ['v14.4', '25 oct 2026', ['«¿Acierta? Sí / No» de las grabaciones, solo para el administrador']],
-  ['v14.3', '25 oct 2026', ['«Lo que ha aprendido la IA» queda solo para el administrador de la app (con el texto «solo administrador»)']],
-  ['v14.2', '25 oct 2026', ['🌐 En Ajustes: el enlace a Amable Sleep Web y un botón para recomendar la app', '📱 App Android 4.2: preparada para Google Play (Android 16)']],
-  ['v14.1', '25 oct 2026', ['💬 Soporte también por WhatsApp, en Ajustes → Ayuda y soporte']],
-  ['v14.0', '25 oct 2026', ['Consejo: quita los relojes con tictac y los aparatos que hagan ruido', 'Luna: el micrófono se pone verde mientras te escucha', '🆘 Ayuda y soporte en Ajustes']],
-  ['v13.9', '25 oct 2026', ['«Duermo solo» ahora se llama «Aviso por altavoz o auricular», y dice por dónde sale']],
-  ['v13.8', '25 oct 2026', ['Sueño: «Dormiste a las … y despertaste a las …» en texto, y los 3 recuadros bien alineados']],
-  ['v13.7', '25 oct 2026', ['Colores como sus emojis: 😴 ronquido en amarillo, 🗣️ voz en azul', 'El aviso «estás roncando» ahora es rosa con 🎧, para no confundirlo con la voz; el movimiento, verde', 'En la pantalla de monitoreo ya no se selecciona texto al dejar el dedo apretado']],
-  ['v13.6', '25 oct 2026', ['El aviso «estás roncando» salta tras 2 minutos seguidos roncando (antes 1), con la IA por encima del 80 %', 'En la noche, «Avisos» explica cuándo salta', 'Títulos de la noche en un solo renglón', '«Calma» pasa a «Movimiento»: «22 mov.» (toca para ver qué es)']],
-  ['v13.5', '25 oct 2026', ['En cada grabación: «41 % probable de ser 😴 Ronquido»']],
-  ['v13.4', '25 oct 2026', ['🧱 El sueño profundo y ligero, en bloques, con los ciclos de unos 90 minutos numerados', 'Te dice si te despertaste en sueño ligero o profundo', 'En horizontal: la noche ocupa todo el ancho y el reproductor, 2 filas (play más pequeño, «¿Acierta?» a la derecha)']],
-  ['v13.3', '25 oct 2026', ['«Duermo solo» más compacto', 'Los títulos de los desplegables, en un renglón entero', 'Sueño profundo y ligero: la explicación sale al tocar la ⓘ; debajo, a qué hora dormiste y despertaste']],
-  ['v13.2', '25 oct 2026', ['🌊 «Medir también el sueño profundo» en Saber si ronco y Reducir ronquidos: dices que sí y te explica dónde poner el móvil', 'Toca Horas, Ronquido, Regularidad o Calma en la puntuación de la noche y te explica qué significa']],
-  ['v13.1', '25 oct 2026', ['Dibujo de dónde poner el móvil: en la mesilla o en el colchón, junto a la almohada']],
-  ['v13.0', '25 oct 2026', ['Los recuadros de la noche suben arriba, con el texto entero; tócalos y te explican qué cuentan', 'Grabaciones más compactas: arriba lo segura que está la IA y la etiqueta; abajo ▶, la hora y los botones', '📱 Gira el móvil en la noche para ver el gráfico en grande (app Android 4.1)']],
-  ['v12.9', '25 oct 2026', ['La curva de la noche ahora es «Sueño profundo y ligero» (estimado)', 'Para medirlo mejor: el móvil sobre el colchón, en una esquina junto a la almohada (no debajo)']],
-  ['v12.8', '25 oct 2026', ['Luna aplaude cuando tus noches van bien', 'Dibujo de cómo dejar el móvil en la mesilla']],
-  ['v12.7', '25 oct 2026', ['Cada noche: curva de sueño tranquilo o inquieto (estimación) y a qué hora te dormiste']],
-  ['v12.6', '25 oct 2026', ['Presentación de bienvenida la primera vez (y en Ajustes → Novedades)']],
-  ['v12.5', '25 oct 2026', ['Las grabaciones ya no se comparten ni se descargan: solo favorita y borrar']],
-  ['v12.4', '25 oct 2026', ['Grabaciones más bonitas: corazón y papelera sin recuadros', 'El reproductor enseña la onda del sonido']],
-  ['v12.3', '25 oct 2026', ['🧠 La IA aprende de tus valoraciones (✅ / ❌) para acertar mejor con tus ronquidos', 'En Ajustes: «Lo que ha aprendido la IA»']],
-  ['v12.2', '25 oct 2026', ['Bienvenida al crear la cuenta: tu permiso para guardar tus datos y los permisos del móvil', 'Nueva política de privacidad', 'El aviso «estás roncando» solo salta si la IA está muy segura', 'Al escuchar una grabación: «¿Acierta?» ✅ / ❌']],
-  ['v12.1', '25 oct 2026', ['«Alarma y música para dormir»: música para dormirte sin monitorear, plegada arriba', 'Líneas que separan la siesta y cada alarma']],
-  ['v12.0', '25 oct 2026', ['Línea de ronquido: toca un punto para ver sus minutos', 'Dormir con quien ronca: «Sonidos neutros» que se oyen 5 segundos al tocarlos']],
-  ['v11.9', '25 oct 2026', ['Estadísticas: recuadros más ordenados (número, unidad y texto abajo)', 'La línea de ronquido enseña el día (ma 24) y el mes']],
-  ['v11.8', '25 oct 2026', ['Botón ⓘ junto al título de cada sección con su explicación', 'Altavoz moderno en «Leer las respuestas en voz alta»']],
-  ['v11.7', '25 oct 2026', ['Nueva sección «📚 Aprende sobre el sueño» con 8 fichas']],
-  ['v11.6', '25 oct 2026', ['Los avisos «estás roncando» de cada noche salen plegados y sin segundos']],
-  ['v11.5', '25 oct 2026', ['«¿Algo especial esta noche?» se pliega', 'Recuadros de la noche más cortos: «grabaciones/ronquidos»']],
-  ['v11.4', '25 oct 2026', ['«⏰ Alarma para despertarte» en Saber si ronco, Reducir ronquidos y Dormir con quien ronca']],
-  ['v11.3', '25 oct 2026', ['En cada grabación: «33 % probable» y después lo que es (ronquido, voz…)']],
-  ['v11.2', '25 oct 2026', ['Tarjeta de la mañana con la puntuación de tu noche', 'Línea con tus minutos roncando de las últimas noches', 'Etiquetas de la noche (alcohol, cena fuerte… y una tuya) para ver qué te hace roncar más']],
-  ['v11.1', '25 oct 2026', ['Grabaciones más claras: ▶ grande a la izquierda, la hora sin segundos y «Ronquido · 33 % seguro»']],
-  ['v11.0', '25 oct 2026', ['Nuevo en Ajustes: «Fondo de la app» con 6 colores']],
-  ['v10.9', '25 oct 2026', ['«Duermo solo»: texto más claro']],
-  ['v10.8', '25 oct 2026', ['«Monitorear mi sueño» ahora se llama «Saber si ronco»', 'El reto para apagar la alarma se elige en cada alarma (y ahí puedes escanear otro código)', 'Monitoreo más limpio: sin el texto «Grabando un sonido»']],
-  ['v10.7', '25 oct 2026', ['Nueva tarjeta «Novedades» en Ajustes', '«Avisarme si ronco» está ahora solo en Reducir ronquidos']],
-  ['v10.6', '25 oct 2026', ['Siesta: el nombre a la izquierda y el interruptor a la derecha']],
-  ['v10.5', '25 oct 2026', ['Reducir ronquidos: botón para empezar la noche con el aviso y el mensaje', '«Duermo solo»: sin auriculares, la voz suena por el altavoz', 'Las partes del mensaje se pliegan']],
-  ['v10.4', '25 oct 2026', ['Historial de grabaciones también en Reducir ronquidos']],
-  ['v10.3', '25 oct 2026', ['Monitoreo más ordenado, con líneas por temas', 'Deslizar a la derecha vuelve al inicio']],
-  ['v10.2', '25 oct 2026', ['«No grabar» suma 30 segundos y enseña lo que queda']],
-  ['v10.0', '25 oct 2026', ['Nueva sección «Reducir ronquidos» con un mensaje en la noche (agua, baño, medicina…)']],
-  ['v9.8', '25 oct 2026', ['«Música para dormir» con volumen y minutos', 'Avisos con el diseño de la app']],
-  ['v9.6', '24 oct 2026', ['Luna te saluda al abrir la app y se mueve al darte consejos']],
-  ['v9.3', '24 oct 2026', ['Entrar con Google']],
-  ['v9.1', '24 oct 2026', ['Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes']],
-  ['v9.0', '24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil']]
+  ['v30.1', '28-30 oct 2026', ['✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', '🎧 El aviso «estás roncando» llega justo después de un ronquido', '⏰ Alarma y música más clara, con desplegables para audios, música y despertadores', 'Otras mejoras funcionales']],
+  ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
+  ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
 ];
 {
   $('sNov').textContent = '· ' + VERSION;
