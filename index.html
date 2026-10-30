@@ -1007,11 +1007,6 @@ body.pl-on .wrap{padding-bottom:190px}
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">😴 Saber si ronco<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Graba la noche y la IA detecta tus ronquidos y las voces. Por la mañana verás la puntuación de tu noche, el gráfico y las grabaciones para escucharlas. Las grabaciones se quedan en tu móvil.</div>
 
-  <div class="card" id="iaCard">
-    <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
-  </div>
-
-  <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card"><summary><span>ℹ️ Cómo funciona</span></summary>
   <div class="dosdib">
     <figure><img src="luna/durmiendo-movil.webp" alt="Persona durmiendo con el móvil en la mesilla"><figcaption>📱 En la mesilla: oye tus ronquidos</figcaption></figure>
@@ -1019,7 +1014,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </div>
   <ul class="tips">
     <li>Deja el móvil <b>enchufado</b>, cerca de la cama y con la <b>pantalla hacia arriba</b> (así también nota cuándo se enciende la luz).</li>
-    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también las <b>fases del sueño</b>? Actívalo arriba, en <b>«Medir las fases del sueño»</b>.</li>
+    <li><i class="icos" aria-hidden="true"></i> ¿Quieres medir también las <b>fases del sueño</b>? Actívalo abajo, en <b>«Medir las fases del sueño»</b>.</li>
     <li>🔇 Quita de la habitación los <b>relojes con tictac</b> y apaga los <b>aparatos que hagan ruido</b>: sus sonidos se mezclan con tus ronquidos y la IA se confunde.</li>
     <li>La pantalla se queda encendida pero casi negra. No cierres la app.</li>
     <li id="tipApk">📱 En Android, la <a href="SleepAmable.apk" download="SleepAmable.apk" style="color:#A78BFA">app Amable Sleep</a> pone y quita «No molestar» por ti.</li>
@@ -1027,6 +1022,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
   </details>
+  <div class="card" id="iaCard">
+    <div class="ia"><span class="dot wait" id="iaDot"></span><span id="iaTxt">Cargando el detector de ronquidos…</span></div>
+  </div>
+
+  <button class="big" id="startBtn">🌙 Empezar a monitorear el sueño</button>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
   <details class="instr card profrap"><summary><span><span class="unalinea"><i class="icos" aria-hidden="true"></i> Medir las fases del sueño</span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Se mide junto con los sonidos</small></span><b class="estado" data-profsum>no</b></summary><div class="profBody"></div></details>
 
@@ -1220,11 +1220,11 @@ body.pl-on .wrap{padding-bottom:190px}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 class="htit" style="font-size:21px;margin:0 0 12px">🛌 Aviso de ronquidos<button type="button" class="hinfo" aria-label="Información">i</button></h1>
   <div class="hbox" hidden>Funciona mientras monitoreas la noche. Una voz te avisa cuando roncas y te dice tu aviso de la noche. Suena por los auriculares Bluetooth, para no despertar a nadie; si usas auriculares, cárgalos antes (al 100 % duran unas 4 horas). Si duermes solo, pon «Avisos por» en <b>Altavoz</b> y sonará por el altavoz del móvil.</div>
-  <button class="big" id="startRed">🌙 Monitorear y avisar de ronquidos</button>
   <details class="instr card" id="avisoComo"><summary><span>ℹ️ Cómo funciona</span></summary>
     <div style="margin-top:8px;font-size:14px;color:var(--muted)"><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
+  <button class="big" id="startRed">🌙 Monitorear y avisar de ronquidos</button>
   <div class="card auAl"><div class="auTit">🔔 Avisos por</div>
     <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
     <small id="altavozTx" class="auTx">Solo auricular, para no despertar a nadie</small></div>
@@ -1564,7 +1564,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v29.2'; // v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
+const VERSION = 'v29.3'; // v29.3: «Cómo funciona» justo debajo del título en todas las pantallas
+// v29.2: música en tonos azules: Bosque dormido azul; aspiradora y batidora dibujadas de verdad
 // v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
 // v29.0: iconos: los 4 de «Audios para dormir», amarillos (Seguro y sin miedo pasa de 🌙 a 😌); Luna dormida y Estrellitas, en otro color
 // v28.9: «Relajaciones para dormir» pasa a «Audios para dormir»; nuevo ✍️ «Texto libre»: pegas un texto y te lo repite 5 minutos con música suave de fondo
@@ -6233,6 +6234,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.3', '30 oct 2026', ['ℹ️ «Cómo funciona», justo debajo del título en todas las pantallas']],
   ['v29.2', '30 oct 2026', ['🎵 Iconos de música en azul, con una aspiradora y una batidora de verdad']],
   ['v29.1', '30 oct 2026', ['✍️ Texto libre: botón para probar y voz normal, lenta o muy lenta', 'Monitoreo: toca «Aviso por auriculares» para ver a qué horas te avisé']],
   ['v29.0', '30 oct 2026', ['Iconos más claros: amarillos en «Audios para dormir» y otro color en la música']],
