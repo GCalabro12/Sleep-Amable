@@ -716,6 +716,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lcuna button{flex:none;width:40px;height:34px;padding:0;background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:12px;font-size:14px}
 .state{font-size:14px;color:var(--dim);margin-bottom:2px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
+button.last{background:#1E293B;border:1px solid #475569;border-radius:10px;padding:7px 12px;color:#E2E8F0}
 .state:empty,.last:empty{display:none}
 #stopBtn{margin:0;background:#111827;border:1.5px solid #6D5BD0;color:#C4B5FD;padding:12px 26px;border-radius:14px}
 #stopBtn.rojo{background:#B91C1C;border-color:#F87171;color:#fff} /* a las 6 horas de monitorear: se ve que ya toca terminar (v26.5) */
@@ -1556,14 +1557,15 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#60A5FA"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-linecap="round"/></svg> min de voces</div>
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
-    <div class="last" id="lastEv"></div>
+    <button type="button" class="last" id="lastEv" hidden></button>
     </div>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v29.0'; // v29.0: iconos: los 4 de «Audios para dormir», amarillos (Seguro y sin miedo pasa de 🌙 a 😌); Luna dormida y Estrellitas, en otro color
+const VERSION = 'v29.1'; // v29.1: Texto libre: botón 🔊 Probar y voz normal, lenta o muy lenta (por altavoz, con la app 4.8); monitoreo: «Cambiar» en vez de «toca para cambiar»; abajo, «Aviso por auriculares ›» y al tocarlo todas las horas de los avisos
+// v29.0: iconos: los 4 de «Audios para dormir», amarillos (Seguro y sin miedo pasa de 🌙 a 😌); Luna dormida y Estrellitas, en otro color
 // v28.9: «Relajaciones para dormir» pasa a «Audios para dormir»; nuevo ✍️ «Texto libre»: pegas un texto y te lo repite 5 minutos con música suave de fondo
 // v28.8: «Alarma y música»: «⏰ Despertadores» también se pliega; cada cartel envuelve lo de abajo con borde morado y esquinas de arriba redondeadas
 // v28.7: «Alarma y música»: banners morados de lado a lado con el título dentro: 🎧 Relajaciones para dormir y 🎵 Música para dormir (desplegables) y ⏰ Despertadores (siesta y alarmas)
@@ -1938,6 +1940,12 @@ const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una v
 let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
 const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
+// Abajo del monitoreo: «Aviso por auriculares ›» y, al tocarlo, las horas de todos los avisos de la noche
+function avisoHora(h) {
+  (live.avisoHoras ||= []).push(h);
+  const b = $('lastEv'); b.hidden = false; b.textContent = `${cfg.altavoz ? '🔊 Aviso por altavoz' : '🎧 Aviso por auriculares'} ›`;
+}
+$('lastEv').onclick = () => aviso('Te he avisado a las:\n\n' + (live.avisoHoras || []).join('\n'));
 function avisoTick(det, dt) {
   if (!VOZ_OK || !avisarNoche || !live.night) return;
   const A = live.aviso || (live.aviso = {ronc: 0, sil: 0, insiste: false});
@@ -1967,7 +1975,7 @@ function avisoTick(det, dt) {
     const ahora = Date.now();
     live.night.avisos = (live.night.avisos || 0) + 1;
     (live.night.avisoT ||= []).push(Math.round(det.samples / SR)); // con el reloj de las grabaciones (como su «off»): el del móvil se desfasaba unos segundos y la raya rosa salía antes del ronquido (v28.1)
-    $('lastEv').textContent = `🎧 Te he avisado por los auriculares a las ${hhmm(ahora)}`;
+    avisoHora(hhmm(ahora));
   }
 }
 
@@ -2042,7 +2050,7 @@ const msgActivo = () => VOZ_OK && MSG.on && !!MSG.texto.trim() && !!live.night;
 function msgDicho(t) {
   live.msg.dichos.add(t);
   live.night.mensajes = (live.night.mensajes || 0) + 1;
-  $('lastEv').textContent = `💬 Te he dicho tu aviso a las ${hhmm(Date.now())}`;
+  avisoHora(`💬 ${hhmm(Date.now())}`);
 }
 // Cada medio segundo mientras se monitorea
 function msgTick() {
@@ -2622,7 +2630,7 @@ async function startListening() {
   if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   if (cfg.sonar) live.sonar = new Sonar(ctx, src, () => marcaMov(night, Math.floor((Date.now() - night.inicio) / 1000)));
-  $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').textContent = ''; $('lwarn').hidden = true;
+  $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on'); pintaAvisoPor();
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
@@ -2898,7 +2906,7 @@ function pintaAvisoPor() {
   $('fAur').textContent = '🎧 Auriculares'; $('fAur').hidden = !au; $('fAur').classList.toggle('on', au);
   const b = $('avisoPor'); b.hidden = !avisarNoche; if (b.hidden) return;
   const falta = !cfg.altavoz && !au;
-  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta los auriculares' : 'toca para cambiar'}</small>`;
+  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta los auriculares' : 'Cambiar'}</small>`;
   if (b.innerHTML !== html) b.innerHTML = html;
   b.classList.toggle('falta', falta);
 }
@@ -3191,8 +3199,8 @@ const GUIAS = [ // {id, icon, name, min, file}
 ];
 // ✍️ Texto libre (en «Relajaciones para dormir»): la persona pega un texto y la app se lo repite 5 minutos con música suave de fondo
 const TL_C = {id: 'tl', icon: '✍️', name: 'Texto libre', min: 5, file: 'audios/fondo-texto.mp3', guia: true, tl: true};
-const TL = {abierto: false, txt: '', t: null}, TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
-try { TL.txt = localStorage.getItem('ronquino-textolibre') || ''; } catch {}
+const TL = {abierto: false, txt: '', t: null, vel: 1, prueba: false}, TL_VELS = [[1, 'Normal'], [.8, 'Lento'], [.6, 'Muy lento']], TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
+try { TL.txt = localStorage.getItem('ronquino-textolibre') || ''; const v = +localStorage.getItem('ronquino-textovel'); if (TL_VELS.some(x => x[0] === v)) TL.vel = v; } catch {}
 const CUNA_FADE = 5;
 let cunaMin = 5, cunaVol = .7; // minutos que suena y volumen (se recuerdan)
 try { const m = +localStorage.getItem('ronquino-cunamin'); if ([5, 10, 15].includes(m)) cunaMin = m; } catch {}
@@ -3315,19 +3323,30 @@ function tlPara() {
   try { AND?.callar?.(); } catch {}
   try { if (!AND) speechSynthesis.cancel(); } catch {}
 }
+const tlMs = t => 1500 + t.length * 80 / TL.vel; // lo que tarda en decirlo (Android no avisa al acabar)
+function tlHabla(t, fin) {
+  if (AND) {
+    if (AND.hablarVel) AND.hablarVel(t, TL.vel); // app 4.8
+    else if (TL.vel === 1 || !AND.decirDespacio?.(t)) AND.hablar?.(t);
+    TL.t = setTimeout(fin, tlMs(t));
+  } else if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(t); u.lang = 'es-ES'; u.rate = TL.vel;
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+    u.onend = fin; speechSynthesis.speak(u);
+  }
+}
 function tlDi() { // una repetición; la siguiente, tras la pausa. No empieza ninguna que no quepa: la música acaba sola
   const au = MUS.au; if (!au || !MUS.c?.tl) return;
-  const t = sinEmojis(TL.txt), ms = 1500 + t.length * 90;
-  if (((isFinite(au.duration) ? au.duration : TL_C.min * 60) - au.currentTime) * 1000 < ms + 3000) return;
-  if (AND) {
-    if (!AND.decirDespacio?.(t)) AND.hablar?.(t); // con auriculares, más despacio; sin ellos, por el altavoz
-    TL.t = setTimeout(tlDi, ms + TL_PAUSA);
-  } else if (window.speechSynthesis) {
-    const u = new SpeechSynthesisUtterance(t); u.lang = 'es-ES'; u.rate = .8;
-    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
-    u.onend = () => { if (MUS.c?.tl) TL.t = setTimeout(tlDi, TL_PAUSA); };
-    speechSynthesis.speak(u);
-  }
+  const t = sinEmojis(TL.txt);
+  if (((isFinite(au.duration) ? au.duration : TL_C.min * 60) - au.currentTime) * 1000 < tlMs(t) + 3000) return;
+  tlHabla(t, () => { if (MUS.c?.tl) TL.t = setTimeout(tlDi, TL_PAUSA); });
+}
+function tlPruebaFin() { TL.prueba = false; if ($('tlProbar')) $('tlProbar').textContent = '🔊 Probar'; }
+function tlProbar() { // lo dice una vez, sin música, a la velocidad elegida
+  tlPara();
+  if (TL.prueba) { tlPruebaFin(); return; }
+  TL.prueba = true; $('tlProbar').textContent = '⏹ Parar';
+  AND?.prepararVoz?.(); tlHabla(sinEmojis(TL.txt), tlPruebaFin);
 }
 function musPara(suave) {
   if (!MUS.au) return;
@@ -3369,7 +3388,10 @@ function pintaMusica() {
     <div class="tlbox" id="tlBox"${TL.abierto ? '' : ' hidden'}>
       <p class="note" style="margin:0 0 8px">Pega o escribe aquí tu texto y te lo repito 5 minutos con música suave de fondo.</p>
       <textarea id="tlTxt" maxlength="1000" rows="4" placeholder="Pega aquí tu texto…"></textarea>
-      ${MUS.c?.tl ? '' : '<button type="button" class="btn wide" id="tlGo">▶️ Empezar</button>'}
+      <div id="tlCtl"${TL.txt.trim() ? '' : ' hidden'}>
+        <div class="cuctl"><span>🗣️ Voz</span><div class="cumin">${TL_VELS.map(([v, n]) => `<button type="button" data-v="${v}" class="${v === TL.vel ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+        ${MUS.c?.tl ? '' : '<button type="button" class="btn wide" id="tlProbar">🔊 Probar</button><button type="button" class="btn wide" id="tlGo">▶️ Empezar</button>'}
+      </div>
     </div>`;
   box.innerHTML = `<p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola.</p>
     ${MUS.c && !MUS.c.guia ? suena : ''}${vol}
@@ -3388,9 +3410,14 @@ function pintaMusica() {
   box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => musToca(CUNAS.find(c => c.id === b.dataset.c)));
   gbox.querySelectorAll('[data-g]').forEach(b => b.onclick = () => musToca(GUIAS.find(c => c.id === b.dataset.g)));
   $('tlTxt').value = TL.txt;
-  $('tlTxt').oninput = e => { TL.txt = e.target.value; try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
-  $('tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } TL.abierto = !TL.abierto; pintaMusica(); };
-  if ($('tlGo')) $('tlGo').onclick = () => { if (!TL.txt.trim()) { toast('✍️ Pega o escribe primero tu texto'); return; } musToca(TL_C); };
+  $('tlTxt').oninput = e => { TL.txt = e.target.value; $('tlCtl').hidden = !TL.txt.trim(); try { localStorage.setItem('ronquino-textolibre', TL.txt); } catch {} };
+  gbox.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+    TL.vel = +b.dataset.v; try { localStorage.setItem('ronquino-textovel', String(TL.vel)); } catch {}
+    gbox.querySelectorAll('[data-v]').forEach(o => o.classList.toggle('on', o === b));
+  });
+  if ($('tlProbar')) $('tlProbar').onclick = tlProbar;
+  $('tlBtn').onclick = () => { if (MUS.c?.tl) { musPara(true); return; } tlPara(); TL.prueba = false; TL.abierto = !TL.abierto; pintaMusica(); };
+  if ($('tlGo')) $('tlGo').onclick = () => { tlPara(); TL.prueba = false; musToca(TL_C); };
   document.querySelectorAll('.musStop').forEach(b => b.onclick = () => musPara(true));
 }
 pintaMusica();
@@ -6201,6 +6228,7 @@ ponTema();
 
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 const NOVEDADES = [
+  ['v29.1', '30 oct 2026', ['✍️ Texto libre: botón para probar y voz normal, lenta o muy lenta', 'Monitoreo: toca «Aviso por auriculares» para ver a qué horas te avisé']],
   ['v29.0', '30 oct 2026', ['Iconos más claros: amarillos en «Audios para dormir» y otro color en la música']],
   ['v28.9', '30 oct 2026', ['✍️ Nuevo en «Audios para dormir»: «Texto libre»: pega tu texto y te lo repito 5 minutos con música suave']],
   ['v28.8', '29 oct 2026', ['«Alarma y música»: Despertadores también se pliega, y cada cartel envuelve lo suyo con las esquinas redondeadas']],
@@ -6409,7 +6437,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '4.7';
+const APK_ULTIMA = '4.8';
 // Arriba en Inicio y en Ajustes: las dos versiones («web v3.9 · app 2.2»); en la app Android, la que tienes instalada
 { let app = APK_ULTIMA; try { if (AND) app = AND.version(); } catch {}
   $('ver').innerHTML = `<span>${VERSION}</span><span>${app}</span>`; $('ver2').textContent = `web ${VERSION} · app ${app}`; }
@@ -6447,7 +6475,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora}; // para pruebas
 </script>
 </body>
 </html>
