@@ -1607,7 +1607,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.9'; // v30.9: «según tus revisiones» y «Detector actualizado» dicen «(solo admin)»
+const VERSION = 'v31.0'; // v31.0: monitoreo: «Inicio 23:12 · llevas 6 min» en vez de «Escuchando desde hace…»
+// v30.9: «según tus revisiones» y «Detector actualizado» dicen «(solo admin)»
 // v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
 // v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
 // v30.6: «Saber si ronco y avisos» junta los avisos (fuera la pantalla Aviso de ronquidos); nuevo 😴 «Dormir siesta» con alarma y música; sonar: la base del móvil hacia ti
@@ -2740,7 +2741,7 @@ async function startListening() {
       const f = !sig ? '' : `falta ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; // horas:minutos («falta 7:30»)
       const t = sig ? `⏰ ${sig.h}<small>${f}</small>` : '⏰';
       if ($('alHora').innerHTML !== t) $('alHora').innerHTML = t; }
-    $('elapsed').textContent = 'Escuchando desde hace ' + dur((Date.now() - night.inicio) / 1000);
+    $('elapsed').textContent = `Inicio ${hhmm(night.inicio)} · llevas ${dur((Date.now() - night.inicio) / 1000)}`;
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
     if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = '';
@@ -6437,7 +6438,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.9', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad']],
+  ['v31.0', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
