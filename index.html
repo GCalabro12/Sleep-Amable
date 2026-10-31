@@ -1607,7 +1607,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.7'; // v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
+const VERSION = 'v30.8'; // v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
+// v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
 // v30.6: «Saber si ronco y avisos» junta los avisos (fuera la pantalla Aviso de ronquidos); nuevo 😴 «Dormir siesta» con alarma y música; sonar: la base del móvil hacia ti
 // v30.5: 🔁 Refuerzo de aviso: repite la frase cada 8 s hasta que tocas la pantalla o te mueves; consejo de la barbilla hacia arriba
 // v30.4: monitoreo: títulos en morado apagado y «Fin monitoreo sueño» en amarillo apagado
@@ -2694,7 +2695,7 @@ async function startListening() {
   await ctx.resume();
 
   const night = newNight('micro');
-  night.sonar = !!cfg.sonar; // se guarda con la noche: «sonar on / off» en el recuadro de Movimiento
+  night.sonar = !!cfg.sonar; night.sonarSeg = 0; // con la noche se guarda cuánto rato funcionó el sonar: «sonar on / off» en Movimiento
   if (cfg.profundo) night.profundo = true; // 🌙 por la mañana sale su curva de sueño profundo y ligero
   await DB.put('noches', night);
   if (VOZ_OK && (avisarNoche || MSG.on)) AND.prepararVoz();
@@ -2723,7 +2724,13 @@ async function startListening() {
   wake();
   renderLiveSens(); sinBotonAuric();
   $('stopBtn').classList.remove('rojo');
+  live.sonT = Date.now();
   live.timer = setInterval(() => {
+    { // 📡 cuenta solo el rato en que el sonar funciona de verdad (con auriculares va en silencio)
+      const ya = Date.now(), d = ya - live.sonT; live.sonT = ya;
+      let au = false; try { au = !!AND?.auriculares?.(); } catch {}
+      if (live.sonar && !au) night.sonarSeg += Math.min(d, 60e3) / 1000; // (con la pantalla apagada, el reloj puede ir a saltos)
+    }
     $('clock').innerHTML = `${hhmm(Date.now())}<small>${String(new Date().getSeconds()).padStart(2, '0')}</small>`;
     $('stopBtn').classList.toggle('rojo', Date.now() - night.inicio >= 6 * 3600e3); // 6 horas monitoreando: «Fin monitoreo sueño» en rojo
     { // la próxima alarma, a la izquierda, y debajo cuánto falta («falta 7:30») (v26.3) (tocarla: el desplegable)
@@ -3686,6 +3693,8 @@ function tablaRonq(pct) {
 }
 const nocheValida = n => n.fuente === 'micro' && n.fin && n.fin - n.inicio >= 3 * 3600e3;
 const minDesdeMediodia = t => { const d = new Date(t); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; };
+// ¿Estuvo el sonar? Más de la mitad de la noche. Las noches de antes solo apuntaban cómo empezaban: ahí cuenta si llegó a notar algo
+const sonarNoche = n => n.sonarSeg != null ? n.sonarSeg >= (n.fin - n.inicio) / 2000 : !!n.sonar && (n.movSonar || 0) > 0;
 function puntuacion(n, prev) {
   const h = (n.fin - n.inicio) / 3600e3, ronq = (n.segRonquido || 0) / 60, porHora = ronq / h;
   const partes = [];
@@ -3702,7 +3711,7 @@ function puntuacion(n, prev) {
   if (n.mov) {
     const m = movVeces(n);
     // v26.7: menos castigo: hasta 5 por hora es normal; antes 10 por hora ya daban 0
-    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, nota: n.sonar == null ? '' : n.sonar ? 'sonar on' : 'sonar off', s: Math.max(20, 100 - Math.max(0, m / h - 5) * 2.5), peso: 15});
+    partes.push({k: 'calma', t: '🏃 Movimiento', v: `${m} mov.`, nota: n.sonar == null ? '' : sonarNoche(n) ? 'sonar on' : 'sonar off', s: Math.max(20, 100 - Math.max(0, m / h - 5) * 2.5), peso: 15});
   }
   const pesos = partes.reduce((a, p) => a + p.peso, 0);
   return {total: Math.round(partes.reduce((a, p) => a + p.s * p.peso, 0) / pesos), partes};
@@ -4475,7 +4484,12 @@ const EXP_PARTE = {
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return;
-  const son = m.dataset.mexp === 'calma' && cur?.sonar != null ? (cur.sonar ? `\n\n📡 Sonar activado esta noche. Notó el ${Math.round((cur.movSonar || 0) / Math.max(1, (cur.mov || []).length) * 100)} % de los movimientos.` : '\n\n📡 Sonar apagado esta noche: solo cuenta lo que notó el móvil al moverse.') : '';
+  let son = '';
+  if (m.dataset.mexp === 'calma' && cur?.sonar != null) {
+    const mins = cur.sonarSeg != null ? ` ${Math.round(cur.sonarSeg / 60)} min de ${Math.round((cur.fin - cur.inicio) / 60e3)}` : '';
+    son = sonarNoche(cur) ? `\n\n📡 Sonar encendido${mins}. Notó el ${Math.round((cur.movSonar || 0) / Math.max(1, (cur.mov || []).length) * 100)} % de los movimientos.`
+      : `\n\n📡 Sonar apagado${mins ? ` (encendido${mins})` : ''}: cuenta sobre todo lo que notó el móvil al moverse.`;
+  }
   aviso(EXP_PARTE[m.dataset.mexp] + son);
   if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0); }); // 😴 con la tabla de cuánto ronca la gente (v27.5)
 // Recuadros de la noche: al tocarlos explican qué cuentan
@@ -6422,6 +6436,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v30.8', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
@@ -6477,7 +6492,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov}; // para pruebas
+window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov, sonarNoche}; // para pruebas
 </script>
 </body>
 </html>
