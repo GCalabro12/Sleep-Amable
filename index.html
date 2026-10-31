@@ -294,6 +294,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 #home .auRef.prim{margin:0;padding:0;border:0;font-size:16px;font-weight:700}
 #auOpc{margin-top:10px}
 .sonTip{margin:10px 0 0;padding:9px 11px;border:1.5px solid #FBBF24;border-radius:10px;background:#42200633;color:#FDE68A;font-size:14px;font-weight:600}
+.sonImg{display:block;width:100%;max-width:300px;height:auto;margin:10px auto 0;border-radius:12px}
 #siesta .card{padding:12px 14px}
 #sieMus .cunas{margin-top:10px}
 #home .auRef>label:first-child{flex:1}
@@ -1218,6 +1219,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo. Es para la mesilla: en el colchón no hace falta y se apaga solo.</small></label>
       <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
     <p class="sonTip">⭐ <b>Importante:</b> la base del móvil tiene que apuntar hacia ti.</p>
+    <img class="sonImg" src="luna/movil-base.webp" alt="El móvil tumbado en la mesita, con la base apuntando al pecho de la persona que duerme" loading="lazy" width="800" height="800">
     <button class="btn wide" id="sonarTest">▶ Probar el sonar (20 s)</button>
     <p class="note" id="sonarRes" hidden></p>
   </details>
@@ -1561,6 +1563,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="row"><label for="sonSw">Activar el sonar</label><label class="swt"><input type="checkbox" id="sonSw"><i></i></label></div>
     <p id="sonEst" hidden style="color:#7DD3FC">Se ha apagado solo: el móvil está en el colchón y ya nota tus movimientos.</p>
     <p class="sonTip">⭐ <b>Importante:</b> la base del móvil tiene que apuntar hacia ti.</p>
+    <img class="sonImg" src="luna/movil-base.webp" alt="El móvil tumbado en la mesita, con la base apuntando al pecho de la persona que duerme" loading="lazy" width="800" height="800">
     <p class="note">Nota si te mueves cuando el móvil está en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye; niños y mascotas pueden oírlo.</p>
     <p class="note"><b>Uno u otro:</b> en la mesilla, usa el sonar. En el colchón no hace falta, porque el móvil nota tus movimientos él solo; si detecta que está ahí, el sonar se apaga solo para no contarlos de más.</p>
   </div>
@@ -1606,7 +1609,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v31.4'; // v31.4: «Sí, terminar» igual que «Fin monitoreo sueño», con el borde amarillo
+const VERSION = 'v31.5'; // v31.5: sonar: imagen de cómo poner el móvil, con la base apuntando a ti
+// v31.4: «Sí, terminar» igual que «Fin monitoreo sueño», con el borde amarillo
 // v31.3: monitoreo: «Sonar» en el centro, «No grabar» más fino y pequeño, y en el panel solo sale lo que está pasando (Grabando, Movimiento, Luz, Auriculares)
 // v31.2: monitoreo: «No grabar durante +30 seg» en su propia fila, encima de «Fin monitoreo sueño»
 // v31.1: «Fin monitoreo sueño» con puntos y borde grueso en amarillo intenso; «Prueba auriculares» siempre bien visible (sin conectarlos, avisa); monitoreo sin minutos de voces y «0:00 minutos roncando» en una línea
@@ -6446,7 +6450,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.4', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
+  ['v31.5', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
