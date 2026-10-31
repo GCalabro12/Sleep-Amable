@@ -674,7 +674,6 @@ details.hist[open] summary{margin-bottom:10px}
 .audifila:not(:has(button:not([hidden]))){display:none}
 #audiBtn{flex:none;margin:0;background:#1E293B;border:1px solid #475569;color:#E2E8F0;font-weight:700;border-radius:16px;padding:8px 16px;font-size:15px} /* gris, como «Me levanté» (v26.5; antes azul) */
 #audiBtn small{display:block;font-size:10.5px;font-weight:500;opacity:.85;line-height:1.1;margin-top:1px}
-#audiBtn:disabled{opacity:.45;background:#1F2937;border-color:#475569}
 .linfo{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #A78BFA;background:transparent;color:#C4B5FD;font:700 15px Georgia,serif;font-style:italic;padding:0;line-height:1}
 #bloque:empty{display:none}
 #bloque{font-size:14px;color:#94A3B8;line-height:1.3;margin:-2px 0 6px;min-height:18px}
@@ -721,9 +720,9 @@ details.hist[open] summary{margin-bottom:10px}
 #levBtn small{display:block;font-size:10.5px;font-weight:500;color:#94A3B8;margin-top:1px}
 #levBtn small:empty{display:none}
 .counters{display:flex;gap:26px;justify-content:center;font-size:16px;margin-bottom:2px}
-.counters b{display:block;font-size:28px;font-weight:600}
-.c-snore b{color:var(--snore)} .c-voice b{color:var(--voice)}
-.c-snore{color:#FCD34D} .c-voice{color:#93C5FD} /* el texto con el color de su icono */
+.counters b{font-size:28px;font-weight:600}
+.c-snore b{color:var(--snore)}
+.c-snore{display:flex;align-items:center;gap:8px;color:#FCD34D} /* el tiempo a la izquierda y el texto a la derecha, con el color de su icono */
 .cico{width:22px;height:22px;vertical-align:-4px}
 .meter{position:relative;width:240px;height:8px;background:#111827;border-radius:6px;overflow:hidden;margin:0 auto 8px}
 .meter::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#F8FAFCaa}
@@ -743,8 +742,8 @@ details.hist[open] summary{margin-bottom:10px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
 button.last{background:#1E293B;border:1px solid #475569;border-radius:10px;padding:7px 12px;color:#E2E8F0}
 .state:empty,.last:empty{display:none}
-#stopBtn{margin:0;background:#5C4F1C;border:1.5px solid #3B82F6;color:#FDE68A;padding:12px 26px;border-radius:14px} /* amarillo apagado (v30.4) */
-#stopBtn .tres i{background:#93C5FD}
+#stopBtn{margin:0;background:#5C4F1C;border:3px solid #FACC15;color:#FDE68A;padding:12px 26px;border-radius:14px} /* amarillo apagado (v30.4), borde amarillo intenso (v31.1) */
+#stopBtn .tres i{background:#FACC15}
 #stopBtn.rojo .tres i{background:#fff}
 #stopBtn.rojo{background:#B91C1C;border-color:#F87171;color:#fff} /* a las 6 horas de monitorear: se ve que ya toca terminar (v26.5) */
 .warn{color:var(--voice);font-size:13px;margin-top:14px;max-width:320px}
@@ -1584,7 +1583,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     </div>
     <div class="duofila">
-      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba audífonos<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
+      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba auriculares<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
     <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
@@ -1596,8 +1595,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
     <div class="counters">
-      <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> min roncando</div>
-      <div class="c-voice"><b id="cVoice">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a7 7 0 0 0-7 7c0 2.3 1.1 3.6 2 4.6V21h7v-2h2a2 2 0 0 0 2-2v-2.5l1.6-.6-1.8-3.9C14.4 6 12.2 3 9 3z" fill="#60A5FA"/><path d="M18 8.5a4 4 0 0 1 0 5M20.5 6.5a7 7 0 0 1 0 9" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-linecap="round"/></svg> min de voces</div>
+      <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> minutos roncando</div>
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <button type="button" class="last" id="lastEv" hidden></button>
@@ -1607,7 +1605,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v31.0'; // v31.0: monitoreo: «Inicio 23:12 · llevas 6 min» en vez de «Escuchando desde hace…»
+const VERSION = 'v31.1'; // v31.1: «Fin monitoreo sueño» con puntos y borde grueso en amarillo intenso; «Prueba auriculares» siempre bien visible (sin conectarlos, avisa); monitoreo sin minutos de voces y «0:00 minutos roncando» en una línea
+// v31.0: monitoreo: «Inicio 23:12 · llevas 6 min» en vez de «Escuchando desde hace…»
 // v30.9: «según tus revisiones» y «Detector actualizado» dicen «(solo admin)»
 // v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
 // v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
@@ -1966,16 +1965,18 @@ function pintaAudi() {
   const b = $('audiBtn'); if (!b) return;
   b.hidden = $('audiInfo').hidden = false; // (en el HTML empiezan ocultos)
   let con = false; try { con = !!AND?.auriculares?.(); } catch {}
-  b.disabled = !con; $('audiSub').textContent = 'conéctalos primero'; $('audiSub').hidden = con;
+  $('audiSub').textContent = 'conéctalos primero'; $('audiSub').hidden = con;
 }
 $('audiBtn').onclick = () => {
   if (!VOZ_OK) { aviso(SIN_VOZ); return; }
+  let con = false; try { con = !!AND?.auriculares?.(); } catch {}
+  if (!con) { aviso('🎧 Conecta primero los auriculares y vuelve a tocar el botón.'); return; }
   AND.prepararVoz();
   if (live.det) live.det.mute(5); // que la propia frase no se grabe
-  const ok = typeof AND.decirDespacio === 'function' ? AND.decirDespacio('Prueba de audífonos.') : AND.decir('Prueba... de audífonos.'); // app 4.3: más despacio y suave
+  const ok = typeof AND.decirDespacio === 'function' ? AND.decirDespacio('Prueba de auriculares.') : AND.decir('Prueba... de auriculares.'); // app 4.3: más despacio y suave
   if (!ok) aviso(SIN_VOZ);
 };
-$('audiInfo').onclick = () => aviso('🎧 Sirve para comprobar que tus audífonos están conectados y suenan. Al tocar «Prueba audífonos», oirás por ellos: «Prueba de audífonos».\n\nAsí, si de noche no oyes ningún aviso, sabes que es porque no has roncado, no porque los audífonos fallen. El botón se activa cuando el móvil detecta los audífonos conectados.');
+$('audiInfo').onclick = () => aviso('🎧 Sirve para comprobar que tus auriculares están conectados y suenan. Al tocar «Prueba auriculares», oirás por ellos: «Prueba de auriculares».\n\nAsí, si de noche no oyes ningún aviso, sabes que es porque no has roncado, no porque los auriculares fallen.');
 pintaAudi(); setInterval(() => { if ($('listen').offsetParent || getComputedStyle($('listen')).display !== 'none') pintaAudi(); }, 3000);
 // 🎧 Batería de los pinganillos (app 3.3): si no están casi llenos, se recuerda por los propios auriculares
 async function avisoBateria() {
@@ -2703,7 +2704,7 @@ async function startListening() {
   if (VOZ_OK && (avisarNoche || MSG.on)) AND.prepararVoz();
   const saver = makeSaver(night, ev => {
     avisoRonco(ev);
-    $('cSnore').textContent = mmss(night.segRonquido); $('cVoice').textContent = mmss(night.segVoz || 0);
+    $('cSnore').textContent = mmss(night.segRonquido);
   });
   const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
@@ -2718,7 +2719,7 @@ async function startListening() {
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
   Object.assign(live, {sonar: null, acel: [], sonarColchon: false, sonarManual: false, ref: null}); if (cfg.sonar) sonarEmpieza(night);
   pintaSonarBtn();
-  $('cSnore').textContent = '0:00'; $('cVoice').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
+  $('cSnore').textContent = '0:00'; $('lastEv').hidden = true; live.avisoHoras = []; $('lwarn').hidden = true;
   $('lstate').textContent = 'Ajustándose al silencio de la habitación…';
   $('listen').classList.add('on'); pintaAvisoPor();
   AND?.noche(true); // pantalla encendida + sigue escuchando aunque se apague
@@ -6438,7 +6439,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.0', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
+  ['v31.1', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
