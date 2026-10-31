@@ -1607,7 +1607,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v30.8'; // v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
+const VERSION = 'v30.9'; // v30.9: «según tus revisiones» y «Detector actualizado» dicen «(solo admin)»
+// v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
 // v30.7: Dormir siesta: «Empezar siesta» arriba, título «Alarma» y «Música de fondo» plegable
 // v30.6: «Saber si ronco y avisos» junta los avisos (fuera la pantalla Aviso de ronquidos); nuevo 😴 «Dormir siesta» con alarma y música; sonar: la base del móvil hacia ti
 // v30.5: 🔁 Refuerzo de aviso: repite la frase cada 8 s hasta que tocas la pantalla o te mueves; consejo de la barbilla hacia arriba
@@ -2618,7 +2619,7 @@ async function ajustaDetector() {
 function pintaAjNota() {
   const p = $('ajNota'); if (!p) return;
   p.hidden = !sesion?.admin || !cfg.aj;
-  if (!p.hidden) p.textContent = `🎯 Detector actualizado con tus revisiones el ${ajFecha()} (acierta ${MODELO?.usar ? `${MODELO.ok} de ${MODELO.n}, con el 🧠 modelo de tu huella` : `${cfg.aj.ok} de ${cfg.aj.n}`})`;
+  if (!p.hidden) p.textContent = `🎯 Detector actualizado con tus revisiones el ${ajFecha()} (acierta ${MODELO?.usar ? `${MODELO.ok} de ${MODELO.n}, con el 🧠 modelo de tu huella` : `${cfg.aj.ok} de ${cfg.aj.n}`}) (solo admin)`;
 }
 // La «Exigencia» de Ajustes: si está ajustada con tus revisiones, sale como «Ajustada a ti»
 function pintaStrict() {
@@ -4601,7 +4602,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix && sesion?.admin ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix && sesion?.admin ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones (solo admin)</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -6436,7 +6437,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v30.8', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad']],
+  ['v30.9', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
