@@ -621,8 +621,7 @@ details.hist[open] summary{margin-bottom:10px}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#E9E5F5;background:#54478A;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas apagadas (v30.4) */
 #lCuna{margin-left:auto} /* v28.3: 🌙 y ✈️ juntos a la izquierda; 🎵 a la derecha */
-#muteBtn{margin:0 0 0 auto;height:50px;min-width:104px;padding:2px 8px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;line-height:1.2;white-space:nowrap} /* entre ✈️ y 🎵, en dos renglones (v29.6) */
-#muteBtn small{display:block;font-size:12px;color:#94A3B8}
+#muteBtn{margin:0;padding:9px 12px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#E2E8F0;font-size:15px;font-weight:700;line-height:1.2;white-space:nowrap} /* su propia fila, encima de «Fin monitoreo sueño» (v31.2) */
 .ltop{column-gap:8px}
 #lDnd{width:66px;font-size:17px;white-space:nowrap}
 #lSonar{width:56px;font-size:13px;line-height:1.2;font-weight:600}
@@ -733,7 +732,7 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
-#muteRest{display:block;font-size:12px;font-weight:700;color:#FBBF24;font-variant-numeric:tabular-nums}
+#muteRest{margin-left:8px;font-weight:700;color:#FBBF24;font-variant-numeric:tabular-nums}
 .lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin:-4px 0 12px;white-space:nowrap;width:100%;flex:none}
 .lcuna:not([hidden]){display:flex}
 .lcuna .cuname{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -1551,7 +1550,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="ltit">Elige para esta noche</div>
     <button class="lico" id="lDnd" aria-label="No molestar y modo avión">🌙✈️<small>▾</small></button>
     <button class="lico" id="lSonar" aria-label="Sonar">Sonar<small>off</small></button>
-    <button id="muteBtn">❚❚ +30 s<small id="muteSub">No grabar</small><span id="muteRest" hidden></span></button>
     <button class="lico" id="lCuna" aria-label="Música para dormir">🎵<small>▾</small></button>
   </div>
   <div class="lpanel" id="pDnd" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><p class="modosIntro">Ninguno de estos modos afecta al detector de ronquidos.</p></div>
@@ -1586,6 +1584,7 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba auriculares<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
+    <button id="muteBtn">❚❚ No grabar durante +30 seg<span id="muteRest" hidden></span></button>
     <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
     <div class="lgrupo panelMon">
     <div class="monit">Panel de monitoreo</div>
@@ -1605,7 +1604,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v31.1'; // v31.1: «Fin monitoreo sueño» con puntos y borde grueso en amarillo intenso; «Prueba auriculares» siempre bien visible (sin conectarlos, avisa); monitoreo sin minutos de voces y «0:00 minutos roncando» en una línea
+const VERSION = 'v31.2'; // v31.2: monitoreo: «No grabar durante +30 seg» en su propia fila, encima de «Fin monitoreo sueño»
+// v31.1: «Fin monitoreo sueño» con puntos y borde grueso en amarillo intenso; «Prueba auriculares» siempre bien visible (sin conectarlos, avisa); monitoreo sin minutos de voces y «0:00 minutos roncando» en una línea
 // v31.0: monitoreo: «Inicio 23:12 · llevas 6 min» en vez de «Escuchando desde hace…»
 // v30.9: «según tus revisiones» y «Detector actualizado» dicen «(solo admin)»
 // v30.8: «sonar on / off» de la noche según el rato que funcionó de verdad, no cómo empezó
@@ -3289,10 +3289,10 @@ $('muteBtn').onclick = () => { if (live.det) { live.det.mute(30); muteTick(); } 
 function muteTick() {
   const d = live.det; if (!d) return;
   const rem = (d.muteUntil || 0) - d.samples / SR;
-  // En el botón, debajo, lo que falta (cada toque suma 30 s)
+  // En el botón, a la derecha, lo que falta (cada toque suma 30 s)
   const sinGrabar = rem > 0 && isFinite(rem) && !live.cuna;
-  $('muteRest').hidden = !sinGrabar; $('muteSub').hidden = sinGrabar;
-  if (sinGrabar) $('muteRest').textContent = `Sin grabar ${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')}`;
+  $('muteRest').hidden = !sinGrabar;
+  if (sinGrabar) $('muteRest').textContent = `${Math.floor(Math.ceil(rem) / 60)}:${String(Math.ceil(rem) % 60).padStart(2, '0')}`;
   if (live.cuna) {
     const k = live.cuna, left = Math.max(0, cunaLen(k) - k.played);
     $('lstate').textContent = k.paused ? '❚❚ Música en pausa: prueba la sensibilidad (no se graba)'
@@ -6439,7 +6439,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.1', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
+  ['v31.2', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
