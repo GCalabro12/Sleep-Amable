@@ -1626,7 +1626,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.5'; // v32.5: «Avisos por»: altavoz a la izquierda y auricular a la derecha; «Fin monitoreo sueño» abajo del todo
+const VERSION = 'v32.6'; // v32.6: nota del sonar en pausa con la app 5.0
+// v32.5: «Avisos por»: altavoz a la izquierda y auricular a la derecha; «Fin monitoreo sueño» abajo del todo
 // v32.4: etiquetas del panel sin el hueco de «Grab ando» y «Mov imiento»
 // v32.3: sonar y auricular a la vez: con la app 4.9 el pitido sale por el altavoz del móvil; «on» solo si se oye su eco
 // v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
@@ -2837,7 +2838,7 @@ function sonarEmpieza(night) {
   if (!live.sonar.ok) { live.sonar = null; night.sonar = false; return false; }
   night.sonar = true; return true;
 }
-if (AND?.sonarTono) $('sonAur').textContent = '🎧 Con el auricular conectado, el pitido del sonar sale por el altavoz del móvil, pero ahora no me llega su eco. Para contar tus movimientos, deja el móvil sobre el colchón.';
+if (AND?.sonarTono) $('sonAur').textContent = '🎧 Con el auricular conectado, ahora mismo el sonar no funciona en este móvil. Para contar tus movimientos, deja el móvil sobre el colchón.';
 function pintaSonarBtn() {
   const on = !!live.sonar; let au = false; try { au = !!AND?.auriculares?.(); } catch {}
   const pausa = on && au && !live.sonar.funciona(); // v32.2: con el auricular conectado y sin eco el sonar no funciona: «pausa», no «on»
@@ -6509,7 +6510,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.5', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.6', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
