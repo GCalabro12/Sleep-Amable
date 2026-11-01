@@ -284,7 +284,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 .tonorow.sel .radio{border-color:#A78BFA}
 .tonorow.sel .radio::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#A78BFA}
 .swt{position:relative;width:46px;height:26px;flex:none}
-/* Aviso de ronquidos: deslizador «Avisos por: Auricular | Altavoz» (los dos lados valen: el botón siempre en morado) */
+/* Aviso de ronquidos: deslizador «Avisos por: Altavoz | Auricular» (los dos lados valen: el botón siempre en morado) */
 #home .auAl{background:#1E3A8A;border-color:#3B82F6;padding:10px 14px;margin-bottom:8px}
 #home .auTit{font-weight:700;font-size:16px;margin-bottom:8px}
 #home .auFila{display:flex;align-items:center;justify-content:center;gap:14px}
@@ -626,7 +626,7 @@ details.hist[open] summary{margin-bottom:10px}
 #listen.dim .inner{opacity:.07}
 .ltop{position:absolute;top:10px;left:14px;right:14px;display:flex;flex-wrap:wrap;justify-content:space-between;z-index:3;transition:opacity 1.2s}
 .ltop .ltit,.monit{flex-basis:100%;text-align:center;font-size:17px;color:#E9E5F5;background:#54478A;border-radius:10px;padding:5px 10px;margin-bottom:8px;font-weight:700;letter-spacing:.3px} /* barras moradas apagadas (v30.4) */
-#muteBtn{margin:0;padding:7px 12px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;font-weight:500;line-height:1.2;white-space:nowrap} /* su propia fila, encima de «Fin monitoreo sueño» (v31.2) */
+#muteBtn{margin:0;padding:7px 12px;border-radius:16px;border:1px solid #475569;background:#1E293B;color:#CBD5E1;font-size:14px;font-weight:500;line-height:1.2;white-space:nowrap} /* su propia fila (v31.2) */
 .ltop{column-gap:8px}
 #lDnd,#lCuna{width:66px} /* iguales: «Sonar» queda justo en el centro */
 #lDnd{font-size:17px;white-space:nowrap}
@@ -1070,7 +1070,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <div class="card auAl">
     <div class="auRef prim"><label for="avisoOn">🔔 Avisarme si ronco<small>Una voz te lo dice mientras monitoreas.</small></label><label class="swt"><input type="checkbox" id="avisoOn"><i></i></label></div>
     <div id="auOpc" hidden><div class="auTit">Avisos por</div>
-    <div class="auFila"><span id="auL">🎧 Auricular</span><label class="swt"><input type="checkbox" id="altavoz" aria-label="Avisos por altavoz"><i></i></label><span id="auR">🔊 Altavoz</span></div>
+    <div class="auFila"><span id="auL">🔊 Altavoz</span><label class="swt"><input type="checkbox" id="auSw" aria-label="Avisos por auricular"><i></i></label><span id="auR">🎧 Auricular</span></div>
     <small id="altavozTx" class="auTx">Solo auricular, para no despertar a nadie</small>
     <div class="auRef"><label for="refuerzo">🔁 Refuerzo de aviso<small>Lo repite cada 8 segundos (máximo 4 veces) hasta que toques la pantalla o te muevas.</small></label><label class="swt"><input type="checkbox" id="refuerzo"><i></i></label></div>
     </div>
@@ -1601,7 +1601,6 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
     <button id="muteBtn">❚❚ No grabar durante +30 seg<span id="muteRest" hidden></span></button>
-    <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
     <div class="lgrupo panelMon">
     <div class="monit">Panel de monitoreo</div>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
@@ -1614,7 +1613,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="aviWrap">
   <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
-    <div class="avOpc"><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="1">🔊 Altavoz</button></div>
+    <div class="avOpc"><button type="button" data-al="1">🔊 Altavoz</button><button type="button" data-al="0">🎧 Auricular</button></div>
     <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
     <p id="aviHoras" style="margin:0;font-size:15px"></p>
   </div>
@@ -1622,11 +1621,13 @@ body.pl-on .wrap{padding-bottom:190px}
     </div>
     </div>
     <div class="warn" id="lwarn" hidden></div>
+    <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v32.4'; // v32.4: etiquetas del panel sin el hueco de «Grab ando» y «Mov imiento»
+const VERSION = 'v32.5'; // v32.5: «Avisos por»: altavoz a la izquierda y auricular a la derecha; «Fin monitoreo sueño» abajo del todo
+// v32.4: etiquetas del panel sin el hueco de «Grab ando» y «Mov imiento»
 // v32.3: sonar y auricular a la vez: con la app 4.9 el pitido sale por el altavoz del móvil; «on» solo si se oye su eco
 // v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
 // v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
@@ -2133,15 +2134,15 @@ $('msgTest').onclick = () => {
 pintaMsg();
 // 🛏️ Duermo solo
 function pintaAltavoz() {
-  $('altavoz').checked = !!cfg.altavoz;
+  $('auSw').checked = !cfg.altavoz;
   document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auricular o altavoz' : 'Requiere auricular');
   $('altavozTx').textContent = cfg.altavoz ? 'Por el altavoz (si duermes solo)' : 'Solo auricular, para no despertar a nadie';
-  $('auL').classList.toggle('on', !cfg.altavoz); $('auR').classList.toggle('on', !!cfg.altavoz);
+  $('auL').classList.toggle('on', !!cfg.altavoz); $('auR').classList.toggle('on', !cfg.altavoz);
 }
 $('avisoOn').onchange = () => { cfg.avisoOn = $('avisoOn').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaInicioNoche(); };
 $('refuerzo').checked = !!cfg.refuerzo;
 $('refuerzo').onchange = () => { cfg.refuerzo = $('refuerzo').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} };
-$('altavoz').onchange = () => { cfg.altavoz = $('altavoz').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaAltavoz(); };
+$('auSw').onchange = () => { cfg.altavoz = !$('auSw').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} pintaAltavoz(); };
 pintaAltavoz();
 // Horas del mensaje en esta noche (en milisegundos), hasta 14 horas después de empezar
 function msgPlan(n) {
@@ -6508,7 +6509,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.4', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.5', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
