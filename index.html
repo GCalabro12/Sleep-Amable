@@ -18,7 +18,8 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent} /* sin el recuadro azul de Android al tocar */
 button:focus:not(:focus-visible){outline:none}
-html,body{margin:0;overflow-anchor:none;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@font-face{font-family:Auric;src:url(data:font/woff2;base64,d09GMgABAAAAAAIwAAwAAAAABFAAAAHhAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIiAjGgZgAFAKgliCGQE2AiQDCgsKAAQgBWYHQRstAwCeBXaTM/XusAwWzcvZ3vLSmHh4fn//rX3P+fCIDkVGFUOckIxU/8sj3YFxujkuQU5KTkQDUFcCpPo7PbQh5Ifq/jo1zpaMe6X/dyuuW6O+Dljd7OcJFOBYoBdn/r033O5tmi+vbnMTRIiQUoWeujuNQDM6SAJJIQYhib9KM7+/fS5/u186mvqXUiVuqJK5XsDN1iiptKisJvL5AoQ+XCIJPeowrv54gqwLCgWU5SSBRqAHK4T44rcIkEEtqrAFwAV0MSQhuuQuPp6uL7ko1F9adoO4uPwODZeXXpElK53+SL1Lh7How6AVrgfd++w1MnCJ7aYmIw7yhw7C25FG9Ln4rHqGgbslDmuNDotAKFQL3UavGdCAbMpmEjN/nmpkDSu8UVDZMtcpw/v8z4+994udxnfbuwfffU/m9ql7jqqb8mZ1G2BrZf4sn7/hVbOP875V3bzx6XGpw8uh+B4IBNenfeBAzPhWG6kCrY3PR8fTjuWGNCEtehic2hX6K3p5kCYIQXTWj9zTK9YBIpsggcLCyiYJEOrI2YUadZLIdUI7bcAoNOs3t1JMhCrpQPHHrdMAtYqihJCKtIAiu4iY7QCRLPOxKCJFrtt4tJgIVdKBImT7/kwAfmhrMpFOBwAAAAA=) format('woff2');unicode-range:U+1F3A7}
+html,body{margin:0;overflow-anchor:none;background:var(--bg);color:var(--text);font:16px/1.45 Auric,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 header{display:flex;align-items:center;gap:10px;margin:4px 0 22px}
@@ -691,9 +692,9 @@ details.hist[open] summary{margin-bottom:10px}
 .flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px;min-height:24px} /* la altura se queda: el panel no salta cuando aparece una */
 .flags .flag:not(.on):not(.cuenta){display:none} /* solo lo que está pasando ahora (v31.3) */
 /* Monitoreo con aviso: por dónde suenan los avisos; al tocar, cambia */
-.avisopor{display:block;margin:0 auto 6px;background:#1E293B;border:1px solid #475569;color:#E2E8F0;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;cursor:pointer}
-.avisopor small{font-weight:400;color:#94A3B8;margin-left:6px}
-.avisopor.falta small{color:#FCD34D}
+.avOpc{display:flex;gap:8px;clear:both;margin:12px 0 10px}
+.avOpc button{flex:1;padding:10px 6px;border-radius:12px;border:1px solid #334155;background:#1E293B;color:#CBD5E1;font-size:15px;font-weight:600}
+.avOpc button.on{background:#6D5BD0;border-color:#A78BFA;color:#fff}
 .flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
 .flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
 .flag.on{font-weight:700}
@@ -743,6 +744,8 @@ details.hist[open] summary{margin-bottom:10px}
 .state{font-size:14px;color:var(--dim);margin-bottom:2px}
 .last{font-size:14px;color:var(--muted);margin-bottom:8px}
 button.last{background:#1E293B;border:1px solid #475569;border-radius:10px;padding:7px 12px;color:#E2E8F0}
+button.last small{font-weight:400;color:#94A3B8;margin-left:6px}
+button.last.falta small{color:#FCD34D}
 .state:empty,.last:empty{display:none}
 #stopBtn{margin:0;background:#5C4F1C;border:3px solid #FACC15;color:#FDE68A;padding:12px 26px;border-radius:14px} /* amarillo apagado (v30.4), borde amarillo intenso (v31.1) */
 #stopBtn .tres i{background:#FACC15}
@@ -1050,7 +1053,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
-  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por los auriculares Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
+  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por el auricular Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
   <div class="card" id="iaCard">
@@ -1066,9 +1069,9 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="auRef"><label for="refuerzo">🔁 Refuerzo de aviso<small>Lo repite cada 8 segundos (máximo 4 veces) hasta que toques la pantalla o te muevas.</small></label><label class="swt"><input type="checkbox" id="refuerzo"><i></i></label></div>
     </div>
   </div>
-  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres otro aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere audífonos</small></span><b class="estado" id="sMsg">no</b></summary>
+  <details class="instr card" id="msgDet"><summary><span>💬 ¿Quieres otro aviso en la noche?<small class="necesita" style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px">Requiere auricular</small></span><b class="estado" id="sMsg">no</b></summary>
     <details class="subdet" style="border-top:0;margin-top:6px;padding-top:4px"><summary><span>ℹ️ Cómo funciona</span></summary>
-      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por los auriculares (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
+      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Una voz te dice lo que quieras a la hora que elijas: beber agua, ir al baño, tomar una medicina… Suena por el auricular (o por el altavoz, si lo eliges en «Avisos por»), mientras monitoreas la noche.</p>
       <button class="btn wide" id="msgTest" style="margin-top:10px">▶ Probar el aviso</button>
     </details>
     <div class="row"><label for="msgOn">Activado</label><label class="swt"><input type="checkbox" id="msgOn"><i></i></label></div>
@@ -1217,7 +1220,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary>🏃 Ajustes movimiento</summary>
-    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auriculares se apaga solo. Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</small></label>
+    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auricular se apaga solo. Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</small></label>
       <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
     <p class="sonTip">⭐ <b>Importante:</b> la base del móvil tiene que apuntar hacia ti.</p>
     <img class="sonImg" src="luna/movil-base.webp" alt="El móvil tumbado en la mesita, con la base apuntando al pecho de la persona que duerme" loading="lazy" width="800" height="800">
@@ -1306,8 +1309,8 @@ body.pl-on .wrap{padding-bottom:190px}
       <li>Elige un sonido. El <b>marrón</b> es el que mejor tapa los ronquidos, porque es grave como ellos.</li>
       <li>Sube el volumen poco a poco <b>solo hasta dejar de notar los ronquidos</b>. Cuanto más bajo, mejor para tus oídos.</li>
       <li>Activa <b>🌙 No molestar</b> para que no te despierten notificaciones. Si pones el modo avión, vuelve a encender el <b>Bluetooth</b> si tus auriculares son inalámbricos.</li>
-      <li>🔋 <b>Carga los pinganillos al 100 %</b> antes de acostarte: duran unas 4 horas de noche. Si no están llenos, la app te lo dice por ellos al empezar el sonido.</li>
-      <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (a las 2 o 4 horas, o <b>al sonar la alarma</b>): así duran más los pinganillos y descansan tus oídos.</li>
+      <li>🔋 <b>Carga los auriculares al 100 %</b> antes de acostarte: duran unas 4 horas de noche. Si no están llenos, la app te lo dice por ellos al empezar el sonido.</li>
+      <li>⏲️ Elige abajo <b>cuándo se apaga</b> el sonido (a las 2 o 4 horas, o <b>al sonar la alarma</b>): así duran más los auriculares y descansan tus oídos.</li>
     </ol>
   </details>
   <details class="instr card alrap"><summary><span>⏰ Alarma para despertarte</span><b class="estado" data-alsum></b></summary><div class="alrapBody"></div></details>
@@ -1443,7 +1446,7 @@ body.pl-on .wrap{padding-bottom:190px}
       <video class="tluna" src="luna/luna-consejo.webm" poster="luna/luna-consejo.png" autoplay loop muted playsinline></video>
       <h2>Ronca menos</h2>
       <ul>
-        <li>🔊 Una voz te avisa por los auriculares: <b>«Estás roncando, cambia de posición»</b>. Solo cuando está segura.</li>
+        <li>🔊 Una voz te avisa por el auricular: <b>«Estás roncando, cambia de posición»</b>. Solo cuando está segura.</li>
         <li>🧠 <b>Aprende de tus propios ronquidos</b>: dile si acierta y se adapta a ti.</li>
         <li>🏷️ Descubre <b>qué te hace roncar más</b>: alcohol, cenas fuertes, café…</li>
       </ul>
@@ -1569,6 +1572,11 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note">Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</p>
   </div>
   <div class="lpanel" id="pAl" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px;color:#FCD34D">⏰ Alarma para despertarte</b><div class="alrapBody" style="clear:both;margin-top:10px"></div></div>
+  <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
+    <div class="avOpc"><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="1">🔊 Altavoz</button></div>
+    <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
+    <p id="aviHoras" style="margin:0;font-size:15px"></p>
+  </div>
   <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
@@ -1587,17 +1595,16 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     </div>
     <div class="duofila">
-      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba auriculares<small id="audiSub">conéctalos primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
+      <div class="duo"><button type="button" id="audiBtn" hidden><span class="duoic">🎧</span>Prueba auricular<small id="audiSub">conéctalo primero</small></button><button type="button" class="linfo" id="audiInfo" aria-label="Para qué sirve" hidden>i</button></div>
       <div class="duo"><button type="button" id="levBtn"><span class="duoic">🚶</span>Me levanté<small id="levN"></small></button><button type="button" class="linfo" id="levInfo" aria-label="Para qué sirve">i</button></div>
     </div>
     <button id="muteBtn">❚❚ No grabar durante +30 seg<span id="muteRest" hidden></span></button>
     <button id="stopBtn">☀️ Fin monitoreo sueño<span class="tres"><i></i><i></i><i></i></span></button>
     <div class="lgrupo panelMon">
     <div class="monit">Panel de monitoreo</div>
-    <button type="button" class="avisopor" id="avisoPor" hidden></button>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auriculares</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grabando</span><span class="flag m" id="fMov">🏃 Movimiento</span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a" id="fAur" hidden>🎧 Auricular</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> minutos roncando</div>
@@ -1610,7 +1617,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v31.7'; // v31.7: monitoreo: al encender la música o un audio, su ventana se cierra sola a los 10 s; «Activar para la próxima noche» en un solo renglón; puntuación: 🔔 Avisos con sus horas; Movimiento dice si el sonar se apagó solo o por auriculares
+const VERSION = 'v31.8'; // v31.8: monitoreo: fuera «Avisos por… Cambiar» de arriba; abajo, «Avisos por altavoz / auricular» abre una ventana para cambiarlo y ver las horas de los avisos; siempre «auricular» (fuera audífonos y pinganillos) e icono de auricular de botón en vez de cascos (fuente Auric: la carpeta «Icono auricular» la genera)
+// v31.7: monitoreo: al encender la música o un audio, su ventana se cierra sola a los 10 s; «Activar para la próxima noche» en un solo renglón; puntuación: 🔔 Avisos con sus horas; Movimiento dice si el sonar se apagó solo o por auriculares
 // v31.6: sonar: fuera «Uno u otro»; para más exactitud, sonar en off y móvil en la cama
 // v31.5: sonar: imagen de cómo poner el móvil, con la base apuntando a ti
 // v31.4: «Sí, terminar» igual que «Fin monitoreo sueño», con el borde amarillo
@@ -1947,7 +1955,7 @@ function decirNoche(texto) {
   if (cfg.altavoz && AND?.hablar) { AND.hablar(texto); if (live.det) live.det.mute(Math.ceil(texto.length / 12) + 3); return true; }
   return false;
 }
-const SIN_VOZ = '🎧 Conecta los auriculares (pinganillos) y vuelve a probar.\n\nSin auriculares la voz no suena, para no despertar a nadie. Si duermes solo, pon «Avisos por» en Altavoz (en Saber si ronco y avisos).';
+const SIN_VOZ = '🎧 Conecta el auricular y vuelve a probar.\n\nSin auricular la voz no suena, para no despertar a nadie. Si duermes solo, pon «Avisos por» en Altavoz (en Saber si ronco y avisos).';
 function pintaAviso() {
 }
 document.querySelectorAll('.avisoTest').forEach(b => b.onclick = () => {
@@ -1976,29 +1984,29 @@ function pintaAudi() {
   const b = $('audiBtn'); if (!b) return;
   b.hidden = $('audiInfo').hidden = false; // (en el HTML empiezan ocultos)
   let con = false; try { con = !!AND?.auriculares?.(); } catch {}
-  $('audiSub').textContent = 'conéctalos primero'; $('audiSub').hidden = con;
+  $('audiSub').textContent = 'conéctalo primero'; $('audiSub').hidden = con;
 }
 $('audiBtn').onclick = () => {
   if (!VOZ_OK) { aviso(SIN_VOZ); return; }
   let con = false; try { con = !!AND?.auriculares?.(); } catch {}
-  if (!con) { aviso('🎧 Conecta primero los auriculares y vuelve a tocar el botón.'); return; }
+  if (!con) { aviso('🎧 Conecta primero el auricular y vuelve a tocar el botón.'); return; }
   AND.prepararVoz();
   if (live.det) live.det.mute(5); // que la propia frase no se grabe
-  const ok = typeof AND.decirDespacio === 'function' ? AND.decirDespacio('Prueba de auriculares.') : AND.decir('Prueba... de auriculares.'); // app 4.3: más despacio y suave
+  const ok = typeof AND.decirDespacio === 'function' ? AND.decirDespacio('Prueba de auricular.') : AND.decir('Prueba... de auricular.'); // app 4.3: más despacio y suave
   if (!ok) aviso(SIN_VOZ);
 };
-$('audiInfo').onclick = () => aviso('🎧 Sirve para comprobar que tus auriculares están conectados y suenan. Al tocar «Prueba auriculares», oirás por ellos: «Prueba de auriculares».\n\nAsí, si de noche no oyes ningún aviso, sabes que es porque no has roncado, no porque los auriculares fallen.');
+$('audiInfo').onclick = () => aviso('🎧 Sirve para comprobar que tu auricular está conectado y suena. Al tocar «Prueba auricular», oirás por él: «Prueba de auricular».\n\nAsí, si de noche no oyes ningún aviso, sabes que es porque no has roncado, no porque el auricular falle.');
 pintaAudi(); setInterval(() => { if ($('listen').offsetParent || getComputedStyle($('listen')).display !== 'none') pintaAudi(); }, 3000);
 // 🎧 Batería de los pinganillos (app 3.3): si no están casi llenos, se recuerda por los propios auriculares
 async function avisoBateria() {
   if (!AND?.bateriaAuriculares || !AND?.auriculares?.()) return;
   let b = AND.bateriaAuriculares();
   if (b === -2) { AND.pedirBluetooth(); await new Promise(r => setTimeout(r, 8000)); b = AND.bateriaAuriculares(); }
-  if (b < 0) { toast('🎧 Tu móvil no deja leer la batería de estos auriculares'); return; }
+  if (b < 0) { toast('🎧 Tu móvil no deja leer la batería de este auricular'); return; }
   if (b >= 95) return; // casi llenos: no hace falta avisar
-  AND.decir(`Tus auriculares tienen un ${b} por ciento de batería. Recuerda que necesitan estar al cien por cien para que duren toda la noche.`);
-  if (live.night) showWarn(`🎧 Pinganillos al ${b} %: cárgalos al 100 % para que duren toda la noche.`);
-  else toast(`🎧 Pinganillos al ${b} %: cárgalos al 100 %`);
+  AND.decir(`Tu auricular tiene un ${b} por ciento de batería. Recuerda que necesita estar al cien por cien para que dure toda la noche.`);
+  if (live.night) showWarn(`🎧 Auricular al ${b} %: cárgalo al 100 % para que dure toda la noche.`);
+  else toast(`🎧 Auricular al ${b} %: cárgalo al 100 %`);
 }
 // En cuanto se conectan los pinganillos (con la app abierta, en cualquier pantalla): batería por los propios auriculares
 let auricAntes = false;
@@ -2014,12 +2022,12 @@ const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una v
 let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
 const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
-// Abajo del monitoreo: «Aviso por auriculares ›» y, al tocarlo, las horas de todos los avisos de la noche
+// Abajo del monitoreo: «Avisos por auricular ›»; al tocarlo, se cambia a altavoz o auricular y salen las horas de los avisos de la noche
 function avisoHora(h) {
   (live.avisoHoras ||= []).push(h);
-  const b = $('lastEv'); b.hidden = false; b.textContent = `${cfg.altavoz ? '🔊 Aviso por altavoz' : '🎧 Aviso por auriculares'} ›`;
+  pintaAvisoPor();
 }
-$('lastEv').onclick = () => aviso('Te he avisado a las:\n\n' + (live.avisoHoras || []).join('\n'));
+$('lastEv').onclick = () => panel('pAvi');
 // 🔁 Refuerzo de aviso: tras el aviso, repite la frase hasta que tocas la pantalla o te mueves (como mucho 4 veces)
 const REF_CADA = 8000, REF_VECES = 4;
 const refFrase = () => { const nom = (sesion?.nombre || '').trim().split(/\s+/)[0]; return `${nom ? nom + ', ' : ''}estás roncando. Toca la pantalla. De lado y barbilla arriba.`; };
@@ -2111,7 +2119,7 @@ pintaMsg();
 // 🛏️ Duermo solo
 function pintaAltavoz() {
   $('altavoz').checked = !!cfg.altavoz;
-  document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auriculares o altavoz' : 'Requiere audífonos');
+  document.querySelectorAll('.necesita').forEach(x => x.textContent = cfg.altavoz ? 'Con auricular o altavoz' : 'Requiere auricular');
   $('altavozTx').textContent = cfg.altavoz ? 'Por el altavoz (si duermes solo)' : 'Solo auricular, para no despertar a nadie';
   $('auL').classList.toggle('on', !cfg.altavoz); $('auR').classList.toggle('on', !!cfg.altavoz);
 }
@@ -2198,7 +2206,7 @@ $('sonarOn').checked = !!cfg.sonar;
 $('sonarOn').onchange = () => { cfg.sonar = $('sonarOn').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} if (typeof pintaProfundo === 'function') pintaProfundo(); };
 $('sonarTest').onclick = async () => {
   if (live.night) { alert('Pruébalo cuando no estés monitoreando la noche.'); return; }
-  if (AND?.auriculares?.()) { alert('🎧 Quítate los auriculares: el sonar sale por el altavoz del móvil.'); return; }
+  if (AND?.auriculares?.()) { alert('🎧 Quítate el auricular: el sonar sale por el altavoz del móvil.'); return; }
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}}); }
   catch (e) { alert('No puedo usar el micrófono. (' + e.message + ')'); return; }
@@ -3041,21 +3049,26 @@ function profAvisoAbre(night) {
   $('profHoy').onclick = () => { sinFases(); cierra('Esta noche no se miden las fases del sueño'); };
   $('profNo').onclick = () => { sinFases(); ponProfundo(false); cierra('«Medir las fases del sueño» desactivado'); };
 }
-// 🎧/🔊 En el monitoreo con aviso: por dónde suenan los avisos (se cambia tocándolo); la lucecita «Auriculares» dice si están puestos
+// 🎧/🔊 En el monitoreo con aviso: por dónde suenan los avisos (se cambia en su ventana); la lucecita «Auriculares» dice si están puestos
 function pintaAvisoPor() {
   let au = false; try { au = !!AND?.auriculares?.(); } catch {}
-  $('fAur').textContent = '🎧 Auriculares'; $('fAur').hidden = !au; $('fAur').classList.toggle('on', au);
-  const b = $('avisoPor'); b.hidden = !avisarNoche; if (b.hidden) return;
+  $('fAur').textContent = '🎧 Auricular'; $('fAur').hidden = !au; $('fAur').classList.toggle('on', au);
+  const hs = live.avisoHoras || [], n = hs.length, b = $('lastEv');
+  b.hidden = !avisarNoche && !n; if (b.hidden) return;
   const falta = !cfg.altavoz && !au;
-  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta los auriculares' : 'Cambiar'}</small>`;
+  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta el auricular' : n ? `te he avisado ${n} ${n === 1 ? 'vez' : 'veces'}` : ''}</small> ›`;
   if (b.innerHTML !== html) b.innerHTML = html;
   b.classList.toggle('falta', falta);
+  // v31.8: la ventana de los avisos
+  $('aviFalta').hidden = !falta;
+  $('aviHoras').textContent = n ? `Te he avisado a las ${hs.join(', ')}.` : 'Aún no ha habido ningún aviso esta noche.';
+  document.querySelectorAll('#pAvi [data-al]').forEach(x => x.classList.toggle('on', +x.dataset.al === +!!cfg.altavoz));
 }
-$('avisoPor').onclick = () => {
-  cfg.altavoz = !cfg.altavoz; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+document.querySelectorAll('#pAvi [data-al]').forEach(x => x.onclick = () => {
+  cfg.altavoz = x.dataset.al === '1'; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
   pintaAltavoz(); pintaAvisoPor();
   toast(cfg.altavoz ? '🔊 Avisos por el altavoz (si duermes solo)' : '🎧 Solo auricular, para no despertar a nadie');
-};
+});
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
@@ -3089,7 +3102,7 @@ $('startBtn').onclick = async () => {
 };
 function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
   cunaAuto(false);
-  for (const x of ['pDnd', 'pCuna', 'pSon', 'pAl']) $(x).hidden = x !== id || !$(x).hidden;
+  for (const x of ['pDnd', 'pCuna', 'pSon', 'pAl', 'pAvi']) $(x).hidden = x !== id || !$(x).hidden;
   if (!$('pAl').hidden) pintaAlarmasRapidas();
   if (id && !$('pPrueba').hidden) $('pruebaX').onclick();
   if (!$('pCuna').hidden) renderCunas();
@@ -3126,8 +3139,8 @@ $('pruebaX').onclick = () => {
 function pintaMic() {
   const bt = AND?.micBluetooth?.();
   const au = AND?.auriculares?.();
-  $('prMic').textContent = (AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono de los auriculares. Lo cambio al del móvil… ' : '🎙️ Graba con el micrófono del móvil. ') : '')
-    + (AND?.auriculares ? (au ? '🎧 Auriculares conectados' + (AND.bateriaAuriculares ? (b => b >= 0 ? ` (batería ${b} %).` : ' (no se puede leer su batería).')(AND.bateriaAuriculares()) : '.') : 'Sin auriculares.') : '');
+  $('prMic').textContent = (AND?.micBluetooth ? (bt ? '🎧 Ojo: graba con el micrófono del auricular. Lo cambio al del móvil… ' : '🎙️ Graba con el micrófono del móvil. ') : '')
+    + (AND?.auriculares ? (au ? '🎧 Auricular conectado' + (AND.bateriaAuriculares ? (b => b >= 0 ? ` (batería ${b} %).` : ' (no se puede leer su batería).')(AND.bateriaAuriculares()) : '.') : 'Sin auricular.') : '');
   if (bt) AND.micMovil?.();
 }
 function pruebaScore() {}
@@ -3180,7 +3193,7 @@ $('prGrab').onclick = () => {
 function analizaPrueba(buf) {
   $('prGrab').classList.remove('on'); $('prGrabTx').textContent = '● Grabar';
   if (buf.length < SR) { // casi no llegó sonido: el micrófono está parado
-    $('prRes').innerHTML = '<div class="prq">⚠️ No llega sonido del micrófono</div><div class="note">Lo vuelvo a encender. Espera 3 segundos y prueba otra vez. Si sigue igual, quita los auriculares bluetooth o cierra y abre la app.</div>';
+    $('prRes').innerHTML = '<div class="prq">⚠️ No llega sonido del micrófono</div><div class="note">Lo vuelvo a encender. Espera 3 segundos y prueba otra vez. Si sigue igual, quita el auricular bluetooth o cierra y abre la app.</div>';
     $('prRes').hidden = false; reiniciaMic(); return;
   }
   const sn = [], vo = [], br = [], tops = {};
@@ -4522,7 +4535,7 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
     son = sonarNoche(cur) ? `\n\n📡 Sonar encendido${mins}. Notó el ${Math.round((cur.movSonar || 0) / Math.max(1, (cur.mov || []).length) * 100)} % de los movimientos.`
       : `\n\n📡 Sonar apagado${mins ? ` (encendido${mins})` : ''}: cuenta sobre todo lo que notó el móvil al moverse.`;
     if (cur.sonarAuto != null) son += `\n\nSe apagó solo a las ${hhmm(cur.inicio + cur.sonarAuto * 1000)}: el móvil se movió 3 veces en media hora y parecía estar en el colchón.`;
-    if (cur.sonarAuSeg >= 60) son += `\n\n🎧 Con auriculares conectados el sonar no funciona: ${Math.round(cur.sonarAuSeg / 60)} min esta noche.`;
+    if (cur.sonarAuSeg >= 60) son += `\n\n🎧 Con el auricular conectado el sonar no funciona: ${Math.round(cur.sonarAuSeg / 60)} min esta noche.`;
   }
   if (m.dataset.mexp === 'avisos') son = m.dataset.hrs ? `\n\n🔔 A las ${m.dataset.hrs}.` : '';
   aviso(EXP_PARTE[m.dataset.mexp] + son);
@@ -6383,7 +6396,7 @@ function permisos() {
   const l = [{k: 'mic', t: '🎙️ Micrófono', d: 'Para escuchar tus ronquidos por la noche. Sin él no se puede monitorear.', ok: micOk, nec: true}];
   if (AND?.puedePantallaCompleta) l.push({k: 'full', t: '⏰ Alarma a pantalla completa', d: 'Para que la alarma se vea aunque estés usando el móvil.', ok: !!AND.puedePantallaCompleta()});
   if (AND?.hasDndAccess) l.push({k: 'dnd', t: '🌙 «No molestar»', d: 'Para silenciar llamadas y avisos mientras duermes, y quitarlo al despertar.', ok: !!AND.hasDndAccess()});
-  if (AND?.pedirBluetooth && AND?.bateriaAuriculares) l.push({k: 'bt', t: '🎧 Auriculares Bluetooth', d: 'Para avisarte de que roncas por los auriculares y saber su batería.', ok: AND.bateriaAuriculares() !== -2});
+  if (AND?.pedirBluetooth && AND?.bateriaAuriculares) l.push({k: 'bt', t: '🎧 Auricular Bluetooth', d: 'Para avisarte de que roncas por el auricular y saber su batería.', ok: AND.bateriaAuriculares() !== -2});
   return l;
 }
 function pintaPermisos() {
@@ -6471,7 +6484,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.7', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas']],
+  ['v31.8', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
