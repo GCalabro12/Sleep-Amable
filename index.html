@@ -1572,6 +1572,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <b>📡 Sonar</b>
     <div class="row"><label for="sonSw">Activar el sonar</label><label class="swt"><input type="checkbox" id="sonSw"><i></i></label></div>
     <p id="sonEst" hidden style="color:#7DD3FC">Se ha apagado solo: el móvil está en el colchón y ya nota tus movimientos.</p>
+    <p id="sonAur" hidden style="color:#FCD34D">🎧 Con el auricular conectado, el sonar está en pausa: su pitido tiene que salir por el altavoz del móvil. Para contar tus movimientos, deja el móvil sobre el colchón.</p>
     <p class="sonTip">⭐ <b>Importante:</b> la base del móvil tiene que apuntar hacia ti.</p>
     <img class="sonImg" src="luna/movil-base.webp" alt="El móvil tumbado en la mesita, con la base apuntando al pecho de la persona que duerme" loading="lazy" width="800" height="800">
     <p class="note">Nota si te mueves cuando el móvil está en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye; niños y mascotas pueden oírlo.</p>
@@ -1625,7 +1626,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.1'; // v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
+const VERSION = 'v32.2'; // v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
+// v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
 // v32.0: monitoreo: los mensajes ya no se pisan ni se ensancha «Panel de monitoreo»; si no caben en un renglón, Grab y Mov; fuera la etiqueta Auricular
 // v31.9: la ventana de los avisos sale abajo, justo encima de su botón
 // v31.8: monitoreo: fuera «Avisos por… Cambiar» de arriba; abajo, «Avisos por altavoz / auricular» abre una ventana para cambiarlo y ver las horas de los avisos; siempre «auricular» (fuera audífonos y pinganillos) e icono de auricular de botón en vez de cascos (fuente Auric: la carpeta «Icono auricular» la genera)
@@ -2778,6 +2780,7 @@ async function startListening() {
     $('elapsed').textContent = `Inicio ${hhmm(night.inicio)} · llevas ${dur((Date.now() - night.inicio) / 1000)}`;
     $('lvl').style.width = (det.level * 100) + '%';
     $('lvl').classList.toggle('hot', !!det.ev);
+    pintaSonarBtn();
     if (!det.ev && det.samples > SR * 3 && $('lstate').textContent.startsWith('Ajust')) $('lstate').textContent = '';
     muteTick();
     if (ctx.state === 'suspended') ctx.resume();
@@ -2827,8 +2830,10 @@ function sonarEmpieza(night) {
   night.sonar = true; return true;
 }
 function pintaSonarBtn() {
-  const on = !!live.sonar; $('lSonar').classList.toggle('on', on); $('lSonar').querySelector('small').textContent = on ? 'on' : 'off';
-  $('sonSw').checked = on; $('sonEst').hidden = !live.sonarColchon || on;
+  const on = !!live.sonar; let au = false; try { au = !!AND?.auriculares?.(); } catch {}
+  const pausa = on && au; // v32.2: con el auricular conectado el sonar no funciona: «pausa», no «on»
+  $('lSonar').classList.toggle('on', on && !au); $('lSonar').querySelector('small').textContent = pausa ? 'pausa' : on ? 'on' : 'off';
+  $('sonSw').checked = on; $('sonEst').hidden = !live.sonarColchon || on; $('sonAur').hidden = !pausa;
 }
 $('sonSw').onchange = () => {
   if (!live.night) { pintaSonarBtn(); return; }
@@ -4544,7 +4549,7 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
   if (m.dataset.mexp === 'calma' && cur?.sonar != null) {
     const mins = cur.sonarSeg != null ? ` ${Math.round(cur.sonarSeg / 60)} min de ${Math.round((cur.fin - cur.inicio) / 60e3)}` : '';
     son = sonarNoche(cur) ? `\n\n📡 Sonar encendido${mins}. Notó el ${Math.round((cur.movSonar || 0) / Math.max(1, (cur.mov || []).length) * 100)} % de los movimientos.`
-      : `\n\n📡 Sonar apagado${mins ? ` (encendido${mins})` : ''}: cuenta sobre todo lo que notó el móvil al moverse.`;
+      : `\n\n📡 Sonar apagado${mins ? ` (encendido${mins})` : ''}: cuenta sobre todo lo que notó el móvil al moverse. El sonar notó ${cur.movSonar || 0} de ${(cur.mov || []).length} marcas.`;
     if (cur.sonarAuto != null) son += `\n\nSe apagó solo a las ${hhmm(cur.inicio + cur.sonarAuto * 1000)}: el móvil se movió 3 veces en media hora y parecía estar en el colchón.`;
     if (cur.sonarAuSeg >= 60) son += `\n\n🎧 Con el auricular conectado el sonar no funciona: ${Math.round(cur.sonarAuSeg / 60)} min esta noche.`;
   }
@@ -6495,7 +6500,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.1', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.2', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
