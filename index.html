@@ -1606,7 +1606,7 @@ body.pl-on .wrap{padding-bottom:190px}
     <div class="monit">Panel de monitoreo</div>
     <div class="clockfila"><button type="button" class="alhora" id="alHora" aria-label="Alarma">⏰</button><div class="clock" id="clock">--:--</div></div>
     <div class="elapsed" id="elapsed">Escuchando</div>
-    <div class="flags"><span class="flag g" id="fGrab">🎙️ Grab<span class="lar">ando</span></span><span class="flag m" id="fMov">🏃 Mov<span class="lar">imiento</span></span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
+    <div class="flags"><span class="flag g" id="fGrab"><span>🎙️ Grab<span class="lar">ando</span></span></span><span class="flag m" id="fMov"><span>🏃 Mov<span class="lar">imiento</span></span></span><span class="flag l" id="fLuz" hidden>💡 Luz</span><span class="flag a on" id="fMsg" hidden></span><span class="flag cuenta" id="fCuenta" hidden></span></div>
     <div id="bloque"></div>
     <div class="counters">
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> minutos roncando</div>
@@ -1626,7 +1626,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.3'; // v32.3: sonar y auricular a la vez: con la app 4.9 el pitido sale por el altavoz del móvil; «on» solo si se oye su eco
+const VERSION = 'v32.4'; // v32.4: etiquetas del panel sin el hueco de «Grab ando» y «Mov imiento»
+// v32.3: sonar y auricular a la vez: con la app 4.9 el pitido sale por el altavoz del móvil; «on» solo si se oye su eco
 // v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
 // v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
 // v32.0: monitoreo: los mensajes ya no se pisan ni se ensancha «Panel de monitoreo»; si no caben en un renglón, Grab y Mov; fuera la etiqueta Auricular
@@ -2794,7 +2795,7 @@ async function startListening() {
     vigilaDespertar(det);
     avisoTick(det, .5); msgTick(); refuerzoTick();
     { const sig = msgActivo() && live.msg ? live.msg.plan.find(t => !live.msg.dichos.has(t)) : null;
-      $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').innerHTML = `💬 <span class="lar">Aviso </span>${hhmm(sig)}`; }
+      $('fMsg').hidden = sig == null; if (sig != null) $('fMsg').innerHTML = `<span>💬 <span class="lar">Aviso </span>${hhmm(sig)}</span>`; }
     { const e = det.ev, en = !!e && !(det.muteUntil > det.samples / SR);
       $('bloque').classList.toggle('on', en);
       $('bloque').textContent = !en && det.muteUntil > det.samples / SR ? 'Sin grabar ahora' : ''; } // grabando: ya lo dice la lucecita
@@ -6507,7 +6508,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.2', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.4', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
