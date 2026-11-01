@@ -484,6 +484,7 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .tronq .pt{display:inline-block;width:12px;height:12px;border-radius:50%} .pt.ok{background:#4ADE80} .pt.mid{background:#FBBF24} .pt.bad{background:#F87171}
 .mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
 .mpartes.motrosf{margin-top:8px}
+.mpartes.motrosf .mp:nth-child(3){grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* el tercero, centrado en su fila */
 .mpartes:not(.tresp) .mp:only-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* un recuadro solo: centrado en su fila */
 .mpartes.tresp .mp{padding:8px 6px 8px 8px;min-width:0}
 .mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
@@ -1609,7 +1610,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v31.6'; // v31.6: sonar: fuera «Uno u otro»; para más exactitud, sonar en off y móvil en la cama
+const VERSION = 'v31.7'; // v31.7: monitoreo: al encender la música o un audio, su ventana se cierra sola a los 10 s; «Activar para la próxima noche» en un solo renglón; puntuación: 🔔 Avisos con sus horas; Movimiento dice si el sonar se apagó solo o por auriculares
+// v31.6: sonar: fuera «Uno u otro»; para más exactitud, sonar en off y móvil en la cama
 // v31.5: sonar: imagen de cómo poner el móvil, con la base apuntando a ti
 // v31.4: «Sí, terminar» igual que «Fin monitoreo sueño», con el borde amarillo
 // v31.3: monitoreo: «Sonar» en el centro, «No grabar» más fino y pequeño, y en el panel solo sale lo que está pasando (Grabando, Movimiento, Luz, Auriculares)
@@ -2741,7 +2743,10 @@ async function startListening() {
     { // 📡 cuenta solo el rato en que el sonar funciona de verdad (con auriculares va en silencio)
       const ya = Date.now(), d = ya - live.sonT; live.sonT = ya;
       let au = false; try { au = !!AND?.auriculares?.(); } catch {}
-      if (live.sonar && !au) night.sonarSeg += Math.min(d, 60e3) / 1000; // (con la pantalla apagada, el reloj puede ir a saltos)
+      if (live.sonar) { // (con la pantalla apagada, el reloj puede ir a saltos)
+        const s = Math.min(d, 60e3) / 1000;
+        if (au) night.sonarAuSeg = (night.sonarAuSeg || 0) + s; else night.sonarSeg += s;
+      }
     }
     $('clock').innerHTML = `${hhmm(Date.now())}<small>${String(new Date().getSeconds()).padStart(2, '0')}</small>`;
     $('stopBtn').classList.toggle('rojo', Date.now() - night.inicio >= 6 * 3600e3); // 6 horas monitoreando: «Fin monitoreo sueño» en rojo
@@ -2819,7 +2824,7 @@ function sonarColchon(t) {
   if (!live.sonar || live.sonarManual) return;
   const a = live.acel ||= []; if (a.length && t - a.at(-1) < 60) return;
   a.push(t);
-  if (a.filter(x => t - x <= 1800).length >= 3) { live.sonar.stop(); live.sonar = null; live.sonarColchon = true; pintaSonarBtn(); }
+  if (a.filter(x => t - x <= 1800).length >= 3) { live.sonar.stop(); live.sonar = null; live.sonarColchon = true; live.night.sonarAuto = t; pintaSonarBtn(); }
 }
 function marcaMov(night, t, porSonar) {
   if (live.ref && (!porSonar || !cfg.altavoz || Date.now() - live.ref.t > 4500)) refuerzoPara(); // (por el altavoz, el sonar podría confundir la propia voz con un movimiento)
@@ -3083,6 +3088,7 @@ $('startBtn').onclick = async () => {
   if (AND) renderPrep();
 };
 function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
+  cunaAuto(false);
   for (const x of ['pDnd', 'pCuna', 'pSon', 'pAl']) $(x).hidden = x !== id || !$(x).hidden;
   if (!$('pAl').hidden) pintaAlarmasRapidas();
   if (id && !$('pPrueba').hidden) $('pruebaX').onclick();
@@ -3091,6 +3097,13 @@ function panel(id) { // abre uno y cierra los otros; otro toque lo cierra
 $('lDnd').onclick = () => panel('pDnd');
 $('lCuna').onclick = () => panel('pCuna');
 $('pCunaX').onclick = () => panel(null);
+// v31.7: al encender la música, la ventana se cierra sola a los 10 s; si la estás tocando (volumen, minutos), la cuenta vuelve a empezar
+let cunaCierra = null;
+function cunaAuto(on) {
+  clearTimeout(cunaCierra); cunaCierra = null;
+  if (on) cunaCierra = setTimeout(() => { cunaCierra = null; if (live.cuna && !$('pCuna').hidden) panel(null); }, 10000);
+}
+for (const ev of ['pointerdown', 'input']) document.addEventListener(ev, e => { if (cunaCierra && e.target.closest?.('#pCuna')) cunaAuto(true); }, true); // (en document: con la pantalla atenuada, #listen se queda el toque)
 $('lSonar').onclick = () => panel('pSon');
 $('alHora').onclick = () => panel('pAl'); // ⏰ activar, desactivar o cambiar la alarma sin salir del monitoreo
 document.querySelectorAll('#listen .lpx').forEach(b => b.onclick = () => panel(null)); // ✕ cierra la ventana
@@ -3409,9 +3422,9 @@ function renderCunas() {
       cunaId = x.id; try { x.id ? localStorage.setItem('ronquino-cuna', x.id) : localStorage.removeItem('ronquino-cuna'); } catch {}
       if (live.night) { // monitoreando: suena ya y se cierra el desplegable
         if (live.cuna) endCuna(true);
-        if (x.id && live.det) playCuna(x);
+        if (x.id && live.det) { playCuna(x); cunaAuto(true); }
         $('lCuna').classList.toggle('on', !!x.id);
-        renderCunas(); // se queda abierta para poder ajustar el volumen mientras suena
+        renderCunas(); // se queda abierta 10 s para poder ajustar el volumen mientras suena
         return;
       }
       // Escuchar al elegir: suena la que tocas; si ya sonaba, se para
@@ -3426,7 +3439,7 @@ function renderCunas() {
   tlEnlaza($('cpDet'), tlSuena, () => {
     cunaId = 'tl'; try { localStorage.setItem('ronquino-cuna', 'tl'); } catch {}
     if (live.cuna) endCuna(true);
-    if (live.night && live.det) { playCuna(TL_C); $('lCuna').classList.add('on'); }
+    if (live.night && live.det) { playCuna(TL_C); cunaAuto(true); $('lCuna').classList.add('on'); }
     renderCunas();
   }, () => { cunaId = null; try { localStorage.removeItem('ronquino-cuna'); } catch {} endCuna(true); renderCunas(); });
 }
@@ -3467,6 +3480,7 @@ function playCuna(c) {
 }
 function endCuna(now) {
   const k = live.cuna; if (!k) return;
+  cunaAuto(false);
   if (k.c.tl) tlPara();
   clearInterval(k.timer);
   const stop = () => { k.au.pause(); k.au.src = ''; };
@@ -3735,15 +3749,17 @@ const colorNota = s => s >= 75 ? 'ok' : s >= 50 ? 'mid' : 'bad';
 // Cómo se enseñan las partes: arriba Horas y Regularidad; debajo Ronquido, Voces y Tos; y «Otros datos» (movimiento…)
 function mananaPartes(n, partes) {
   const P = k => partes.find(p => p.k === k);
-  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''} role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b>${p.nota ? `<small>${p.nota}</small>` : ''}</div>` : '';
+  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''}${p.hrs ? ` data-hrs="${p.hrs}"` : ''} role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b>${p.nota ? `<small>${p.nota}</small>` : ''}</div>` : '';
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
   const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
   const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
-  const otros = [P('calma'), lev].filter(Boolean);
+  const nAv = (n.avisoT || []).length || n.avisos || 0; // v31.7: 🔔 cuántos avisos hubo; al tocarlo, a qué horas
+  const avi = n.fuente === 'micro' ? {k: 'avisos', t: '🔔 Avisos', v: `${nAv} ${nAv === 1 ? 'aviso' : 'avisos'}`, hrs: (n.avisoT || []).map(t => evHora(n, t)).join(', ')} : null;
+  const otros = [P('calma'), lev, avi].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
-    ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'lev' ? ' neutro' : '')).join('')}</div>` : ''}`;
+    ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'calma' ? '' : ' neutro')).join('')}</div>` : ''}`;
 }
 function tarjetaManana(n, prev, titulo) {
   const {total, partes} = puntuacion(n, prev), c = colorNota(total);
@@ -3883,7 +3899,7 @@ function pintaCalma(n, evs) {
   const pidio = n.profundo || (n.inicio < PROF_DESDE && (n.mov || []).length > 0);
   if (c && n.fuente === 'micro' && !pidio && nocheValida(n)) { // invitar a activarlo para la próxima noche
     box.hidden = false;
-    box.innerHTML = `<div class="calmatit"><i class="icos" aria-hidden="true"></i> Fases del sueño</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
+    box.innerHTML = `<div class="calmatit"><i class="icos" aria-hidden="true"></i> Fases del sueño</div><div class="stnote" style="margin-top:4px">Esta noche no se midió. ¿Quieres verlo la próxima vez? Deja el móvil sobre el colchón, junto a la almohada.</div><button class="btn wide" id="profAct" style="margin-top:10px;white-space:nowrap;font-size:clamp(13px,4.2vw,16px);padding-left:8px;padding-right:8px"><i class="icos" aria-hidden="true"></i> Activar para la próxima noche</button>`;
     $('profAct').onclick = () => { ponProfundo(true); box.innerHTML = '<div class="stnote">✅ Activado. La próxima noche deja el móvil sobre el colchón, junto a la almohada.</div>'; };
     return;
   }
@@ -4496,6 +4512,7 @@ const EXP_PARTE = {
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
+  avisos: 'Las veces que la app te avisó esta noche de que estabas roncando. No cuenta para la puntuación.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return;
@@ -4504,7 +4521,10 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
     const mins = cur.sonarSeg != null ? ` ${Math.round(cur.sonarSeg / 60)} min de ${Math.round((cur.fin - cur.inicio) / 60e3)}` : '';
     son = sonarNoche(cur) ? `\n\n📡 Sonar encendido${mins}. Notó el ${Math.round((cur.movSonar || 0) / Math.max(1, (cur.mov || []).length) * 100)} % de los movimientos.`
       : `\n\n📡 Sonar apagado${mins ? ` (encendido${mins})` : ''}: cuenta sobre todo lo que notó el móvil al moverse.`;
+    if (cur.sonarAuto != null) son += `\n\nSe apagó solo a las ${hhmm(cur.inicio + cur.sonarAuto * 1000)}: el móvil se movió 3 veces en media hora y parecía estar en el colchón.`;
+    if (cur.sonarAuSeg >= 60) son += `\n\n🎧 Con auriculares conectados el sonar no funciona: ${Math.round(cur.sonarAuSeg / 60)} min esta noche.`;
   }
+  if (m.dataset.mexp === 'avisos') son = m.dataset.hrs ? `\n\n🔔 A las ${m.dataset.hrs}.` : '';
   aviso(EXP_PARTE[m.dataset.mexp] + son);
   if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0); }); // 😴 con la tabla de cuánto ronca la gente (v27.5)
 // Recuadros de la noche: al tocarlos explican qué cuentan
@@ -6451,7 +6471,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.6', '31 oct 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas']],
+  ['v31.7', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
