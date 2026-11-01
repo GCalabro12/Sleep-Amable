@@ -692,6 +692,8 @@ details.hist[open] summary{margin-bottom:10px}
 .flags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px;min-height:24px} /* la altura se queda: el panel no salta cuando aparece una */
 .flags .flag:not(.on):not(.cuenta){display:none} /* solo lo que está pasando ahora (v31.3) */
 /* Monitoreo con aviso: por dónde suenan los avisos; al tocar, cambia */
+.aviWrap{position:relative;width:100%;display:flex;justify-content:center}
+#pAvi{top:auto;bottom:calc(100% + 6px);left:0;right:0}
 .avOpc{display:flex;gap:8px;clear:both;margin:12px 0 10px}
 .avOpc button{flex:1;padding:10px 6px;border-radius:12px;border:1px solid #334155;background:#1E293B;color:#CBD5E1;font-size:15px;font-weight:600}
 .avOpc button.on{background:#6D5BD0;border-color:#A78BFA;color:#fff}
@@ -1572,11 +1574,6 @@ body.pl-on .wrap{padding-bottom:190px}
     <p class="note">Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</p>
   </div>
   <div class="lpanel" id="pAl" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px;color:#FCD34D">⏰ Alarma para despertarte</b><div class="alrapBody" style="clear:both;margin-top:10px"></div></div>
-  <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
-    <div class="avOpc"><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="1">🔊 Altavoz</button></div>
-    <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
-    <p id="aviHoras" style="margin:0;font-size:15px"></p>
-  </div>
   <div class="lcuna" id="lcuna" hidden></div>
   <div id="pPrueba" hidden>
     <div class="prhead"><b>🧪 Probar la detección</b><button type="button" id="pruebaX" aria-label="Cerrar">✕</button></div>
@@ -1610,14 +1607,22 @@ body.pl-on .wrap{padding-bottom:190px}
       <div class="c-snore"><b id="cSnore">0</b><svg class="cico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="9" fill="#FBBF24"/><path d="M6.5 13q1.5 1.3 3 0M12.5 13q1.5 1.3 3 0" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="11" cy="17.2" rx="1.6" ry="1.2" fill="#1E1B4B"/><path d="M17 3h4l-4 4h4" fill="none" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> minutos roncando</div>
     </div>
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
+    <div class="aviWrap">
+  <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
+    <div class="avOpc"><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="1">🔊 Altavoz</button></div>
+    <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
+    <p id="aviHoras" style="margin:0;font-size:15px"></p>
+  </div>
     <button type="button" class="last" id="lastEv" hidden></button>
+    </div>
     </div>
     <div class="warn" id="lwarn" hidden></div>
   </div>
 </div>
 
 <script type="module">
-const VERSION = 'v31.8'; // v31.8: monitoreo: fuera «Avisos por… Cambiar» de arriba; abajo, «Avisos por altavoz / auricular» abre una ventana para cambiarlo y ver las horas de los avisos; siempre «auricular» (fuera audífonos y pinganillos) e icono de auricular de botón en vez de cascos (fuente Auric: la carpeta «Icono auricular» la genera)
+const VERSION = 'v31.9'; // v31.9: la ventana de los avisos sale abajo, justo encima de su botón
+// v31.8: monitoreo: fuera «Avisos por… Cambiar» de arriba; abajo, «Avisos por altavoz / auricular» abre una ventana para cambiarlo y ver las horas de los avisos; siempre «auricular» (fuera audífonos y pinganillos) e icono de auricular de botón en vez de cascos (fuente Auric: la carpeta «Icono auricular» la genera)
 // v31.7: monitoreo: al encender la música o un audio, su ventana se cierra sola a los 10 s; «Activar para la próxima noche» en un solo renglón; puntuación: 🔔 Avisos con sus horas; Movimiento dice si el sonar se apagó solo o por auriculares
 // v31.6: sonar: fuera «Uno u otro»; para más exactitud, sonar en off y móvil en la cama
 // v31.5: sonar: imagen de cómo poner el móvil, con la base apuntando a ti
@@ -6484,7 +6489,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v31.8', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v31.9', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
