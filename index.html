@@ -1226,7 +1226,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd">
     <summary>🏃 Ajustes movimiento</summary>
-    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auricular se apaga solo. Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</small></label>
+    <div class="row"><label for="sonarOn">📡 Sonar: detectar si te mueves<small>Con el móvil en la mesilla, a menos de 1 metro. Emite un pitido muy agudo que casi nadie oye y escucha su eco (como un murciélago). Niños y mascotas pueden oírlo. Con auricular conectado, el pitido sigue saliendo por el altavoz del móvil. Si quieres un registro de movimientos más exacto, pon el sonar en off y el móvil en la cama.</small></label>
       <label class="swt"><input type="checkbox" id="sonarOn"><i></i></label></div>
     <p class="sonTip">⭐ <b>Importante:</b> la base del móvil tiene que apuntar hacia ti.</p>
     <img class="sonImg" src="luna/movil-base.webp" alt="El móvil tumbado en la mesita, con la base apuntando al pecho de la persona que duerme" loading="lazy" width="800" height="800">
@@ -1626,7 +1626,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.2'; // v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
+const VERSION = 'v32.3'; // v32.3: sonar y auricular a la vez: con la app 4.9 el pitido sale por el altavoz del móvil; «on» solo si se oye su eco
+// v32.2: botón Sonar: «pausa» con el auricular conectado; Movimiento dice cuántas marcas notó el sonar
 // v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
 // v32.0: monitoreo: los mensajes ya no se pisan ni se ensancha «Panel de monitoreo»; si no caben en un renglón, Grab y Mov; fuera la etiqueta Auricular
 // v31.9: la ventana de los avisos sale abajo, justo encima de su botón
@@ -2182,11 +2183,14 @@ class Sonar {
   constructor(ctx, src, onMov) {
     this.f0 = 19000; this.snr = -99; this.ok = ctx.sampleRate >= 44100;
     if (!this.ok) return;
-    this.ctx = ctx; this.onMov = onMov; this.base = null; this.last = 0; this.movDesde = 0;
-    this.osc = ctx.createOscillator(); this.osc.frequency.value = this.f0;
-    this.g = ctx.createGain(); this.g.gain.value = 0;
-    this.osc.connect(this.g).connect(ctx.destination); this.osc.start();
-    this.vol(true); // sube despacio: sin «clic»
+    this.ctx = ctx; this.onMov = onMov; this.base = null; this.last = 0; this.movDesde = 0; this.oido = 0;
+    this.nativo = !!AND?.sonarTono?.(true); // app 4.9: el pitido lo pone Android, siempre por el altavoz del móvil
+    if (!this.nativo) {
+      this.osc = ctx.createOscillator(); this.osc.frequency.value = this.f0;
+      this.g = ctx.createGain(); this.g.gain.value = 0;
+      this.osc.connect(this.g).connect(ctx.destination); this.osc.start();
+      this.vol(true); // sube despacio: sin «clic»
+    }
     this.an = ctx.createAnalyser(); this.an.fftSize = 8192; this.an.smoothingTimeConstant = 0;
     src.connect(this.an);
     this.buf = new Float32Array(this.an.frequencyBinCount);
@@ -2202,6 +2206,7 @@ class Sonar {
     let ruido = 0; for (let d = 60; d <= 80; d++) ruido += P(this.k0 - d);
     side /= 42; ruido /= 21;
     this.snr = 10 * Math.log10(car / ruido);
+    if (this.snr > 15) this.oido = Date.now();
     if (!(this.snr > 15)) return; // el pitido no llega al micrófono
     const r = side / car;
     if (this.base == null || this.base > r * 50) { this.base = r; return; } // al empezar: el arranque del tono no cuenta
@@ -2213,13 +2218,14 @@ class Sonar {
       if (ahora - this.last > 1000) { this.last = ahora; this.onMov?.(); }
     }
   }
-  stop() { clearInterval(this.t); try { this.osc?.stop(); } catch {} try { this.g?.disconnect(); this.an?.disconnect(); } catch {} }
+  funciona() { return this.nativo && !!AND.sonarAltavoz() && Date.now() - this.oido < 10000; } // con auricular: el pitido va por el altavoz y llega su eco
+  stop() { clearInterval(this.t); if (this.nativo) AND.sonarTono(false); try { this.osc?.stop(); } catch {} try { this.g?.disconnect(); this.an?.disconnect(); } catch {} }
 }
 $('sonarOn').checked = !!cfg.sonar;
 $('sonarOn').onchange = () => { cfg.sonar = $('sonarOn').checked; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} if (typeof pintaProfundo === 'function') pintaProfundo(); };
 $('sonarTest').onclick = async () => {
   if (live.night) { alert('Pruébalo cuando no estés monitoreando la noche.'); return; }
-  if (AND?.auriculares?.()) { alert('🎧 Quítate el auricular: el sonar sale por el altavoz del móvil.'); return; }
+  if (AND?.auriculares?.() && !AND.sonarTono) { alert('🎧 Quítate el auricular: el sonar sale por el altavoz del móvil.'); return; }
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false}}); }
   catch (e) { alert('No puedo usar el micrófono. (' + e.message + ')'); return; }
@@ -2766,7 +2772,7 @@ async function startListening() {
       let au = false; try { au = !!AND?.auriculares?.(); } catch {}
       if (live.sonar) { // (con la pantalla apagada, el reloj puede ir a saltos)
         const s = Math.min(d, 60e3) / 1000;
-        if (au) night.sonarAuSeg = (night.sonarAuSeg || 0) + s; else night.sonarSeg += s;
+        if (au && !live.sonar.funciona()) night.sonarAuSeg = (night.sonarAuSeg || 0) + s; else night.sonarSeg += s;
       }
     }
     $('clock').innerHTML = `${hhmm(Date.now())}<small>${String(new Date().getSeconds()).padStart(2, '0')}</small>`;
@@ -2829,10 +2835,11 @@ function sonarEmpieza(night) {
   if (!live.sonar.ok) { live.sonar = null; night.sonar = false; return false; }
   night.sonar = true; return true;
 }
+if (AND?.sonarTono) $('sonAur').textContent = '🎧 Con el auricular conectado, el pitido del sonar sale por el altavoz del móvil, pero ahora no me llega su eco. Para contar tus movimientos, deja el móvil sobre el colchón.';
 function pintaSonarBtn() {
   const on = !!live.sonar; let au = false; try { au = !!AND?.auriculares?.(); } catch {}
-  const pausa = on && au; // v32.2: con el auricular conectado el sonar no funciona: «pausa», no «on»
-  $('lSonar').classList.toggle('on', on && !au); $('lSonar').querySelector('small').textContent = pausa ? 'pausa' : on ? 'on' : 'off';
+  const pausa = on && au && !live.sonar.funciona(); // v32.2: con el auricular conectado y sin eco el sonar no funciona: «pausa», no «on»
+  $('lSonar').classList.toggle('on', on && !pausa); $('lSonar').querySelector('small').textContent = pausa ? 'pausa' : on ? 'on' : 'off';
   $('sonSw').checked = on; $('sonEst').hidden = !live.sonarColchon || on; $('sonAur').hidden = !pausa;
 }
 $('sonSw').onchange = () => {
