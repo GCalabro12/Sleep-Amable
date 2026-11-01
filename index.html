@@ -476,6 +476,8 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .mp span{display:block;font-size:13px;color:var(--muted)}
 .mp b{font-size:16px}
 .mp small{font-size:11px;color:#94A3B8;margin-left:5px;white-space:nowrap}
+.mpval{display:flex;align-items:center;justify-content:center;gap:5px} .mpval b{white-space:nowrap} /* v32.1: «102 mov.» y, a su derecha, «sonar» y «off» uno encima del otro */
+.mpval small{margin:0;font-size:10px;line-height:1.1;text-align:left}
 .mp[data-mexp]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mp.ok{border-color:#4ADE80} .mp.mid{border-color:#FBBF24} .mp.bad{border-color:#F87171}
 .tronq{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px;text-align:left}
@@ -487,7 +489,7 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .mpartes.motrosf{margin-top:8px}
 .mpartes.motrosf .mp:nth-child(3){grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* el tercero, centrado en su fila */
 .mpartes:not(.tresp) .mp:only-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* un recuadro solo: centrado en su fila */
-.mpartes.tresp .mp{padding:8px 6px 8px 8px;min-width:0}
+.mpartes.tresp .mp{padding:8px 3px;min-width:0}
 .mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
 .mpartes.tresp .mp b{font-size:15px}
 .mp.neutro{border-color:#475569}
@@ -1623,7 +1625,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.0'; // v32.0: monitoreo: los mensajes ya no se pisan ni se ensancha «Panel de monitoreo»; si no caben en un renglón, Grab y Mov; fuera la etiqueta Auricular
+const VERSION = 'v32.1'; // v32.1: puntuación: «102 mov.» en un renglón con «sonar / off» pequeño a la derecha; cabe «Ronquido»
+// v32.0: monitoreo: los mensajes ya no se pisan ni se ensancha «Panel de monitoreo»; si no caben en un renglón, Grab y Mov; fuera la etiqueta Auricular
 // v31.9: la ventana de los avisos sale abajo, justo encima de su botón
 // v31.8: monitoreo: fuera «Avisos por… Cambiar» de arriba; abajo, «Avisos por altavoz / auricular» abre una ventana para cambiarlo y ver las horas de los avisos; siempre «auricular» (fuera audífonos y pinganillos) e icono de auricular de botón en vez de cascos (fuente Auric: la carpeta «Icono auricular» la genera)
 // v31.7: monitoreo: al encender la música o un audio, su ventana se cierra sola a los 10 s; «Activar para la próxima noche» en un solo renglón; puntuación: 🔔 Avisos con sus horas; Movimiento dice si el sonar se apagó solo o por auriculares
@@ -3770,7 +3773,7 @@ const colorNota = s => s >= 75 ? 'ok' : s >= 50 ? 'mid' : 'bad';
 // Cómo se enseñan las partes: arriba Horas y Regularidad; debajo Ronquido, Voces y Tos; y «Otros datos» (movimiento…)
 function mananaPartes(n, partes) {
   const P = k => partes.find(p => p.k === k);
-  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''}${p.hrs ? ` data-hrs="${p.hrs}"` : ''} role="button" tabindex="0"><span>${p.t}</span><b>${p.v}</b>${p.nota ? `<small>${p.nota}</small>` : ''}</div>` : '';
+  const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''}${p.hrs ? ` data-hrs="${p.hrs}"` : ''} role="button" tabindex="0"><span>${p.t}</span>${p.nota ? `<div class="mpval"><b>${p.v}</b><small>${p.nota.replace(' ', '<br>')}</small></div>` : `<b>${p.v}</b>`}</div>` : '';
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
   const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
@@ -6492,7 +6495,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.0', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.1', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '⏱️ Monitoreo: a qué hora empezaste y cuánto llevas', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
