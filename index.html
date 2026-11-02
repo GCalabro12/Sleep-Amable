@@ -673,6 +673,8 @@ details.hist[open] summary{margin-bottom:10px}
 .clockfila .clock{padding-left:48px} /* v28.2: sin «Probar detección», la hora un poco más a la derecha (lejos de la alarma) */
 .alhora{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#FCD34D;background:#1F2937;border:1px solid #CA8A04;border-radius:10px;padding:4px 9px;cursor:pointer;line-height:1.15;text-align:center}
 .alhora small{display:block;font-size:11px;font-weight:600;color:#FDE68A;opacity:.85;white-space:nowrap} /* cuánto falta para que suene (v26.3) */
+.alOff{position:relative;display:inline-block} /* sin alarma activada: el ⏰ tachado; raya clara con borde oscuro, para que se vea sobre el reloj rojo */
+.alOff::after{content:'';position:absolute;left:-3px;right:-3px;top:50%;height:2px;margin-top:-1px;background:#F9FAFB;border-radius:2px;box-shadow:0 0 0 1px #1F2937;transform:rotate(-45deg)}
 #pAl [data-mas]{display:none} /* «Tono y reto» está en Alarmas: aquí, solo activar y cambiar la hora */ /* ⏰ hora de la alarma */
 .prfila{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;justify-content:center}
 .audifila{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 4px}
@@ -1626,7 +1628,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v32.8'; // v32.8: la app 5.0 ya es la oficial
+const VERSION = 'v32.9'; // v32.9: monitoreo: sin alarma activada, el ⏰ sale tachado
+// v32.8: la app 5.0 ya es la oficial
 // v32.7: la versión de prueba de la app se instala desde la propia app, con su aviso en Inicio
 // v32.6: nota del sonar en pausa con la app 5.0
 // v32.5: «Avisos por»: altavoz a la izquierda y auricular a la derecha; «Fin monitoreo sueño» abajo del todo
@@ -2786,7 +2789,7 @@ async function startListening() {
       const sig = ALS.list.filter(a => a.on).map(a => ({h: a.hora, t: proxima(a.hora)})).sort((a, b) => a.t - b.t)[0];
       const m = sig ? Math.max(0, Math.ceil((sig.t - Date.now()) / 60e3)) : 0;
       const f = !sig ? '' : `falta ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; // horas:minutos («falta 7:30»)
-      const t = sig ? `⏰ ${sig.h}<small>${f}</small>` : '⏰';
+      const t = sig ? `⏰ ${sig.h}<small>${f}</small>` : '<span class="alOff">⏰</span>';
       if ($('alHora').innerHTML !== t) $('alHora').innerHTML = t; }
     $('elapsed').textContent = `Inicio ${hhmm(night.inicio)} · llevas ${dur((Date.now() - night.inicio) / 1000)}`;
     $('lvl').style.width = (det.level * 100) + '%';
@@ -6512,7 +6515,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v32.8', '31 oct - 1 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v32.9', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
