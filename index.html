@@ -356,6 +356,8 @@ details.ajd>summary small{font-weight:400;color:var(--muted);font-size:13px;whit
 .avcard{border-color:#831843;background:#1E141B}
 .avcard b{color:#F472B6}
 .avcard .avl{font-size:14px;color:#E7E5E4;margin-top:4px}
+.avcard .avp{position:relative;padding-left:14px}
+.avcard .avp::before{content:'•';position:absolute;left:2px;font-weight:700;color:#F472B6}
 .choice .icimg{width:46px;height:auto;display:block}
 #goSnore .icimg{width:58px}
 details.lunadet{margin-top:10px}
@@ -364,6 +366,7 @@ details.lunadet>summary::-webkit-details-marker{display:none}
 details.lunadet>summary::after{content:"";margin-left:auto;flex:none;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #A78BFA}
 details.lunadet[open]>summary::after{border-top:0;border-bottom:10px solid #A78BFA}
 details.lunadet .moontip{margin-top:6px}
+.lunamini{width:26px;height:auto;flex:none} /* la Luna en pequeño, a la derecha de «Consejos de la luna» */
 details.instr{margin-top:14px}
 details.instr>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;cursor:pointer}
 details.instr>summary::-webkit-details-marker{display:none}
@@ -505,6 +508,10 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .ltoque{text-align:center;font-size:15px;font-weight:600;color:#E0E7FF;margin:8px 0 2px;min-height:22px}
 .lmes{text-align:center;font-size:13px;color:#CBD5E1;text-transform:capitalize;margin-top:-2px}
 .lronq .pt.ok{fill:#4ADE80} .lronq .pt.mid{fill:#FBBF24} .lronq .pt.bad{fill:#F87171}
+.lronq .barra.ok{fill:#4ADE80} .lronq .barra.mid{fill:#FBBF24} .lronq .barra.bad{fill:#F87171} .lronq .barra.hor{fill:#A78BFA}
+.lronq .barra.sel{stroke:#fff;stroke-width:2}
+.lronq .meta{stroke:#4ADE80;stroke-width:1;stroke-dasharray:4 4}
+.lronq .val{fill:#CBD5E1;font-size:10px}
 .etqcard{margin-top:12px}
 .etqtit{font-weight:600;font-size:15px}
 .etqtit small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
@@ -548,6 +555,8 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .stbox span{margin-top:auto;padding-top:6px;font-size:11px;line-height:1.2;color:var(--muted)} /* el texto, abajo del todo en los tres */
 .stbox.ok b{color:#86EFAC} .stbox.mid b{color:var(--voice)} .stbox.bad b{color:#FCA5A5}
 .stbox.ok{border-color:#4ADE80} .stbox.mid{border-color:#FBBF24} .stbox.bad{border-color:#F87171}
+.stbox[data-graf]{cursor:pointer}
+.sthoras{font-size:14px;margin-top:8px;line-height:1.5}
 .moontip{display:flow-root;background:#1E1B4B;border:1px solid #312E81;border-radius:16px;padding:12px;margin-top:10px}
 .moontip svg{width:74px;height:74px;flex:none;animation:rq-float 3s ease-in-out infinite}
 .moontip .bubble{font-size:14px;color:#E0E7FF}
@@ -1131,8 +1140,10 @@ body.pl-on .wrap{padding-bottom:190px}
     <div id="statBody"></div>
   </div>
   <div class="card"><div style="font-weight:600">📉 Tus minutos roncando <small id="lineaPer" style="font-weight:400;color:var(--muted)"></small></div><div id="lineaBody"></div></div>
+  <details class="instr card" id="horasDet"><summary><span>🕗 Horas que duermes</span><small id="horasPer" style="font-weight:400;color:var(--muted)"></small></summary><div id="horasBody"></div></details>
+  <details class="instr card" id="regDet"><summary><span>🛏️ Acostarte y levantarte</span><small id="regPer" style="font-weight:400;color:var(--muted)"></small></summary><div id="regBody"></div></details>
   <div class="card"><div style="font-weight:600">🏷️ Qué te hace roncar más</div><div id="efeBody"></div></div>
-  <div class="card avcard" id="avStats" hidden></div>
+  <details class="instr card avcard" id="avStats" hidden></details>
   <div class="card">
     <div style="font-weight:600">🌍 Media de tu país</div>
     <div class="strow"><label for="pais">Tu país</label><select id="pais"></select></div>
@@ -1628,7 +1639,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v33.1'; // v33.1: lo que empieza antes de las 7 de la mañana cuenta como la noche del día anterior (antes, de las 6)
+const VERSION = 'v33.2'; // v33.2: Estadísticas: gráficas plegables de horas por noche y de horarios (se abren tocando su recuadro); horarios en dos filas; Luna pequeña en sus consejos; nota de las 3 horas dentro del desplegable; «¿Te ayuda el aviso?» plegable y con puntos
+// v33.1: lo que empieza antes de las 7 de la mañana cuenta como la noche del día anterior (antes, de las 6)
 // v33.0: «Saber si ronco y avisos»: el recuadro «Avisarme si ronco» separado del botón de monitorear
 // v32.9: monitoreo: sin alarma activada, el ⏰ sale tachado
 // v32.8: la app 5.0 ya es la oficial
@@ -3840,6 +3852,53 @@ function lineaRonquido(ok) {
   <div class="ltoque" id="lToque">👆 Toca un punto para ver sus minutos</div>
   <div class="stnote">Minutos roncando cada noche. Lo bueno es que la línea baje hacia 0. ${v.at(-1) <= v[0] ? '👍 Vas a mejor que al principio.' : 'Esta última noche roncaste más que al principio.'}</div>`;
 }
+// 🕗 🛏️ Barras de cada noche (v33.2). Con muchas noches, solo algunos días debajo (si no, se pisan)
+const ejeDias = (ns, x, H) => { const c = Math.ceil(ns.length / 10);
+  return ns.map((n, i) => (ns.length - 1 - i) % c ? '' : `<text x="${x(i)}" y="${H - 20}" text-anchor="middle">${diaNoche(n).toLocaleDateString('es-ES', {weekday: 'short'}).replace('.', '').slice(0, 2)}</text><text x="${x(i)}" y="${H - 6}" text-anchor="middle" class="dnum">${diaNoche(n).getDate()}</text>`).join(''); };
+const mesesNoches = ns => [...new Set(ns.map(n => diaNoche(n).toLocaleDateString('es-ES', {month: 'long'})))].join(' – ');
+const fechaNoche = n => diaNoche(n).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'});
+const toqueBarras = box => box.querySelectorAll('.toque').forEach(c => c.onclick = () => {
+  box.querySelectorAll('.barra').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
+  box.querySelector('.ltoque').textContent = c.dataset.t.charAt(0).toUpperCase() + c.dataset.t.slice(1);
+});
+// 🕗 Horas de cada noche, con la raya de las 7 horas
+function graficaHoras(ok) {
+  const ns = ok.slice().sort((a, b) => a.inicio - b.inicio);
+  if (ns.length < 2) return '<div class="stnote">En cuanto tengas 2 noches de más de 3 horas, aquí verás las horas de cada una.</div>';
+  const W = 320, H = 170, pl = 30, pr = 8, pt = 14, pb = 38, paso = (W - pl - pr) / ns.length, ancho = Math.max(2, Math.min(26, paso * .7));
+  const v = ns.map(n => (n.fin - n.inicio) / 3600e3), max = Math.max(10, Math.ceil(Math.max(...v)));
+  const x = i => pl + paso * (i + .5), y = h => pt + (H - pt - pb) * (1 - h / max);
+  return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Horas de cada noche">
+    ${[0, 7, max].map(h => `<line x1="${pl}" x2="${W - pr}" y1="${y(h)}" y2="${y(h)}" class="${h === 7 ? 'meta' : 'rej'}"/><text x="${pl - 6}" y="${y(h) + 4}" text-anchor="end">${h}</text>`).join('')}
+    ${v.map((h, i) => `<rect x="${x(i) - ancho / 2}" y="${y(h)}" width="${ancho}" height="${y(0) - y(h)}" rx="3" class="barra ${h >= 7 ? 'ok' : h >= 6 ? 'mid' : 'bad'}"/>${ns.length <= 10 ? `<text x="${x(i)}" y="${y(h) - 3}" text-anchor="middle" class="val">${h.toFixed(1).replace('.', ',')}</text>` : ''}`).join('')}
+    ${ejeDias(ns, x, H)}
+    ${ns.map((n, i) => `<rect x="${x(i) - paso / 2}" y="0" width="${paso}" height="${H}" class="toque" data-i="${i}" data-t="${fechaNoche(n)}: ${dur((n.fin - n.inicio) / 1000)}"/>`).join('')}
+  </svg>
+  <div class="lmes">${mesesNoches(ns)}</div>
+  <div class="ltoque">👆 Toca una barra para ver sus horas</div>
+  <div class="stnote">Horas de cada noche. La raya verde marca las 7 horas, lo ideal.</div>`;
+}
+// 🛏️ Cada barra va de la hora de acostarte (arriba) a la de levantarte (abajo)
+function graficaHorarios(ok) {
+  const ns = ok.slice().sort((a, b) => a.inicio - b.inicio);
+  if (ns.length < 2) return '<div class="stnote">En cuanto tengas 2 noches de más de 3 horas, aquí verás a qué hora te acostaste y te levantaste.</div>';
+  const W = 320, H = 230, pl = 38, pr = 8, pt = 18, pb = 50, paso = (W - pl - pr) / ns.length, ancho = Math.max(2, Math.min(26, paso * .7));
+  const hc = t => hhmm(t).replace(/^0/, ''); // «0:36», como en las cifras de arriba
+  const ini = ns.map(n => { const d = new Date(n.inicio); return (d.getHours() * 60 + d.getMinutes() + 720) % 1440; }); // minutos desde el mediodía
+  const fin = ns.map((n, i) => ini[i] + (n.fin - n.inicio) / 60e3);
+  const lo = Math.floor(Math.min(...ini) / 60) * 60, hi = Math.ceil(Math.max(...fin) / 60) * 60, salto = hi - lo > 720 ? 180 : 120;
+  const x = i => pl + paso * (i + .5), y = m => pt + (H - pt - pb) * (m - lo) / (hi - lo);
+  const marcas = []; for (let m = lo; m <= hi; m += salto) marcas.push(m);
+  return `<svg class="lronq" viewBox="0 0 ${W} ${H}" role="img" aria-label="Hora de acostarte y de levantarte cada noche">
+    ${marcas.map(m => `<line x1="${pl}" x2="${W - pr}" y1="${y(m)}" y2="${y(m)}" class="rej"/><text x="${pl - 6}" y="${y(m) + 4}" text-anchor="end">${(m / 60 + 12) % 24}:00</text>`).join('')}
+    ${ns.map((n, i) => `<rect x="${x(i) - ancho / 2}" y="${y(ini[i])}" width="${ancho}" height="${y(fin[i]) - y(ini[i])}" rx="3" class="barra hor"/>${ns.length <= 8 ? `<text x="${x(i)}" y="${y(ini[i]) - 3}" text-anchor="middle" class="val">${hc(n.inicio)}</text><text x="${x(i)}" y="${y(fin[i]) + 11}" text-anchor="middle" class="val">${hc(n.fin)}</text>` : ''}`).join('')}
+    ${ejeDias(ns, x, H)}
+    ${ns.map((n, i) => `<rect x="${x(i) - paso / 2}" y="0" width="${paso}" height="${H}" class="toque" data-i="${i}" data-t="${fechaNoche(n)}: te acostaste a las ${hc(n.inicio)} y te levantaste a las ${hc(n.fin)}"/>`).join('')}
+  </svg>
+  <div class="lmes">${mesesNoches(ns)}</div>
+  <div class="ltoque">👆 Toca una barra para ver sus horas</div>
+  <div class="stnote">Arriba, la hora de acostarte; abajo, la de levantarte. Cuanto más parecidas las barras, más regulares son tus horarios.</div>`;
+}
 // 🏷️ Etiquetas de la noche: un toque para marcar lo que pudo influir; hay una que escribes tú
 const ETIQUETAS = [
   {id: 'alcohol', t: '🍷 Alcohol'}, {id: 'cena', t: '🍝 Cena fuerte'}, {id: 'cafe', t: '☕ Café por la tarde'},
@@ -4032,8 +4091,8 @@ function renderStatsHome(ns) {
   document.querySelectorAll('#periodo [data-d]').forEach(b => b.classList.toggle('on', +b.dataset.d === statDias));
   let gu = 0; try { gu = guardar; } catch {} // (por si se pinta antes de leer el ajuste)
   $('statInfo').innerHTML = `Aquí encontrarás tus estadísticas:<br>
-    🕗 <b>Horas</b>: cuánto duermes de media cada noche (lo ideal, 7 horas o más).<br>
-    ⏱️ <b>Regularidad de horarios</b>: cuántos minutos cambia, de una noche a otra, la hora a la que te acuestas y te levantas (mejor por debajo de 30).<br>
+    🕗 <b>Horas</b>: cuánto duermes de media cada noche (lo ideal, 7 horas o más). Toca el recuadro para ver la gráfica.<br>
+    ⏱️ <b>Regularidad de horarios</b>: cuántos minutos cambia, de una noche a otra, la hora a la que te acuestas y te levantas (mejor por debajo de 30). Toca el recuadro para ver la gráfica.<br>
     😴 <b>Roncando por hora</b>: los minutos que roncas por cada hora de sueño (mejor 3 o menos).<br>
     📉 <b>Tus minutos roncando</b>: la línea de cada noche; lo bueno es que baje.<br>
     🏷️ <b>Qué te hace roncar más</b>: compara las noches con cada etiqueta (alcohol, cena fuerte…) con las demás.<br><br>
@@ -4051,6 +4110,9 @@ function renderStatsHome(ns) {
     $('lineaBody').querySelectorAll('.pt').forEach((p, i) => p.classList.toggle('sel', i === +c.dataset.i));
     $('lToque').textContent = c.dataset.t.charAt(0).toUpperCase() + c.dataset.t.slice(1);
   });
+  $('horasPer').textContent = $('regPer').textContent = $('lineaPer').textContent;
+  $('horasBody').innerHTML = graficaHoras(ok); $('regBody').innerHTML = graficaHorarios(ok);
+  toqueBarras($('horasBody')); toqueBarras($('regBody'));
   $('efeBody').innerHTML = efectoEtiquetas(ns.filter(nocheValida));
   if (!ok.length) {
     comunidad(ok, 0, 0, 0); renderAvisoStats(ns);
@@ -4065,14 +4127,15 @@ function renderStatsHome(ns) {
   const snMin = ok.reduce((a, n) => a + (n.segRonquido || 0), 0) / 60, snPorHora = snMin / horas.reduce((a, b) => a + b, 0);
   const cls = (v, good, mid) => v == null ? '' : v <= good ? 'ok' : v <= mid ? 'mid' : 'bad';
   $('statBody').innerHTML = `<div class="stgrid">
-      <div class="stbox ${media >= 7 ? 'ok' : media >= 6 ? 'mid' : 'bad'}"><b>${media.toFixed(1).replace('.', ',')}</b><i>horas</i><span>de media por noche</span></div>
-      <div class="stbox ${cls(desv, 30, 60)}"><b>${desv == null ? '—' : '± ' + desv}</b><i>${desv == null ? '&nbsp;' : 'min'}</i><span>regularidad de horarios</span></div>
+      <div class="stbox ${media >= 7 ? 'ok' : media >= 6 ? 'mid' : 'bad'}" data-graf="horasDet"><b>${media.toFixed(1).replace('.', ',')}</b><i>horas</i><span>de media por noche</span></div>
+      <div class="stbox ${cls(desv, 30, 60)}" data-graf="regDet"><b>${desv == null ? '—' : '± ' + desv}</b><i>${desv == null ? '&nbsp;' : 'min'}</i><span>regularidad de horarios</span></div>
       <div class="stbox ${cls(snPorHora, 3, 10)}"><b>${snPorHora.toFixed(1).replace('.', ',')}</b><i>min</i><span>roncando por hora</span></div>
     </div>
-    <div class="strow"><span>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></span><span>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></span></div>
-    <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>🌙 Consejos de la luna</summary>
-    <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div></details>
-    <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div>`;
+    <div class="sthoras"><div>Te acuestas hacia las <b>${hm(avg(acu) + 720)}</b></div><div>y te levantas hacia las <b>${hm(avg(lev) + 720)}</b></div></div>
+    <details class="lunadet" id="lunaDet"${lunaDetAbierto ? ' open' : ''}><summary>Consejos de la luna <img class="lunamini" src="luna/luna-consejo.png" alt=""></summary>
+    <div class="moontip">${luna(media >= 7 && (desv == null || desv <= 30) && snPorHora <= 3 ? 'aplaude' : 'consejo', false)}<div class="bubble">${consejos(media, desv, snPorHora).map(c => `<p>${c}</p>`).join('')}</div></div>
+    <div class="stnote">Para tus cifras solo cuentan noches de más de 3 horas (las pruebas no).</div></details>`;
+  $('statBody').querySelectorAll('[data-graf]').forEach(b => b.onclick = () => { const d = $(b.dataset.graf); d.open = true; d.scrollIntoView({behavior: 'smooth', block: 'start'}); }); // tocar el recuadro: abre su gráfica
   $('lunaDet').ontoggle = () => { lunaDetAbierto = $('lunaDet').open; try { localStorage.setItem('ronquino-lunadet', lunaDetAbierto ? '1' : '0'); } catch {} };
   comunidad(ok, media, snPorHora, avg(acu));
   renderAvisoStats(ns);
@@ -4477,7 +4540,8 @@ function textoEfecto(fx) {
   const paro = fx.filter(x => x.paro).length, movio = fx.filter(x => x.movio).length, n = fx.length;
   const cambio = antes > 0 ? Math.round((despues - antes) / antes * 100) : null;
   const m = v => v < 1 && v > 0 ? 'menos de 1 min' : `${Math.round(v)} min`;
-  return `<div class="avl">En los 10 minutos de antes roncaste <b>${m(antes)}</b>${n > 1 ? ' en total' : ''}; en los 10 de después, <b>${m(despues)}</b>${cambio == null ? '' : cambio < 0 ? ` (<b>${-cambio} % menos</b>)` : cambio > 0 ? ` (${cambio} % más)` : ' (igual)'}.</div>
+  return `<div class="avl avp">En los 10 minutos de antes roncaste <b>${m(antes)}</b>${n > 1 ? ' en total' : ''}.</div>
+    <div class="avl avp">En los 10 minutos de después roncaste <b>${m(despues)}</b>${cambio == null ? '' : cambio < 0 ? ` (<b>${-cambio} % menos</b>)` : cambio > 0 ? ` (${cambio} % más)` : ' (igual)'}.</div>
     <div class="avl">Dejaste de roncar al menos 5 minutos en <b>${paro} de ${n}</b> ${n === 1 ? 'aviso' : 'avisos'}${(n && movio) || fx.some(x => x.movio) ? ` y te moviste justo después en <b>${movio} de ${n}</b>` : ''}.</div>`;
 }
 // La grabación que hizo saltar un aviso: el aviso se dice al acabar de grabarla (hasta 10 s después)
@@ -4504,8 +4568,9 @@ async function renderAvisoStats(ns) {
   let fx = [];
   for (const n of con) fx = fx.concat(efectoAvisos(n, await DB.byNight(n.id)));
   $('avStats').hidden = false;
-  $('avStats').innerHTML = `<div style="font-weight:600">🎧 ¿Te ayuda el aviso «estás roncando»?</div>
+  $('avStats').innerHTML = `<summary><span>🎧 ¿Te ayuda el aviso «estás roncando»?</span></summary>
     <div class="avl">${fx.length} ${fx.length === 1 ? 'aviso' : 'avisos'} en ${con.length} ${con.length === 1 ? 'noche' : 'noches'}.</div>` + textoEfecto(fx);
+  requestAnimationFrame(ajustaTitulos);
 }
 function renderStats() {
   const s = curEvs.filter(e => e.tipo === 'ronquido');
@@ -6518,7 +6583,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.1', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v33.2', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
