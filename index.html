@@ -1628,7 +1628,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v33.0'; // v33.0: «Saber si ronco y avisos»: el recuadro «Avisarme si ronco» separado del botón de monitorear
+const VERSION = 'v33.1'; // v33.1: lo que empieza antes de las 7 de la mañana cuenta como la noche del día anterior (antes, de las 6)
+// v33.0: «Saber si ronco y avisos»: el recuadro «Avisarme si ronco» separado del botón de monitorear
 // v32.9: monitoreo: sin alarma activada, el ⏰ sale tachado
 // v32.8: la app 5.0 ya es la oficial
 // v32.7: la versión de prueba de la app se instala desde la propia app, con su aviso en Inicio
@@ -3703,8 +3704,9 @@ const clockOff = s => { s = Math.round(s); return `${Math.floor(s/3600)}:${Strin
 const evTime = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES') : clockOff(off);
 // En la lista: solo horas y minutos (los segundos confundían)
 const evHora = (n, off) => n.fuente === 'micro' ? new Date(n.inicio + off * 1000).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : clockOff(off);
+const diaNoche = n => new Date(n.inicio - 7 * 3600e3); // lo que empieza antes de las 7 de la mañana aún es la noche del día anterior
 const nightName = n => n.fuente === 'archivo' ? '📂 ' + n.nombre
-  : (d => `Noche ${d.toLocaleDateString('es-ES', {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '')} ${d.getFullYear()}`)(new Date(n.inicio - 6 * 3600e3));
+  : (d => `Noche ${d.toLocaleDateString('es-ES', {weekday: 'long'})} ${d.getDate()} ${d.toLocaleDateString('es-ES', {month: 'short'}).replace('.', '')} ${d.getFullYear()}`)(diaNoche(n));
 
 // Si un texto no cabe en una línea (p. ej. con la letra grande del móvil), se achica poco a poco hasta que quepa
 // Que una línea quepa entera: encoge la letra hasta «min» px
@@ -3825,7 +3827,7 @@ function lineaRonquido(ok) {
   const v = ns.map(n => (n.segRonquido || 0) / 60), max = Math.max(10, ...v);
   const x = i => pl + (W - pl - pr) * (ns.length === 1 ? .5 : i / (ns.length - 1)), y = m => pt + (H - pt - pb) * (1 - m / max);
   const pts = v.map((m, i) => `${x(i).toFixed(1)},${y(m).toFixed(1)}`).join(' ');
-  const fecha = n => new Date(n.inicio - 6 * 3600e3); // la noche cuenta para el día en que empezó
+  const fecha = diaNoche; // la noche cuenta para el día en que empezó
   const dia = n => fecha(n).toLocaleDateString('es-ES', {weekday: 'short'}).replace('.', '').slice(0, 2);
   const meses = [...new Set(ns.map(n => fecha(n).toLocaleDateString('es-ES', {month: 'long'})))].join(' – ');
   const marcas = [0, Math.round(max / 2), Math.round(max)];
@@ -4242,7 +4244,7 @@ function barraBorrar(n) {
 // 📅 Calendario de noches: cada noche, del color de su puntuación (verde buena, ámbar regular, rojo difícil); tocar el día la abre
 let calMes = null; // {y, m}: el mes que se ve
 function pintaCalendario(ns) {
-  const clave = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, diaDe = n => new Date(n.inicio - 6 * 3600e3); // como en el nombre de la noche
+  const clave = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, diaDe = diaNoche; // como en el nombre de la noche
   const porDia = new Map(); for (const n of ns) if (n.fuente !== 'archivo') { const k = clave(diaDe(n)); if (!porDia.has(k)) porDia.set(k, n); } // la más reciente de cada día
   if (!calMes) { const d = ns[0] ? diaDe(ns[0]) : new Date(); calMes = {y: d.getFullYear(), m: d.getMonth()}; }
   const {y, m} = calMes, primero = new Date(y, m, 1), dias = new Date(y, m + 1, 0).getDate(), hueco = (primero.getDay() + 6) % 7, hoy = clave(new Date());
@@ -6516,7 +6518,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.0', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
+  ['v33.1', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '🎵 Al encender la música, su ventana se cierra sola a los 10 segundos', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
   ['v9.6', '22-24 oct 2026', ['Cuentas con email y contraseña: tus noches no se pierden si cambias de móvil', 'Entrar con Google', 'Recuperar la contraseña con un código por email', 'Cambiar nombre, email y contraseña en Ajustes', 'Luna te saluda al abrir la app y se mueve al darte consejos']]
