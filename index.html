@@ -1662,7 +1662,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.4'; // v34.4: ajustes y alarmas también en la cuenta: al entrar en otro aparato (p. ej. el ordenador) bajan solos; si cambias algo, se sube (Worker GET/POST /ajustes)
+const VERSION = 'v34.5'; // v34.5: al entrar en otra cuenta desde el aparato donde duermes (con noches guardadas), sus ajustes y alarmas pasan a esa cuenta en vez de bajar los de la cuenta (así se pasan los datos de una cuenta a otra)
+// v34.4: ajustes y alarmas también en la cuenta: al entrar en otro aparato (p. ej. el ordenador) bajan solos; si cambias algo, se sube (Worker GET/POST /ajustes)
 // v34.3: al abrir «Ruidos» la lista empieza arriba (Filtrar grabaciones por y el primer ruido de la noche) y ▶ empieza por el primero; ya no salta a la siguiente sin revisar
 // v34.2: «¿Te ayuda el aviso?»: mira los 5 minutos anteriores y los 5 posteriores a cada aviso (antes 10)
 // v34.1: «i» de Destacado: «Si lo enciendes mientras escuchas…» en párrafo aparte
@@ -6106,12 +6107,15 @@ const ajFirma = o => JSON.stringify(AJ_CLAVES.filter(k => k in o).map(k => [k, S
 function ajEstado() { try { return JSON.parse(localStorage.getItem(ajKey()) || 'null'); } catch { return null; } }
 function ajGuarda(firma, mod) { try { localStorage.setItem(ajKey(), JSON.stringify({firma, mod})); } catch {} }
 let ajListo = '', ajSubiendo = false, ajBajado = 0; // ajListo: la cuenta cuyos ajustes ya se han mirado (antes no se sube nada)
-async function bajaAjustes() {
+async function bajaAjustes(alEntrar) {
   if (!sesion) return;
   const yo = sesion.id, d = await apiCuenta('/ajustes');
   if (sesion?.id !== yo) return;
   ajBajado = Date.now();
   const est = ajEstado(), loc = ajLocales(), fl = ajFirma(loc);
+  // Al entrar en una cuenta desde el aparato donde duermes (tiene noches): mandan sus ajustes y alarmas, que se suben
+  // (p. ej. al pasar tus datos a otra cuenta). En un aparato sin noches (el ordenador, un móvil nuevo) bajan los de la cuenta.
+  if (alEntrar && !est && (await DB.all('noches')).length) { ajListo = yo; return subeAjustes(true); }
   if (d.ajustes && typeof d.ajustes === 'object') {
     const fs = ajFirma(d.ajustes);
     if (fs === fl) { ajGuarda(fl, Math.max(d.mod || 0, est?.mod || 0)); ajListo = yo; return; }
@@ -6196,7 +6200,7 @@ $('cpForm').onsubmit = async e => {
     guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true; $('cpPass').value = ''; $('cpCod').value = '';
     let nuevas = 0; if (m !== 'registro') try { nuevas = await bajaNoches(); } catch {}
-    try { await bajaAjustes(); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
+    try { await bajaAjustes(true); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
     abreBienvenida();
     toast(m === 'registro' ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada`
       : `✅ ${m === 'codigo' ? 'Contraseña nueva guardada' : `Hola de nuevo${d.usuario.nombre ? ', ' + d.usuario.nombre : ''}`}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
@@ -6217,7 +6221,7 @@ async function entraConGoogle(credential) {
     guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true;
     let nuevas = 0; if (!d.nuevo) try { nuevas = await bajaNoches(); } catch {}
-    try { await bajaAjustes(); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
+    try { await bajaAjustes(true); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
     abreBienvenida();
     toast(d.nuevo ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada` : `✅ Hola de nuevo, ${d.usuario.nombre}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
     renderHome();
@@ -6712,7 +6716,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.4', '3 nov 2026', ['☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', '✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v34.5', '3 nov 2026', ['☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', '✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
