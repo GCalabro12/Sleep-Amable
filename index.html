@@ -942,6 +942,7 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 .night.marcada{outline:2px solid #F87171;outline-offset:1px}
 #pl{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#0F1529f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
 #pl .in{max-width:640px;margin:0 auto}
+#plX{position:absolute;top:-17px;right:14px;width:34px;height:34px;border-radius:50%;background:#1E2540;border:1px solid var(--line);color:var(--text);font-size:16px;line-height:1;padding:0;z-index:1;box-shadow:0 2px 8px #0008} /* cerrar el reproductor */
 #pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 #pl .bar{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:4px}
 #pl .bar input{flex:1;accent-color:#A78BFA;height:28px}
@@ -1253,6 +1254,7 @@ body.pl-on .wrap{padding-bottom:190px}
   </details>
   <details class="card ajd" id="aprDet" hidden>
     <summary><span><small style="display:block;font-weight:400;font-size:12px;color:var(--muted);margin-bottom:2px">solo administrador</small>🧠 Lo que ha aprendido la IA <small id="sApr"></small></span></summary>
+    <div class="row" style="margin-top:8px"><label for="valOn">Valorar las grabaciones<small>En el reproductor, los botones Ronquido, Voz, Tos, Respiración y Otro para decir qué era cada sonido.</small></label><label class="swt"><input type="checkbox" id="valOn"><i></i></label></div>
     <div id="aprBody"></div>
   </details>
   <details class="card ajd" id="webDet">
@@ -1416,6 +1418,7 @@ body.pl-on .wrap{padding-bottom:190px}
 <div id="nMenu" hidden><button type="button" id="nmRevisar" hidden>🔄 Revisar con el detector nuevo<small>(solo administrador)</small><small id="nmUltima"></small></button><button type="button" id="nmBorrar">🗑️ Borrar esta noche</button></div>
 <div id="borraBar" hidden><span id="borraTxt"></span><button type="button" id="borraSi">🗑️ Borrar</button><button type="button" id="borraNo" aria-label="Cancelar">✕</button></div>
 <div id="pl" hidden>
+  <button type="button" id="plX" aria-label="Cerrar el reproductor">✕</button>
   <div class="in">
     <div class="now" id="plNow"></div>
     <div class="plval" id="plVal" hidden></div>
@@ -1639,7 +1642,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v33.3'; // v33.3: icono de la app nuevo (al instalarla): la Luna con las manos y el gorro sobre el fondo de siempre; app 5.1
+const VERSION = 'v33.4'; // v33.4: reproductor de las grabaciones con ✕ arriba a la derecha para cerrarlo (vuelve al tocar ▶ en una grabación); en Ajustes (admin) interruptor «Valorar las grabaciones», apagado: sin él no salen Ronquido/Voz/Tos/Respiración/Otro en el reproductor
+// v33.3: icono de la app nuevo (al instalarla): la Luna con las manos y el gorro sobre el fondo de siempre; app 5.1
 // v33.2: Estadísticas: gráficas plegables de horas por noche y de horarios (se abren tocando su recuadro); horarios en dos filas; Luna pequeña en sus consejos; nota de las 3 horas dentro del desplegable; «¿Te ayuda el aviso?» plegable y con puntos
 // v33.1: lo que empieza antes de las 7 de la mañana cuenta como la noche del día anterior (antes, de las 6)
 // v33.0: «Saber si ronco y avisos»: el recuadro «Avisarme si ronco» separado del botón de monitorear
@@ -4965,11 +4969,17 @@ function plSetList(list) {
   PL.list = list; PL.i = was ? list.indexOf(was) : -1;
   if (typeof plHead === 'function' && $('tlHead')) setTimeout(plHead);
   if (was && PL.i < 0) { PL.au.pause(); PL.au.removeAttribute('src'); PL.au.load(); $('plSeek').value = 0; $('plT').textContent = $('plD').textContent = '0:00'; }
-  $('pl').hidden = !list.length;
-  document.body.classList.toggle('pl-on', !!list.length);
-  if (list.length) requestAnimationFrame(() => document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'));
+  plVer();
   plRender();
 }
+// Se ve si hay grabaciones y no se cerró con la ✕ (vuelve al tocar ▶ en una grabación)
+function plVer() {
+  const ver = !!PL.list.length && !PL.cerrado;
+  $('pl').hidden = !ver;
+  document.body.classList.toggle('pl-on', ver);
+  if (ver) requestAnimationFrame(() => document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'));
+}
+$('plX').onclick = () => { PL.cerrado = true; PL.au.pause(); plVer(); };
 
 // 〰️ Onda del sonido en el reproductor: barras arriba y abajo según el volumen; la parte ya oída, en violeta. Tocar = avanzar
 const ONDA = {ctx: null};
@@ -5100,6 +5110,7 @@ async function plOndaNueva() { const e = PL.list[PL.i]; plOnda(); if (e) { await
 function plPlay(i) {
   if (i < 0 || i >= PL.list.length) return;
   const e = PL.list[i]; PL.i = i; TLV.follow = true;
+  if (PL.cerrado) { PL.cerrado = false; plVer(); }
   PL.au.src = (e._url ||= URL.createObjectURL(e.blob));
   PL.au.defaultPlaybackRate = PL.au.playbackRate = PL.speed;
   plGraph(); plOnda(); plSegs(e);
@@ -5141,9 +5152,18 @@ async function desRevisar(e) {
   if (PL.list[PL.i] === e) pintaValorar(e);
   toast('↩️ Sin revisar: vuelve a revisarla');
 }
+// «Valorar las grabaciones» (Ajustes, admin): apagado de entrada
+function valorarOn() { try { return localStorage.getItem('ronquino-valorar') === '1'; } catch { return false; } }
+$('valOn').checked = valorarOn();
+$('valOn').onchange = () => {
+  try { localStorage.setItem('ronquino-valorar', $('valOn').checked ? '1' : '0'); } catch {}
+  pintaValorar(PL.list[PL.i]);
+  if ($('plVal').hidden) requestAnimationFrame(() => { if (!$('pl').hidden) document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'); });
+};
 // ¿Acierta la IA con la grabación que suena? ✅ la confirma; ❌ deja elegir lo que era de verdad (queda corregida)
 function pintaValorar(e) {
-  const box = $('plVal'); box.hidden = !e || !sesion?.admin; if (box.hidden) return; // valorar si acierta: solo el administrador
+  const box = $('plVal'); box.hidden = !e || !sesion?.admin || !valorarOn(); if (box.hidden) return; // valorar si acierta: solo el administrador, y con el interruptor de Ajustes
+  requestAnimationFrame(() => { if (!$('pl').hidden) document.documentElement.style.setProperty('--plh', $('pl').offsetHeight + 'px'); });
   // Las 5 opciones a la vista, con la de la IA marcada (en verde, si ya la revisaste): tocar la misma = acierta; otra = queda corregida.
   // Al tocar cualquiera, salta sola a la siguiente grabación. En horizontal se ve también la etiqueta
   const OPS = [['ronquido', '😴', 'Ronquido'], ['voz', '🗣️', 'Voz'], ['tos', '🫁', 'Tos'], ['resp', '💨', 'Respiración'], ['otro', '🔊', 'Otro']];
@@ -6584,6 +6604,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v33.4', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
