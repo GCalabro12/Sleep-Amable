@@ -912,7 +912,8 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .ev .acts button,.ev .acts a{display:inline-flex;background:none;border:0;padding:6px;color:#A5B4FC;text-decoration:none}
 .ev .acts svg{width:23px;height:23px}
 .ev .acts{gap:4px;align-items:center}
-.ev .bot .meta{white-space:nowrap}
+.ev .bot .meta{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto} /* antes se recorta esto que sacar ▶ por la derecha */
+.ev .bot .t{flex:none}
 /* v27.6: la hora y los minutos a la izquierda, corazón · papelera · cuadradito en medio, y ▶ a la derecha */
 .ev .bot .play.big{order:9}
 .ev .bot .acts{margin:0 auto}
@@ -1661,7 +1662,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v33.9'; // v33.9: ventana de avisos del monitoreo: Altavoz, Auricular y Ninguno con el icono arriba en el centro (en pantallas estrechas no cabían)
+const VERSION = 'v34.0'; // v34.0: Destacado va al momento de más volumen de toda la grabación (antes, al más fuerte que fuera ronquido, voz o tos); grabaciones: sin «· corregido» (ya sale «✓ Revisada») y la duración se recorta antes que sacar ▶ por la derecha; quitado el chip «🧠 según tus revisiones (solo admin)»
+// v33.9: ventana de avisos del monitoreo: Altavoz, Auricular y Ninguno con el icono arriba en el centro (en pantallas estrechas no cabían)
 // v33.8: alarma rápida (monitoreo y desplegables): ✕ a la derecha de «Reto» que borra esa alarma (pregunta antes)
 // v33.7: al abrir una noche el reproductor sale cerrado (se abre al tocar ▶ o el gráfico); Destacado sin estrella: icono de barras de sonido con la del medio en rojo, a la derecha; su «i» más corta; en la noche, botón «📊 Estadísticas generales» encima de «Borrar esta noche»
 // v33.6: «⏰ Alarma para despertarte» rápida (monitoreo y desplegables): hora más corta y a su derecha «🧩 Reto» para elegir el reto de esa alarma; avisos del monitoreo: 3.ª opción «🔕 Ninguno» (los desactiva, también en Ajustes) y el botón de abajo sale siempre («🔕 Avisos desactivados ›» para volver a activarlos)
@@ -4782,8 +4784,8 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.aprendido && !e.fix && sesion?.admin ? '<span class="conf" title="Etiqueta puesta con lo que has revisado tú">🧠 según tus revisiones (solo admin)</span>' : ''}${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
-      <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}${e.fix ? ' · corregido' : ''}</span>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
+      <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
     const fname = `${e.tipo}_${evTime(cur, e.off).replace(/:/g, '-')}.wav`;
@@ -5147,9 +5149,8 @@ function plPlay(i) {
   plPicos(e).then(() => {
     if (PL.list[PL.i] !== e) return;
     plOnda();
-    // si se sabe qué es cada segundo: lo más fuerte que sea ronquido, voz o tos (no un golpe)
-    let pico = e._pico || 0;
-    if (e.seg && e._en?.length && /[rvt]/.test(e.seg)) { let m = -1; e._en.forEach((x, k) => { if (e.seg[Math.floor(k / 10)] && e.seg[Math.floor(k / 10)] !== 'o' && x > m) { m = x; pico = k / 10; } }); }
+    // el momento de más volumen de toda la grabación (v34.0; antes, lo más fuerte que fuera ronquido, voz o tos)
+    const pico = e._pico || 0;
     const t0 = e._t0 = Math.max(0, pico - 1);
     if (!PL.dest) return void PL.au.play().catch(() => {}); // Destacado apagado: desde el principio
     // en algunos Android el salto se pierde si se hace antes de que empiece a sonar: se repite al empezar y un poco después
@@ -6670,7 +6671,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.9', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v34.0', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
