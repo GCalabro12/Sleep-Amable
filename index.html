@@ -1662,7 +1662,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.2'; // v34.2: «¿Te ayuda el aviso?»: mira los 5 minutos anteriores y los 5 posteriores a cada aviso (antes 10)
+const VERSION = 'v34.3'; // v34.3: al abrir «Ruidos» la lista empieza arriba (Filtrar grabaciones por y el primer ruido de la noche) y ▶ empieza por el primero; ya no salta a la siguiente sin revisar
+// v34.2: «¿Te ayuda el aviso?»: mira los 5 minutos anteriores y los 5 posteriores a cada aviso (antes 10)
 // v34.1: «i» de Destacado: «Si lo enciendes mientras escuchas…» en párrafo aparte
 // v34.0: Destacado va al momento de más volumen de toda la grabación (antes, al más fuerte que fuera ronquido, voz o tos); grabaciones: sin «· corregido» (ya sale «✓ Revisada») y la duración se recorta antes que sacar ▶ por la derecha; quitado el chip «🧠 según tus revisiones (solo admin)»
 // v33.9: ventana de avisos del monitoreo: Altavoz, Auricular y Ninguno con el icono arriba en el centro (en pantallas estrechas no cabían)
@@ -4441,16 +4442,8 @@ $('tlTit').onclick = () => {
   const a = $('tlCard').classList.toggle('abierta'); $('tlTri').classList.toggle('up', a);
   if (a) requestAnimationFrame(() => { drawTimeline(timelineTotal()); tlSticky(); });
 };
-// Al abrir «Ruidos» (solo el administrador, que es quien revisa): si ya revisaste alguna, va a la siguiente de la última revisada, y ▶ empieza por ella
-function irASinRevisar() {
-  const l = PL.list; let u = -1; l.forEach((e, i) => { if (e.val || e.fix) u = i; });
-  PL.ini = sesion?.admin && u >= 0 && u + 1 < l.length ? u + 1 : 0;
-  if (!PL.ini || PL.i >= 0) return;
-  const card = [...document.querySelectorAll('#evList .ev')].find(d => d._ev === l[PL.ini]);
-  if (card) setTimeout(() => { card.scrollIntoView({block: 'center'}); card.classList.add('aqui'); setTimeout(() => card.classList.remove('aqui'), 2500); }, 60);
-  plRender();
-}
-$('ruidosBtn').onclick = () => { verRuidos(true); irASinRevisar(); };
+// Al abrir «Ruidos»: la lista empieza arriba, por el primer ruido de la noche, y ▶ también (v34.3; antes saltaba a la siguiente sin revisar)
+$('ruidosBtn').onclick = () => { verRuidos(true); PL.ini = 0; plRender(); };
 $('ruidosCerrar').onclick = () => verRuidos(false);
 $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
@@ -6673,7 +6666,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.2', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v34.3', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
