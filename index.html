@@ -1662,7 +1662,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.3'; // v34.3: al abrir «Ruidos» la lista empieza arriba (Filtrar grabaciones por y el primer ruido de la noche) y ▶ empieza por el primero; ya no salta a la siguiente sin revisar
+const VERSION = 'v34.4'; // v34.4: ajustes y alarmas también en la cuenta: al entrar en otro aparato (p. ej. el ordenador) bajan solos; si cambias algo, se sube (Worker GET/POST /ajustes)
+// v34.3: al abrir «Ruidos» la lista empieza arriba (Filtrar grabaciones por y el primer ruido de la noche) y ▶ empieza por el primero; ya no salta a la siguiente sin revisar
 // v34.2: «¿Te ayuda el aviso?»: mira los 5 minutos anteriores y los 5 posteriores a cada aviso (antes 10)
 // v34.1: «i» de Destacado: «Si lo enciendes mientras escuchas…» en párrafo aparte
 // v34.0: Destacado va al momento de más volumen de toda la grabación (antes, al más fuerte que fuera ronquido, voz o tos); grabaciones: sin «· corregido» (ya sale «✓ Revisada») y la duración se recorta antes que sacar ▶ por la derecha; quitado el chip «🧠 según tus revisiones (solo admin)»
@@ -6095,6 +6096,49 @@ async function bajaNoches() {
   guardaSubidas(sub);
   return nuevas;
 }
+// ☁️ Ajustes y alarmas en la cuenta (v34.4): al entrar en otro aparato bajan solos (y la app se recarga para usarlos);
+// si cambias algo aquí, se sube. Gana lo último que se cambió. Nunca en mitad de una noche.
+const AJ_CLAVES = ['cfg', 'alarmas', 'cuna', 'cunamin', 'cunavol', 'etiquetas', 'guardar', 'mensaje', 'ruido', 'siemus', 'tema',
+  'textolibre', 'textovel', 'vel', 'boost', 'destacado', 'valorar', 'luna-voz', 'compartir', 'periodo'];
+const ajKey = () => 'ronquino-ajsync-' + (sesion?.id || '');
+function ajLocales() { const o = {}; try { for (const k of AJ_CLAVES) { const v = localStorage.getItem('ronquino-' + k); if (v !== null) o[k] = v; } } catch {} return o; }
+const ajFirma = o => JSON.stringify(AJ_CLAVES.filter(k => k in o).map(k => [k, String(o[k])]));
+function ajEstado() { try { return JSON.parse(localStorage.getItem(ajKey()) || 'null'); } catch { return null; } }
+function ajGuarda(firma, mod) { try { localStorage.setItem(ajKey(), JSON.stringify({firma, mod})); } catch {} }
+let ajListo = '', ajSubiendo = false, ajBajado = 0; // ajListo: la cuenta cuyos ajustes ya se han mirado (antes no se sube nada)
+async function bajaAjustes() {
+  if (!sesion) return;
+  const yo = sesion.id, d = await apiCuenta('/ajustes');
+  if (sesion?.id !== yo) return;
+  ajBajado = Date.now();
+  const est = ajEstado(), loc = ajLocales(), fl = ajFirma(loc);
+  if (d.ajustes && typeof d.ajustes === 'object') {
+    const fs = ajFirma(d.ajustes);
+    if (fs === fl) { ajGuarda(fl, Math.max(d.mod || 0, est?.mod || 0)); ajListo = yo; return; }
+    if (!est || (d.mod || 0) > (est.mod || 0)) { // en la cuenta hay unos más nuevos (o es la primera vez en este aparato)
+      if (live.night) return; // mientras monitoreas no se toca nada: la próxima vez
+      try { for (const k of AJ_CLAVES) k in d.ajustes ? localStorage.setItem('ronquino-' + k, String(d.ajustes[k])) : localStorage.removeItem('ronquino-' + k); } catch { return; }
+      ajGuarda(fs, d.mod || Date.now());
+      try { sessionStorage.setItem('sa-ajustes', '1'); } catch {}
+      location.reload(); return;
+    }
+  }
+  ajListo = yo; subeAjustes(true); // la cuenta no tiene ninguno, o los de aquí son más nuevos
+}
+async function subeAjustes(forzar) {
+  if (!sesion || ajListo !== sesion.id || ajSubiendo) return;
+  const loc = ajLocales(), f = ajFirma(loc), est = ajEstado();
+  if (!forzar && est?.firma === f) return;
+  const mod = est?.firma === f && est.mod ? est.mod : Date.now();
+  ajSubiendo = true;
+  try { await apiCuenta('/ajustes', {ajustes: loc, mod}); ajGuarda(f, mod); } catch {} // sin internet: se intenta luego
+  finally { ajSubiendo = false; }
+}
+setInterval(() => subeAjustes(), 20000);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) subeAjustes();
+  else if (sesion && Date.now() - ajBajado > 600e3) bajaAjustes().catch(() => {});
+});
 function borraNocheCuenta(id) { if (sesion) apiCuenta('/noches/borrar', {ids: [id]}).catch(() => {}); }
 
 // Pantalla de crear cuenta / entrar / poner contraseña nueva (sin cuenta no se puede usar la app)
@@ -6152,6 +6196,7 @@ $('cpForm').onsubmit = async e => {
     guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true; $('cpPass').value = ''; $('cpCod').value = '';
     let nuevas = 0; if (m !== 'registro') try { nuevas = await bajaNoches(); } catch {}
+    try { await bajaAjustes(); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
     abreBienvenida();
     toast(m === 'registro' ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada`
       : `✅ ${m === 'codigo' ? 'Contraseña nueva guardada' : `Hola de nuevo${d.usuario.nombre ? ', ' + d.usuario.nombre : ''}`}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
@@ -6172,6 +6217,7 @@ async function entraConGoogle(credential) {
     guardaSesion(sesionDe(d.token, d.usuario)); sincronizaPais();
     $('cuentaPanel').hidden = true;
     let nuevas = 0; if (!d.nuevo) try { nuevas = await bajaNoches(); } catch {}
+    try { await bajaAjustes(); } catch {} // ☁️ ajustes y alarmas de la cuenta (si hay, se recarga)
     abreBienvenida();
     toast(d.nuevo ? `✅ ¡Hola, ${d.usuario.nombre}! Tu cuenta está creada` : `✅ Hola de nuevo, ${d.usuario.nombre}${nuevas ? ` · ${nuevas} ${nuevas === 1 ? 'noche recuperada' : 'noches recuperadas'}` : ''}`);
     renderHome();
@@ -6666,7 +6712,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.3', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v34.4', '3 nov 2026', ['☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', '✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -6719,6 +6765,10 @@ await vigilaNoches();
 renderHome();
 // ☁️ Con cuenta: si falta alguna noche que está en la cuenta (y no la borraste tú), vuelve sola
 if (sesion) bajaNoches().then(k => { if (k) { renderHome(); toast(`☁️ Recuperadas ${k} ${k === 1 ? 'noche' : 'noches'} de tu cuenta`); } }).catch(() => {});
+// ☁️ Ajustes y alarmas: si acaban de bajar de la cuenta, las alarmas se programan otra vez (en Android) y se avisa
+let ajRecien = false; try { ajRecien = sessionStorage.getItem('sa-ajustes') === '1'; sessionStorage.removeItem('sa-ajustes'); } catch {}
+if (ajRecien) { alSave(); setTimeout(() => toast('☁️ Ajustes y alarmas traídos de tu cuenta'), 1500); }
+if (sesion) bajaAjustes().catch(() => {});
 IA.load();
 show('menu');
 // Sin cuenta no se puede usar: crear una o entrar (la primera vez, antes, el recorrido de bienvenida)
