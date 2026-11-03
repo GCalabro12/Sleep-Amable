@@ -176,6 +176,11 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .alrapBody .arow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
 .alrapBody .arow input[type=time]{flex:1;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:20px;font-weight:700}
 .alrapBody .arow.off input[type=time]{opacity:.5}
+.alrapBody .arow input[type=time]{flex:0 0 auto;width:118px;padding:8px 8px}
+.alrapBody .arow .areto{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;height:44px;padding:0 8px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+.alrapBody .arow .areto small{display:block;font-size:11px;font-weight:500;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.alrapBody .arow .areto.on{border-color:#A78BFA;background:#1E1B4B;color:#E9D5FF}
+.alrapBody .retoopts{padding-bottom:8px;border-bottom:1px solid var(--line)}
 .alrapBody .acc{display:flex;gap:8px;margin-top:10px}
 .alrapBody .acc .btn{flex:1;font-size:14px}
 .aprnum{display:flex;gap:8px;justify-content:space-between}
@@ -712,6 +717,8 @@ details.hist[open] summary{margin-bottom:10px}
 .avOpc{display:flex;gap:8px;clear:both;margin:12px 0 10px}
 .avOpc button{flex:1;padding:10px 6px;border-radius:12px;border:1px solid #334155;background:#1E293B;color:#CBD5E1;font-size:15px;font-weight:600}
 .avOpc button.on{background:#6D5BD0;border-color:#A78BFA;color:#fff}
+.avOpc button{font-size:14px;padding:10px 3px;white-space:nowrap;min-width:0} /* 3 opciones: altavoz, auricular, ninguno */
+#lastEv.apagado small{color:var(--muted)}
 .flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
 .flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
 .flag.on{font-weight:700}
@@ -1637,7 +1644,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="aviWrap">
   <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
-    <div class="avOpc"><button type="button" data-al="1">🔊 Altavoz</button><button type="button" data-al="0">🎧 Auricular</button></div>
+    <div class="avOpc"><button type="button" data-al="1">🔊 Altavoz</button><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="no">🔕 Ninguno</button></div>
     <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
     <p id="aviHoras" style="margin:0;font-size:15px"></p>
   </div>
@@ -1650,7 +1657,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v33.5'; // v33.5: reproductor: botón «⭐ Destacado» (encendido = cada grabación empieza 1 s antes de lo más fuerte, y al encenderlo salta ahí; apagado, en gris = desde el principio) y «i» que explica cómo funciona
+const VERSION = 'v33.6'; // v33.6: «⏰ Alarma para despertarte» rápida (monitoreo y desplegables): hora más corta y a su derecha «🧩 Reto» para elegir el reto de esa alarma; avisos del monitoreo: 3.ª opción «🔕 Ninguno» (los desactiva, también en Ajustes) y el botón de abajo sale siempre («🔕 Avisos desactivados ›» para volver a activarlos)
+// v33.5: reproductor: botón «⭐ Destacado» (encendido = cada grabación empieza 1 s antes de lo más fuerte, y al encenderlo salta ahí; apagado, en gris = desde el principio) y «i» que explica cómo funciona
 // v33.4: reproductor de las grabaciones con ✕ arriba a la derecha para cerrarlo (vuelve al tocar ▶ en una grabación); en Ajustes (admin) interruptor «Valorar las grabaciones», apagado: sin él no salen Ronquido/Voz/Tos/Respiración/Otro en el reproductor
 // v33.3: icono de la app nuevo (al instalarla): la Luna con las manos y el gorro sobre el fondo de siempre; app 5.1
 // v33.2: Estadísticas: gráficas plegables de horas por noche y de horarios (se abren tocando su recuadro); horarios en dos filas; Luna pequeña en sus consejos; nota de las 3 horas dentro del desplegable; «¿Te ayuda el aviso?» plegable y con puntos
@@ -3113,20 +3121,25 @@ function profAvisoAbre(night) {
 function pintaAvisoPor() {
   let au = false; try { au = !!AND?.auriculares?.(); } catch {}
   const hs = live.avisoHoras || [], n = hs.length, b = $('lastEv');
-  b.hidden = !avisarNoche && !n; if (b.hidden) return;
-  const falta = !cfg.altavoz && !au;
-  const html = (cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${falta ? '⚠️ conecta el auricular' : n ? `te he avisado ${n} ${n === 1 ? 'vez' : 'veces'}` : ''}</small> ›`;
+  b.hidden = false; // siempre en el monitoreo: también para activarlos si están desactivados
+  const falta = avisarNoche && !cfg.altavoz && !au;
+  const html = (!avisarNoche ? '🔕 Avisos desactivados' : cfg.altavoz ? '🔊 Avisos por altavoz' : '🎧 Avisos por auricular') + `<small>${!avisarNoche ? (n ? `te avisé ${n} ${n === 1 ? 'vez' : 'veces'}` : 'toca para activarlos') : falta ? '⚠️ conecta el auricular' : n ? `te he avisado ${n} ${n === 1 ? 'vez' : 'veces'}` : ''}</small> ›`;
   if (b.innerHTML !== html) b.innerHTML = html;
-  b.classList.toggle('falta', falta);
+  b.classList.toggle('falta', falta); b.classList.toggle('apagado', !avisarNoche);
   // v31.8: la ventana de los avisos
   $('aviFalta').hidden = !falta;
-  $('aviHoras').textContent = n ? `Te he avisado a las ${hs.join(', ')}.` : 'Aún no ha habido ningún aviso esta noche.';
-  document.querySelectorAll('#pAvi [data-al]').forEach(x => x.classList.toggle('on', +x.dataset.al === +!!cfg.altavoz));
+  $('aviHoras').textContent = n ? `Te he avisado a las ${hs.join(', ')}.` : !avisarNoche ? 'Los avisos están desactivados: elige altavoz o auricular para activarlos.' : 'Aún no ha habido ningún aviso esta noche.';
+  document.querySelectorAll('#pAvi [data-al]').forEach(x => x.classList.toggle('on', x.dataset.al === 'no' ? !avisarNoche : avisarNoche && +x.dataset.al === +!!cfg.altavoz));
 }
 document.querySelectorAll('#pAvi [data-al]').forEach(x => x.onclick = () => {
-  cfg.altavoz = x.dataset.al === '1'; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
-  pintaAltavoz(); pintaAvisoPor();
-  toast(cfg.altavoz ? '🔊 Avisos por el altavoz (si duermes solo)' : '🎧 Solo auricular, para no despertar a nadie');
+  const no = x.dataset.al === 'no', antes = avisarNoche;
+  // 🔕 Ninguno: sin avisos esta noche y desde ahora (como «Avisarme si ronco» apagado en Ajustes); altavoz o auricular los activa
+  cfg.avisoOn = !no; avisarNoche = !no && !!live.night;
+  if (!no) cfg.altavoz = x.dataset.al === '1';
+  try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
+  if (avisarNoche && !antes) { AND?.prepararVoz?.(); AND?.pedirBluetooth?.(); }
+  pintaAltavoz(); pintaInicioNoche(); pintaAvisoPor();
+  toast(no ? '🔕 Avisos desactivados' : cfg.altavoz ? '🔊 Avisos por el altavoz (si duermes solo)' : '🎧 Solo auricular, para no despertar a nadie');
 });
 function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden = false; }
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
@@ -5683,7 +5696,8 @@ function pintaAlarmasRapidas() {
   document.querySelectorAll('[data-alsum]').forEach(x => { x.textContent = act.length ? act[0] : 'no'; x.classList.toggle('si', !!act.length); });
   document.querySelectorAll('.alrapBody').forEach(box => {
     box.innerHTML = (ALS.list.length ? '' : '<p class="note" style="margin:6px 0">Aún no tienes alarmas.</p>')
-      + ALS.list.map((a, k) => `<div class="arow${a.on ? '' : ' off'}"><label class="swt"><input type="checkbox" data-k="${k}"${a.on ? ' checked' : ''}><i></i></label><input type="time" data-k="${k}" value="${a.hora}"></div>`).join('')
+      + ALS.list.map((a, k) => { const r = RETOS.find(x => x.id === retoDe(a));
+        return `<div class="arow${a.on ? '' : ' off'}"><label class="swt"><input type="checkbox" data-k="${k}"${a.on ? ' checked' : ''}><i></i></label><input type="time" data-k="${k}" value="${a.hora}"><button type="button" class="areto${r ? ' on' : ''}" data-rk="${k}">🧩 Reto${r ? `<small>${r.corto}</small>` : ''}</button></div><div class="retoopts" data-ro="${k}" hidden></div>`; }).join('')
       + `<div class="acc"><button type="button" class="btn" data-add>＋ Añadir alarma</button><button type="button" class="btn" data-mas>Tono y reto ›</button></div>`;
     box.querySelectorAll('input[type=checkbox]').forEach(x => x.onchange = () => {
       const a = ALS.list[+x.dataset.k]; a.on = x.checked; a.fired = null; a.snooze = null; alSave(); renderAlarmas();
@@ -5695,6 +5709,23 @@ function pintaAlarmasRapidas() {
     });
     box.querySelector('[data-add]').onclick = () => $('alAdd').onclick();
     box.querySelector('[data-mas]').onclick = () => show('alarma');
+    // 🧩 Reto de esta alarma: las opciones salen debajo de su fila
+    box.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => {
+      const k = +b.dataset.rk, al = ALS.list[k], opts = box.querySelector(`[data-ro="${k}"]`);
+      box.querySelectorAll('.retoopts').forEach(o => { if (o !== opts) o.hidden = true; });
+      if (!opts.hidden) { opts.hidden = true; return; }
+      const act = retoDe(al);
+      opts.innerHTML = [...RETOS, {id: '', t: '🚫 Sin reto (se apaga con el botón)'}].map(x => `<div class="ropt"><button type="button" data-r="${x.id}" class="${x.id === act ? 'on' : ''}">${x.t}</button>${x.help ? '<button type="button" class="rinfo" aria-label="¿En qué consiste?">?</button>' : ''}</div>${x.help ? `<div class="rhelp" hidden>${x.help}</div>` : ''}`).join('');
+      opts.querySelectorAll('.rinfo').forEach(i => i.onclick = () => { const h = i.parentNode.nextElementSibling; h.hidden = !h.hidden; });
+      opts.querySelectorAll('button[data-r]').forEach(o => o.onclick = () => {
+        const v = o.dataset.r;
+        const listo = () => { al.reto = v; alSave(); renderAlarmas();
+          toast(v ? `🧩 Reto para las ${al.hora}: ${RETOS.find(x => x.id === v).corto}` : '🧩 Sin reto: se apaga con el botón'); };
+        if (v === 'codigo' && !ALS.cod) { pedirCodigo(ALS, ok => { if (ok) listo(); renderReto(); }); return; }
+        listo();
+      });
+      opts.hidden = false;
+    });
   });
 }
 $('alAdd').onclick = () => { const al = {id: Date.now(), on: true, hora: '07:30', son: 'amanecer', sub: 120}; ALS.list.push(al); alSave(); renderAlarmas(); toast(`⏰ Sonará en ${faltaTxt(proxima('07:30') - Date.now())}${avisoReto(al)}`); };
@@ -6626,7 +6657,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.5', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', '⭐ Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)']],
+  ['v33.6', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', '⭐ Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
