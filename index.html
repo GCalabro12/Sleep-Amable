@@ -176,9 +176,11 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 .alrapBody .arow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
 .alrapBody .arow input[type=time]{flex:1;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:20px;font-weight:700}
 .alrapBody .arow.off input[type=time]{opacity:.5}
-.alrapBody .arow input[type=time]{flex:0 0 auto;width:118px;padding:8px 8px}
-.alrapBody .arow .areto{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;height:44px;padding:0 8px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+.alrapBody .arow input[type=time]{flex:0 0 auto;width:104px;padding:8px 6px;font-size:18px}
+.alrapBody .arow .areto{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;height:44px;padding:0 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap}
 .alrapBody .arow .areto small{display:block;font-size:11px;font-weight:500;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.alrapBody .arow .aborra{flex:none;width:32px;height:44px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--muted);font-size:16px;padding:0}
+.alrapBody .arow{gap:8px}
 .alrapBody .arow .areto.on{border-color:#A78BFA;background:#1E1B4B;color:#E9D5FF}
 .alrapBody .retoopts{padding-bottom:8px;border-bottom:1px solid var(--line)}
 .alrapBody .acc{display:flex;gap:8px;margin-top:10px}
@@ -1658,7 +1660,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v33.7'; // v33.7: al abrir una noche el reproductor sale cerrado (se abre al tocar ▶ o el gráfico); Destacado sin estrella: icono de barras de sonido con la del medio en rojo, a la derecha; su «i» más corta; en la noche, botón «📊 Estadísticas generales» encima de «Borrar esta noche»
+const VERSION = 'v33.8'; // v33.8: alarma rápida (monitoreo y desplegables): ✕ a la derecha de «Reto» que borra esa alarma (pregunta antes)
+// v33.7: al abrir una noche el reproductor sale cerrado (se abre al tocar ▶ o el gráfico); Destacado sin estrella: icono de barras de sonido con la del medio en rojo, a la derecha; su «i» más corta; en la noche, botón «📊 Estadísticas generales» encima de «Borrar esta noche»
 // v33.6: «⏰ Alarma para despertarte» rápida (monitoreo y desplegables): hora más corta y a su derecha «🧩 Reto» para elegir el reto de esa alarma; avisos del monitoreo: 3.ª opción «🔕 Ninguno» (los desactiva, también en Ajustes) y el botón de abajo sale siempre («🔕 Avisos desactivados ›» para volver a activarlos)
 // v33.5: reproductor: botón «⭐ Destacado» (encendido = cada grabación empieza 1 s antes de lo más fuerte, y al encenderlo salta ahí; apagado, en gris = desde el principio) y «i» que explica cómo funciona
 // v33.4: reproductor de las grabaciones con ✕ arriba a la derecha para cerrarlo (vuelve al tocar ▶ en una grabación); en Ajustes (admin) interruptor «Valorar las grabaciones», apagado: sin él no salen Ronquido/Voz/Tos/Respiración/Otro en el reproductor
@@ -5699,7 +5702,7 @@ function pintaAlarmasRapidas() {
   document.querySelectorAll('.alrapBody').forEach(box => {
     box.innerHTML = (ALS.list.length ? '' : '<p class="note" style="margin:6px 0">Aún no tienes alarmas.</p>')
       + ALS.list.map((a, k) => { const r = RETOS.find(x => x.id === retoDe(a));
-        return `<div class="arow${a.on ? '' : ' off'}"><label class="swt"><input type="checkbox" data-k="${k}"${a.on ? ' checked' : ''}><i></i></label><input type="time" data-k="${k}" value="${a.hora}"><button type="button" class="areto${r ? ' on' : ''}" data-rk="${k}">🧩 Reto${r ? `<small>${r.corto}</small>` : ''}</button></div><div class="retoopts" data-ro="${k}" hidden></div>`; }).join('')
+        return `<div class="arow${a.on ? '' : ' off'}"><label class="swt"><input type="checkbox" data-k="${k}"${a.on ? ' checked' : ''}><i></i></label><input type="time" data-k="${k}" value="${a.hora}"><button type="button" class="areto${r ? ' on' : ''}" data-rk="${k}">🧩 Reto${r ? `<small>${r.corto}</small>` : ''}</button><button type="button" class="aborra" data-dk="${k}" aria-label="Borrar la alarma de las ${a.hora}">✕</button></div><div class="retoopts" data-ro="${k}" hidden></div>`; }).join('')
       + `<div class="acc"><button type="button" class="btn" data-add>＋ Añadir alarma</button><button type="button" class="btn" data-mas>Tono y reto ›</button></div>`;
     box.querySelectorAll('input[type=checkbox]').forEach(x => x.onchange = () => {
       const a = ALS.list[+x.dataset.k]; a.on = x.checked; a.fired = null; a.snooze = null; alSave(); renderAlarmas();
@@ -5711,6 +5714,12 @@ function pintaAlarmasRapidas() {
     });
     box.querySelector('[data-add]').onclick = () => $('alAdd').onclick();
     box.querySelector('[data-mas]').onclick = () => show('alarma');
+    // ✕ borra esa alarma (preguntando antes)
+    box.querySelectorAll('[data-dk]').forEach(b => b.onclick = async () => {
+      const al = ALS.list[+b.dataset.dk]; if (!al) return;
+      if (!await confirma(`¿Borrar la alarma de las ${al.hora}?`, '🗑️ Borrar')) return;
+      ALS.list = ALS.list.filter(x => x !== al); alSave(); renderAlarmas(); toast(`🗑️ Alarma de las ${al.hora} borrada`);
+    });
     // 🧩 Reto de esta alarma: las opciones salen debajo de su fila
     box.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => {
       const k = +b.dataset.rk, al = ALS.list[k], opts = box.querySelector(`[data-ro="${k}"]`);
@@ -6659,7 +6668,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.7', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v33.8', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
