@@ -942,6 +942,12 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 .night.marcada{outline:2px solid #F87171;outline-offset:1px}
 #pl{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#0F1529f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
 #pl .in{max-width:640px;margin:0 auto}
+.pldest{display:flex;justify-content:center;align-items:center;gap:8px;margin:5px 0 2px}
+#plDest{height:30px;padding:0 14px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--dim);font-size:13px;font-weight:700;white-space:nowrap}
+#plDest span{filter:grayscale(1);opacity:.5}
+#plDest.on{background:linear-gradient(135deg,#FBBF24,#D97706);border-color:#FDE68A;color:#1C1300;box-shadow:0 0 14px #f59e0b88} /* encendido: iluminado */
+#plDest.on span{filter:none;opacity:1}
+#plDestI{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);font:italic 700 16px Georgia,serif;padding:0;line-height:1}
 #plX{position:absolute;top:-17px;right:14px;width:34px;height:34px;border-radius:50%;background:#1E2540;border:1px solid var(--line);color:var(--text);font-size:16px;line-height:1;padding:0;z-index:1;box-shadow:0 2px 8px #0008} /* cerrar el reproductor */
 #pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 #pl .bar{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:4px}
@@ -956,7 +962,7 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 @media (orientation:landscape) and (max-height:600px){
   /* En horizontal, el reproductor en 2 filas: «1 de 81» + la onda; y los botones con «¿Acierta?» entre ⏭ y la velocidad */
   #pl{padding:4px 16px calc(6px + env(safe-area-inset-bottom))}
-  #pl .in{max-width:none;display:grid;grid-template-columns:auto auto auto auto 1fr auto;grid-template-areas:"now bar bar bar bar bar" "bst prev pp next val spd";align-items:center;column-gap:12px;row-gap:2px}
+  #pl .in{max-width:none;display:grid;grid-template-columns:auto auto auto auto 1fr auto;grid-template-areas:"now bar bar bar bar bar" "bst prev pp next dest spd" "val val val val val val";align-items:center;column-gap:12px;row-gap:2px}
   #pl .ctl{display:contents}
   #pl .now{grid-area:now;text-align:left;max-width:40vw;font-size:14px}
   #pl .now .plnTag{display:none}
@@ -965,13 +971,14 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
   #pl .bar{grid-area:bar;margin-top:0}
   #plWave{height:30px}
   #pl .plval{grid-area:val;margin:0;justify-content:center}
+  #pl .pldest{grid-area:dest;margin:0}
   #pl .ctl button{width:40px;height:40px;font-size:20px}
   #pl .ctl #plPrev{grid-area:prev} #pl .ctl #plNext{grid-area:next}
   #pl .ctl .pp{grid-area:pp;width:44px;height:44px;font-size:18px;box-shadow:none}
 }
 #pl .ctl .spd{grid-column:5;justify-self:end;width:auto;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:19px;font-size:15px;font-weight:700;background:var(--card2)}
 @media (orientation:landscape) and (max-height:600px){#pl .ctl .bst{grid-area:bst;height:34px} #pl .ctl .spd{grid-area:spd;height:34px}}
-body.pl-on .wrap{padding-bottom:190px}
+body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 .prog{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:10px}
 .prog i{display:block;height:100%;width:0;background:#6D5BD0}
 .note{font-size:14px;color:var(--dim);margin-top:8px}
@@ -1421,6 +1428,7 @@ body.pl-on .wrap{padding-bottom:190px}
   <button type="button" id="plX" aria-label="Cerrar el reproductor">✕</button>
   <div class="in">
     <div class="now" id="plNow"></div>
+    <div class="pldest"><button type="button" id="plDest" aria-pressed="true"><span>⭐</span> Destacado</button><button type="button" id="plDestI" aria-label="Cómo funciona Destacado">i</button></div>
     <div class="plval" id="plVal" hidden></div>
     <div class="bar"><span id="plT">0:00</span><canvas id="plWave" aria-label="Onda del sonido: toca para avanzar"></canvas><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación" hidden><span id="plD">0:00</span></div>
     <div class="ctl">
@@ -1642,7 +1650,8 @@ body.pl-on .wrap{padding-bottom:190px}
 </div>
 
 <script type="module">
-const VERSION = 'v33.4'; // v33.4: reproductor de las grabaciones con ✕ arriba a la derecha para cerrarlo (vuelve al tocar ▶ en una grabación); en Ajustes (admin) interruptor «Valorar las grabaciones», apagado: sin él no salen Ronquido/Voz/Tos/Respiración/Otro en el reproductor
+const VERSION = 'v33.5'; // v33.5: reproductor: botón «⭐ Destacado» (encendido = cada grabación empieza 1 s antes de lo más fuerte, y al encenderlo salta ahí; apagado, en gris = desde el principio) y «i» que explica cómo funciona
+// v33.4: reproductor de las grabaciones con ✕ arriba a la derecha para cerrarlo (vuelve al tocar ▶ en una grabación); en Ajustes (admin) interruptor «Valorar las grabaciones», apagado: sin él no salen Ronquido/Voz/Tos/Respiración/Otro en el reproductor
 // v33.3: icono de la app nuevo (al instalarla): la Luna con las manos y el gorro sobre el fondo de siempre; app 5.1
 // v33.2: Estadísticas: gráficas plegables de horas por noche y de horarios (se abren tocando su recuadro); horarios en dos filas; Luna pequeña en sus consejos; nota de las 3 horas dentro del desplegable; «¿Te ayuda el aviso?» plegable y con puntos
 // v33.1: lo que empieza antes de las 7 de la mañana cuenta como la noche del día anterior (antes, de las 6)
@@ -5121,7 +5130,8 @@ function plPlay(i) {
     // si se sabe qué es cada segundo: lo más fuerte que sea ronquido, voz o tos (no un golpe)
     let pico = e._pico || 0;
     if (e.seg && e._en?.length && /[rvt]/.test(e.seg)) { let m = -1; e._en.forEach((x, k) => { if (e.seg[Math.floor(k / 10)] && e.seg[Math.floor(k / 10)] !== 'o' && x > m) { m = x; pico = k / 10; } }); }
-    const t0 = Math.max(0, pico - 1);
+    const t0 = e._t0 = Math.max(0, pico - 1);
+    if (!PL.dest) return void PL.au.play().catch(() => {}); // Destacado apagado: desde el principio
     // en algunos Android el salto se pierde si se hace antes de que empiece a sonar: se repite al empezar y un poco después
     const pon = () => { try { if (PL.list[PL.i] === e && t0 > .05 && PL.au.currentTime < t0 - .3) PL.au.currentTime = t0; } catch {} };
     const go = () => { if (PL.list[PL.i] !== e) return; pon(); PL.au.play().then(pon).catch(() => {}); setTimeout(pon, 350); };
@@ -5137,6 +5147,18 @@ function plPlay(i) {
   plRender(); plHead();
   document.querySelector('.ev.playing')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
 }
+// ⭐ Destacado: encendido (de entrada), cada grabación empieza 1 segundo antes de lo más fuerte; apagado, desde el principio
+try { PL.dest = localStorage.getItem('ronquino-destacado') !== '0'; } catch { PL.dest = true; }
+function pintaDest() { const b = $('plDest'); b.classList.toggle('on', PL.dest); b.setAttribute('aria-pressed', PL.dest); }
+pintaDest();
+$('plDest').onclick = () => {
+  PL.dest = !PL.dest; pintaDest();
+  try { localStorage.setItem('ronquino-destacado', PL.dest ? '1' : '0'); } catch {}
+  const e = PL.list[PL.i];
+  if (PL.dest && e?._t0 > .05) try { PL.au.currentTime = e._t0; } catch {}
+  toast(PL.dest ? '⭐ Destacado activado: vas a lo más fuerte' : 'Destacado desactivado: desde el principio');
+};
+$('plDestI').onclick = () => aviso('⭐ Destacado\n\nCuando está iluminado, cada grabación empieza justo antes del momento de más volumen, para que oigas enseguida lo importante. Si lo enciendes mientras escuchas, salta a ese momento.\n\nTócalo otra vez para apagarlo: se queda en gris y las grabaciones empiezan desde el principio.');
 function plToggle() {
   if (PL.i < 0) return plPlay(PL.ini || 0); // empieza por la siguiente sin revisar
   if (PL.au.paused) { PL.au.playbackRate = PL.speed; plGraph(); PL.au.play().catch(() => {}); } else PL.au.pause();
@@ -6604,7 +6626,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.4', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha']],
+  ['v33.5', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', '⭐ Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
