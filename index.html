@@ -719,7 +719,8 @@ details.hist[open] summary{margin-bottom:10px}
 .avOpc{display:flex;gap:8px;clear:both;margin:12px 0 10px}
 .avOpc button{flex:1;padding:10px 6px;border-radius:12px;border:1px solid #334155;background:#1E293B;color:#CBD5E1;font-size:15px;font-weight:600}
 .avOpc button.on{background:#6D5BD0;border-color:#A78BFA;color:#fff}
-.avOpc button{font-size:14px;padding:10px 3px;white-space:nowrap;min-width:0} /* 3 opciones: altavoz, auricular, ninguno */
+.avOpc button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:14px;padding:8px 2px;white-space:nowrap;min-width:0;overflow:hidden} /* 3 opciones: el icono arriba, en el centro */
+.avOpc button span{font-size:22px;line-height:1.1}
 #lastEv.apagado small{color:var(--muted)}
 .flag{padding:2px 4px;font-size:13px;background:none;color:#475569;border:0;display:inline-flex;align-items:center;gap:5px;cursor:default} /* lucecitas de estado, no botones */
 .flag::before{content:'';width:8px;height:8px;border-radius:50%;background:#334155;flex:none}
@@ -1647,7 +1648,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <div class="state" id="lstate">Ajustándose al silencio de la habitación…</div>
     <div class="aviWrap">
   <div class="lpanel" id="pAvi" hidden><button type="button" class="lpx" aria-label="Cerrar">✕</button><b style="font-size:17px">🔔 Avisos</b>
-    <div class="avOpc"><button type="button" data-al="1">🔊 Altavoz</button><button type="button" data-al="0">🎧 Auricular</button><button type="button" data-al="no">🔕 Ninguno</button></div>
+    <div class="avOpc"><button type="button" data-al="1"><span>🔊</span>Altavoz</button><button type="button" data-al="0"><span>🎧</span>Auricular</button><button type="button" data-al="no"><span>🔕</span>Ninguno</button></div>
     <p id="aviFalta" hidden style="margin:0 0 8px;color:#FCD34D">⚠️ Conecta el auricular.</p>
     <p id="aviHoras" style="margin:0;font-size:15px"></p>
   </div>
@@ -1660,7 +1661,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v33.8'; // v33.8: alarma rápida (monitoreo y desplegables): ✕ a la derecha de «Reto» que borra esa alarma (pregunta antes)
+const VERSION = 'v33.9'; // v33.9: ventana de avisos del monitoreo: Altavoz, Auricular y Ninguno con el icono arriba en el centro (en pantallas estrechas no cabían)
+// v33.8: alarma rápida (monitoreo y desplegables): ✕ a la derecha de «Reto» que borra esa alarma (pregunta antes)
 // v33.7: al abrir una noche el reproductor sale cerrado (se abre al tocar ▶ o el gráfico); Destacado sin estrella: icono de barras de sonido con la del medio en rojo, a la derecha; su «i» más corta; en la noche, botón «📊 Estadísticas generales» encima de «Borrar esta noche»
 // v33.6: «⏰ Alarma para despertarte» rápida (monitoreo y desplegables): hora más corta y a su derecha «🧩 Reto» para elegir el reto de esa alarma; avisos del monitoreo: 3.ª opción «🔕 Ninguno» (los desactiva, también en Ajustes) y el botón de abajo sale siempre («🔕 Avisos desactivados ›» para volver a activarlos)
 // v33.5: reproductor: botón «⭐ Destacado» (encendido = cada grabación empieza 1 s antes de lo más fuerte, y al encenderlo salta ahí; apagado, en gris = desde el principio) y «i» que explica cómo funciona
@@ -6668,7 +6670,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v33.8', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v33.9', '3 nov 2026', ['✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
