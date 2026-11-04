@@ -961,6 +961,8 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 #pl{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#0F1529f2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
 #pl .in{max-width:640px;margin:0 auto}
 .pldest{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:5px 0 2px}
+.pldest .plCnt{margin-right:auto;font-size:14px;color:var(--muted);white-space:nowrap} /* «5 de 84», a la izquierda de Destacado (v35.2) */
+#pl .now.conE{display:none} /* con una grabación sonando, la línea de arriba sobra: la etiqueta y la hora ya están en la lista (v35.2) */
 #plDest{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 14px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--dim);font-size:13px;font-weight:700;white-space:nowrap}
 #plDest .dico{width:20px;height:16px;fill:currentColor;opacity:.6} #plDest .dico .rojo{fill:#94A3B8}
 #plDest.on{background:linear-gradient(135deg,#FBBF24,#D97706);border-color:#FDE68A;color:#1C1300;box-shadow:0 0 14px #f59e0b88} /* encendido: iluminado */
@@ -974,7 +976,7 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 #pl .ctl{display:grid;grid-template-columns:1fr 52px 60px 52px 1fr;align-items:center;gap:12px;margin-top:2px}
 #pl .ctl button{background:none;border:0;color:var(--text);font-size:24px;width:52px;height:52px;border-radius:50%;padding:0}
 #pl .ctl button:disabled{opacity:.3}
-#pl .ctl .pp{width:60px;height:60px;background:linear-gradient(135deg,#6D5BD0,#4338CA);font-size:24px;box-shadow:0 6px 18px #4338ca55}
+#pl .ctl .pp{width:60px;height:60px;background:linear-gradient(135deg,#F59E0B,#B45309);font-size:24px;box-shadow:0 6px 18px #b4530955} /* naranja, como el ▶ de la grabación que suena en la lista (v35.2) */
 #pl .ctl .bst{grid-column:1;justify-self:start;white-space:nowrap;width:auto;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:19px;font-size:14px;font-weight:700;background:var(--card2)}
 #pl .ctl .bst.on{border-color:#A78BFA;color:#C4B5FD}
 @media (orientation:landscape) and (max-height:600px){
@@ -984,6 +986,7 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
   #pl .ctl{display:contents}
   #pl .now{grid-area:now;text-align:left;max-width:40vw;font-size:14px}
   #pl .now .plnTag{display:none}
+  #pl .now.conE{display:block} #pl .pldest .plCnt{display:none} /* en horizontal, «5 de 84» sigue a la izquierda de la onda */
   #pl .plvQ{flex-basis:100%;text-align:center}
   #pl .plval button{padding:4px 12px}
   #pl .bar{grid-area:bar;margin-top:0}
@@ -1447,7 +1450,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <button type="button" id="plX" aria-label="Cerrar el reproductor">✕</button>
   <div class="in">
     <div class="now" id="plNow"></div>
-    <div class="pldest"><button type="button" id="plDest" aria-pressed="true"><svg class="dico" viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="6" width="2.4" height="4" rx="1.2"/><rect x="5" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="8.8" y="0.5" width="2.4" height="15" rx="1.2" class="rojo"/><rect x="12.6" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="16.6" y="6" width="2.4" height="4" rx="1.2"/></svg>Destacado</button><button type="button" id="plDestI" aria-label="Cómo funciona Destacado">i</button></div>
+    <div class="pldest"><span class="plCnt" id="plCnt"></span><button type="button" id="plDest" aria-pressed="true"><svg class="dico" viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="6" width="2.4" height="4" rx="1.2"/><rect x="5" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="8.8" y="0.5" width="2.4" height="15" rx="1.2" class="rojo"/><rect x="12.6" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="16.6" y="6" width="2.4" height="4" rx="1.2"/></svg>Destacado</button><button type="button" id="plDestI" aria-label="Cómo funciona Destacado">i</button></div>
     <div class="plval" id="plVal" hidden></div>
     <div class="bar"><span id="plT">0:00</span><canvas id="plWave" aria-label="Onda del sonido: toca para avanzar"></canvas><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación" hidden><span id="plD">0:00</span></div>
     <div class="ctl">
@@ -1669,7 +1672,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.1'; // v35.1: el ronquido suave solo cuenta si suena (como mucho 12 dB por debajo de lo más fuerte de la grabación); la onda ya no pinta de amarillo la grabación entera cuando es bajita: el color solo sigue por los segundos de ese sonido; Ruidos sin recuadro en cada grabación (separadas por una raya), más ancho para que la etiqueta y sus segundos quepan en un renglón
+const VERSION = 'v35.2'; // v35.2: reproductor: fuera la línea de arriba «😴 Ronquido · hora · 5 de 84» (ya se ve en la lista); «5 de 84» pasa abajo a la izquierda de Destacado; el botón ▶/❚❚ en naranja, como el de la grabación que suena en la lista
+// v35.1: el ronquido suave solo cuenta si suena (como mucho 12 dB por debajo de lo más fuerte de la grabación); la onda ya no pinta de amarillo la grabación entera cuando es bajita: el color solo sigue por los segundos de ese sonido; Ruidos sin recuadro en cada grabación (separadas por una raya), más ancho para que la etiqueta y sus segundos quepan en un renglón
 // v35.0: ronquido suave: dentro de una grabación de ronquido, cuenta también como ronquido cada segundo en que el ronquido es lo que más suena (al menos 15 %): salen más segundos amarillos y más minutos de ronquido; las noches de antes se recuentan con «Revisar esta noche con el detector nuevo» (administrador)
 // v34.9: aviso: la IA segura al 70 % con cualquier sensibilidad; la sensibilidad solo cambia el tiempo roncando seguido antes de avisar (Baja 2 min, Normal 1 min 30 s, Alta 1 min); la nota de la racha más larga dice los segundos al 70 % y al 80 %
 // v34.8: en Ruidos, a la derecha de la etiqueta, cuántos segundos de ese sonido hay en la grabación: «😴 Ronquido (10 seg)»
@@ -5344,6 +5348,7 @@ function plRender() {
   if (e) { const a = document.createElement('span'), b = document.createElement('span'); a.className = 'plnTag';
     a.textContent = `${tagTxt(e)} · ${evTime(cur, e.off)} · `; b.textContent = `${PL.i + 1} de ${PL.list.length}`; pn.append(a, b); }
   else pn.textContent = PL.ini ? `${PL.list.length} grabaciones · toca ▶ para seguir por la ${PL.ini + 1}` : `${PL.list.length} grabaciones · toca ▶ para oírlas seguidas`;
+  pn.classList.toggle('conE', !!e); $('plCnt').textContent = e ? `${PL.i + 1} de ${PL.list.length}` : '';
   $('plPP').textContent = on ? '❚❚' : '▶';
   $('plSpd').textContent = String(PL.speed).replace('.', ',') + '×';
   $('plBst').textContent = '🔊 ' + (PL.boost === 1 ? '1×' : '×' + PL.boost);
@@ -6831,7 +6836,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.1', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '😴 Cuenta también el ronquido suave', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.2', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '😴 Cuenta también el ronquido suave', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
