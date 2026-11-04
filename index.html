@@ -1672,7 +1672,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.5'; // v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
+const VERSION = 'v35.6'; // v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
+// v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
 // v35.4: la onda pinta todos los segundos de ronquido (y de voz y tos), fuertes o flojos; el ronquido suave cuenta desde el 20 % de probabilidad (antes 15 %); reproductor: Destacado y su «i» a la izquierda, «5 de 84» a la derecha
 // v35.3: la onda pinta del color de lo que es todo lo que llega al 40 % de lo más fuerte de esa grabación (antes el 80 % y como mucho 3–5 tramos): se ve casi todo el ronquido, no solo lo más fuerte
 // v35.2: reproductor: fuera la línea de arriba «😴 Ronquido · hora · 5 de 84» (ya se ve en la lista); «5 de 84» pasa abajo a la izquierda de Destacado; el botón ▶/❚❚ en naranja, como el de la grabación que suena en la lista
@@ -2439,9 +2440,12 @@ const SEGC = {ronquido: 'r', voz: 'v', tos: 't', otro: 'o'}, SEGT = {r: 'ronquid
 // 😴 Ronquido continuo (v34.6): los ratos roncando seguido, sin pausas de más de 30 s (como el aviso).
 // Con los segundos de ronquido de cada grabación; las grabaciones antiguas sin ellos cuentan enteras si eran ronquido.
 // Devuelve las 10 rachas más largas, [inicio, fin] en segundos desde que empezó la noche, de la más larga a la más corta.
+// v35.6: y los segundos de ronquido claro de las grabaciones descartadas como «otro» (noche.rSueltos, [inicio, fin]):
+// antes, cada una abría un hueco de hasta 2 minutos y partía en dos un rato largo roncando
 const RACHA_PAUSA = 30;
-function rachasDe(evs) {
+function rachasDe(evs, sueltos = []) {
   const ss = [];
+  for (const [a, b] of sueltos || []) for (let s = a; s < b; s++) ss.push(s);
   for (const e of evs) {
     if (e.seg) { for (let i = 0; i < e.seg.length; i++) if (e.seg[i] === 'r') ss.push(e.off + i); }
     else if (e.tipo === 'ronquido') for (let i = 0; i < Math.round(e.dur || 0); i++) ss.push(e.off + i);
@@ -2563,10 +2567,11 @@ class Detector {
       else if (e.blocks.length * BLK / SR >= this.maxSec) this.finish();
     }
   }
-  // Añade segundos sin grabar (y descarta lo que estuviera grabando en ese momento)
+  // Añade segundos sin grabar. Lo que estuviera grabando se guarda (v35.6; antes se tiraba: hasta 2 min de ronquido perdidos)
   mute(sec) {
     const now = this.samples / SR;
     this.muteUntil = Math.max(now, this.muteUntil || 0) + sec;
+    if (this.ev) this.finish();
     this.ev = null; this.pre = [];
   }
   classify(blocks) {
@@ -2593,7 +2598,13 @@ class Detector {
     const segF = tipo === 'ronquido' ? segSuave(seg, e.sn, e.vo, e.co, e.db) : seg; // 😴 con el ronquido suave
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
-    if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
+    if (tipo === 'otro' && !this.keepOther) { // v35.6: sin audio, pero con sus segundos de ronquido claro (para el ronquido continuo)
+      const r = []; let a = -1, b = -1;
+      for (let i = 0; i <= seg.length; i++) if (seg[i] === 'r') { if (a < 0 || i - b > 5) { if (a >= 0) r.push([a, b + 1]); a = i; } b = i; }
+      if (a >= 0) r.push([a, b + 1]);
+      const o = Math.max(0, e.start);
+      this.onDiscard?.(top, r.map(([x, y]) => [Math.round(o + x), Math.round(o + y)])); return;
+    }
     const audio = concat(e.blocks);
     this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido, seg: segF});
   }
@@ -2810,8 +2821,9 @@ function makeSaver(night, onChange) {
       onChange?.(ev);
     },
     minute(db) { night.timeline.push(Math.round(db * 10) / 10); chain = chain.then(() => DB.put('noches', night)).catch(console.error); },
-    discard(top) { // ruidos que no son ronquido ni voz: solo se cuentan (y cuáles son), para avisar si la habitación es ruidosa
+    discard(top, r) { // ruidos que no son ronquido ni voz: solo se cuentan (y cuáles son), para avisar si la habitación es ruidosa
       night.descartados++;
+      if (r?.length && (night.rSueltos ||= []).length < 3000) night.rSueltos.push(...r); // v35.6: sus segundos de ronquido claro
       if (top && top !== 'Silence') { night.descTop ||= {}; night.descTop[top] = (night.descTop[top] || 0) + 1; }
     },
     done() { return chain.then(() => DB.put('noches', night)); }
@@ -4525,7 +4537,7 @@ async function openNight(id) {
     const r = curEvs.filter(e => e.tipo === 'ronquido').reduce((a, e) => a + segReales(e, 'r'), 0), v = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
     if (curEvs.length && !cur.sinGrab && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
     // 😴 rachas de ronquido continuo (v34.6): se guardan con la noche (y suben a la cuenta)
-    if (curEvs.length && !cur.sinGrab && cur.fin) { const ra = rachasDe(curEvs); if (JSON.stringify(ra) !== JSON.stringify(cur.rachas || null)) { cur.rachas = ra; try { await DB.put('noches', cur); subeNoches(); } catch {} } }
+    if (curEvs.length && !cur.sinGrab && cur.fin) { const ra = rachasDe(curEvs, cur.rSueltos); if (JSON.stringify(ra) !== JSON.stringify(cur.rachas || null)) { cur.rachas = ra; try { await DB.put('noches', cur); subeNoches(); } catch {} } }
   }
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = new Set(); FILTRO.abierto = false;
@@ -6845,7 +6857,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.5', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.6', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -6910,7 +6922,7 @@ if (!sesion) {
   let visto = false; try { visto = localStorage.getItem('ronquino-tour-visto') === '1'; } catch {}
   if (!visto) abreTour();
 }
-window.__EN = {IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov, sonarNoche}; // para pruebas
+window.__EN = {makeSaver, newNight, rachasDe, IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov, sonarNoche}; // para pruebas
 </script>
 </body>
 </html>
