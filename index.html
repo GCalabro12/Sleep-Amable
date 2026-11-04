@@ -1184,9 +1184,9 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
+  <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
   <details class="instr card banda siempreAbierto" id="guiaDet" open><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
   <details class="instr card banda" id="perDet"><summary><span>✍️ Audio personalizado</span></summary><div id="perBody"></div></details>
-  <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
   <details class="instr card banda siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="napest" id="napEst"></span><label class="swt"><input type="checkbox" id="napOn"><i></i></label></div>
@@ -1672,7 +1672,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.7'; // v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
+const VERSION = 'v35.8'; // v35.8: música, en el monitoreo y en «Alarma y música»: primero 🎵 Música para dormir, después 🎧 Audios para dormir y al final ✍️ Audio personalizado
+// v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
 // v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
 // v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
 // v35.4: la onda pinta todos los segundos de ronquido (y de voz y tos), fuertes o flojos; el ronquido suave cuenta desde el 20 % de probabilidad (antes 15 %); reproductor: Destacado y su «i» a la izquierda, «5 de 84» a la derecha
@@ -3567,17 +3568,17 @@ function renderCunas() {
   const vol = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" class="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>`;
   const tlSuena = live.cuna?.c.tl;
   $('cunaBody').innerHTML = `
-    <details class="instr card banda" id="cgDet"${CUI.g ? ' open' : ''}><summary><span>🎧 Audios para dormir</span></summary><div>
-      <p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte, con música suave. Suena entera y termina sola; mientras suena, no se graba.</p>
-      ${vol}<div class="cunas" id="cgBox"></div>
-    </div></details>
-    <details class="instr card banda" id="cpDet"${CUI.p || tlSuena ? ' open' : ''}><summary><span>✍️ Audio personalizado</span></summary><div>${vol}${tlCaja(tlSuena)}</div></details>
     <details class="instr card banda" id="cmDet"${CUI.m ? ' open' : ''}><summary><span>🎵 Música para dormir</span></summary><div>
       <p class="note" style="margin:6px 0 0">Toca una y empieza a sonar. Suena ${cunaMin} minutos y se va apagando sola; mientras suena, no se graba.</p>
       ${vol}
       <div class="cuctl"><span>⏱️ Minutos</span><div class="cumin">${[5, 10, 15].map(m => `<button type="button" data-m="${m}" class="${m === cunaMin ? 'on' : ''}">${m}</button>`).join('')}</div></div>
       <div class="cunas" id="cmBox"></div>
-    </div></details>`;
+    </div></details>
+    <details class="instr card banda" id="cgDet"${CUI.g ? ' open' : ''}><summary><span>🎧 Audios para dormir</span></summary><div>
+      <p class="note" style="margin:6px 0 0">Una voz te acompaña a relajarte, con música suave. Suena entera y termina sola; mientras suena, no se graba.</p>
+      ${vol}<div class="cunas" id="cgBox"></div>
+    </div></details>
+    <details class="instr card banda" id="cpDet"${CUI.p || tlSuena ? ' open' : ''}><summary><span>✍️ Audio personalizado</span></summary><div>${vol}${tlCaja(tlSuena)}</div></details>`;
   $('cgDet').ontoggle = e => CUI.g = e.target.open; $('cmDet').ontoggle = e => CUI.m = e.target.open; $('cpDet').ontoggle = e => CUI.p = e.target.open;
   $('cunaBody').querySelectorAll('.cunaVolIn').forEach(r => r.oninput = e => {
     cunaVol = e.target.value / 100; try { localStorage.setItem('ronquino-cunavol', String(cunaVol)); } catch {}
@@ -6865,7 +6866,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.7', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.8', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
