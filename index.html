@@ -1669,7 +1669,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.9'; // v34.9: aviso: la IA segura al 70 % con cualquier sensibilidad; la sensibilidad solo cambia el tiempo roncando seguido antes de avisar (Baja 2 min, Normal 1 min 30 s, Alta 1 min); la nota de la racha más larga dice los segundos al 70 % y al 80 %
+const VERSION = 'v35.0'; // v35.0: ronquido suave: dentro de una grabación de ronquido, cuenta también como ronquido cada segundo en que el ronquido es lo que más suena (al menos 15 %): salen más segundos amarillos y más minutos de ronquido; las noches de antes se recuentan con «Revisar esta noche con el detector nuevo» (administrador)
+// v34.9: aviso: la IA segura al 70 % con cualquier sensibilidad; la sensibilidad solo cambia el tiempo roncando seguido antes de avisar (Baja 2 min, Normal 1 min 30 s, Alta 1 min); la nota de la racha más larga dice los segundos al 70 % y al 80 %
 // v34.8: en Ruidos, a la derecha de la etiqueta, cuántos segundos de ese sonido hay en la grabación: «😴 Ronquido (10 seg)»
 // v34.7: una grabación que la IA no da como ronquido al menos al 50 % ya no se etiqueta Ronquido sino Otro (también en las noches ya grabadas, si no la has revisado); en Ruidos, dejar pulsada una etiqueta abre las demás (Ronquido, Voz, Tos, Respiración, Otro) para cambiarla; «Ronquido continuo» en corto (5m 50s) para que no salte de renglón; su tabla: columnas Cuándo, Duró y Aviso (✓ si te avisó en esa racha) y cuántos segundos estaba segura la IA en la racha más larga; las ventanas de explicación largas se pueden desplazar; la noche apunta si tenía los avisos activados
 // v34.6: aviso con sensibilidad Alta: al minuto de roncar seguido y con la IA segura al 70 % (antes siempre 2 min y 80 %); panel de puntuación: nuevo «Ronquido continuo» (la racha más larga sin pausas de más de 30 s; al tocarlo, las 10 más largas de qué hora a qué hora); Tos pasa a la fila de abajo; monitoreo: «i» a la derecha de la barra que explica la sensibilidad
@@ -2454,6 +2455,11 @@ function segReales(e, L) {
   return tot ? Math.min(tot, e.dur) : e.dur;
 }
 const segDe = (sn, vo, br, co) => sn.map((_, i) => SEGC[decide([sn[i]], [vo[i]], [br[i] || 0], [co[i] || 0])]).join('');
+// 😴 Ronquido suave (v35.0): en una grabación que ya es de ronquido, un segundo «otro» cuenta como ronquido si el ronquido
+// es lo que más suena en él (más que voz y tos) y llega al 15 %. Antes solo contaban los segundos de ronquido claro y
+// los suaves se quedaban fuera: en 2 minutos casi todo ronquido salían 26 segundos
+const RONQ_SUAVE = .15;
+const segSuave = (seg, sn, vo, co) => !seg ? seg : [...seg].map((c, i) => c === 'o' && sn[i] >= RONQ_SUAVE && sn[i] >= (vo[i] || 0) && sn[i] >= (co[i] || 0) ? 'r' : c).join('');
 // La etiqueta de la parte más fuerte: lo que es el segundo con más volumen (mirando también el de antes y el de después)
 function tipoFuerte(e, seg) {
   if (!e.db?.length || !seg) return null;
@@ -2574,11 +2580,12 @@ class Detector {
     if (md) { if (md.tipo !== tipo) { tipo = md.tipo; aprendido = true; } } // 🧠 el modelo de tu huella, si se usa
     else if (sesion?.admin) { const ap = APR.decide(vec); if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; } } // si no, lo que has enseñado, si está claro (solo el administrador)
     tipo = sinSeguridad(tipo, snMax);
+    const segF = tipo === 'ronquido' ? segSuave(seg, e.sn, e.vo, e.co) : seg; // 😴 con el ronquido suave
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
     if (tipo === 'otro' && !this.keepOther) { this.onDiscard?.(top); return; }
     const audio = concat(e.blocks);
-    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido, seg});
+    this.onEvent({off: Math.max(0, e.start), dur: audio.length / SR, tipo, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co), top, peak: e.peak, est: e.est, audio, vec, aprendido, seg: segF});
   }
   flush() { if (this.ev) this.finish(); if (this.minN > 20) this.onMinute(this.minAcc / this.minN); }
 }
@@ -4490,7 +4497,7 @@ $('ruidosCerrar').onclick = () => verRuidos(false);
 $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
 // 🔄 ¿Hay un detector más nuevo que el que analizó esta noche? Solo si se grabó (o se revisó) antes de la última mejora
-const DET_CODIGO = new Date(2026, 9, 26, 23, 0).getTime(); // última mejora de las reglas del detector (v19.4–v20.2)
+const DET_CODIGO = new Date(2026, 10, 4, 10, 30).getTime(); // última mejora de las reglas del detector (v35.0: ronquido suave; antes v19.4–v20.2)
 const hayDetectorNuevo = n => !!n && Math.max(n.inicio || 0, n.revisada || 0) < Math.max(DET_CODIGO, cfg.detCambio || 0);
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
@@ -5040,6 +5047,7 @@ $('reNight').onclick = async () => {
     if (md) tipo = md.tipo; else if (ap) tipo = ap.tipo; // 🧠 el modelo de tu huella o, si no, lo que has enseñado
     tipo = sinSeguridad(tipo, sn.length ? Math.max(...sn) : e.sn);
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
+    if (e.tipo === 'ronquido' && sn.length) e.seg = segSuave(e.seg, sn, vo, co); // 😴 con el ronquido suave (v35.0)
     e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
     const {_url, ...rec} = e; await DB.put('eventos', rec);
     $('reProg').style.width = ((k + 1) / evs.length * 100) + '%';
@@ -5154,6 +5162,7 @@ async function plSegs(e) {
     const md = !e.fix && !e.val ? tipoModelo({...e, sn: e.sn ?? Math.max(...a.sn, 0)}) : null;
     const tf = !e.fix && !e.val && !e.aprendido ? md?.tipo || tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
     if (cambia) { e.tipo = sinSeguridad(tf, e.sn); delete e.sub; }
+    if (e.tipo === 'ronquido') e.seg = segSuave(e.seg, a.sn, a.vo, a.co); // 😴 con el ronquido suave (v35.0)
     const {_url, _picos, _pico, _segando, _en, ...rec} = e; await DB.put('eventos', rec);
     if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
     else if (e.tipo === 'ronquido' || e.tipo === 'voz') { await recount(); renderStats(); } // ya se sabe qué segundos son ronquido: los minutos, de verdad
@@ -6816,7 +6825,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.9', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
+  ['v35.0', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '😴 Cuenta también el ronquido suave', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
