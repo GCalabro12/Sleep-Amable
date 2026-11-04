@@ -911,6 +911,7 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .ev .t{font-weight:600;font-variant-numeric:tabular-nums}
 .tag{font-size:13px;padding:3px 9px;border-radius:10px;border:0;background:var(--card2)}
 .tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.tos{color:#F87171} .tag.otro{color:var(--muted)}
+.tag .tseg{font-size:11.5px;opacity:.8;font-weight:400}
 .tag{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none} /* dejarla pulsada no selecciona el texto */
 .tagopc{display:flex;flex-wrap:wrap;gap:6px} .tagopc .tag{padding:6px 10px;font-size:13.5px;border:1px solid var(--line)} .tagopc .tag.on{border-color:#A78BFA;background:#312E81}
 .ev .meta{font-size:12px;color:var(--dim)}
@@ -1413,7 +1414,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <span class="selacts" id="selActs" hidden><button id="selShare" hidden>⤴ Compartir</button><button class="del" id="selDel">🗑️ Borrar</button></span>
   </div>
   <div id="evList" class="solo-ruidos"></div>
-  <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
+  <p class="note solo-ruidos">¿Alguna está mal clasificada? Toca su etiqueta para cambiarla, o déjala pulsada para elegir la buena. Para marcar un tramo entero, mantén pulsado un cuadrito.</p>
   <button class="btn wide solo-resumen" id="nStats" data-go="stats" style="margin-top:12px">📊 Estadísticas generales</button>
   <button class="btn wide danger solo-resumen" id="delNight">🗑️ Borrar esta noche</button>
 </section>
@@ -1668,7 +1669,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.7'; // v34.7: una grabación que la IA no da como ronquido al menos al 50 % ya no se etiqueta Ronquido sino Otro (también en las noches ya grabadas, si no la has revisado); en Ruidos, dejar pulsada una etiqueta abre las demás (Ronquido, Voz, Tos, Respiración, Otro) para cambiarla; «Ronquido continuo» en corto (5m 50s) para que no salte de renglón; su tabla: columnas Cuándo, Duró y Aviso (✓ si te avisó en esa racha) y cuántos segundos estaba segura la IA en la racha más larga; las ventanas de explicación largas se pueden desplazar; la noche apunta si tenía los avisos activados
+const VERSION = 'v34.8'; // v34.8: en Ruidos, a la derecha de la etiqueta, cuántos segundos de ese sonido hay en la grabación: «😴 Ronquido (10 seg)»
+// v34.7: una grabación que la IA no da como ronquido al menos al 50 % ya no se etiqueta Ronquido sino Otro (también en las noches ya grabadas, si no la has revisado); en Ruidos, dejar pulsada una etiqueta abre las demás (Ronquido, Voz, Tos, Respiración, Otro) para cambiarla; «Ronquido continuo» en corto (5m 50s) para que no salte de renglón; su tabla: columnas Cuándo, Duró y Aviso (✓ si te avisó en esa racha) y cuántos segundos estaba segura la IA en la racha más larga; las ventanas de explicación largas se pueden desplazar; la noche apunta si tenía los avisos activados
 // v34.6: aviso con sensibilidad Alta: al minuto de roncar seguido y con la IA segura al 70 % (antes siempre 2 min y 80 %); panel de puntuación: nuevo «Ronquido continuo» (la racha más larga sin pausas de más de 30 s; al tocarlo, las 10 más largas de qué hora a qué hora); Tos pasa a la fila de abajo; monitoreo: «i» a la derecha de la barra que explica la sensibilidad
 // v34.5: al entrar en otra cuenta desde el aparato donde duermes (con noches guardadas), sus ajustes y alarmas pasan a esa cuenta en vez de bajar los de la cuenta (así se pasan los datos de una cuenta a otra)
 // v34.4: ajustes y alarmas también en la cuenta: al entrar en otro aparato (p. ej. el ordenador) bajan solos; si cambias algo, se sube (Worker GET/POST /ajustes)
@@ -4820,6 +4822,8 @@ const ICO_COMPARTIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 const ICO_BAJAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
 const ICO_PAPELERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>';
 const TIPOS = ['ronquido', 'voz', 'tos', 'otro'];
+// v34.8: cuántos segundos de lo que dice la etiqueta hay en la grabación (con los segundos que ya sabe qué son)
+const segEtiq = e => { if (!e.seg) return null; const L = SEGC[e.tipo] || 'o', n = segReales({...e, seg: e.seg}, L); return e.seg.includes(L) ? n : 0; };
 // v34.7: si la IA no está segura al menos al 50 % de que es ronquido, no se etiqueta Ronquido sino Otro
 // (el modelo de tu huella o tus ejemplos podían llamar ronquido a algo con un 0 %)
 const RONQ_MIN = .5;
@@ -4840,7 +4844,7 @@ function abreEtiquetas(d, e) {
     APR.apunta(e, e.tipo); toast('✏️ Corregida: ' + tagTxt(e));
   });
 }
-const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : '🔊 ' + es(e.top);
+const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : /snor/i.test(e.top || '') ? '🔊 Otro ruido' : '🔊 ' + es(e.top); // (un «ronquido» sin seguridad que pasó a Otro, v34.8)
 function renderList() {
   const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : k === 'aviso' ? conAviso(e) : k === 'mov' ? conMov(e) : e.tipo === k));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
@@ -4859,7 +4863,7 @@ function renderList() {
     const d = document.createElement('div'); d.className = 'ev ' + e.tipo;
     const conf = e.tipo === 'ronquido' ? e.sn : e.tipo === 'voz' ? e.vo : e.tipo === 'tos' && e.co ? e.co : null;
     // Arriba, lo segura que está la IA y la etiqueta; abajo, el ▶ con la hora (sin segundos) y la duración, y las acciones con el cuadradito
-    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}</button>${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
+    d.innerHTML = `<div class="evbody"><div class="top">${conf != null && !e.fix ? `<span class="conf">${Math.round(conf * 100)} % probable de ser</span>` : ''}<button class="tag ${e.tipo}" title="Cambiar etiqueta">${tagTxt(e)}${segEtiq(e) != null ? ` <small class="tseg">(${segEtiq(e)} seg)</small>` : ''}</button>${e.val || e.fix ? '<span class="revok">✓ Revisada<button type="button" class="revx" aria-label="Deshacer la revisión" title="Deshacer la revisión">✕</button></span>' : ''}</div>
       <div class="bot"><button class="play big" title="Escuchar" aria-label="Escuchar">▶</button><span class="t">${evHora(cur, e.off)}</span><span class="meta">${dur(e.dur)}${e.est ? ' · estimado' : ''}</span>
       <span class="acts"><button class="fav${e.fav ? ' on' : ''}" title="Favorita" aria-label="Favorita">${ICO_FAV(e.fav)}</button><a class="dl" hidden></a><button class="del" title="Borrar" aria-label="Borrar">${ICO_PAPELERA}</button></span></div></div>`;
     const a = d.querySelector('.dl'), url = () => (e._url ||= URL.createObjectURL(e.blob));
@@ -6801,7 +6805,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.7', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 Con sensibilidad Alta, el aviso salta al minuto de roncar seguido', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
+  ['v34.8', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 Con sensibilidad Alta, el aviso salta al minuto de roncar seguido', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
