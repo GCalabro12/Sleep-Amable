@@ -1672,7 +1672,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.4'; // v35.4: la onda pinta todos los segundos de ronquido (y de voz y tos), fuertes o flojos; el ronquido suave cuenta desde el 20 % de probabilidad (antes 15 %); reproductor: Destacado y su «i» a la izquierda, «5 de 84» a la derecha
+const VERSION = 'v35.5'; // v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
+// v35.4: la onda pinta todos los segundos de ronquido (y de voz y tos), fuertes o flojos; el ronquido suave cuenta desde el 20 % de probabilidad (antes 15 %); reproductor: Destacado y su «i» a la izquierda, «5 de 84» a la derecha
 // v35.3: la onda pinta del color de lo que es todo lo que llega al 40 % de lo más fuerte de esa grabación (antes el 80 % y como mucho 3–5 tramos): se ve casi todo el ronquido, no solo lo más fuerte
 // v35.2: reproductor: fuera la línea de arriba «😴 Ronquido · hora · 5 de 84» (ya se ve en la lista); «5 de 84» pasa abajo a la izquierda de Destacado; el botón ▶/❚❚ en naranja, como el de la grabación que suena en la lista
 // v35.1: el ronquido suave solo cuenta si suena (como mucho 12 dB por debajo de lo más fuerte de la grabación); la onda ya no pinta de amarillo la grabación entera cuando es bajita: el color solo sigue por los segundos de ese sonido; Ruidos sin recuadro en cada grabación (separadas por una raya), más ancho para que la etiqueta y sus segundos quepan en un renglón
@@ -3491,6 +3492,10 @@ const CUNAS = [ // {id, icon, name, file} — hechas con Suno (workspace «Canci
   {id: 'mar', icon: '🌊', name: 'Mar en calma', file: 'cuna/mar-en-calma.mp3'},
   {id: 'bosque', icon: '🌲', name: 'Bosque dormido', file: 'cuna/bosque-dormido.mp3', tinte: 95},
   {id: 'nubes', icon: '☁️', name: 'Nubes de algodón', file: 'cuna/nubes-de-algodon.mp3'},
+  // v35.5: sonidos de la naturaleza de Gustavo (6 min, se repiten)
+  {id: 'agua', icon: '💧', name: 'Agua', file: 'cuna/agua.mp3'},
+  {id: 'lluvia', icon: '🌧️', name: 'Lluvia', file: 'cuna/lluvia.mp3'},
+  {id: 'noche', icon: '🌃', name: 'Noche', file: 'cuna/noche.mp3'},
   // Sonidos que crea la app (como los de Sleep as Android): no ocupan espacio ni gastan descargas
   {id: 'n-ventilador', icon: '🌀', name: 'Ventilador', noise: 'ventilador', svg: ICO_VENTILADOR},
   {id: 'n-aspiradora', icon: '🧹', name: 'Aspiradora', noise: 'aspiradora', svg: ICO_ASPIRADORA},
@@ -5619,7 +5624,8 @@ const SUBIDAS = [[0, 'De golpe'], [30, '30 s'], [60, '1 min'], [120, '2 min'], [
 const TONOS = [
   {id: 'amanecer', icon: '🌅', name: 'Amanecer'}, {id: 'pajaros', icon: '🐦', name: 'Pájaros'},
   {id: 'campanitas', icon: '🔔', name: 'Campanitas'}, {id: 'marimba', icon: '🎹', name: 'Marimba'},
-  {id: 'guitarra', icon: '🎸', name: 'Guitarra'}, {id: 'clasico', icon: '⏰', name: 'Clásico suave'}
+  {id: 'guitarra', icon: '🎸', name: 'Guitarra'}, {id: 'clasico', icon: '⏰', name: 'Clásico suave'},
+  {id: 'manana', icon: '☀️', name: 'Mañana'} // v35.5 (en Android: res/raw/manana.mp3, desde el APK 5.2)
 ];
 const NATIVA = !!(AND && AND.setAlarmas); // app Android 2.0+: las alarmas las hace sonar Android
 let ALS = {list: [], siesta: {min: 25, son: 'amanecer', sub: 60}};
@@ -6839,7 +6845,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.4', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '😴 Cuenta también el ronquido suave', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.5', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
