@@ -497,11 +497,12 @@ body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el 
 .tronq .pt{display:inline-block;width:12px;height:12px;border-radius:50%} .pt.ok{background:#4ADE80} .pt.mid{background:#FBBF24} .pt.bad{background:#F87171}
 .mpartes.tresp{grid-template-columns:1fr 1fr 1fr;margin-top:8px}
 .mpartes.motrosf{margin-top:8px}
-.mpartes.motrosf .mp:nth-child(3){grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* el tercero, centrado en su fila */
+.mpartes.motrosf .mp:nth-child(3):last-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* el tercero, centrado en su fila */
 .mpartes:not(.tresp) .mp:only-child{grid-column:1 / -1;justify-self:center;width:calc(50% - 4px);box-sizing:border-box} /* un recuadro solo: centrado en su fila */
 .mpartes.tresp .mp{padding:8px 3px;min-width:0}
 .mpartes.tresp .mp span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.2px}
 .mpartes.tresp .mp b{font-size:15px}
+.mpartes.tresp .mp[data-mexp="rcont"] span{white-space:normal;line-height:1.15} /* «Ronquido continuo» en dos renglones si no cabe */
 .mp.neutro{border-color:#475569}
 .motros{font-size:12px;color:var(--muted);margin:12px 0 -4px;font-weight:600;letter-spacing:.2px}
 .lronq{width:100%;height:auto;margin-top:8px}
@@ -762,6 +763,9 @@ details.hist[open] summary{margin-bottom:10px}
 .lsens button{background:#111827;border:1px solid #475569;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
 .lhint{display:none}
+.lmrow{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 8px}
+.lmrow .meter{margin:0}
+#lsensI{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid #475569;background:none;color:#94A3B8;font:italic 700 14px Georgia,serif;padding:0;line-height:1}
 .mute{background:#111827;border:1px solid #1F2937;color:#CBD5E1;border-radius:16px;padding:7px 14px;font-size:14px;margin:6px 0 8px}
 #muteRest{margin-left:8px;font-weight:700;color:#FBBF24;font-variant-numeric:tabular-nums}
 .lcuna{align-items:center;justify-content:center;gap:8px;font-size:15px;color:#C4B5FD;margin:-4px 0 12px;white-space:nowrap;width:100%;flex:none}
@@ -1089,7 +1093,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
-  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por el auricular Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
+  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido (con la sensibilidad <b>Alta</b>, <b>1 minuto</b> y el <b>70 %</b>), una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por el auricular Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
   <div class="card" id="iaCard">
@@ -1629,7 +1633,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <div class="inner">
     <div class="lgrupo">
     <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
-    <div class="meter"><i id="lvl"></i></div>
+    <div class="lmrow"><div class="meter"><i id="lvl"></i></div><button type="button" id="lsensI" aria-label="Qué mide la sensibilidad">i</button></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     </div>
     <div class="duofila">
@@ -1662,7 +1666,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.5'; // v34.5: al entrar en otra cuenta desde el aparato donde duermes (con noches guardadas), sus ajustes y alarmas pasan a esa cuenta en vez de bajar los de la cuenta (así se pasan los datos de una cuenta a otra)
+const VERSION = 'v34.6'; // v34.6: aviso con sensibilidad Alta: al minuto de roncar seguido y con la IA segura al 70 % (antes siempre 2 min y 80 %); panel de puntuación: nuevo «Ronquido continuo» (la racha más larga sin pausas de más de 30 s; al tocarlo, las 10 más largas de qué hora a qué hora); Tos pasa a la fila de abajo; monitoreo: «i» a la derecha de la barra que explica la sensibilidad
+// v34.5: al entrar en otra cuenta desde el aparato donde duermes (con noches guardadas), sus ajustes y alarmas pasan a esa cuenta en vez de bajar los de la cuenta (así se pasan los datos de una cuenta a otra)
 // v34.4: ajustes y alarmas también en la cuenta: al entrar en otro aparato (p. ej. el ordenador) bajan solos; si cambias algo, se sube (Worker GET/POST /ajustes)
 // v34.3: al abrir «Ruidos» la lista empieza arriba (Filtrar grabaciones por y el primer ruido de la noche) y ▶ empieza por el primero; ya no salta a la siguiente sin revisar
 // v34.2: «¿Te ayuda el aviso?»: mira los 5 minutos anteriores y los 5 posteriores a cada aviso (antes 10)
@@ -2093,6 +2098,8 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
 const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una vez; solo vuelve si sigues 2 min más roncando seguro (v22.2; antes cada 30 s)
 let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
 const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
+// v34.6: con sensibilidad Alta (6) avisa antes: al minuto de roncar seguido y con la IA segura al 70 %
+const avisoAlta = () => cfg.sens <= 6, avisoSeguro = () => avisoAlta() ? .70 : AVISO_SEGURO, avisoPrimero = () => avisoAlta() ? 60 : AVISO_PRIMERO;
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 // Abajo del monitoreo: «Avisos por auricular ›»; al tocarlo, se cambia a altavoz o auricular y salen las horas de los avisos de la noche
 function avisoHora(h) {
@@ -2122,14 +2129,15 @@ function avisoTick(det, dt) {
   // espera al siguiente ronquido para decirse justo detrás de él
   const now = det.samples / SR, mudo = det.muteUntil > now;
   if (e !== A.ev) { A.ev = e; A.n = 0; }
-  if (e && !mudo) while (A.n < e.sn.length) { const i = A.n++; if (e.sn[i] >= AVISO_SEGURO && decide([e.sn[i]], [e.vo[i]], [e.br[i] || 0]) === 'ronquido') A.ultR = now; }
+  const SEG = avisoSeguro();
+  if (e && !mudo) while (A.n < e.sn.length) { const i = A.n++; if (e.sn[i] >= SEG && decide([e.sn[i]], [e.vo[i]], [e.br[i] || 0]) === 'ronquido') A.ultR = now; }
   const ult = a => a.slice(-20);
   const ronca = !!e && e.sn.length > 0 && !mudo && now - (A.ultR ?? -1e9) <= 6
-    && ult(e.sn).filter(v => v >= AVISO_SEGURO).length >= 2 && decide(ult(e.sn), ult(e.vo), ult(e.br)) === 'ronquido'
+    && ult(e.sn).filter(v => v >= SEG).length >= 2 && decide(ult(e.sn), ult(e.vo), ult(e.br)) === 'ronquido'
     && ((sesion?.admin ? APR.decide(huellaMedia(e))?.tipo : null) ?? 'ronquido') === 'ronquido'; // 🧠 si tus ejemplos dicen que no es ronquido, no avisa (administrador)
   if (ronca) { A.ronc += dt; A.sil = 0; }
   else { A.sil += dt; if (A.sil >= AVISO_PAUSA) { A.ronc = 0; A.insiste = false; } }
-  if (A.ronc < (A.insiste ? AVISO_SIGUE : AVISO_PRIMERO)) return;
+  if (A.ronc < (A.insiste ? AVISO_SIGUE : avisoPrimero())) return;
   if (now - A.ultR > 1.5) return; // ya toca avisar: se espera al próximo ronquido, para decírtelo justo detrás
   A.ronc = 0; A.insiste = true;
   const tm = msgConAviso(); // ¿toca también el mensaje de la noche? va en el mismo aviso
@@ -2412,6 +2420,22 @@ const IA = {
 // fuerte se queda en «otro» (respiración), que es lo que más se confundía.
 // Qué es cada segundo de una grabación: una letra por segundo (r ronquido, v voz, t tos, o otro)
 const SEGC = {ronquido: 'r', voz: 'v', tos: 't', otro: 'o'}, SEGT = {r: 'ronquido', v: 'voz', t: 'tos', o: 'otro'};
+// 😴 Ronquido continuo (v34.6): los ratos roncando seguido, sin pausas de más de 30 s (como el aviso).
+// Con los segundos de ronquido de cada grabación; las grabaciones antiguas sin ellos cuentan enteras si eran ronquido.
+// Devuelve las 10 rachas más largas, [inicio, fin] en segundos desde que empezó la noche, de la más larga a la más corta.
+const RACHA_PAUSA = 30;
+function rachasDe(evs) {
+  const ss = [];
+  for (const e of evs) {
+    if (e.seg) { for (let i = 0; i < e.seg.length; i++) if (e.seg[i] === 'r') ss.push(e.off + i); }
+    else if (e.tipo === 'ronquido') for (let i = 0; i < Math.round(e.dur || 0); i++) ss.push(e.off + i);
+  }
+  ss.sort((a, b) => a - b);
+  const r = [];
+  for (const s of ss) { const u = r.at(-1); if (u && s - u[1] <= RACHA_PAUSA) u[1] = Math.max(u[1], s + 1); else r.push([s, s + 1]); }
+  return r.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0])).slice(0, 10).map(x => x.map(v => Math.round(v)));
+}
+const durRacha = s => s < 60 ? `${s} s` : `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ''}`;
 // Los segundos de verdad de ronquido (L 'r') o de voz ('v') de una grabación: no los 2 minutos enteros, sino los tramos
 // donde suena, juntando los huecos de hasta 5 s entre uno y otro (lo que dura una respiración). Si no se sabe qué es
 // cada segundo (grabaciones viejas o etiqueta puesta a mano sin ningún segundo así), cuenta entera, como antes (v27.0)
@@ -2877,6 +2901,7 @@ async function startListening() {
 function renderLiveSens() {
   document.querySelectorAll('#lsens button').forEach(b => b.classList.toggle('on', +b.dataset.v === cfg.sens));
 }
+$('lsensI').onclick = () => aviso('Sensibilidad\n\nCuánto tiene que sonar algo para que la app lo grabe. La barra se mueve con el sonido de la habitación: si pasa la raya, se graba.\n\nBaja y Normal: solo cambian la sensibilidad al sonido. Con Baja se graban solo los sonidos más fuertes; con Normal, también los medianos.\n\nAlta: graba también los sonidos flojos y, además, los avisos «estás roncando» saltan antes. Basta con 1 minuto roncando seguido (con Baja y Normal, 2 minutos) y con que la IA esté segura al 70 % (si no, al 80 %).');
 document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   cfg.sens = +b.dataset.v; $('sens').value = cfg.sens;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
@@ -3852,11 +3877,15 @@ function mananaPartes(n, partes) {
   const caja = (p, extra = '') => p ? `<div class="mp ${p.s == null ? '' : colorNota(p.s)}${extra}" data-mexp="${p.k}"${p.pct != null ? ` data-pct="${p.pct.toFixed(1)}"` : ''}${p.hrs ? ` data-hrs="${p.hrs}"` : ''} role="button" tabindex="0"><span>${p.t}</span>${p.nota ? `<div class="mpval"><b>${p.v}</b><small>${p.nota.replace(' ', '<br>')}</small></div>` : `<b>${p.v}</b>`}</div>` : '';
   const minVoz = Math.round((n.segVoz || 0) / 60);
   const fila1 = [P('horas'), P('reg')].filter(Boolean);
-  const fila2 = [P('ronq'), {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}, {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`}];
+  // 😴 Ronquido continuo (v34.6): a la derecha de Ronquido; Tos baja a la fila de abajo
+  const ra = n.rachas || [], rmax = ra.length ? ra[0][1] - ra[0][0] : null;
+  const rcont = {k: 'rcont', t: 'Ronquido continuo', v: rmax == null ? '—' : durRacha(rmax), hrs: ra.map(x => `${evHora(n, x[0])}–${evHora(n, x[1])}=${durRacha(x[1] - x[0])}`).join(';')};
+  const fila2 = [P('ronq'), rcont, {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}];
+  const tos = {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`};
   const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
   const nAv = (n.avisoT || []).length || n.avisos || 0; // v31.7: 🔔 cuántos avisos hubo; al tocarlo, a qué horas
   const avi = n.fuente === 'micro' ? {k: 'avisos', t: '🔔 Avisos', v: `${nAv} ${nAv === 1 ? 'aviso' : 'avisos'}`, hrs: (n.avisoT || []).map(t => evHora(n, t)).join(', ')} : null;
-  const otros = [P('calma'), lev, avi].filter(Boolean);
+  const otros = [P('calma'), lev, avi, tos].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
     ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'calma' ? '' : ' neutro')).join('')}</div>` : ''}`;
@@ -4462,6 +4491,8 @@ async function openNight(id) {
   { // las noches de antes de v27.0 contaban las grabaciones enteras: al abrirlas, los minutos de ronquido y voz se recalculan
     const r = curEvs.filter(e => e.tipo === 'ronquido').reduce((a, e) => a + segReales(e, 'r'), 0), v = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
     if (curEvs.length && !cur.sinGrab && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
+    // 😴 rachas de ronquido continuo (v34.6): se guardan con la noche (y suben a la cuenta)
+    if (curEvs.length && !cur.sinGrab && cur.fin) { const ra = rachasDe(curEvs); if (JSON.stringify(ra) !== JSON.stringify(cur.rachas || null)) { cur.rachas = ra; try { await DB.put('noches', cur); subeNoches(); } catch {} } }
   }
   TLV.start = 0; TLV.span = 0; TLV.follow = true;
   filter = new Set(); FILTRO.abierto = false;
@@ -4590,7 +4621,7 @@ function renderAvisoNoche() {
   if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
     <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>
     ${nAv ? `<button type="button" class="btn" id="avOir" style="margin:8px 0 2px">🎧 Oír grabaciones (${nAv})</button>` : ''}
-    <div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido.</div>`;
+    <div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido (con la sensibilidad <b>Alta</b>, <b>1 minuto</b> y el <b>70 %</b>).</div>`;
   if ($('avOir')) $('avOir').onclick = () => { filter = new Set(['aviso']); sel.clear(); verRuidos(true); renderStats(); renderList(); };
   requestAnimationFrame(ajustaTitulos);
 }
@@ -4658,6 +4689,7 @@ const EXP_PARTE = {
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   avisos: 'Las veces que la app te avisó esta noche de que estabas roncando. No cuenta para la puntuación.',
+  rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. El aviso «estás roncando» salta cuando llevas 2 minutos así (1 minuto con la sensibilidad Alta). No cuenta para la puntuación.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return;
@@ -4671,7 +4703,16 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
   }
   if (m.dataset.mexp === 'avisos') son = m.dataset.hrs ? `\n\n🔔 A las ${m.dataset.hrs}.` : '';
   aviso(EXP_PARTE[m.dataset.mexp] + son);
-  if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0); }); // 😴 con la tabla de cuánto ronca la gente (v27.5)
+  if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0);
+  if (m.dataset.mexp === 'rcont') $('askList').innerHTML = tablaRachas(m.dataset.hrs || ''); });
+// 😴 Las 10 rachas de ronquido continuo más largas de la noche: de qué hora a qué hora y cuánto duró cada una
+function tablaRachas(s) {
+  const fs = s ? s.split(';').map(x => { const [h, d] = x.split('='); return {h, d}; }) : [];
+  if (!fs.length) return '<p class="note" style="margin:6px 0 0">Esta noche no hay grabaciones de ronquido para calcularlo.</p>';
+  return `<table class="tronq"><tr><th></th><th>De qué hora a qué hora</th><th>Duró</th></tr>
+    ${fs.map((f, i) => `<tr${i ? '' : ' class="tu"'}><td>${i + 1}</td><td>${f.h.replace('–', ' a ')}</td><td>${f.d}</td></tr>`).join('')}</table>
+    <p class="note" style="margin:6px 0 0">${fs.length === 1 ? 'Tu racha' : `Tus ${fs.length} rachas`} de ronquido continuo más ${fs.length === 1 ? 'larga' : 'largas'}, de la más larga a la más corta.</p>`;
+} // 😴 con la tabla de cuánto ronca la gente (v27.5)
 // Recuadros de la noche: al tocarlos explican qué cuentan
 const EXP_TILE = {
   ronq: 'Cuántas grabaciones guardó la IA porque oyó un ronquido. Cada grabación junta los ronquidos seguidos: una puede durar unos segundos o varios minutos.',
@@ -6067,7 +6108,7 @@ const subKey = () => 'ronquino-subidas-' + (sesion?.id || '');
 function leeSubidas() { try { return JSON.parse(localStorage.getItem(subKey()) || '{}'); } catch { return {}; } }
 function guardaSubidas(m) { try { localStorage.setItem(subKey(), JSON.stringify(m)); } catch {} }
 const firmaNoche = n => [n.fin, n.ronquidos, n.voces, n.otros, n.segRonquido, n.segVoz || 0, (n.timeline || []).length,
-  n.nombre || '', n.avisos || 0, (n.mov || []).length, (n.tags || []).join(',')].join('|');
+  n.nombre || '', n.avisos || 0, (n.mov || []).length, (n.tags || []).join(','), JSON.stringify(n.rachas || [])].join('|');
 let subiendo = false;
 async function subeNoches() {
   if (!sesion || subiendo) return;
@@ -6716,7 +6757,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.5', '3 nov 2026', ['☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', '✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', '🧩 Monitoreo: elige el reto de la alarma junto a su hora, o bórrala con la ✕', '🔕 Monitoreo: puedes desactivar los avisos (o volver a activarlos) desde abajo', 'Otras mejoras funcionales']],
+  ['v34.6', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '🔔 Con sensibilidad Alta, el aviso salta al minuto de roncar seguido', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', '✖️ Reproductor de las grabaciones: ciérralo con la cruz de arriba a la derecha', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
