@@ -1672,7 +1672,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.6'; // v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
+const VERSION = 'v35.7'; // v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
+// v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
 // v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
 // v35.4: la onda pinta todos los segundos de ronquido (y de voz y tos), fuertes o flojos; el ronquido suave cuenta desde el 20 % de probabilidad (antes 15 %); reproductor: Destacado y su «i» a la izquierda, «5 de 84» a la derecha
 // v35.3: la onda pinta del color de lo que es todo lo que llega al 40 % de lo más fuerte de esa grabación (antes el 80 % y como mucho 3–5 tramos): se ve casi todo el ronquido, no solo lo más fuerte
@@ -2472,8 +2473,15 @@ const segDe = (sn, vo, br, co) => sn.map((_, i) => SEGC[decide([sn[i]], [vo[i]],
 // los suaves se quedaban fuera: en 2 minutos casi todo ronquido salían 26 segundos
 const RONQ_SUAVE = .20; // v35.4: 20 % (antes 15 %)
 // v35.1: y solo si suena: como mucho 12 dB por debajo del segundo más fuerte de la grabación (lo muy bajito es respiración)
+// v35.7: y, como tus ronquidos suenan casi iguales, un segundo que suena tan fuerte como los ronquidos claros de esa misma
+// grabación (como mucho 6 dB por debajo de su mediana) y no es voz ni tos, también es ronquido, aunque la IA lo puntúe bajo
+const RONQ_PARECIDO = 6;
 const segSuave = (seg, sn, vo, co, db) => { if (!seg) return seg; const dMax = db?.length ? Math.max(...db) : null;
-  return [...seg].map((c, i) => c === 'o' && sn[i] >= RONQ_SUAVE && sn[i] >= (vo[i] || 0) && sn[i] >= (co[i] || 0) && (dMax == null || db[i] >= dMax - 12) ? 'r' : c).join(''); };
+  const dR = db?.length ? [...seg].map((c, i) => c === 'r' ? db[i] : null).filter(v => v != null).sort((a, b) => a - b) : [];
+  const ref = dR.length >= 3 ? dR[Math.floor(dR.length / 2)] : null;
+  return [...seg].map((c, i) => c !== 'o' ? c
+    : sn[i] >= RONQ_SUAVE && sn[i] >= (vo[i] || 0) && sn[i] >= (co[i] || 0) && (dMax == null || db[i] >= dMax - 12) ? 'r'
+    : ref != null && db[i] >= ref - RONQ_PARECIDO && (vo[i] || 0) < .3 && (co[i] || 0) < .3 ? 'r' : c).join(''); };
 // La etiqueta de la parte más fuerte: lo que es el segundo con más volumen (mirando también el de antes y el de después)
 function tipoFuerte(e, seg) {
   if (!e.db?.length || !seg) return null;
@@ -4523,7 +4531,7 @@ $('ruidosCerrar').onclick = () => verRuidos(false);
 $('reParar').onclick = () => { REV.parar = true; $('reParar').hidden = true; $('reTxt').textContent = '⏹ Deteniendo…'; }; // ▲ cierra «Ruidos» y vuelve al análisis de la noche
 
 // 🔄 ¿Hay un detector más nuevo que el que analizó esta noche? Solo si se grabó (o se revisó) antes de la última mejora
-const DET_CODIGO = new Date(2026, 10, 4, 12, 0).getTime(); // última mejora de las reglas del detector (v35.0: ronquido suave; antes v19.4–v20.2)
+const DET_CODIGO = new Date(2026, 10, 4, 14, 0).getTime(); // última mejora de las reglas del detector (v35.0: ronquido suave; antes v19.4–v20.2)
 const hayDetectorNuevo = n => !!n && Math.max(n.inicio || 0, n.revisada || 0) < Math.max(DET_CODIGO, cfg.detCambio || 0);
 const REV = {id: null, parar: false}; // revisión con el detector nuevo en marcha (id de la noche)
 async function openNight(id) {
@@ -6857,7 +6865,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.6', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.7', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
