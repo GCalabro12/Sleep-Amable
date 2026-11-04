@@ -1096,7 +1096,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <li>Solo graba cuando hay sonido: ronquidos 😴 y voces 🗣️.</li>
     <li>Las grabaciones se quedan en este móvil. En tu cuenta solo se guardan los números de cada noche.</li>
   </ul>
-  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido (con la sensibilidad <b>Alta</b>, <b>1 minuto</b> y el <b>70 %</b>), una voz te dice «Estás roncando, cambia de posición». Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por el auricular Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
+  <div style="margin-top:12px;font-size:14px;color:var(--muted)"><b style="color:var(--text)">🔔 Avisos de ronquidos</b><br><span class="avisoTx" style="flex:1;font-size:14px;color:var(--muted)">Cuando llevas un rato roncando seguido y la IA está segura <b>al 70 %</b> de que es un ronquido, una voz te dice «Estás roncando, cambia de posición». El rato depende de la sensibilidad: <b>2 minutos</b> con Baja, <b>1 minuto y medio</b> con Normal y <b>1 minuto</b> con Alta. Te lo dice una vez; si sigues 2 minutos más roncando, te lo vuelve a decir. Suena por el auricular Bluetooth (con el volumen al menos a tres cuartos) o, si lo eliges abajo, por el altavoz. Se activa al tocar <b>«Monitorear y avisar de ronquidos»</b>.<br><br>💡 Al oírlo, ponte de lado y con la <b>barbilla hacia arriba</b>: con la cabeza hacia abajo se estrecha el paso del aire y se ronca más.</span></div>
     <button class="btn wide avisoTest" style="margin-top:10px">▶ Probar la voz</button>
   </details>
   <div class="card" id="iaCard">
@@ -1669,7 +1669,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v34.8'; // v34.8: en Ruidos, a la derecha de la etiqueta, cuántos segundos de ese sonido hay en la grabación: «😴 Ronquido (10 seg)»
+const VERSION = 'v34.9'; // v34.9: aviso: la IA segura al 70 % con cualquier sensibilidad; la sensibilidad solo cambia el tiempo roncando seguido antes de avisar (Baja 2 min, Normal 1 min 30 s, Alta 1 min); la nota de la racha más larga dice los segundos al 70 % y al 80 %
+// v34.8: en Ruidos, a la derecha de la etiqueta, cuántos segundos de ese sonido hay en la grabación: «😴 Ronquido (10 seg)»
 // v34.7: una grabación que la IA no da como ronquido al menos al 50 % ya no se etiqueta Ronquido sino Otro (también en las noches ya grabadas, si no la has revisado); en Ruidos, dejar pulsada una etiqueta abre las demás (Ronquido, Voz, Tos, Respiración, Otro) para cambiarla; «Ronquido continuo» en corto (5m 50s) para que no salte de renglón; su tabla: columnas Cuándo, Duró y Aviso (✓ si te avisó en esa racha) y cuántos segundos estaba segura la IA en la racha más larga; las ventanas de explicación largas se pueden desplazar; la noche apunta si tenía los avisos activados
 // v34.6: aviso con sensibilidad Alta: al minuto de roncar seguido y con la IA segura al 70 % (antes siempre 2 min y 80 %); panel de puntuación: nuevo «Ronquido continuo» (la racha más larga sin pausas de más de 30 s; al tocarlo, las 10 más largas de qué hora a qué hora); Tos pasa a la fila de abajo; monitoreo: «i» a la derecha de la barra que explica la sensibilidad
 // v34.5: al entrar en otra cuenta desde el aparato donde duermes (con noches guardadas), sus ajustes y alarmas pasan a esa cuenta en vez de bajar los de la cuenta (así se pasan los datos de una cuenta a otra)
@@ -2102,9 +2103,9 @@ if (AND?.auriculares && AND?.bateriaAuriculares) setInterval(() => {
 // con 30 segundos seguidos sin roncar se vuelve a empezar (otra vez 1 minuto para el primer aviso).
 const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una vez; solo vuelve si sigues 2 min más roncando seguro (v22.2; antes cada 30 s)
 let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
-const AVISO_SEGURO = .80; // solo cuenta como ronquido para avisar si la IA está segura al 80 % o más (v13.6; antes 85 %) (para no despertarte sin motivo)
-// v34.6: con sensibilidad Alta (6) avisa antes: al minuto de roncar seguido y con la IA segura al 70 %
-const avisoAlta = () => cfg.sens <= 6, avisoSeguro = () => avisoAlta() ? .70 : AVISO_SEGURO, avisoPrimero = () => avisoAlta() ? 60 : AVISO_PRIMERO;
+const AVISO_SEGURO = .70; // solo cuenta como ronquido para avisar si la IA está segura al 70 % o más (v34.9; antes 80 %, y 85 % antes de v13.6) (para no despertarte sin motivo)
+// v34.9: la sensibilidad solo cambia cuánto tiempo roncando seguido hace falta: Baja 2 min, Normal 1 min 30 s, Alta 1 min
+const avisoSeguro = () => AVISO_SEGURO, avisoPrimero = () => cfg.sens <= 6 ? 60 : cfg.sens <= 10 ? 90 : AVISO_PRIMERO;
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 // Abajo del monitoreo: «Avisos por auricular ›»; al tocarlo, se cambia a altavoz o auricular y salen las horas de los avisos de la noche
 function avisoHora(h) {
@@ -2909,7 +2910,8 @@ async function startListening() {
 function renderLiveSens() {
   document.querySelectorAll('#lsens button').forEach(b => b.classList.toggle('on', +b.dataset.v === cfg.sens));
 }
-$('lsensI').onclick = () => aviso('Sensibilidad\n\nCuánto tiene que sonar algo para que la app lo grabe. La barra se mueve con el sonido de la habitación: si pasa la raya, se graba.\n\nBaja y Normal: solo cambian la sensibilidad al sonido. Con Baja se graban solo los sonidos más fuertes; con Normal, también los medianos.\n\nAlta: graba también los sonidos flojos y, además, los avisos «estás roncando» saltan antes. Basta con 1 minuto roncando seguido (con Baja y Normal, 2 minutos) y con que la IA esté segura al 70 % (si no, al 80 %).');
+$('lsensI').onclick = () => aviso('Sensibilidad\n\nCuánto tiene que sonar algo para que la app lo grabe. La barra se mueve con el sonido de la habitación: si pasa la raya, se graba. Con Baja se graban solo los sonidos más fuertes; con Normal, también los medianos; con Alta, también los flojos.\n\nTambién cambia cuándo te avisa de que roncas: con Baja, al llevar 2 minutos roncando seguido; con Normal, 1 minuto y medio; con Alta, 1 minuto. En todas, la IA tiene que estar segura al 70 % de que es un ronquido.');
+
 document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   cfg.sens = +b.dataset.v; $('sens').value = cfg.sens;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
@@ -4631,7 +4633,7 @@ function renderAvisoNoche() {
   if (fx.length) $('avCard').innerHTML = `<summary><span>🎧 Avisos «estás roncando»</span><b class="estado si">${fx.length}</b></summary>
     <div class="avl">A las ${fx.map(x => evHora(cur, x.t)).join(', ')}.</div>
     ${nAv ? `<button type="button" class="btn" id="avOir" style="margin:8px 0 2px">🎧 Oír grabaciones (${nAv})</button>` : ''}
-    <div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas <b>2 minutos seguidos roncando</b> y la IA está segura <b>por encima del 80 %</b> de que es un ronquido (con la sensibilidad <b>Alta</b>, <b>1 minuto</b> y el <b>70 %</b>).</div>`;
+    <div class="stnote" style="margin-top:8px">⏱️ <b>Cuándo salta:</b> cuando llevas roncando seguido <b>2 minutos</b> con la sensibilidad Baja, <b>1 minuto y medio</b> con Normal o <b>1 minuto</b> con Alta, y la IA está segura <b>al 70 %</b> de que es un ronquido.</div>`;
   if ($('avOir')) $('avOir').onclick = () => { filter = new Set(['aviso']); sel.clear(); verRuidos(true); renderStats(); renderList(); };
   requestAnimationFrame(ajustaTitulos);
 }
@@ -4699,7 +4701,7 @@ const EXP_PARTE = {
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   avisos: 'Las veces que la app te avisó esta noche de que estabas roncando. No cuenta para la puntuación.',
-  rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. El aviso «estás roncando» salta cuando llevas 2 minutos así (1 minuto con la sensibilidad Alta). No cuenta para la puntuación.',
+  rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. El aviso «estás roncando» salta cuando llevas así 2 minutos con la sensibilidad Baja, 1 minuto y medio con Normal o 1 minuto con Alta. No cuenta para la puntuación.',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return;
@@ -4727,10 +4729,19 @@ function tablaRachas(s) {
 function porQueNoAviso() {
   const ra = cur?.rachas?.[0]; if (!ra || (cur.avisoT || []).some(a => a >= ra[0] && a <= ra[1] + 10)) return '';
   if (cur.conAviso === false) return '<p class="note" style="margin:8px 0 0">🔕 Esta noche los avisos estaban desactivados.</p>';
-  const thr = AVISO_SEGURO; let r = 0, seg = 0;
-  for (const e of curEvs) for (let i = 0; i < (e.sn || []).length; i++) { const tt = e.off + i; if (tt < ra[0] || tt > ra[1]) continue; if (e.seg?.[i] === 'r') { r++; if (e.sn[i] >= thr) seg++; } }
-  if (!r) return '';
-  return `<p class="note" style="margin:8px 0 0">🔎 Para avisar solo cuentan los segundos en que la IA está segura de que es un ronquido (80 %, o 70 % con la sensibilidad Alta). En tu racha más larga lo estuvo en ${seg} de ${r} segundos de ronquido.</p>`;
+  // La seguridad de cada segundo no se guarda: se vuelven a escuchar las grabaciones de esa racha (unos segundos)
+  const evs = curEvs.filter(e => e.blob && e.seg && e.off < ra[1] && e.off + e.dur > ra[0]);
+  if (!evs.length || !IA.clf) return '';
+  setTimeout(async () => {
+    let r = 0, s7 = 0, s8 = 0;
+    for (const e of evs) {
+      let a; try { a = await analizaWav(e.blob, true); } catch { continue; }
+      a.sn.forEach((v, i) => { const tt = e.off + i; if (tt < ra[0] || tt > ra[1] || e.seg[i] !== 'r') return; r++; if (v >= .7) s7++; if (v >= .8) s8++; });
+    }
+    const box = $('pqna'); if (!box) return;
+    box.textContent = r ? `🔎 Para avisar solo cuentan los segundos en que la IA está segura al 70 % de que es un ronquido. En tu racha más larga, de ${r} segundos de ronquido, lo estuvo en ${s7} (y al 80 %, en ${s8}).` : '';
+  });
+  return '<p class="note" id="pqna" style="margin:8px 0 0">🔎 Mirando por qué no te avisó…</p>';
 } // 😴 con la tabla de cuánto ronca la gente (v27.5)
 // Recuadros de la noche: al tocarlos explican qué cuentan
 const EXP_TILE = {
@@ -6805,7 +6816,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v34.8', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 Con sensibilidad Alta, el aviso salta al minuto de roncar seguido', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
+  ['v34.9', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Destacado: cada grabación empieza en lo más fuerte (tócalo para apagarlo)', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
