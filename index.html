@@ -205,6 +205,8 @@ input[type=url]{width:100%;background:var(--card2);color:var(--text);border:1px 
 #profAviso .btn{margin-top:8px}
 #ask .sheet{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:22px 16px 26px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain} /* v34.7: si no cabe, se desplaza */
 #ask h2{margin:0 0 6px;font-size:20px}
+#askX{display:none;position:sticky;top:-10px;float:right;margin:-12px -6px 4px 10px;width:38px;height:38px;border-radius:50%;border:1px solid #475569;background:var(--card2);color:#E2E8F0;font-size:18px;line-height:1;padding:0;z-index:2;box-shadow:0 2px 10px #0008}
+#ask.conX #askX{display:block} /* v36.1: ✕ para cerrar las explicaciones */
 #ask .finrow{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
 #ask .finrow span{flex:1}
 #ask .finrow button{background:#312E81;border:0;color:#E0E7FF;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
@@ -1564,6 +1566,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 <div id="ask" hidden>
   <div class="sheet">
+    <button type="button" id="askX" aria-label="Cerrar">✕</button>
     <h2 id="askT"></h2>
     <p id="askP"></p>
     <div id="askList"></div>
@@ -1673,7 +1676,9 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.0'; // v36.0: «Ronquido continuo»: cuándo salta el aviso, en una tabla de dos columnas (Tiempo roncando · Sensibilidad) en vez de una frase
+const VERSION = 'v36.2'; // v36.2: panel de puntuación en filas de dos: Horas; Ronquido y Ronquido continuo; Voces y Tos; Movimiento y Avisos (y «Te levantaste», si lo hay)
+// v36.1: las ventanas de explicación (como la de «Ronquido continuo») tienen una ✕ arriba a la derecha para cerrarlas, que se queda a la vista al desplazar; abajo sigue «Entendido»
+// v36.0: «Ronquido continuo»: cuándo salta el aviso, en una tabla de dos columnas (Tiempo roncando · Sensibilidad) en vez de una frase
 // v35.9: panel de puntuación: debajo, la sensibilidad que tenías esa noche; si la cambiaste, de qué hora a qué hora tuviste cada una (noche.sensT)
 // v35.8: música, en el monitoreo y en «Alarma y música»: primero 🎵 Música para dormir, después 🎧 Audios para dormir y al final ✍️ Audio personalizado
 // v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
@@ -3153,7 +3158,7 @@ function todoComoAntes() {
 // Hoja con dos botones; devuelve 'a' (botón grande) o 'b'
 function ask(title, text, a, b) {
   $('askT').textContent = title; $('askP').textContent = text; $('askA').textContent = a; $('askB').textContent = b;
-  $('askT').hidden = false; $('askP').hidden = !text; $('askB').hidden = false; $('ask').classList.remove('solo');
+  $('askT').hidden = false; $('askP').hidden = !text; $('askB').hidden = false; $('ask').classList.remove('solo', 'conX');
   $('ask').hidden = false;
   return new Promise(res => {
     $('askA').onclick = () => { $('ask').hidden = true; res('a'); };
@@ -3164,12 +3169,12 @@ function ask(title, text, a, b) {
 // Avisos y preguntas con el diseño de la app (nunca las ventanas grises del sistema, que parecen de fuera)
 function aviso(texto, boton = 'Entendido') {
   $('askList').innerHTML = ''; $('askT').hidden = true; $('askP').hidden = false; $('askP').textContent = texto;
-  $('askA').textContent = boton; $('askB').hidden = true; $('ask').classList.add('solo'); $('ask').hidden = false;
-  return new Promise(res => { $('askA').onclick = () => { $('ask').hidden = true; res(); }; });
+  $('askA').textContent = boton; $('askB').hidden = true; $('ask').classList.add('solo', 'conX'); $('ask').hidden = false;
+  return new Promise(res => { $('askA').onclick = $('askX').onclick = () => { $('ask').hidden = true; $('ask').classList.remove('conX'); res(); }; });
 }
 function confirma(texto, si = 'Sí', no = 'Cancelar') {
   $('askList').innerHTML = ''; $('askT').hidden = true; $('askP').hidden = false; $('askP').textContent = texto;
-  $('askA').textContent = si; $('askB').textContent = no; $('askB').hidden = false; $('ask').classList.add('solo'); $('ask').hidden = false;
+  $('askA').textContent = si; $('askB').textContent = no; $('askB').hidden = false; $('ask').classList.add('solo'); $('ask').classList.remove('conX'); $('ask').hidden = false;
   return new Promise(res => {
     $('askA').onclick = () => { $('ask').hidden = true; res(true); };
     $('askB').onclick = () => { $('ask').hidden = true; res(false); };
@@ -3940,14 +3945,15 @@ function mananaPartes(n, partes) {
   const ra = n.rachas || [], rmax = ra.length ? ra[0][1] - ra[0][0] : null;
   const avisoEn = x => (n.avisoT || []).some(a => a >= x[0] && a <= x[1] + 10); // ¿te avisó en esa racha?
   const rcont = {k: 'rcont', t: 'Ronquido continuo', v: rmax == null ? '—' : durCorto(rmax), hrs: ra.map(x => `${evHora(n, x[0])}–${evHora(n, x[1])}=${durRacha(x[1] - x[0])}=${avisoEn(x) ? 1 : 0}`).join(';')};
-  const fila2 = [P('ronq'), rcont, {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}];
+  const fila2 = [P('ronq'), rcont], voz = {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}; // v36.2: filas de dos
   const tos = {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`};
   const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
   const nAv = (n.avisoT || []).length || n.avisos || 0; // v31.7: 🔔 cuántos avisos hubo; al tocarlo, a qué horas
   const avi = n.fuente === 'micro' ? {k: 'avisos', t: '🔔 Avisos', v: `${nAv} ${nAv === 1 ? 'aviso' : 'avisos'}`, hrs: (n.avisoT || []).map(t => evHora(n, t)).join(', ')} : null;
-  const otros = [P('calma'), lev, avi, tos].filter(Boolean);
+  const otros = [P('calma'), avi, lev].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
-    <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
+    <div class="mpartes motrosf">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
+    <div class="mpartes motrosf">${[voz, tos].map(p => caja(p, ' neutro')).join('')}</div>
     ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'calma' ? '' : ' neutro')).join('')}</div>` : ''}
     ${sensNoche(n)}`;
 }
@@ -6888,7 +6894,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.0', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.2', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
