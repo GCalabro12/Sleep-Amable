@@ -759,6 +759,7 @@ details.hist[open] summary{margin-bottom:10px}
 .meter::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#F8FAFCaa}
 .meter i{display:block;height:100%;width:0;background:#475569;transition:width .2s}
 .meter i.hot{background:var(--snore)}
+.mpsens{margin:8px 2px 0;font-size:13.5px;color:var(--muted);line-height:1.35} .mpsens b{color:var(--text,#E5E7EB);font-weight:600} /* v35.9 */
 .lsens{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 6px;font-size:13px;color:var(--dim)}
 .lsens button{background:#111827;border:1px solid #475569;color:#94A3B8;border-radius:16px;padding:7px 13px;font-size:14px}
 .lsens button.on{background:#312E81;border-color:#6D5BD0;color:#E0E7FF}
@@ -1672,7 +1673,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.8'; // v35.8: música, en el monitoreo y en «Alarma y música»: primero 🎵 Música para dormir, después 🎧 Audios para dormir y al final ✍️ Audio personalizado
+const VERSION = 'v35.9'; // v35.9: panel de puntuación: debajo, la sensibilidad que tenías esa noche; si la cambiaste, de qué hora a qué hora tuviste cada una (noche.sensT)
+// v35.8: música, en el monitoreo y en «Alarma y música»: primero 🎵 Música para dormir, después 🎧 Audios para dormir y al final ✍️ Audio personalizado
 // v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
 // v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
 // v35.5: tres sonidos nuevos para dormir (Agua, Lluvia y Noche, de Gustavo) y un tono nuevo de alarma «Mañana» (en la app Android suena desde el APK 5.2; antes, Amanecer)
@@ -2865,6 +2867,7 @@ async function startListening() {
   await ctx.resume();
 
   const night = newNight('micro');
+  night.sensT = [[0, cfg.sens]]; // v35.9: la sensibilidad de la noche ([segundo, valor]; se apunta cada cambio)
   night.sonar = !!cfg.sonar; night.sonarSeg = 0; // con la noche se guarda cuánto rato funcionó el sonar: «sonar on / off» en Movimiento
   if (cfg.profundo) night.profundo = true; // 🌙 por la mañana sale su curva de sueño profundo y ligero
   await DB.put('noches', night);
@@ -2954,6 +2957,9 @@ document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   cfg.sens = +b.dataset.v; $('sens').value = cfg.sens;
   try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {}
   if (live.det) live.det.sens = cfg.sens;
+  if (live.night && live.det) { const s = Math.round(live.det.samples / SR), L = (live.night.sensT ||= []), u = L.at(-1); // v35.9
+    if (u && s - u[0] < 60) { u[1] = cfg.sens; if (L.length > 1 && L.at(-2)[1] === cfg.sens) L.pop(); } // en el mismo minuto: solo cuenta la última
+    else if (!u || u[1] !== cfg.sens) L.push([s, cfg.sens]); }
   renderLiveSens();
 });
 
@@ -3941,7 +3947,19 @@ function mananaPartes(n, partes) {
   const otros = [P('calma'), lev, avi, tos].filter(Boolean);
   return `<div class="mpartes">${fila1.map(p => caja(p)).join('')}</div>
     <div class="mpartes tresp">${fila2.map(p => caja(p, p.k === 'ronq' ? '' : ' neutro')).join('')}</div>
-    ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'calma' ? '' : ' neutro')).join('')}</div>` : ''}`;
+    ${otros.length ? `<div class="mpartes motrosf">${otros.map(p => caja(p, p.k === 'calma' ? '' : ' neutro')).join('')}</div>` : ''}
+    ${sensNoche(n)}`;
+}
+// 🎚️ La sensibilidad de esa noche (v35.9); si se cambió, de qué hora a qué hora fue cada una
+const SENS_NOM = {15: 'Baja', 10: 'Normal', 6: 'Alta'};
+function sensNoche(n) {
+  const L = n?.fuente === 'micro' && n.sensT?.length ? n.sensT : null; if (!L) return '';
+  const nom = v => SENS_NOM[v] || `${v} dB`;
+  let tx;
+  if (L.length === 1) tx = nom(L[0][1]);
+  else { const fin = n.fin ? Math.round((n.fin - n.inicio) / 1000) : null;
+    tx = L.map(([s, v], i) => { const h = L[i + 1]?.[0] ?? fin; return `<br>${evHora(n, s)}${h != null ? ` a ${evHora(n, h)}` : ''}: <b>${nom(v)}</b>`; }).join(''); return `<p class="mpsens">🎚️ Sensibilidad${tx}</p>`; }
+  return `<p class="mpsens">🎚️ Sensibilidad: <b>${tx}</b></p>`;
 }
 function tarjetaManana(n, prev, titulo) {
   const {total, partes} = puntuacion(n, prev), c = colorNota(total);
@@ -6866,7 +6884,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.8', '3-4 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v35.9', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
