@@ -1677,7 +1677,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.4'; // v36.4: panel: Ronquido más estrecho y Ronquido continuo más ancho, con su título en un solo renglón
+const VERSION = 'v36.5'; // v36.5: batería del auricular: ya no pide el 100 %; solo avisa si está por debajo de la mitad: «Recuerda tenerlo cargado para que dure toda la noche»
+// v36.4: panel: Ronquido más estrecho y Ronquido continuo más ancho, con su título en un solo renglón
 // v36.3: la grabación en la que salta el aviso «estás roncando» siempre se guarda, aunque al final quede como «otro» (antes se tiraba: el aviso salía sin grabación al lado); y la que la regla dice ronquido pero tu modelo 🧠 cambia a «otro» también se guarda (con audio, para oírla y corregirla); música (monitoreo y «Alarma y música»): los tres carteles salen cerrados, así se ven los tres títulos; app 5.2 con el tono «Mañana»
 // v36.2: panel de puntuación en filas de dos: Horas; Ronquido y Ronquido continuo; Voces y Tos; Movimiento y Avisos (y «Te levantaste», si lo hay)
 // v36.1: las ventanas de explicación (como la de «Ronquido continuo») tienen una ✕ arriba a la derecha para cerrarlas, que se queda a la vista al desplazar; abajo sigue «Entendido»
@@ -2109,10 +2110,10 @@ async function avisoBateria() {
   let b = AND.bateriaAuriculares();
   if (b === -2) { AND.pedirBluetooth(); await new Promise(r => setTimeout(r, 8000)); b = AND.bateriaAuriculares(); }
   if (b < 0) { toast('🎧 Tu móvil no deja leer la batería de este auricular'); return; }
-  if (b >= 95) return; // casi llenos: no hace falta avisar
-  AND.decir(`Tu auricular tiene un ${b} por ciento de batería. Recuerda que necesita estar al cien por cien para que dure toda la noche.`);
-  if (live.night) showWarn(`🎧 Auricular al ${b} %: cárgalo al 100 % para que dure toda la noche.`);
-  else toast(`🎧 Auricular al ${b} %: cárgalo al 100 %`);
+  if (b >= 50) return; // v36.5: con la mitad o más dura la noche: no hace falta avisar (antes pedía el 100 %)
+  AND.decir(`Tu auricular tiene un ${b} por ciento de batería. Recuerda tenerlo cargado para que dure toda la noche.`);
+  if (live.night) showWarn(`🎧 Auricular al ${b} %: recuerda tenerlo cargado para que dure toda la noche.`);
+  else toast(`🎧 Auricular al ${b} %: recuerda cargarlo`);
 }
 // En cuanto se conectan los pinganillos (con la app abierta, en cualquier pantalla): batería por los propios auriculares
 let auricAntes = false;
@@ -6910,7 +6911,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.4', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.5', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
