@@ -1188,7 +1188,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
   <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
-  <details class="instr card banda siempreAbierto" id="guiaDet" open><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
+  <details class="instr card banda" id="guiaDet"><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
   <details class="instr card banda" id="perDet"><summary><span>✍️ Audio personalizado</span></summary><div id="perBody"></div></details>
   <details class="instr card banda siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
   <div class="card">
@@ -1676,7 +1676,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.2'; // v36.2: panel de puntuación en filas de dos: Horas; Ronquido y Ronquido continuo; Voces y Tos; Movimiento y Avisos (y «Te levantaste», si lo hay)
+const VERSION = 'v36.3'; // v36.3: la grabación en la que salta el aviso «estás roncando» siempre se guarda, aunque al final quede como «otro» (antes se tiraba: el aviso salía sin grabación al lado); y la que la regla dice ronquido pero tu modelo 🧠 cambia a «otro» también se guarda (con audio, para oírla y corregirla); música (monitoreo y «Alarma y música»): los tres carteles salen cerrados, así se ven los tres títulos; app 5.2 con el tono «Mañana»
+// v36.2: panel de puntuación en filas de dos: Horas; Ronquido y Ronquido continuo; Voces y Tos; Movimiento y Avisos (y «Te levantaste», si lo hay)
 // v36.1: las ventanas de explicación (como la de «Ronquido continuo») tienen una ✕ arriba a la derecha para cerrarlas, que se queda a la vista al desplazar; abajo sigue «Entendido»
 // v36.0: «Ronquido continuo»: cuándo salta el aviso, en una tabla de dos columnas (Tiempo roncando · Sensibilidad) en vez de una frase
 // v35.9: panel de puntuación: debajo, la sensibilidad que tenías esa noche; si la cambiaste, de qué hora a qué hora tuviste cada una (noche.sensT)
@@ -2169,6 +2170,7 @@ function avisoTick(det, dt) {
   A.ronc = 0; A.insiste = true;
   const tm = msgConAviso(); // ¿toca también el mensaje de la noche? va en el mismo aviso
   if (decirNoche(tm == null ? FRASE : FRASE + ' ' + MSG.texto.trim())) {
+    if (det.ev) det.ev.avisado = true; // v36.3: esta grabación se guarda siempre
     if (tm != null) msgDicho(tm);
     const ahora = Date.now();
     live.night.avisos = (live.night.avisos || 0) + 1;
@@ -2614,8 +2616,9 @@ class Detector {
     tipo = sinSeguridad(tipo, snMax);
     const segF = tipo === 'ronquido' ? segSuave(seg, e.sn, e.vo, e.co, e.db) : seg; // 😴 con el ronquido suave
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-    this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !(tipo === 'otro' && !this.keepOther)});
-    if (tipo === 'otro' && !this.keepOther) { // v35.6: sin audio, pero con sus segundos de ronquido claro (para el ronquido continuo)
+    const tirar = tipo === 'otro' && !this.keepOther && !e.avisado && !(aprendido && seg.includes('r')); // v36.3: con aviso, o cambiada a «otro» por tu modelo, se guarda
+    this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !tirar});
+    if (tirar) { // v35.6: sin audio, pero con sus segundos de ronquido claro (para el ronquido continuo)
       const r = []; let a = -1, b = -1;
       for (let i = 0; i <= seg.length; i++) if (seg[i] === 'r') { if (a < 0 || i - b > 5) { if (a >= 0) r.push([a, b + 1]); a = i; } b = i; }
       if (a >= 0) r.push([a, b + 1]);
@@ -3543,7 +3546,7 @@ const GUIAS = [ // {id, icon, name, min, file}
 ];
 // ✍️ Audio personalizado (cartel propio en «Alarma y música» y en el monitoreo): la persona pega un texto y la app se lo repite 5 minutos con música suave de fondo
 const TL_C = {id: 'tl', icon: '✍️', name: 'Audio personalizado', min: 5, file: 'audios/fondo-texto.mp3', guia: true, tl: true};
-const CUI = {g: true, m: null, p: false}; // qué carteles están abiertos en el panel de música del monitoreo
+const CUI = {g: false, m: false, p: false}; // v36.3: los tres, cerrados al entrar // qué carteles están abiertos en el panel de música del monitoreo
 const TL = {txt: '', t: null, vel: 1, prueba: false, pBtn: null}, TL_VELS = [[1, 'Normal'], [.8, 'Lento'], [.6, 'Muy lento']], TL_PAUSA = 6000, TL_MUSICA = .35; // pausa entre repeticiones; la música, por debajo de la voz
 try { TL.txt = localStorage.getItem('ronquino-textolibre') || ''; const v = +localStorage.getItem('ronquino-textovel'); if (TL_VELS.some(x => x[0] === v)) TL.vel = v; } catch {}
 const CUNA_FADE = 5;
@@ -3576,7 +3579,6 @@ function renderCunas() {
     return;
   }
   // Igual que en «Alarma y música»: dos carteles desplegables (se recuerda cuál está abierto mientras se repinta)
-  CUI.m ??= CUNAS.some(x => x.id === cunaId);
   const vol = `<div class="cuctl"><span>🔊 Volumen</span><input type="range" class="cunaVolIn" min="5" max="100" value="${Math.round(cunaVol * 100)}"></div>`;
   const tlSuena = live.cuna?.c.tl;
   $('cunaBody').innerHTML = `
@@ -6894,7 +6896,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.2', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.3', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -6913,7 +6915,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '5.1';
+const APK_ULTIMA = '5.2';
 // Versión de prueba: solo la ve el móvil de Gustavo, el único con la 4.9 o más (el resto sigue en APK_ULTIMA). Se baja de SleepAmable-prueba.apk
 const APK_PRUEBA = '5.1';
 const apkPrueba = !!AND && parseFloat(AND.version()) >= 4.9 && parseFloat(AND.version()) < parseFloat(APK_PRUEBA);
