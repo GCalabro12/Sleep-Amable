@@ -1673,7 +1673,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v35.9'; // v35.9: panel de puntuación: debajo, la sensibilidad que tenías esa noche; si la cambiaste, de qué hora a qué hora tuviste cada una (noche.sensT)
+const VERSION = 'v36.0'; // v36.0: «Ronquido continuo»: cuándo salta el aviso, en una tabla de dos columnas (Tiempo roncando · Sensibilidad) en vez de una frase
+// v35.9: panel de puntuación: debajo, la sensibilidad que tenías esa noche; si la cambiaste, de qué hora a qué hora tuviste cada una (noche.sensT)
 // v35.8: música, en el monitoreo y en «Alarma y música»: primero 🎵 Música para dormir, después 🎧 Audios para dormir y al final ✍️ Audio personalizado
 // v35.7: en una grabación de ronquido, cada segundo que suena tan fuerte como sus ronquidos claros (hasta 6 dB menos que la mediana de ellos) y no es voz ni tos cuenta como ronquido: los ronquidos casi iguales que la IA puntuaba bajo ya no se quedan fuera
 // v35.6: ronquido continuo sin cortes: las grabaciones que se descartan como «otro» (p. ej. ronquido flojo, menos del 50 %) ya no abren un hueco de 2 min en la racha: se guardan sus segundos de ronquido claro (sin el audio) y cuentan para el ronquido continuo; «No grabar», el aviso por altavoz y el audio personalizado ya no tiran la grabación que estaba en marcha: la guardan
@@ -4761,7 +4762,7 @@ const EXP_PARTE = {
   lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   avisos: 'Las veces que la app te avisó esta noche de que estabas roncando. No cuenta para la puntuación.',
-  rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. El aviso «estás roncando» salta cuando llevas así 2 minutos con la sensibilidad Baja, 1 minuto y medio con Normal o 1 minuto con Alta. No cuenta para la puntuación.',
+  rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. No cuenta para la puntuación.\n\nEl aviso «estás roncando» salta cuando llevas roncando seguido:',
   calma: 'Las veces que te moviste en la noche: dar vueltas o cambiar de postura (los movimientos a menos de 1 minuto cuentan como uno). Hasta 5 por hora es normal. Menos movimientos suele ser un sueño más tranquilo. Para contarlos bien, deja el móvil sobre el colchón o activa el 📡 sonar.'
 };
 document.addEventListener('click', e => { const m = e.target.closest('[data-mexp]'); if (!m) return;
@@ -4780,8 +4781,11 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
 // 😴 Las 10 rachas de ronquido continuo más largas de la noche: de qué hora a qué hora y cuánto duró cada una
 function tablaRachas(s) {
   const fs = s ? s.split(';').map(x => { const [h, d, a] = x.split('='); return {h, d, a: a === '1'}; }) : [];
-  if (!fs.length) return '<p class="note" style="margin:6px 0 0">Esta noche no hay grabaciones de ronquido para calcularlo.</p>';
-  return `<table class="tronq"><tr><th></th><th>Cuándo</th><th>Duró</th><th style="text-align:center">Aviso</th></tr>
+  // v36.0: cuándo salta el aviso, en dos columnas
+  const tAv = `<table class="tronq" style="margin-bottom:12px"><tr><th>Tiempo roncando</th><th>Sensibilidad</th></tr>
+    <tr><td>2 min</td><td>Baja</td></tr><tr><td>1 min 30 s</td><td>Normal</td></tr><tr><td>1 min</td><td>Alta</td></tr></table>`;
+  if (!fs.length) return tAv + '<p class="note" style="margin:6px 0 0">Esta noche no hay grabaciones de ronquido para calcularlo.</p>';
+  return `${tAv}<table class="tronq"><tr><th></th><th>Cuándo</th><th>Duró</th><th style="text-align:center">Aviso</th></tr>
     ${fs.map((f, i) => `<tr${i ? '' : ' class="tu"'}><td>${i + 1}</td><td>${f.h.replace('–', ' a ')}</td><td>${f.d}</td><td style="text-align:center">${f.a ? '✓' : ''}</td></tr>`).join('')}</table>
     <p class="note" style="margin:6px 0 0">${fs.length === 1 ? 'Tu racha' : `Tus ${fs.length} rachas`} de ronquido continuo más ${fs.length === 1 ? 'larga' : 'largas'}, de la más larga a la más corta. ✓: te avisó en ella.</p>${porQueNoAviso()}`;
 }
@@ -6884,7 +6888,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v35.9', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.0', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
