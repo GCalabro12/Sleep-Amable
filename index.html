@@ -1675,7 +1675,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.7'; // v36.7: «Voz» o «Tos» sin seguridad → Otro: tu modelo 🧠 llamaba «Voz» a un pitido que la IA oía como voz al 6 % (0 seg de voz) y se guardaba toda la noche; ahora hace falta al menos un 30 % de voz (o de tos), como en la regla. Al abrir una noche, las que estaban así pasan a Otro. Los pitidos se llaman «pitido»
+const VERSION = 'v36.8'; // v36.8: sonar sin auricular: el tono del sonar (19 kHz), muy fuerte al lado del micrófono, se colaba en las grabaciones como «ding» (una noche, 119 grabaciones de ding y solo un ronquido); ahora dos filtros quitan justo ese tono antes de grabar y, con el sonar encendido, una grabación de ding, campana o pitido sin ronquido, voz ni tos no se guarda
+// v36.7: «Voz» o «Tos» sin seguridad → Otro: tu modelo 🧠 llamaba «Voz» a un pitido que la IA oía como voz al 6 % (0 seg de voz) y se guardaba toda la noche; ahora hace falta al menos un 30 % de voz (o de tos), como en la regla. Al abrir una noche, las que estaban así pasan a Otro. Los pitidos se llaman «pitido»
 // v36.6: Inicio: «by Práctica Integral» y «with Grow Panel» en el mismo renglón (si no caben, «Grow Panel» sin «with»); bienvenida (la intro) sin los sellos y con la versión abajo en el centro
 // v36.5: batería del auricular: ya no pide el 100 %; solo avisa si está por debajo de la mitad: «Recuerda tenerlo cargado para que dure toda la noche»
 // v36.4: panel: Ronquido más estrecho y Ronquido continuo más ancho, con su título en un solo renglón
@@ -2403,7 +2404,7 @@ const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathi
   Snoring:'ronquido',Snort:'resoplido',Speech:'voz',Whispering:'susurro',Voice:'voz baja',Conversation:'conversación',
   'Male speech, man speaking':'voz de hombre','Female speech, woman speaking':'voz de mujer','Child speech, kid speaking':'voz de niño',
   Laughter:'risa',Crying:'llanto','Baby cry, infant cry':'llanto de bebé',Sigh:'suspiro',Groan:'quejido',Yawn:'bostezo',
-  'Beep, bleep':'pitido','Sine wave':'pitido','Chirp tone':'pitido','Electronic tuner':'pitido',Buzzer:'zumbido',
+  Ding:'ding',Bell:'campana',Chime:'campanilla','Beep, bleep':'pitido','Sine wave':'pitido','Chirp tone':'pitido','Electronic tuner':'pitido',Buzzer:'zumbido',
   'Smoke detector, smoke alarm':'detector de humo','Alarm clock':'despertador','Busy signal':'pitido','Dial tone':'pitido',
   'Toilet flush':'cisterna',Water:'agua',Telephone:'teléfono',Ringtone:'tono de llamada',Vibration:'vibración'};
 const es = n => ES[n] || (n ? n.toLowerCase() : 'sonido');
@@ -2454,6 +2455,9 @@ const IA = {
 // fuerte se queda en «otro» (respiración), que es lo que más se confundía.
 // Qué es cada segundo de una grabación: una letra por segundo (r ronquido, v voz, t tos, o otro)
 const SEGC = {ronquido: 'r', voz: 'v', tos: 't', otro: 'o'}, SEGT = {r: 'ronquido', v: 'voz', t: 'tos', o: 'otro'};
+// v36.8: lo que la IA oye cuando se cuela el tono del sonar: con el sonar encendido, esas grabaciones no se guardan
+const TONO_SONAR = new Set(['Ding', 'Bell', 'Chime', 'Jingle bell', 'Tuning fork', 'Wind chime', 'Glockenspiel', 'Clang', 'Ding-dong',
+  'Beep, bleep', 'Sine wave', 'Chirp tone', 'Electronic tuner', 'Busy signal', 'Dial tone', 'Buzzer', 'Bicycle bell', 'Church bell', 'Ping']);
 // 😴 Ronquido continuo (v34.6): los ratos roncando seguido, sin pausas de más de 30 s (como el aviso).
 // Con los segundos de ronquido de cada grabación; las grabaciones antiguas sin ellos cuentan enteras si eran ronquido.
 // Devuelve las 10 rachas más largas, [inicio, fin] en segundos desde que empezó la noche, de la más larga a la más corta.
@@ -2621,7 +2625,8 @@ class Detector {
     tipo = sinSeguridad(tipo, snMax, voMax, max(e.co));
     const segF = tipo === 'ronquido' ? segSuave(seg, e.sn, e.vo, e.co, e.db) : seg; // 😴 con el ronquido suave
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-    const tirar = tipo === 'otro' && !this.keepOther && !e.avisado && !(aprendido && seg.includes('r')); // v36.3: con aviso, o cambiada a «otro» por tu modelo, se guarda
+    const eco = tipo === 'otro' && this.sonar?.() && TONO_SONAR.has(top) && !/[rvt]/.test(seg); // v36.8: el pitido del propio sonar
+    const tirar = eco || tipo === 'otro' && !this.keepOther && !e.avisado && !(aprendido && seg.includes('r')); // v36.3: con aviso, o cambiada a «otro» por tu modelo, se guarda
     this.onResult?.({tipo, aprendido, sn: snMax, vo: voMax, br: max(e.br), top, dur: e.blocks.length * BLK / SR, guardado: !tirar});
     if (tirar) { // v35.6: sin audio, pero con sus segundos de ronquido claro (para el ronquido continuo)
       const r = []; let a = -1, b = -1;
@@ -2877,7 +2882,11 @@ async function startListening() {
   // Filtro: a 16 kHz solo cabe hasta 8 kHz; así ni el pitido del sonar ni los agudos se cuelan en las grabaciones
   const lp1 = ctx.createBiquadFilter(), lp2 = ctx.createBiquadFilter();
   lp1.type = lp2.type = 'lowpass'; lp1.frequency.value = lp2.frequency.value = 7500;
-  src.connect(lp1).connect(lp2).connect(node).connect(mute).connect(ctx.destination);
+  // v36.8: y dos filtros justo en el tono del sonar (19 kHz ± 1,2 kHz, con los ecos de moverte): sin auricular, el altavoz
+  // está al lado del micrófono, el tono llega fortísimo y lo que quedaba se colaba al pasar a 16 kHz como un «ding»
+  const nt1 = ctx.createBiquadFilter(), nt2 = ctx.createBiquadFilter();
+  nt1.type = nt2.type = 'notch'; nt1.frequency.value = nt2.frequency.value = 19000; nt1.Q.value = nt2.Q.value = 8;
+  src.connect(nt1).connect(nt2).connect(lp1).connect(lp2).connect(node).connect(mute).connect(ctx.destination);
   await ctx.resume();
 
   const night = newNight('micro');
@@ -2890,14 +2899,14 @@ async function startListening() {
     avisoRonco(ev);
     $('cSnore').textContent = mmss(night.segRonquido);
   });
-  const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec,
+  const det = new Detector({sens: cfg.sens, keepOther: cfg.keepOther, maxSec: cfg.maxSec, sonar: () => !!live.sonar,
     onEvent: saver.event, onMinute: saver.minute, onDiscard: saver.discard,
     onStart: () => {}, onScore: pruebaScore, onResult: pruebaResult});
   const rs = new Resampler(ctx.sampleRate);
   node.port.onmessage = m => { live.lastFrame = Date.now(); const x = rs.process(m.data); det.push(x); live.capt?.add(x); };
   stream.getAudioTracks()[0].onended = () => showWarn('El micrófono se ha detenido. Toca «Fin monitoreo sueño» para guardar.');
 
-  Object.assign(live, {stream, ctx, night, saver, det, src, lp1, lastFrame: Date.now()});
+  Object.assign(live, {stream, ctx, night, saver, det, src, lp1: nt1, lastFrame: Date.now()}); // v36.8: la entrada de los filtros es ya el del sonar
   movEmpezar(night);
   if (cfg.profundo) profAvisoAbre(night); // 🛏️ se queda a la vista hasta que eliges
   setTimeout(() => { if (AND?.micBluetooth?.()) AND.micMovil(); }, 2000);
@@ -6917,7 +6926,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.7', '3-6 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.8', '3-6 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
