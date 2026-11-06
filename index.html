@@ -1675,7 +1675,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.6'; // v36.6: Inicio: «by Práctica Integral» y «with Grow Panel» en el mismo renglón (si no caben, «Grow Panel» sin «with»); bienvenida (la intro) sin los sellos y con la versión abajo en el centro
+const VERSION = 'v36.7'; // v36.7: «Voz» o «Tos» sin seguridad → Otro: tu modelo 🧠 llamaba «Voz» a un pitido que la IA oía como voz al 6 % (0 seg de voz) y se guardaba toda la noche; ahora hace falta al menos un 30 % de voz (o de tos), como en la regla. Al abrir una noche, las que estaban así pasan a Otro. Los pitidos se llaman «pitido»
+// v36.6: Inicio: «by Práctica Integral» y «with Grow Panel» en el mismo renglón (si no caben, «Grow Panel» sin «with»); bienvenida (la intro) sin los sellos y con la versión abajo en el centro
 // v36.5: batería del auricular: ya no pide el 100 %; solo avisa si está por debajo de la mitad: «Recuerda tenerlo cargado para que dure toda la noche»
 // v36.4: panel: Ronquido más estrecho y Ronquido continuo más ancho, con su título en un solo renglón
 // v36.3: la grabación en la que salta el aviso «estás roncando» siempre se guarda, aunque al final quede como «otro» (antes se tiraba: el aviso salía sin grabación al lado); y la que la regla dice ronquido pero tu modelo 🧠 cambia a «otro» también se guarda (con audio, para oírla y corregirla); música (monitoreo y «Alarma y música»): los tres carteles salen cerrados, así se ven los tres títulos; app 5.2 con el tono «Mañana»
@@ -2402,6 +2403,8 @@ const ES = {Cough:'tos',Sneeze:'estornudo','Throat clearing':'carraspeo',Breathi
   Snoring:'ronquido',Snort:'resoplido',Speech:'voz',Whispering:'susurro',Voice:'voz baja',Conversation:'conversación',
   'Male speech, man speaking':'voz de hombre','Female speech, woman speaking':'voz de mujer','Child speech, kid speaking':'voz de niño',
   Laughter:'risa',Crying:'llanto','Baby cry, infant cry':'llanto de bebé',Sigh:'suspiro',Groan:'quejido',Yawn:'bostezo',
+  'Beep, bleep':'pitido','Sine wave':'pitido','Chirp tone':'pitido','Electronic tuner':'pitido',Buzzer:'zumbido',
+  'Smoke detector, smoke alarm':'detector de humo','Alarm clock':'despertador','Busy signal':'pitido','Dial tone':'pitido',
   'Toilet flush':'cisterna',Water:'agua',Telephone:'teléfono',Ringtone:'tono de llamada',Vibration:'vibración'};
 const es = n => ES[n] || (n ? n.toLowerCase() : 'sonido');
 
@@ -2615,7 +2618,7 @@ class Detector {
     const vec = huellaMedia(e), md = vec ? tipoModelo({vec, sn: snMax, vo: voMax, br: max(e.br), co: max(e.co)}) : null;
     if (md) { if (md.tipo !== tipo) { tipo = md.tipo; aprendido = true; } } // 🧠 el modelo de tu huella, si se usa
     else if (sesion?.admin) { const ap = APR.decide(vec); if (ap && ap.tipo !== tipo) { tipo = ap.tipo; aprendido = true; } } // si no, lo que has enseñado, si está claro (solo el administrador)
-    tipo = sinSeguridad(tipo, snMax);
+    tipo = sinSeguridad(tipo, snMax, voMax, max(e.co));
     const segF = tipo === 'ronquido' ? segSuave(seg, e.sn, e.vo, e.co, e.db) : seg; // 😴 con el ronquido suave
     const top = Object.entries(e.tops).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
     const tirar = tipo === 'otro' && !this.keepOther && !e.avisado && !(aprendido && seg.includes('r')); // v36.3: con aviso, o cambiada a «otro» por tu modelo, se guarda
@@ -4581,7 +4584,7 @@ async function openNight(id) {
   $('reCard').hidden = REV.id !== id; $('reNight').disabled = !!REV.id;
   cur = await DB.get('noches', id); pintaRevisada();
   $('reNight').hidden = !(sesion?.admin && hayDetectorNuevo(cur)); curEvs = (await DB.byNight(id)).sort((a, b) => a.off - b.off); sel.clear();
-  for (const e of curEvs) if (!e.fix && !e.val && sinSeguridad(e.tipo, e.sn) !== e.tipo) { e.tipo = 'otro'; delete e.sub; try { await DB.put('eventos', e); } catch {} } // v34.7: «Ronquido» sin seguridad → Otro
+  for (const e of curEvs) if (!e.fix && !e.val && sinSeguridad(e.tipo, e.sn, e.vo, e.co) !== e.tipo) { e.tipo = 'otro'; delete e.sub; try { await DB.put('eventos', e); } catch {} } // v34.7: «Ronquido» sin seguridad → Otro (v36.7: y «Voz» o «Tos»)
   { // las noches de antes de v27.0 contaban las grabaciones enteras: al abrirlas, los minutos de ronquido y voz se recalculan
     const r = curEvs.filter(e => e.tipo === 'ronquido').reduce((a, e) => a + segReales(e, 'r'), 0), v = curEvs.filter(e => e.tipo === 'voz').reduce((a, e) => a + segReales(e, 'v'), 0);
     if (curEvs.length && !cur.sinGrab && (Math.abs(r - (cur.segRonquido || 0)) > 1 || Math.abs(v - (cur.segVoz || 0)) > 1)) { cur.segRonquido = r; cur.segVoz = v; try { await DB.put('noches', cur); } catch {} }
@@ -4924,7 +4927,11 @@ const segEtiq = e => { if (!e.seg) return null; const L = SEGC[e.tipo] || 'o', n
 // v34.7: si la IA no está segura al menos al 50 % de que es ronquido, no se etiqueta Ronquido sino Otro
 // (el modelo de tu huella o tus ejemplos podían llamar ronquido a algo con un 0 %)
 const RONQ_MIN = .5;
-const sinSeguridad = (tipo, sn) => tipo === 'ronquido' && sn != null && sn < RONQ_MIN ? 'otro' : tipo;
+// v36.7: y lo mismo con la voz y la tos: sin al menos un 30 % (lo que pide la regla), Otro. Tu modelo llamaba «Voz»
+// a un pitido con un 6 % de voz y 0 segundos de voz, y se guardaban así toda la noche
+const VOZ_MIN = .3;
+const sinSeguridad = (tipo, sn, vo, co) => tipo === 'ronquido' && sn != null && sn < RONQ_MIN ? 'otro'
+  : tipo === 'voz' && vo != null && vo < VOZ_MIN ? 'otro' : tipo === 'tos' && co != null && co < VOZ_MIN ? 'otro' : tipo;
 // ✏️ Cambiar la etiqueta de una grabación: en su sitio salen todas; la que tiene ahora, marcada (tocarla lo deja como estaba)
 const ETIQ = [['ronquido', '😴 Ronquido'], ['voz', '🗣️ Voz'], ['tos', '🫁 Tos'], ['resp', '💨 Respiración'], ['otro', '🔊 Otro']];
 function abreEtiquetas(d, e) {
@@ -5124,7 +5131,7 @@ $('reNight').onclick = async () => {
     const md = !e.val ? tipoModelo({vec: e.vec, sn: Math.max(...sn, 0), vo: Math.max(...vo, 0), br: Math.max(...br, 0), co: Math.max(...co, 0)}) : null;
     const ap = !md && e.vec && !e.val ? APR.decide(e.vec) : null;
     if (md) tipo = md.tipo; else if (ap) tipo = ap.tipo; // 🧠 el modelo de tu huella o, si no, lo que has enseñado
-    tipo = sinSeguridad(tipo, sn.length ? Math.max(...sn) : e.sn);
+    tipo = sinSeguridad(tipo, sn.length ? Math.max(...sn) : e.sn, vo.length ? Math.max(...vo) : e.vo, co.length ? Math.max(...co) : e.co);
     if (tipo !== e.tipo) { const key = e.tipo + '→' + tipo; cambios[key] = (cambios[key] || 0) + 1; e.tipo = tipo; if (tipo === 'otro' && !e.top) e.top = 'Breathing'; }
     if (e.tipo === 'ronquido' && sn.length) e.seg = segSuave(e.seg, sn, vo, co, a.db); // 😴 con el ronquido suave (v35.0)
     e.sn = Math.max(...sn, 0); e.vo = Math.max(...vo, 0); e.br = Math.max(...br, 0); e.co = Math.max(...co, 0);
@@ -5240,7 +5247,7 @@ async function plSegs(e) {
     if (!e.vec && a.vec) e.vec = a.vec;
     const md = !e.fix && !e.val ? tipoModelo({...e, sn: e.sn ?? Math.max(...a.sn, 0)}) : null;
     const tf = !e.fix && !e.val && !e.aprendido ? md?.tipo || tipoFuerte(a, e.seg) : null, cambia = tf && tf !== e.tipo;
-    if (cambia) { e.tipo = sinSeguridad(tf, e.sn); delete e.sub; }
+    if (cambia) { e.tipo = sinSeguridad(tf, e.sn, e.vo, e.co); delete e.sub; }
     if (e.tipo === 'ronquido') e.seg = segSuave(e.seg, a.sn, a.vo, a.co, a.db); // 😴 con el ronquido suave (v35.0)
     const {_url, _picos, _pico, _segando, _en, ...rec} = e; await DB.put('eventos', rec);
     if (cambia) { await recount(); renderStats(); renderList(); drawTimeline(timelineTotal()); if (PL.list[PL.i] === e) plRender(); }
@@ -6910,7 +6917,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.6', '3-5 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v36.7', '3-6 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: deja pulsada una etiqueta para cambiarla por otra', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
