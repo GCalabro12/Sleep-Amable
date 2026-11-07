@@ -913,6 +913,7 @@ button.cd.ok{background:#4ADE80} button.cd.mid{background:#FBBF24} button.cd.bad
 .selbar .selacts .del{color:var(--bad)}
 .ev.ronquido{border-left-color:var(--snore)} .ev.voz{border-left-color:var(--voice)} .ev.tos{border-left-color:#F87171}
 .ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ev .top.apretada{gap:5px} .ev .top.apretada .conf{font-size:11.5px;letter-spacing:-.1px} .ev .top.apretada > .tag{padding:3px 7px;font-size:12.5px} /* v37.0: en un renglón */
 .ev .t{font-weight:600;font-variant-numeric:tabular-nums}
 .tag{font-size:13px;padding:3px 9px;border-radius:10px;border:0;background:var(--card2)}
 .tag.ronquido{color:var(--snore)} .tag.voz{color:var(--voice)} .tag.tos{color:#F87171} .tag.otro{color:var(--muted)}
@@ -1675,7 +1676,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v36.9'; // v36.9: Movimiento: el rato con el sonar encendido, en horas («6 h 50 min de 7 h», o «toda la noche») y no en minutos; Ruidos: un toque en la etiqueta abre todas, con la que tiene marcada, y no cambia nada hasta que eliges otra (antes un toque pasaba a la siguiente y dejarla pulsada a veces la cambiaba sola)
+const VERSION = 'v37.0'; // v37.0: Ruidos: «100 % probable de ser» y la etiqueta, en un solo renglón (si no caben, letra y huecos algo más pequeños; y si aún no, solo «100 %»)
+// v36.9: Movimiento: el rato con el sonar encendido, en horas («6 h 50 min de 7 h», o «toda la noche») y no en minutos; Ruidos: un toque en la etiqueta abre todas, con la que tiene marcada, y no cambia nada hasta que eliges otra (antes un toque pasaba a la siguiente y dejarla pulsada a veces la cambiaba sola)
 // v36.8: sonar sin auricular: el tono del sonar (19 kHz), muy fuerte al lado del micrófono, se colaba en las grabaciones como «ding» (una noche, 119 grabaciones de ding y solo un ronquido); ahora dos filtros quitan justo ese tono antes de grabar y, con el sonar encendido, una grabación de ding, campana o pitido sin ronquido, voz ni tos no se guarda
 // v36.7: «Voz» o «Tos» sin seguridad → Otro: tu modelo 🧠 llamaba «Voz» a un pitido que la IA oía como voz al 6 % (0 seg de voz) y se guardaba toda la noche; ahora hace falta al menos un 30 % de voz (o de tos), como en la regla. Al abrir una noche, las que estaban así pasan a Otro. Los pitidos se llaman «pitido»
 // v36.6: Inicio: «by Práctica Integral» y «with Grow Panel» en el mismo renglón (si no caben, «Grow Panel» sin «with»); bienvenida (la intro) sin los sellos y con la versión abajo en el centro
@@ -4961,6 +4963,19 @@ function abreEtiquetas(d, e) {
   });
 }
 const tagTxt = e => e.tipo === 'ronquido' ? '😴 Ronquido' : e.tipo === 'voz' ? '🗣️ Voz' : e.tipo === 'tos' ? '🫁 Tos' : e.sub === 'respiracion' ? '💨 Respiración' : /snor/i.test(e.top || '') ? '🔊 Otro ruido' : '🔊 ' + es(e.top); // (un «ronquido» sin seguridad que pasó a Otro, v34.8)
+// v37.0: el % y la etiqueta en un solo renglón: si se parten, más apretados; y si aún se parten, solo el número («100 %»)
+function ajustaTops() {
+  document.querySelectorAll('#evList .ev .top').forEach(top => {
+    const c = top.querySelector(':scope > .conf'), tg = top.querySelector(':scope > .tag'); if (!c || !tg || !top.clientWidth) return;
+    const partido = () => tg.offsetTop > c.offsetTop + 4;
+    top.classList.remove('apretada'); c.textContent = c.dataset.largo ||= c.textContent;
+    if (!partido()) return;
+    top.classList.add('apretada'); if (partido()) c.textContent = c.dataset.largo.replace(' probable de ser', '');
+  });
+}
+{ let tA = 0; const pide = () => { clearTimeout(tA); tA = setTimeout(ajustaTops, 30); };
+  new MutationObserver(pide).observe($('evList'), {childList: true});
+  if (window.ResizeObserver) new ResizeObserver(pide).observe($('evList')); }
 function renderList() {
   const list = curList = curEvs.filter(e => !filter.size || [...filter].some(k => k === 'fav' ? e.fav : k === 'aviso' ? conAviso(e) : k === 'mov' ? conMov(e) : e.tipo === k));
   for (const id of [...sel]) if (!list.some(e => e.id === id)) sel.delete(id);
@@ -6923,7 +6938,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v36.9', '3-7 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v37.0', '3-7 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
