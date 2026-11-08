@@ -1262,7 +1262,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <details class="card ajd">
     <summary>😴 Ajustes ronquidos</summary>
     <div class="row"><label for="sens">Sensibilidad<small>Alta capta ronquidos suaves, pero también más ruidos</small></label>
-      <select id="sens"><option value="6">Alta</option><option value="10">Normal</option><option value="15">Baja</option></select></div>
+      <select id="sens"><option value="10">Alta</option><option value="15">Normal</option><option value="20">Baja</option></select></div>
     <div class="row"><label for="keepOther">Guardar también otros sonidos<small>Tos, puertas, perros… (si no, se descartan)</small></label>
       <input type="checkbox" id="keepOther"></div>
     <div class="row"><label for="maxSec">Duración máxima de cada grabación<small>Un episodio largo se parte en varias. Una grabación termina tras 15 s de silencio.</small></label>
@@ -1643,7 +1643,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   </div>
   <div class="inner">
     <div class="lgrupo">
-    <div class="lsens" id="lsens">Sensibilidad <button data-v="15">Baja</button><button data-v="10">Normal</button><button data-v="6">Alta</button></div>
+    <div class="lsens" id="lsens">Sensibilidad <button data-v="20">Baja</button><button data-v="15">Normal</button><button data-v="10">Alta</button></div>
     <div class="lmrow"><div class="meter"><i id="lvl"></i></div><button type="button" id="lsensI" aria-label="Qué mide la sensibilidad">i</button></div>
     <div class="lhint">Haz una prueba hablando: si la barra pasa la raya, se graba.</div>
     </div>
@@ -1677,7 +1677,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.2'; // v37.2: panel de puntuación: al tocar «Regularidad», debajo de la explicación sale la gráfica de tus horarios de la última semana (la de Estadísticas), con la semana que acaba en esa noche
+const VERSION = 'v37.3'; // v37.3: sensibilidad un escalón más suave: Normal es la Baja de antes (15 dB), Alta la Normal de antes (10 dB) y Baja aún graba menos (20 dB); al abrir la app se pasa tu elección a la escala nueva con el mismo nombre; las noches nuevas apuntan la escala (sensE 2) para que las viejas sigan diciendo bien su nombre
+// v37.2: panel de puntuación: al tocar «Regularidad», debajo de la explicación sale la gráfica de tus horarios de la última semana (la de Estadísticas), con la semana que acaba en esa noche
 // v37.1: Ruidos: lo que la IA oye como respiración sale «💨 Respiración» (antes «🔊 respiración», con el icono de ruido) y, al abrir las etiquetas, sale marcada Respiración (antes Otro); si eliges «Otro», se queda «🔊 Otro ruido»
 // v37.0: Ruidos: «100 % probable de ser» y la etiqueta, en un solo renglón (si no caben, letra y huecos algo más pequeños; y si aún no, solo «100 %»)
 // v36.9: Movimiento: el rato con el sonar encendido, en horas («6 h 50 min de 7 h», o «toda la noche») y no en minutos; Ruidos: un toque en la etiqueta abre todas, con la que tiene marcada, y no cambia nada hasta que eliges otra (antes un toque pasaba a la siguiente y dejarla pulsada a veces la cambiaba sola)
@@ -2049,8 +2050,10 @@ const AND = window.RonquiNoAndroid || null;
 $('ver').textContent = VERSION; $('ver2').textContent = VERSION;
 
 // ---------- Ajustes ----------
-const cfg = {sens:10, keepOther:false, maxSec:120, strict:.35, sonar:false};
-try { Object.assign(cfg, JSON.parse(localStorage.getItem('ronquino-cfg') || '{}')); } catch {}
+const cfg = {sens:15, keepOther:false, maxSec:120, strict:.35, sonar:false};
+let cfgGuardada = {}; try { cfgGuardada = JSON.parse(localStorage.getItem('ronquino-cfg') || '{}') || {}; Object.assign(cfg, cfgGuardada); } catch {}
+// v37.3: sensibilidad un escalón más suave (Alta 6→10, Normal 10→15, Baja 15→20 dB): tu elección sigue con el mismo nombre
+if (!cfg.v373) { if ('sens' in cfgGuardada) cfg.sens = {6: 10, 10: 15, 15: 20}[cfg.sens] ?? cfg.sens; cfg.v373 = 1; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} }
 if (!cfg.v202) { if (cfg.maxSec === 60) cfg.maxSec = 120; cfg.v202 = 1; try { localStorage.setItem('ronquino-cfg', JSON.stringify(cfg)); } catch {} } // grabaciones de hasta 2 min (antes 1)
 $('sens').value = cfg.sens; $('keepOther').checked = cfg.keepOther; $('maxSec').value = cfg.maxSec; $('strict').value = cfg.strict;
 setTimeout(() => pintaStrict()); // (si está ajustada a ti, que se vea en el selector)
@@ -2136,7 +2139,7 @@ const AVISO_PRIMERO = 120, AVISO_SIGUE = 120, AVISO_PAUSA = 30; // se dice una v
 let avisarNoche = false; // 🎧 esta noche avisa si ronca: se empezó con «Empezar a monitorear y avisar de ronquidos» (v22.3)
 const AVISO_SEGURO = .70; // solo cuenta como ronquido para avisar si la IA está segura al 70 % o más (v34.9; antes 80 %, y 85 % antes de v13.6) (para no despertarte sin motivo)
 // v34.9: la sensibilidad solo cambia cuánto tiempo roncando seguido hace falta: Baja 2 min, Normal 1 min 30 s, Alta 1 min
-const avisoSeguro = () => AVISO_SEGURO, avisoPrimero = () => cfg.sens <= 6 ? 60 : cfg.sens <= 10 ? 90 : AVISO_PRIMERO;
+const avisoSeguro = () => AVISO_SEGURO, avisoPrimero = () => cfg.sens <= 10 ? 60 : cfg.sens <= 15 ? 90 : AVISO_PRIMERO; // v37.3: escala nueva (Alta 10, Normal 15, Baja 20)
 function avisoRonco() {} // (antes se miraba al acabar cada grabación)
 // Abajo del monitoreo: «Avisos por auricular ›»; al tocarlo, se cambia a altavoz o auricular y salen las horas de los avisos de la noche
 function avisoHora(h) {
@@ -2896,7 +2899,8 @@ async function startListening() {
   await ctx.resume();
 
   const night = newNight('micro');
-  night.sensT = [[0, cfg.sens]]; // v35.9: la sensibilidad de la noche ([segundo, valor]; se apunta cada cambio)
+  night.sensT = [[0, cfg.sens]]; night.sensE = 2; // v37.3: escala nueva (Alta 10, Normal 15, Baja 20 dB)
+  // v35.9: la sensibilidad de la noche ([segundo, valor]; se apunta cada cambio)
   night.sonar = !!cfg.sonar; night.sonarSeg = 0; // con la noche se guarda cuánto rato funcionó el sonar: «sonar on / off» en Movimiento
   if (cfg.profundo) night.profundo = true; // 🌙 por la mañana sale su curva de sueño profundo y ligero
   await DB.put('noches', night);
@@ -3991,10 +3995,10 @@ function mananaPartes(n, partes) {
     ${sensNoche(n)}`;
 }
 // 🎚️ La sensibilidad de esa noche (v35.9); si se cambió, de qué hora a qué hora fue cada una
-const SENS_NOM = {15: 'Baja', 10: 'Normal', 6: 'Alta'};
+const SENS_NOM = {15: 'Baja', 10: 'Normal', 6: 'Alta'}, SENS_NOM2 = {20: 'Baja', 15: 'Normal', 10: 'Alta'}; // v37.3: SENS_NOM2, noches con la escala nueva
 function sensNoche(n) {
   const L = n?.fuente === 'micro' && n.sensT?.length ? n.sensT : null; if (!L) return '';
-  const nom = v => SENS_NOM[v] || `${v} dB`;
+  const nom = v => (n.sensE === 2 ? SENS_NOM2 : SENS_NOM)[v] || `${v} dB`;
   let tx;
   if (L.length === 1) tx = nom(L[0][1]);
   else { const fin = n.fin ? Math.round((n.fin - n.inicio) / 1000) : null;
@@ -6955,7 +6959,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.2', '3-7 nov 2026', ['😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '🎵 Sonidos nuevos: agua, lluvia y noche para dormir, y «Mañana» para la alarma', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v37.3', '3-8 nov 2026', ['🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
