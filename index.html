@@ -587,6 +587,9 @@ details.hist[open] summary{margin-bottom:10px}
 #apkBanner{border-color:#6D5BD0;background:linear-gradient(135deg,#1B2440,#231B4D)}
 #apkBanner h3{margin:0 0 6px;font-size:17px} #apkBanner p{margin:0 0 6px;font-size:14px;color:var(--muted)}
 #apkBanner ol{margin:6px 0 10px;padding-left:20px;font-size:13px;color:var(--muted)}
+#opPlay .apkdl{display:block;text-align:center;text-decoration:none;color:#fff;padding:14px;border-radius:14px;font-weight:800;background:linear-gradient(135deg,#6D5BD0,#4338CA)}
+#opPlay{border:2px solid #A78BFA;background:linear-gradient(135deg,#1B2440,#231B4D)} #opPlay h3{margin:0 0 6px;font-size:17px} #opPlay p{margin:0 0 8px;font-size:14px;color:var(--muted)} #opPlay .opEn{font-size:13px;font-style:italic} #opPlay .opPaso{font-size:12.5px;margin:10px 0 4px}
+#opPlay .opBtns{display:flex;gap:8px} #opPlay .apkno{flex:1;margin-top:4px;background:none;border:0;color:var(--muted);font-size:14px;text-decoration:underline;padding:6px} /* v37.4 */
 #apkBanner .apkdl{display:block;text-align:center;text-decoration:none;color:#fff;padding:14px;border-radius:14px;font-weight:800;background:linear-gradient(135deg,#6D5BD0,#4338CA)}
 #apkBanner .apkno{display:block;margin:8px auto 0;background:none;border:0;color:var(--muted);font-size:14px;text-decoration:underline}
 @keyframes rq-pop{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
@@ -1066,6 +1069,14 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     </ol>
     <a class="apkdl" id="apkDl" href="SleepAmable.apk" download="SleepAmable.apk">⬇️ Descargar Amable Sleep</a>
     <button class="apkno" id="apkNo">Ahora no</button>
+  </div>
+  <div class="card" id="opPlay" hidden>
+    <h3>💬 ¿Nos dejas tu opinión en Google Play?</h3>
+    <p>Estamos probando Amable Sleep antes de publicarla para todo el mundo. Cuéntanos qué te gusta, qué no entiendes o qué falla: nos ayuda muchísimo.</p>
+    <p class="opEn">🇬🇧 Testing Amable Sleep? Please send us private feedback on Google Play (English is fine): what you like, what is confusing, what fails. Thank you!</p>
+    <a class="apkdl" id="opIr" href="https://play.google.com/store/apps/details?id=club.practicaintegral.ronquino" target="_blank" rel="noopener">Dejar mi opinión · Give feedback</a>
+    <p class="opPaso">En Google Play, baja hasta <b>«Enviar comentarios al desarrollador»</b>.<br><i>On Google Play, scroll down to <b>“Send feedback to the developer”</b>.</i></p>
+    <div class="opBtns"><button class="apkno" id="opHecho">Ya lo hice · Done</button><button class="apkno" id="opLuego">Más tarde · Later</button></div>
   </div>
   <button class="lunabar" data-go="luna" id="goUtiles" hidden><img src="luna/luna-consejo.png" alt=""><span>Habla con Luna<small>Consejos para dormir mejor</small></span><b>›</b></button>
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco y avisos</b><small>Graba la noche, detecta tus ronquidos y te avisa si quieres</small></span></button>
@@ -1677,7 +1688,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.3'; // v37.3: sensibilidad un escalón más suave: Normal es la Baja de antes (15 dB), Alta la Normal de antes (10 dB) y Baja aún graba menos (20 dB); al abrir la app se pasa tu elección a la escala nueva con el mismo nombre; las noches nuevas apuntan la escala (sensE 2) para que las viejas sigan diciendo bien su nombre
+const VERSION = 'v37.4'; // v37.4: inicio: tarjeta «💬 ¿Nos dejas tu opinión en Google Play?» en español y en inglés (los testers de PrimeTestLab pueden no saber español): botón a la ficha de Play, «Ya lo hice» la quita para siempre y «Más tarde» 3 días; hasta el 1-12-2026
+// v37.3: sensibilidad un escalón más suave: Normal es la Baja de antes (15 dB), Alta la Normal de antes (10 dB) y Baja aún graba menos (20 dB); al abrir la app se pasa tu elección a la escala nueva con el mismo nombre; las noches nuevas apuntan la escala (sensE 2) para que las viejas sigan diciendo bien su nombre
 // v37.2: panel de puntuación: al tocar «Regularidad», debajo de la explicación sale la gráfica de tus horarios de la última semana (la de Estadísticas), con la semana que acaba en esa noche
 // v37.1: Ruidos: lo que la IA oye como respiración sale «💨 Respiración» (antes «🔊 respiración», con el icono de ruido) y, al abrir las etiquetas, sale marcada Respiración (antes Otro); si eliges «Otro», se queda «🔊 Otro ruido»
 // v37.0: Ruidos: «100 % probable de ser» y la etiqueta, en un solo renglón (si no caben, letra y huecos algo más pequeños; y si aún no, solo «100 %»)
@@ -6959,7 +6971,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.3', '3-8 nov 2026', ['🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', '☁️ Tus ajustes y alarmas se guardan en tu cuenta: al entrar en otro aparato te salen igual', 'Otras mejoras funcionales']],
+  ['v37.4', '3-8 nov 2026', ['💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -7014,6 +7026,14 @@ else {
   $('apkBanner').hidden = oculto;
   $('apkNo').onclick = () => { $('apkBanner').hidden = true; try { localStorage.setItem('ronquino-sinApk', APK_ULTIMA); } catch {} };
 }
+// 💬 v37.4: opinión en Google Play mientras dura la prueba cerrada (en español e inglés). «Ya lo hice»: nunca más; «Más tarde» o tocar el botón: 3 días
+{ let ver = Date.now() < new Date(2026, 11, 1).getTime();
+  try { if (localStorage.getItem('ronquino-opHecho') === '1' || +(localStorage.getItem('ronquino-opLuego') || 0) > Date.now()) ver = false; } catch {}
+  $('opPlay').hidden = !ver;
+  const luego = () => { $('opPlay').hidden = true; try { localStorage.setItem('ronquino-opLuego', String(Date.now() + 3 * 864e5)); } catch {} };
+  $('opLuego').onclick = luego;
+  $('opIr').addEventListener('click', () => setTimeout(luego, 800));
+  $('opHecho').onclick = () => { $('opPlay').hidden = true; try { localStorage.setItem('ronquino-opHecho', '1'); } catch {} toast('¡Gracias de corazón! · Thank you!'); }; }
 await DB.open();
 setTimeout(autoAjuste, 3000); // 🎯 el detector se ajusta solo con lo que has revisado
 setTimeout(miraVersion, 4000); // también al abrir: si se ha cargado una copia vieja, se pone al día
