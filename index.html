@@ -1694,7 +1694,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.6'; // v37.6: reproductor: botón «⏩ Saltar silencios» junto a Destacado (se salta los ratos callados de 4 s o más; en la onda, lo saltado en oscuro y una raya blanca con la hora donde sigue); al tocar Destacado o Saltar silencios, arriba una ventana ancha que explica qué hace (5 s)
+const VERSION = 'v37.7'; // v37.7: Saltar silencios se salta TODOS los silencios (desde 1 s; antes solo los de 4 s o más) y lo mira 12 veces por segundo (antes 4); en la onda, en lo oscuro, los segundos saltados abreviados: «−20 seg», o «−20 s» si no cabe; la raya blanca sin la hora
+// v37.6: reproductor: botón «⏩ Saltar silencios» junto a Destacado (se salta los ratos callados de 4 s o más; en la onda, lo saltado en oscuro y una raya blanca con la hora donde sigue); al tocar Destacado o Saltar silencios, arriba una ventana ancha que explica qué hace (5 s)
 // v37.5: la ⓘ de Sensibilidad, ordenada: Baja, Normal y Alta cada una en su fila con un punto (qué graba y cuándo avisa), sin tantos «también»; panel de la noche: al tocar «🚶 Te levantaste» sale a qué hora fue cada vez; y el 🚶 sale a esa hora en el Gráfico de grabaciones y en la onda del reproductor de Ruidos (si la grabación la pilla)
 // v37.4: inicio: tarjeta «💬 ¿Nos dejas tu opinión en Google Play?» en español y en inglés (los testers de PrimeTestLab pueden no saber español): botón a la ficha de Play, «Ya lo hice» la quita para siempre y «Más tarde» 3 días; hasta el 1-12-2026
 // v37.3: sensibilidad un escalón más suave: Normal es la Baja de antes (15 dB), Alta la Normal de antes (10 dB) y Baja aún graba menos (20 dB); al abrir la app se pasa tu elección a la escala nueva con el mismo nombre; las noches nuevas apuntan la escala (sensE 2) para que las viejas sigan diciendo bien su nombre
@@ -5276,7 +5277,7 @@ $('plX').onclick = () => { PL.cerrado = true; PL.au.pause(); plVer(); };
 // 〰️ Onda del sonido en el reproductor: barras arriba y abajo según el volumen; la parte ya oída, en violeta. Tocar = avanzar
 const ONDA = {ctx: null};
 // ⏩ v37.6: los ratos callados de una grabación, en segundos [[desde, hasta], …]: décimas de segundo por debajo del ruido de
-// fondo + margen (el mismo con que la grabación sigue o se corta) durante 4 s o más; se deja medio segundo a cada lado
+// fondo + margen (el mismo con que la grabación sigue o se corta) durante 1 s o más (v37.7; antes 4 s); se deja un cuarto de segundo a cada lado
 function silencios(en, margen) {
   if (!en?.length) return [];
   const db = en.map(v => 10 * Math.log10(v + 1e-12)), ord = [...db].sort((a, b) => a - b);
@@ -5284,8 +5285,8 @@ function silencios(en, margen) {
   for (let i = 0; i < db.length;) {
     if (db[i] > umbral) { i++; continue; }
     let j = i; while (j < db.length && db[j] <= umbral) j++;
-    const a = i / 10 + (i ? .5 : 0), b = j / 10 - (j < db.length ? .5 : 0);
-    if (b - a >= 3) r.push([a, j >= db.length ? Infinity : b]);
+    const a = i / 10 + (i ? .25 : 0), b = j / 10 - (j < db.length ? .25 : 0); // v37.7: todos, desde 1 s (antes desde 4 s, con medio segundo)
+    if (j - i >= 10 && b - a >= .4) r.push([a, j >= db.length ? Infinity : b]);
     i = j;
   }
   return r;
@@ -5419,14 +5420,13 @@ function plOnda() {
   }
   if (PL.salta && e?._salt?.length && dur) for (const [a, b0] of e._salt) { // ⏩ v37.6
     const b = Math.min(b0, dur), xa = a / dur * w, xb = b / dur * w;
-    g.fillStyle = '#0B1120D9'; g.fillRect(xa, 0, xb - xa, h);
-    if (b >= dur - .2) continue;
-    g.fillStyle = '#fff'; g.fillRect(xb - 1, 0, 2, h);
-    if (cur?.fuente === 'micro') {
-      const hr = new Date(cur.inicio + (e.off + b) * 1000).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
-      g.font = '600 9px system-ui, sans-serif'; g.textBaseline = 'top'; g.textAlign = xb > w - 44 ? 'right' : 'left';
-      g.fillText(hr, xb > w - 44 ? xb - 3 : xb + 3, h - 11);
-    }
+    g.fillStyle = '#0B1120E6'; g.fillRect(xa, 0, xb - xa, h);
+    if (b < dur - .2) { g.fillStyle = '#fff'; g.fillRect(xb - 1, 0, 2, h); }
+    // v37.7: cuántos segundos se salta, en lo oscuro: «−20 seg»; si no cabe, «−20 s»; si tampoco, nada
+    const sg = Math.max(1, Math.round(b - a));
+    g.font = '700 10px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillStyle = '#E2E8F0';
+    const txt = [`−${sg} seg`, `−${sg} s`].find(x => g.measureText(x).width + 4 <= xb - xa);
+    if (txt) g.fillText(txt, (xa + xb) / 2, h / 2);
   }
   if (e?.seg && hecho > 0) { g.fillStyle = '#fff'; g.fillRect(Math.min(w - 2, hecho * w), 0, 2, h); } // por dónde va
 }
@@ -5497,7 +5497,7 @@ $('plSalta').onclick = () => {
   PL.salta = !PL.salta; pintaSalta(); plOnda();
   try { localStorage.setItem('ronquino-saltar', PL.salta ? '1' : '0'); } catch {}
   banda(PL.salta ? '⏩ Saltar silencios activado' : 'Saltar silencios desactivado',
-    PL.salta ? 'Al escuchar, la app se salta los ratos callados de 4 segundos o más: oyes solo los sonidos, uno detrás de otro. En la onda, lo saltado sale oscuro y una raya blanca marca la hora donde sigue.'
+    PL.salta ? 'Al escuchar, la app se salta todos los silencios: oyes solo los sonidos, uno detrás de otro. En la onda, lo saltado sale oscuro con los segundos que se salta (por ejemplo, −20 seg).'
       : 'Las grabaciones se oyen enteras, con sus silencios.');
 };
 $('plDestI').onclick = () => aviso('Destacado\n\nCuando está encendido, al reproducir empieza justo antes del momento de más volumen.\n\nSi lo enciendes mientras escuchas, salta a ese momento.');
@@ -5565,11 +5565,18 @@ function plRender() {
     const b = d.querySelector('.play'); if (b) b.textContent = me && on ? '❚❚' : '▶';
   });
 }
+// ⏩ v37.6: si cae en un silencio, salta a donde sigue (o a la siguiente grabación si el silencio llega al final)
+function plSalto() {
+  const e = PL.list[PL.i], t = PL.au.currentTime, d = PL.au.duration || 0;
+  const s = PL.salta && !PL.au.paused && !PL.seeking && e?._salt?.find(([a, b]) => t >= a && t < b - .1);
+  if (!s) return false;
+  if (s[1] === Infinity || s[1] >= d - .2) { PL.au.pause(); PL.au.onended(); return true; }
+  PL.au.currentTime = s[1]; return false;
+}
+setInterval(() => { if (PL.salta && !PL.au.paused) plSalto(); }, 80); // v37.7: 12 veces por segundo (con silencios cortos, timeupdate llega tarde)
 PL.au.ontimeupdate = () => {
   const d = PL.au.duration || 0;
-  { const e = PL.list[PL.i], t = PL.au.currentTime; // ⏩ v37.6
-    const s = PL.salta && !PL.au.paused && !PL.seeking && e?._salt?.find(([a, b]) => t >= a && t < b - .1);
-    if (s) { if (s[1] === Infinity || s[1] >= d - .2) { PL.au.pause(); PL.au.onended(); return; } PL.au.currentTime = s[1]; } }
+  if (plSalto()) return;
   if (!PL.seeking) { $('plSeek').max = d; $('plSeek').value = PL.au.currentTime; }
   $('plT').textContent = mss(PL.au.currentTime); $('plD').textContent = mss(d);
   plHead(); plOnda();
@@ -7045,7 +7052,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.6', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v37.7', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
