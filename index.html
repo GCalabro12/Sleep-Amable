@@ -1694,7 +1694,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.9'; // v37.9: reproductor: «Destacados» (en plural) y «Saltar silencios» en la misma fila, sin la «i» (lo explica la ventana de arriba); Destacados ahora toca solo el trozo más fuerte de cada grabación (desde 1 s antes hasta el primer silencio a partir de 2 s después) y al acabar pasa sola a la siguiente; si tocas la onda para moverte, esa grabación sigue entera
+const VERSION = 'v38.0'; // v38.0: para saber si hay versión nueva mira version.txt (unos bytes) y no la página entera (190 KB); si no está, como antes
+// v37.9: reproductor: «Destacados» (en plural) y «Saltar silencios» en la misma fila, sin la «i» (lo explica la ventana de arriba); Destacados ahora toca solo el trozo más fuerte de cada grabación (desde 1 s antes hasta el primer silencio a partir de 2 s después) y al acabar pasa sola a la siguiente; si tocas la onda para moverte, esa grabación sigue entera
 // v37.8: Saltar silencios: las rayas blancas de salto, a un tercio del alto (y más finas), y como mucho 5 por grabación (las de los 5 silencios más largos)
 // v37.7: Saltar silencios se salta TODOS los silencios (desde 1 s; antes solo los de 4 s o más) y lo mira 12 veces por segundo (antes 4); en la onda, en lo oscuro, los segundos saltados abreviados: «−20 seg», o «−20 s» si no cabe; la raya blanca sin la hora
 // v37.6: reproductor: botón «⏩ Saltar silencios» junto a Destacado (se salta los ratos callados de 4 s o más; en la onda, lo saltado en oscuro y una raya blanca con la hora donde sigue); al tocar Destacado o Saltar silencios, arriba una ventana ancha que explica qué hace (5 s)
@@ -3248,8 +3249,10 @@ async function miraVersion() {
   if (Date.now() - ultMira < 60e3 || location.protocol !== 'https:') return; ultMira = Date.now();
   try {
     navigator.serviceWorker?.getRegistration().then(r => r?.update()).catch(() => {});
-    const t = await (await fetch('./?v=' + Date.now(), {cache: 'no-store'})).text();
-    const v = (t.match(/const VERSION = '([^']+)'/) || [])[1];
+    // v38.0: primero version.txt (unos bytes); si no está o no se entiende, la página entera (190 KB), como antes
+    let v = null;
+    try { const r = await fetch('./version.txt?v=' + Date.now(), {cache: 'no-store'}); if (r.ok) v = ((await r.text()).trim().match(/^v[\d.]+$/) || [])[0] || null; } catch {}
+    if (!v) { const t = await (await fetch('./?v=' + Date.now(), {cache: 'no-store'})).text(); v = (t.match(/const VERSION = '([^']+)'/) || [])[1]; }
     let ya = false; try { ya = sessionStorage.getItem('sa-recarga') === v; } catch {}
     if (v && v !== VERSION && !ya && !live.night && PL.au.paused) { // una sola vez por versión (que nunca se quede recargando)
       try { sessionStorage.setItem('sa-recarga', v); } catch {}
@@ -7059,7 +7062,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.9', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v38.0', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
