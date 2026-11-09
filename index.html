@@ -1694,7 +1694,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.7'; // v37.7: Saltar silencios se salta TODOS los silencios (desde 1 s; antes solo los de 4 s o más) y lo mira 12 veces por segundo (antes 4); en la onda, en lo oscuro, los segundos saltados abreviados: «−20 seg», o «−20 s» si no cabe; la raya blanca sin la hora
+const VERSION = 'v37.8'; // v37.8: Saltar silencios: las rayas blancas de salto, a un tercio del alto (y más finas), y como mucho 5 por grabación (las de los 5 silencios más largos)
+// v37.7: Saltar silencios se salta TODOS los silencios (desde 1 s; antes solo los de 4 s o más) y lo mira 12 veces por segundo (antes 4); en la onda, en lo oscuro, los segundos saltados abreviados: «−20 seg», o «−20 s» si no cabe; la raya blanca sin la hora
 // v37.6: reproductor: botón «⏩ Saltar silencios» junto a Destacado (se salta los ratos callados de 4 s o más; en la onda, lo saltado en oscuro y una raya blanca con la hora donde sigue); al tocar Destacado o Saltar silencios, arriba una ventana ancha que explica qué hace (5 s)
 // v37.5: la ⓘ de Sensibilidad, ordenada: Baja, Normal y Alta cada una en su fila con un punto (qué graba y cuándo avisa), sin tantos «también»; panel de la noche: al tocar «🚶 Te levantaste» sale a qué hora fue cada vez; y el 🚶 sale a esa hora en el Gráfico de grabaciones y en la onda del reproductor de Ruidos (si la grabación la pilla)
 // v37.4: inicio: tarjeta «💬 ¿Nos dejas tu opinión en Google Play?» en español y en inglés (los testers de PrimeTestLab pueden no saber español): botón a la ficha de Play, «Ya lo hice» la quita para siempre y «Más tarde» 3 días; hasta el 1-12-2026
@@ -5418,10 +5419,12 @@ function plOnda() {
     g.font = '14px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = xl > w - 24 ? 'right' : 'left';
     g.fillText('🚶', xl > w - 24 ? xl - 3 : xl + 3, h / 2);
   }
-  if (PL.salta && e?._salt?.length && dur) for (const [a, b0] of e._salt) { // ⏩ v37.6
+  // v37.8: rayas solo en los 5 silencios más largos (con muchos cortos, la onda se llenaba de rayas)
+  const conRaya = new Set((e?._salt || []).filter(([, b]) => b < dur - .2).sort((x, y) => (y[1] - y[0]) - (x[1] - x[0])).slice(0, 5));
+  if (PL.salta && e?._salt?.length && dur) for (const s of e._salt) { const [a, b0] = s; // ⏩ v37.6
     const b = Math.min(b0, dur), xa = a / dur * w, xb = b / dur * w;
     g.fillStyle = '#0B1120E6'; g.fillRect(xa, 0, xb - xa, h);
-    if (b < dur - .2) { g.fillStyle = '#fff'; g.fillRect(xb - 1, 0, 2, h); }
+    if (conRaya.has(s)) { g.fillStyle = '#fff'; g.fillRect(xb - .75, h / 3, 1.5, h / 3); } // v37.8: un tercio del alto
     // v37.7: cuántos segundos se salta, en lo oscuro: «−20 seg»; si no cabe, «−20 s»; si tampoco, nada
     const sg = Math.max(1, Math.round(b - a));
     g.font = '700 10px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillStyle = '#E2E8F0';
@@ -7052,7 +7055,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.7', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v37.8', '3-9 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
