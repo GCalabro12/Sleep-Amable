@@ -1416,7 +1416,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <div class="card tlcard" id="tlCard">
     <div class="calmatit tltit" id="tlTit"><span class="unalinea" style="flex:1;min-width:0">🎙️ Gráfico de grabaciones</span><span class="pldato" id="tlN"></span><i class="tri" id="tlTri"></i></div>
     <div class="tlbox"><canvas id="tl"></canvas><div id="tlHead" hidden></div><button type="button" class="btnGrande" id="tlGrande" aria-label="Pantalla completa"></button></div>
-    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
+    <div class="legend"><span class="lgfila lgcol"><span><i style="background:#334155"></i>volumen</span><span><i style="background:var(--snore)"></i>ronquido</span><span><i style="background:var(--voice)"></i>voz</span><span><i style="background:#F87171"></i>tos</span><span><i style="background:var(--other)"></i>otro</span></span><span class="lgfila" id="lgFila"><span id="lgMov" hidden><i style="background:#34D399;width:3px;height:12px;border-radius:1px"></i>movimiento</span><span id="lgAv" hidden><i style="background:#F472B6;width:3px;height:8px;border-radius:1px"></i>aviso «estás roncando»</span><span id="lgLev" hidden>🚶 te levantaste</span></span><span class="lgfila">🤏 pellizca para ampliar · 📱 gira el móvil</span></div>
     <button type="button" class="tlruidos abajo solo-ruidos" id="ruidosCerrar" aria-label="Cerrar ruidos y volver al análisis de la noche"><span>🔊 Ruidos<small id="ruidosN2"></small></span><i class="tri up"></i></button>
   </div>
   <button type="button" class="card ruidosbtn solo-resumen" id="ruidosBtn"><span>🔊 Ruidos<small id="ruidosN"></small></span><i class="tri"></i></button>
@@ -1688,7 +1688,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v37.4'; // v37.4: inicio: tarjeta «💬 ¿Nos dejas tu opinión en Google Play?» en español y en inglés (los testers de PrimeTestLab pueden no saber español): botón a la ficha de Play, «Ya lo hice» la quita para siempre y «Más tarde» 3 días; hasta el 1-12-2026
+const VERSION = 'v37.5'; // v37.5: la ⓘ de Sensibilidad, ordenada: Baja, Normal y Alta cada una en su fila con un punto (qué graba y cuándo avisa), sin tantos «también»; panel de la noche: al tocar «🚶 Te levantaste» sale a qué hora fue cada vez; y el 🚶 sale a esa hora en el Gráfico de grabaciones y en la onda del reproductor de Ruidos (si la grabación la pilla)
+// v37.4: inicio: tarjeta «💬 ¿Nos dejas tu opinión en Google Play?» en español y en inglés (los testers de PrimeTestLab pueden no saber español): botón a la ficha de Play, «Ya lo hice» la quita para siempre y «Más tarde» 3 días; hasta el 1-12-2026
 // v37.3: sensibilidad un escalón más suave: Normal es la Baja de antes (15 dB), Alta la Normal de antes (10 dB) y Baja aún graba menos (20 dB); al abrir la app se pasa tu elección a la escala nueva con el mismo nombre; las noches nuevas apuntan la escala (sensE 2) para que las viejas sigan diciendo bien su nombre
 // v37.2: panel de puntuación: al tocar «Regularidad», debajo de la explicación sale la gráfica de tus horarios de la última semana (la de Estadísticas), con la semana que acaba en esa noche
 // v37.1: Ruidos: lo que la IA oye como respiración sale «💨 Respiración» (antes «🔊 respiración», con el icono de ruido) y, al abrir las etiquetas, sale marcada Respiración (antes Otro); si eliges «Otro», se queda «🔊 Otro ruido»
@@ -2996,7 +2997,7 @@ async function startListening() {
 function renderLiveSens() {
   document.querySelectorAll('#lsens button').forEach(b => b.classList.toggle('on', +b.dataset.v === cfg.sens));
 }
-$('lsensI').onclick = () => aviso('Sensibilidad\n\nCuánto tiene que sonar algo para que la app lo grabe. La barra se mueve con el sonido de la habitación: si pasa la raya, se graba. Con Baja se graban solo los sonidos más fuertes; con Normal, también los medianos; con Alta, también los flojos.\n\nTambién cambia cuándo te avisa de que roncas: con Baja, al llevar 2 minutos roncando seguido; con Normal, 1 minuto y medio; con Alta, 1 minuto. En todas, la IA tiene que estar segura al 70 % de que es un ronquido.');
+$('lsensI').onclick = () => aviso('Sensibilidad\n\nCuánto tiene que sonar algo para que la app lo grabe. La barra se mueve con el sonido de la habitación: si pasa la raya, se graba.\n\nQué graba:\n• Baja: solo los sonidos fuertes.\n• Normal: los fuertes y los medianos.\n• Alta: casi todo, incluso los flojos.\n\nCuándo te avisa de que roncas (roncando seguido):\n• Baja: a los 2 minutos.\n• Normal: al minuto y medio.\n• Alta: al minuto.\n\nEn todas, la IA tiene que estar segura al 70 % de que es un ronquido.'); // v37.5: en filas con punto
 
 document.querySelectorAll('#lsens button').forEach(b => b.onclick = () => {
   cfg.sens = +b.dataset.v; $('sens').value = cfg.sens;
@@ -3996,7 +3997,7 @@ function mananaPartes(n, partes) {
   const rcont = {k: 'rcont', t: 'Ronquido continuo', v: rmax == null ? '—' : durCorto(rmax), hrs: ra.map(x => `${evHora(n, x[0])}–${evHora(n, x[1])}=${durRacha(x[1] - x[0])}=${avisoEn(x) ? 1 : 0}`).join(';')};
   const fila2 = [P('ronq'), rcont], voz = {k: 'voz', t: '🗣️ Voces', v: `${minVoz} min`}; // v36.2: filas de dos
   const tos = {k: 'tos', t: '🫁 Tos', v: n.tos == null ? '—' : `${n.tos} ${n.tos === 1 ? 'vez' : 'veces'}`};
-  const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`} : null;
+  const lev = Array.isArray(n.levantadas) ? {k: 'lev', t: '🚶 Te levantaste', v: `${n.levantadas.length} ${n.levantadas.length === 1 ? 'vez' : 'veces'}`, hrs: n.levantadas.map(s => hhmm(n.inicio + s * 1000)).join(',')} : null; // v37.5: hrs, las horas de cada vez
   const nAv = (n.avisoT || []).length || n.avisos || 0; // v31.7: 🔔 cuántos avisos hubo; al tocarlo, a qué horas
   const avi = n.fuente === 'micro' ? {k: 'avisos', t: '🔔 Avisos', v: `${nAv} ${nAv === 1 ? 'aviso' : 'avisos'}`, hrs: (n.avisoT || []).map(t => evHora(n, t)).join(', ')} : null;
   const otros = [P('calma'), avi, lev].filter(Boolean);
@@ -4815,7 +4816,7 @@ const EXP_PARTE = {
   ronq: 'Los minutos que roncaste esta noche. La puntuación depende de qué parte de la noche roncaste:',
   reg: 'Cuánto cambió la hora de acostarte comparada con tus últimas noches. «±20 min» quiere decir que te acostaste unos 20 minutos antes o después de lo normal. Acostarte siempre a la misma hora ayuda a dormir mejor.',
   voz: 'Los minutos en que la IA oyó voces esta noche: hablar en sueños, alguien hablando o la tele. No cuenta para la puntuación.',
-  lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.',
+  lev: 'Las veces que tocaste «Me levanté» en el monitoreo esta noche (para ir al baño, beber agua…). No cuenta para la puntuación.', // v37.5: debajo, a qué hora fue cada vez
   tos: 'Las veces que la IA oyó toser o carraspear esta noche. No cuenta para la puntuación. Si toses muchas noches seguidas, coméntalo con tu médico.',
   avisos: 'Las veces que la app te avisó esta noche de que estabas roncando. No cuenta para la puntuación.',
   rcont: 'El rato más largo que roncaste seguido esta noche, sin pausas de más de 30 segundos. No cuenta para la puntuación.\n\nEl aviso «estás roncando» salta cuando llevas roncando seguido:',
@@ -4833,6 +4834,7 @@ document.addEventListener('click', e => { const m = e.target.closest('[data-mexp
     if (cur.sonarAuSeg >= 60) son += `\n\n🎧 Con el auricular conectado el sonar no funciona: ${hMin(cur.sonarAuSeg)} esta noche.`;
   }
   if (m.dataset.mexp === 'avisos') son = m.dataset.hrs ? `\n\n🔔 A las ${m.dataset.hrs}.` : '';
+  if (m.dataset.mexp === 'lev') son = m.dataset.hrs ? `\n\n🚶 Te levantaste a estas horas:\n${m.dataset.hrs.split(',').map((h, i) => `• ${i + 1}.ª vez: a las ${h}`).join('\n')}` : ''; // v37.5
   aviso(EXP_PARTE[m.dataset.mexp] + son);
   if (m.dataset.mexp === 'ronq') $('askList').innerHTML = tablaRonq(+m.dataset.pct || 0);
   if (m.dataset.mexp === 'rcont') $('askList').innerHTML = tablaRachas(m.dataset.hrs || '');
@@ -4938,8 +4940,15 @@ function drawTimeline(total) {
     const alto = base - top;
     g.fillRect(x - dpr, top + alto * .25, 2.5 * dpr, alto * .5);
   }
-  $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length;
-  $('lgFila').hidden = $('lgMov').hidden && $('lgAv').hidden;
+  // 🚶 v37.5: cada vez que te levantaste («Me levanté»): raya fina y el muñequito arriba
+  for (const t of cur.levantadas || []) {
+    const x = X(t); if (x < -8 * dpr || x > W + 8 * dpr) continue;
+    g.fillStyle = '#E2E8F088'; g.fillRect(x - dpr / 2, top, Math.max(1, dpr), base - top);
+    g.font = `${14 * dpr}px system-ui`; g.textAlign = 'center'; g.textBaseline = 'top'; g.fillText('🚶', x, top);
+    g.textAlign = 'left';
+  }
+  $('lgMov').hidden = !(cur.mov || []).length; $('lgAv').hidden = !(cur.avisoT || []).length; $('lgLev').hidden = !(cur.levantadas || []).length;
+  $('lgFila').hidden = $('lgMov').hidden && $('lgAv').hidden && $('lgLev').hidden;
   requestAnimationFrame(encajaLeyenda);
   const col = {ronquido: '#FBBF24', voz: '#60A5FA', tos: '#F87171', otro: '#64748B'};
   for (const e of curEvs) {
@@ -5376,6 +5385,14 @@ function plOnda() {
     g.fillStyle = '#F472B6'; g.fillRect(xa - 1, 0, 2, h);
     g.font = '600 9px system-ui, sans-serif'; g.textBaseline = 'top'; g.textAlign = xa > w - 30 ? 'right' : 'left';
     g.fillText('aviso', xa > w - 30 ? xa - 4 : xa + 4, 1);
+  }
+  // 🚶 v37.5: si te levantaste durante la grabación, raya blanca con el muñequito a la hora exacta
+  if (e && dur) for (const t of cur?.levantadas || []) {
+    if (t < e.off - 1 || t > e.off + dur) continue;
+    const xl = Math.max(1, Math.min(w - 2, (t - e.off) / dur * w));
+    g.fillStyle = '#E2E8F0'; g.fillRect(xl - 1, 0, 2, h);
+    g.font = '14px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = xl > w - 24 ? 'right' : 'left';
+    g.fillText('🚶', xl > w - 24 ? xl - 3 : xl + 3, h / 2);
   }
   if (e?.seg && hecho > 0) { g.fillStyle = '#fff'; g.fillRect(Math.min(w - 2, hecho * w), 0, 2, h); } // por dónde va
 }
@@ -6971,7 +6988,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v37.4', '3-8 nov 2026', ['💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '✏️ Ruidos: toca una etiqueta para ver todas y elegir la buena', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v37.5', '3-9 nov 2026', ['🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🎚️ Sensibilidad más suave: Normal graba como la Baja de antes, Alta como la Normal de antes y Baja aún menos', '😴 Panel de puntuación: «Ronquido continuo», tu racha más larga roncando seguido, sin cortes (tócalo para ver las 10 más largas)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
