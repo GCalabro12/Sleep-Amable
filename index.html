@@ -979,9 +979,10 @@ body.pl-on #deshacer{bottom:calc(var(--plh, 180px) + 10px)}
 #plDest.on .dico{opacity:1} #plDest.on .dico .rojo{fill:#DC2626}
 #plSalta{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--line);background:var(--card2);color:var(--dim);font-size:13px;font-weight:700;white-space:nowrap}
 #plSalta.on{background:linear-gradient(135deg,#38BDF8,#2563EB);border-color:#BAE6FD;color:#fff;box-shadow:0 0 14px #3b82f688} /* v37.6 */
-.pldest{flex-wrap:nowrap;gap:6px} #plDest,#plSalta{padding:0 10px;font-size:12.5px} #plDest{gap:5px} /* v37.9: una sola fila */
+.pldest{flex-wrap:nowrap;gap:8px;justify-content:center} #plDest,#plSalta{padding:0 12px;font-size:13px} #plDest .dico{display:none} .pldest .plCnt{margin-left:4px} /* v38.2: sin iconos y centrada (v37.9: una sola fila) */
 #banda{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:1001;background:#1E1B4B;border:1px solid #A78BFA;color:#E2E8F0;border-radius:14px;padding:12px 16px;font-size:15px;line-height:1.4;box-shadow:0 8px 24px #000a;transition:opacity .3s;cursor:pointer}
-#banda.fuera{opacity:0;pointer-events:none} #banda b{display:block;font-size:16px;color:#fff;margin-bottom:3px} /* v37.6: explica Destacado / Saltar silencios */
+#banda.fuera{opacity:0;pointer-events:none} #banda b{display:block;font-size:16px;color:#fff;margin-bottom:3px;padding-right:34px}
+#banda .bandaX{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid #A78BFA;background:#2E2A6B;color:#fff;font-size:15px;line-height:1;padding:0} /* v38.2 */ /* v37.6: explica Destacado / Saltar silencios */
 #plDestI{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);font:italic 700 16px Georgia,serif;padding:0;line-height:1}
 #plX{position:absolute;top:-17px;right:14px;width:34px;height:34px;border-radius:50%;background:#1E2540;border:1px solid var(--line);color:var(--text);font-size:16px;line-height:1;padding:0;z-index:1;box-shadow:0 2px 8px #0008} /* cerrar el reproductor */
 #pl .now{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
@@ -1471,7 +1472,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <button type="button" id="plX" aria-label="Cerrar el reproductor">✕</button>
   <div class="in">
     <div class="now" id="plNow"></div>
-    <div class="pldest"><span class="plCnt" id="plCnt"></span><button type="button" id="plDest" aria-pressed="true"><svg class="dico" viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="6" width="2.4" height="4" rx="1.2"/><rect x="5" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="8.8" y="0.5" width="2.4" height="15" rx="1.2" class="rojo"/><rect x="12.6" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="16.6" y="6" width="2.4" height="4" rx="1.2"/></svg>Destacados</button><button type="button" id="plSalta" aria-pressed="false">⏩ Saltar silencios</button></div>
+    <div class="pldest"><span class="plCnt" id="plCnt"></span><button type="button" id="plDest" aria-pressed="true"><svg class="dico" viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="6" width="2.4" height="4" rx="1.2"/><rect x="5" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="8.8" y="0.5" width="2.4" height="15" rx="1.2" class="rojo"/><rect x="12.6" y="3.5" width="2.4" height="9" rx="1.2"/><rect x="16.6" y="6" width="2.4" height="4" rx="1.2"/></svg>Destacados</button><button type="button" id="plSalta" aria-pressed="false">Saltar silencios</button></div>
     <div class="plval" id="plVal" hidden></div>
     <div class="bar"><span id="plT">0:00</span><canvas id="plWave" aria-label="Onda del sonido: toca para avanzar"></canvas><input type="range" id="plSeek" min="0" max="0" step="0.01" value="0" aria-label="Avanzar en la grabación" hidden><span id="plD">0:00</span></div>
     <div class="ctl">
@@ -1694,7 +1695,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v38.1'; // v38.1: si hay versión nueva mientras estás ocupado (monitoreando, oyendo una grabación, mirando una noche, con una ventana abierta o escribiendo), se apunta y se mira cada 20 s sin bajar nada: en cuanto acabas, se actualiza sola
+const VERSION = 'v38.2'; // v38.2: reproductor: Destacados y Saltar silencios sin iconos y la fila centrada (el «36 de 140» se salía por la derecha); la ventana de arriba dura 8 s (antes 5) y lleva una ✕ para cerrarla; Saltar silencios: «en el reproductor», sin el ejemplo
+// v38.1: si hay versión nueva mientras estás ocupado (monitoreando, oyendo una grabación, mirando una noche, con una ventana abierta o escribiendo), se apunta y se mira cada 20 s sin bajar nada: en cuanto acabas, se actualiza sola
 // v38.0: para saber si hay versión nueva mira version.txt (unos bytes) y no la página entera (190 KB); si no está, como antes
 // v37.9: reproductor: «Destacados» (en plural) y «Saltar silencios» en la misma fila, sin la «i» (lo explica la ventana de arriba); Destacados ahora toca solo el trozo más fuerte de cada grabación (desde 1 s antes hasta el primer silencio a partir de 2 s después) y al acabar pasa sola a la siguiente; si tocas la onda para moverte, esa grabación sigue entera
 // v37.8: Saltar silencios: las rayas blancas de salto, a un tercio del alto (y más finas), y como mucho 5 por grabación (las de los 5 silencios más largos)
@@ -5501,8 +5503,8 @@ $('plDest').onclick = () => {
 // 📣 v37.6: ventana ancha arriba que explica lo que acabas de encender o apagar; se va a los 5 s (o al tocarla)
 let bandaT = null;
 function banda(tit, txt) {
-  const b = $('banda'); b.innerHTML = `<b>${tit}</b>${txt}`; b.classList.remove('fuera');
-  clearTimeout(bandaT); bandaT = setTimeout(() => b.classList.add('fuera'), 5000);
+  const b = $('banda'); b.innerHTML = `<button type="button" class="bandaX" aria-label="Cerrar">✕</button><b>${tit}</b>${txt}`; b.classList.remove('fuera');
+  clearTimeout(bandaT); bandaT = setTimeout(() => b.classList.add('fuera'), 8000); // v38.2: 8 s (antes 5), para leerlo entero
 }
 $('banda').onclick = () => { clearTimeout(bandaT); $('banda').classList.add('fuera'); };
 // ⏩ v37.6: Saltar silencios: al escuchar se salta los ratos callados (4 s o más) de cada grabación
@@ -5513,7 +5515,7 @@ $('plSalta').onclick = () => {
   PL.salta = !PL.salta; pintaSalta(); plOnda();
   try { localStorage.setItem('ronquino-saltar', PL.salta ? '1' : '0'); } catch {}
   banda(PL.salta ? '⏩ Saltar silencios activado' : 'Saltar silencios desactivado',
-    PL.salta ? 'Al escuchar, la app se salta todos los silencios: oyes solo los sonidos, uno detrás de otro. En la onda, lo saltado sale oscuro con los segundos que se salta (por ejemplo, −20 seg).'
+    PL.salta ? 'Al escuchar, la app se salta todos los silencios: oyes solo los sonidos, uno detrás de otro. En el reproductor, lo saltado sale oscuro, indicando los segundos que se salta.'
       : 'Las grabaciones se oyen enteras, con sus silencios.');
 };
 // v37.9: sin la «i» de Destacados: lo explica la ventana de arriba al tocarlo
@@ -7069,7 +7071,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v38.1', '3-10 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v38.2', '3-10 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
