@@ -1695,7 +1695,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 </div>
 
 <script type="module">
-const VERSION = 'v38.2'; // v38.2: reproductor: Destacados y Saltar silencios sin iconos y la fila centrada (el «36 de 140» se salía por la derecha); la ventana de arriba dura 8 s (antes 5) y lleva una ✕ para cerrarla; Saltar silencios: «en el reproductor», sin el ejemplo
+const VERSION = 'v38.3'; // v38.3: app Android 5.3 (APK_ULTIMA 5.3; la web ofrece el APK nuevo)
+// v38.2: reproductor: Destacados y Saltar silencios sin iconos y la fila centrada (el «36 de 140» se salía por la derecha); la ventana de arriba dura 8 s (antes 5) y lleva una ✕ para cerrarla; Saltar silencios: «en el reproductor», sin el ejemplo
 // v38.1: si hay versión nueva mientras estás ocupado (monitoreando, oyendo una grabación, mirando una noche, con una ventana abierta o escribiendo), se apunta y se mira cada 20 s sin bajar nada: en cuanto acabas, se actualiza sola
 // v38.0: para saber si hay versión nueva mira version.txt (unos bytes) y no la página entera (190 KB); si no está, como antes
 // v37.9: reproductor: «Destacados» (en plural) y «Saltar silencios» en la misma fila, sin la «i» (lo explica la ventana de arriba); Destacados ahora toca solo el trozo más fuerte de cada grabación (desde 1 s antes hasta el primer silencio a partir de 2 s después) y al acabar pasa sola a la siguiente; si tocas la onda para moverte, esa grabación sigue entera
@@ -7071,7 +7072,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v38.2', '3-10 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v38.3', '3-10 nov 2026', ['⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '💬 Tarjeta para dejarnos tu opinión en Google Play (también en inglés)', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -7090,7 +7091,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '5.2';
+const APK_ULTIMA = '5.3';
 // Versión de prueba: solo la ve el móvil de Gustavo, el único con la 4.9 o más (el resto sigue en APK_ULTIMA). Se baja de SleepAmable-prueba.apk
 const APK_PRUEBA = '5.1';
 const apkPrueba = !!AND && parseFloat(AND.version()) >= 4.9 && parseFloat(AND.version()) < parseFloat(APK_PRUEBA);
