@@ -25,6 +25,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 header{display:flex;align-items:center;gap:10px;margin:4px 0 22px}
 header .logo{width:62px;height:62px;flex:none}
 header h1{font-size:clamp(20px,6.6vw,34px);margin:0;font-weight:800;white-space:nowrap;line-height:1.1;min-width:0}
+#grow-panel-boton{flex:none;align-self:center} /* v39.1: botón de Grow Panel (sale con 2 apps o más) */
 header .ver{flex:none;margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;font-size:11px;line-height:1.5;color:var(--dim);white-space:nowrap}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
 /* Reducir ronquidos: desplegables más estrechos y sin «sí/no» (se abren con el triángulo) */
@@ -1078,7 +1079,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <path d="M362 180 h52 l-52 52 h52" stroke-width="15"/>
     <path d="M396 74 h70 l-70 70 h70" stroke-width="18"/>
   </g>
-</svg><h1><span style="color:#A78BFA">Amable</span> Sleep</h1><span class="ver" id="ver"></span></header>
+</svg><h1><span style="color:#A78BFA">Amable</span> Sleep</h1><span class="ver" id="ver"></span><span id="grow-panel-boton"></span></header>
   <div class="card" id="apkBanner" hidden>
     <h3>📲 Instala la app de Amable Sleep</h3>
     <p>Con la app de Android, Amable Sleep pone y quita «No molestar» por ti y sigue funcionando con la pantalla apagada.</p>
@@ -1770,7 +1771,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v39.0'; // v39.0: 🌐 tercer idioma, portugués de Brasil (🇧🇷 Português): toda la app traducida y revisada; arranca en portugués si el móvil está en portugués; fechas pt-BR; Luna contesta en portugués
+const VERSION = 'v39.1'; // v39.1: 🌸 Grow Panel: botón de Grow Panel arriba (sale con 2 apps o más) y, cada vez que cambian los números de la última noche, se envían al registro diario (app amable-sleep: horas_sueno y ronquidos; solo números)
+// v39.0: 🌐 tercer idioma, portugués de Brasil (🇧🇷 Português): toda la app traducida y revisada; arranca en portugués si el móvil está en portugués; fechas pt-BR; Luna contesta en portugués
 // v38.9: selector de idioma con banderas (🇪🇸 Español, 🇬🇧 English); al tocarlo, el otro idioma se despliega justo debajo (sin ventana aparte)
 // v38.8: inglés: la ventana «¿Fin del monitoreo del sueño?», el recuadro de sonidos que no son ronquido ni voz y unos 60 avisos y preguntas más
 // v38.7: Ajustes: solo el selector de idioma (sin la palabra «Idioma» a la izquierda)
@@ -4637,9 +4639,41 @@ function pintaCalendario(ns) {
     });
   });
 }
+// 🌸 v39.1: Grow Panel (Registro diario/LEEME.md): cada vez que cambian los números de la última noche se envían, solo números,
+// con app «amable-sleep»: horas_sueno (con un decimal) y ronquidos. Con la clave que crea Grow Panel (misma dirección, o #gpclave=)
+const REGISTRO_URL = 'https://registro-diario.proud-hill-016b.workers.dev/registro';
+function gpClave() {
+  try { const c = localStorage.getItem('growpanel.clave'); if (c && /^[A-Za-z0-9_-]{32,128}$/.test(c)) return c; } catch {}
+  try { return window.GrowPanel?.clave?.() || null; } catch { return null; }
+}
+const ymdGP = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+let gpEnviando = false;
+async function enviaGrowPanel(keepalive) {
+  if (gpEnviando || live.night) return; // mientras se monitorea, nada
+  gpEnviando = true;
+  try {
+    const n = (await DB.all('noches')).filter(x => x.fuente === 'micro' && x.fin && !PEND.has(x.id)).sort((a, b) => b.fin - a.fin)[0];
+    if (!n) return;
+    const fecha = ymdGP(n.fin), horas = Math.round((n.fin - n.inicio) / 36e5 * 10) / 10, ronq = Number(n.ronquidos) || 0;
+    const datos = {horas_sueno: horas, ronquidos: ronq};
+    // la ficha de la tarjeta de Grow Panel (se queda en el navegador y viaja en el enlace del botón)
+    const resumen = {estado: 'ok', mensaje: `Última noche: ${String(horas).replace('.', ',')} h · ${ronq} ${ronq === 1 ? 'ronquido' : 'ronquidos'}`,
+      cifras: [{valor: `${String(horas).replace('.', ',')} h`, etiqueta: 'horas de sueño'}, {valor: String(ronq), etiqueta: 'ronquidos'}], version: VERSION, frecuencia_horas: 24};
+    window.growPanelResumen = resumen; try { window.GrowPanel?.resumen?.(resumen); } catch {}
+    const clave = gpClave(); if (!clave) return; // sin Grow Panel: no se envía nada
+    const cuerpo = JSON.stringify({fecha, app: 'amable-sleep', datos});
+    let ult = null; try { ult = localStorage.getItem('ronquino-gp-ultimo'); } catch {}
+    if (ult === cuerpo) return; // nada nuevo
+    const r = await fetch(REGISTRO_URL, {method: 'POST', keepalive: !!keepalive, headers: {'Authorization': 'Bearer ' + clave, 'Content-Type': 'application/json'}, body: cuerpo});
+    if (r.ok) try { localStorage.setItem('ronquino-gp-ultimo', cuerpo); } catch {}
+  } catch {} finally { gpEnviando = false; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') enviaGrowPanel(true); });
+addEventListener('growpanel-listo', () => enviaGrowPanel());
 async function renderHome() {
   const ns = await podar((await DB.all('noches')).filter(n => !PEND.has(n.id)).sort((a, b) => b.id - a.id));
   renderStatsHome(ns);
+  enviaGrowPanel(); // 🌸 v39.1
   $('histN').textContent = ns.length ? `(${ns.length} ${ns.length === 1 ? 'noche' : 'noches'})` : '';
   $('misN').textContent = $('histN').textContent; // como en los otros historiales: (N noches)
   for (const [lista, desde] of [['nights', 'home'], ['nights2', 'stats']]) {
@@ -7159,7 +7193,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v39.0', '3-11 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
+  ['v39.1', '3-11 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⭐ «Destacados»: de cada grabación suena solo lo más fuerte y pasa sola a la siguiente', '🚶 «Te levantaste»: tócalo y verás a qué hora fue cada vez; y el muñequito sale en los gráficos a esa hora', '🔔 El aviso salta antes: 2 min roncando seguido con sensibilidad Baja, 1 min 30 s con Normal y 1 min con Alta', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
@@ -7244,5 +7278,6 @@ if (!sesion) {
 }
 window.__EN = {makeSaver, newNight, rachasDe, IA, Detector, DB, SR, APR, huellaMedia, noise, joinWavs, CUNAS, GUIAS, renderCunas, TLV, makeNoise, ALS, alCheck, avisoHora, live, sonarColchon, pintaSonarBtn, refuerzoTick, marcaMov, sonarNoche}; // para pruebas
 </script>
+<script src="https://gcalabro12.github.io/Grow-Panel/grow-panel-boton.js" data-app="amable-sleep" data-nombre="Amable Sleep" defer></script>
 </body>
 </html>
