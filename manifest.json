@@ -3,7 +3,7 @@
   "short_name": "Amable Sleep",
   "description": "Amable Sleep: duerme mejor. Descubre si roncas y descansa junto a quien ronca. By Práctica Integral.",
   "lang": "es",
-  "id": "./",
+  "id": "/Sleep-Amable/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
