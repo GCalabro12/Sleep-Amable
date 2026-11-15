@@ -293,7 +293,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 .tlBtns{display:flex;gap:8px;margin-top:10px}
 .tlBtns .btn{flex:1;margin:0}
 .tlTxt{display:block;width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0B1020;color:#E0E7FF;border:1px solid #475569;border-radius:12px;padding:10px;font:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
-.sepfino{height:4px;border-radius:2px;background:#A78BFA;opacity:.8;margin:12px 0 18px} /* v39.7: más gruesa */
+.sepfino{height:4px;background:#A78BFA;margin:12px -10px 18px} /* v39.8: más gruesa y de borde a borde (toca las dos rayas moradas de los lados) */
 #alarma>.card,#alarma>details.card{border:0;background:transparent;padding-left:2px;padding-right:2px} /* sin bordes: separan las líneas */
 .alcard.off{opacity:.55}
 .alcard .altop{display:flex;align-items:center;gap:10px}
@@ -488,6 +488,7 @@ details.instr .tips,details.instr .steps{margin-top:10px}
 .napest{margin-left:auto;font-size:14px;color:#C4B5FD;white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90vw;background:#6D5BD0;color:#fff;padding:11px 18px;border-radius:14px;font-size:16px;font-weight:600;z-index:40;box-shadow:0 6px 20px #0008;text-align:center;transition:opacity .3s}
 #toast.fuera{opacity:0;pointer-events:none}
+#toast.arriba,body.pl-on #toast.arriba{top:calc(10px + env(safe-area-inset-top));bottom:auto;left:10px;right:10px;transform:none;max-width:none;white-space:pre-line;font-size:17px;line-height:1.35} /* v39.8: «Sonará a las…» arriba del todo, a lo ancho y en 2 renglones */
 #toast{pointer-events:none;z-index:1000} /* oculto, los toques pasan a lo que hay debajo */
 #toast:not(.fuera){pointer-events:auto;cursor:pointer} /* a la vista: tocarlo lo cierra (v25.6) */
 body.pl-on #toast{bottom:auto;top:42%;transform:translate(-50%,-50%)} /* con el reproductor abierto, a mitad de pantalla: no tapa ¿Acierta? ni ▶ */
@@ -1792,7 +1793,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v39.7'; // v39.7: «Avísame en [h] [m]» (sin reloj, sin flechas, sin interruptor): pone la alarma de abajo dentro de ese tiempo; «Quiero dormir» igual; raya entre Siesta y Alarmas más gruesa. Y lo que dijeron los testers de PrimeTestLab: cambiar el email ya no saca un aviso del navegador en inglés (lo dice la app: «Escribe un email válido»); Luna cuenta las noches de 3 horas o más, como Estadísticas; sin la nota del iPhone en «Dormir con quien ronca»
+const VERSION = 'v39.8'; // v39.8: la raya entre Siesta y Alarmas llega de borde a borde; el cartel «Sonará a las…» de «Avísame en» sale arriba del todo, a lo ancho y en 2 renglones
+// v39.7: «Avísame en [h] [m]» (sin reloj, sin flechas, sin interruptor): pone la alarma de abajo dentro de ese tiempo; «Quiero dormir» igual; raya entre Siesta y Alarmas más gruesa. Y lo que dijeron los testers de PrimeTestLab: cambiar el email ya no saca un aviso del navegador en inglés (lo dice la app: «Escribe un email válido»); Luna cuenta las noches de 3 horas o más, como Estadísticas; sin la nota del iPhone en «Dormir con quien ronca»
 // v39.6: ⏰ aviso por tiempo: «😴 Quiero dormir [1-10 h] [00/15/30/45 min]» en la alarma de la noche y «⏰ Avísame dentro de…» arriba de Alarmas en Despertadores; suena una vez (en Android, con la cuenta atrás de la siesta)
 // v39.5: manifest.json con id «/Sleep-Amable/» (con «./» el id era la raíz de gcalabro12.github.io, igual que Grow Panel y Amable PC, y Brave/Chrome creían que ya estaba instalada y no ofrecían instalarla)
 // v39.4: app Android 5.4 para descargar (APK_ULTIMA 5.4: «Apagar y desactivar» y voz en inglés/portugués)
@@ -6043,7 +6045,8 @@ function proxima(hora) {
   return t.getTime();
 }
 let toastT = null;
-function toast(t) {
+function toast(t, arriba = false) {
+  $('toast').classList.toggle('arriba', !!arriba); // v39.8
   $('toast').textContent = t; $('toast').dataset.src = t; $('toast').classList.remove('fuera'); // v38.5: dataset.src, el texto tal cual (en pantalla puede ir traducido)
   clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.add('fuera'), 3500);
 }
@@ -6221,7 +6224,10 @@ function tempGo() { // v39.7: «Avísame en» / «Quiero dormir»: la alarma de 
   let al = ALS.list[0];
   if (!al) { al = {id: Date.now(), on: true, hora, son: 'amanecer', sub: 120}; ALS.list.push(al); }
   al.hora = hora; al.on = true; al.fired = null; al.snooze = null; alSave();
-  toast(L(`⏰ Sonará a las ${hora} (dentro de ${faltaTxt(proxima(hora) - Date.now())})`, `⏰ It will ring at ${hora} (in ${faltaTxt(proxima(hora) - Date.now())})`, `⏰ Vai tocar às ${hora} (daqui a ${faltaTxt(proxima(hora) - Date.now())})`) + avisoReto(al));
+  toast(L(`⏰ Sonará a las ${hora}
+(dentro de ${faltaTxt(proxima(hora) - Date.now())})`, `⏰ It will ring at ${hora}
+(in ${faltaTxt(proxima(hora) - Date.now())})`, `⏰ Vai tocar às ${hora}
+(daqui a ${faltaTxt(proxima(hora) - Date.now())})`) + avisoReto(al), true);
 }
 function tempParar() {
   const t = ALS.temp;
@@ -7309,7 +7315,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v39.7', '3-15 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
+  ['v39.8', '3-15 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
