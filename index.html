@@ -1821,7 +1821,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v40.4'; // v40.4: gráfica de horarios (Regularidad y Estadísticas) al revés: abajo la hora de acostarte, arriba la de levantarte
+const VERSION = 'v40.5'; // v40.5: sin la musiquita al abrir la app (de noche podía despertar a quien duerme al lado); la bienvenida sale en silencio
+// v40.4: gráfica de horarios (Regularidad y Estadísticas) al revés: abajo la hora de acostarte, arriba la de levantarte
 // v40.3: siesta en marcha: 😴 arriba, «Estás en tiempo de siesta» con tres puntitos, «(llevas 2:35)», rojo más suave; Despertadores: puntitos tras «Siesta» y debajo del interruptor de cada alarma encendida; «⏰ Alarma» en singular
 // v40.2: Dormir siesta: el botón va debajo de «Música de fondo»; en marcha: «Estás en tiempo de siesta», «Comienza la siesta (llevas 2:35)» con segundero, y botón rojo «Cancelar la siesta» que dice cuánto dormiste
 // v40.1: Siesta: «Tono [Amanecer] Duración [30 min]» en un solo renglón, sin triangulitos; «Sonará a las 16:49» abajo a la izquierda, sin despertador
@@ -7154,22 +7155,11 @@ function jingle() {
   c.resume().then(() => { if (c.state === 'running') play(); });
   return c;
 }
-function runSplash() {
-  const sp = $('splash'); let done = false, c = jingle();
+function runSplash() { // v40.5: sin la musiquita de bienvenida (de noche podía despertar a quien duerme al lado); jingle() queda sin usar
+  const sp = $('splash'); let done = false;
   const end = () => { if (done) return; done = true; sp.classList.add('out'); setTimeout(() => sp.remove(), 800); };
-  // Si el móvil no deja sonar la musiquita sin tocar antes la pantalla, la bienvenida espera a que toques
-  setTimeout(() => {
-    if (c && c.state === 'running') setTimeout(end, 4200); // lo justo para ver a Luna saludar
-    else $('tapHint').hidden = false;
-  }, 400);
-  // «click» y no «pointerdown»: en Android un toque solo da permiso de sonido al levantar el dedo
-  sp.addEventListener('click', () => {
-    if (done) return;
-    if (!c || c.state !== 'running') {
-      try { c?.close(); } catch {}
-      c = jingle(); $('tapHint').hidden = true; setTimeout(end, 2800);
-    } else end();
-  });
+  setTimeout(end, 3000); // lo justo para ver a Luna saludar
+  sp.addEventListener('click', end); // un toque la cierra antes
 }
 runSplash();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(console.warn);
@@ -7373,7 +7363,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v40.4', '3-16 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
+  ['v40.5', '3-17 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
