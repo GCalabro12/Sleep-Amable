@@ -1822,7 +1822,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v40.6'; // v40.6: gráfica de horarios: sin tocar las barras; dentro de cada barra las horas dormidas (6:25) y debajo «h»; barras más anchas
+const VERSION = 'v40.7'; // v40.7: unión con Grow Panel: window.growPanelSesion() ('sleep.'+sesión) y evento «growpanel-sesion» al arrancar y al entrar/registrarse/salir; el envío con la clave sigue igual
+// v40.6: gráfica de horarios: sin tocar las barras; dentro de cada barra las horas dormidas (6:25) y debajo «h»; barras más anchas
 // v40.5: sin la musiquita al abrir la app (de noche podía despertar a quien duerme al lado); la bienvenida sale en silencio
 // v40.4: gráfica de horarios (Regularidad y Estadísticas) al revés: abajo la hora de acostarte, arriba la de levantarte
 // v40.3: siesta en marcha: 😴 arriba, «Estás en tiempo de siesta» con tres puntitos, «(llevas 2:35)», rojo más suave; Despertadores: puntitos tras «Siesta» y debajo del interruptor de cada alarma encendida; «⏰ Alarma» en singular
@@ -6679,7 +6680,14 @@ function guardaSesion(s) {
   sesion = s;
   try { s ? localStorage.setItem('ronquino-sesion', JSON.stringify(s)) : localStorage.removeItem('ronquino-sesion'); } catch {}
   pintaCuenta();
+  avisaGPSesion(); // v40.7
 }
+// 🌸 v40.7: unión con Grow Panel (como Amable PC y Amable Meta): Grow Panel pide la sesión con growPanelSesion() y se entera
+// por el evento «growpanel-sesion» al arrancar y al entrar, registrarse o salir. El token solo viaja por HTTPS y Grow Panel lo verifica y lo descarta.
+window.growPanelSesion = async () => sesion?.token ? 'sleep.' + sesion.token : null;
+let gpTok;
+function avisaGPSesion() { const t = sesion?.token || null; if (t === gpTok) return; gpTok = t; try { dispatchEvent(new Event('growpanel-sesion')); } catch {} }
+avisaGPSesion();
 const sesionDe = (token, u) => ({token, id: u.id, email: u.email, nombre: u.nombre, conPass: u.conPass, admin: !!u.admin, pais: u.pais || '', consent: !!u.consent});
 // El país (Estadísticas) también se guarda en la cuenta: si el móvil no lo tiene, se toma el de la cuenta, y al revés
 function sincronizaPais() {
@@ -7365,7 +7373,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v40.6', '3-17 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
+  ['v40.7', '3-17 nov 2026', ['🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes (Luna también contesta en tu idioma)', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta', '⏰ «Avísame en 2 h 30 m» o «Quiero dormir 7 h»: la alarma se pone sola a esa hora', 'Otras mejoras funcionales']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
