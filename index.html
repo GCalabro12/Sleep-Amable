@@ -3479,7 +3479,7 @@ function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
   if (!live.night || live.parando) return; // solo mientras monitorea (si no, al acabar la noche podía quedarse el brillo al mínimo)
-  live.dimT = setTimeout(() => { if (!live.night || live.parando) return; if (prueba || !$('ask').hidden || !$('profAviso').hidden || $('listen').querySelector('.lpanel:not([hidden])')) { wake(); return; } $('listen').classList.add('dim'); // v41.6: con una ventana abierta (alarma, modos…) no se oscurece AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
+  live.dimT = setTimeout(() => { if (!live.night || live.parando) return; if (prueba || !$('ask').hidden || !$('profAviso').hidden || $('listen').querySelector('.lpanel:not([hidden])')) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
 }
 // Sin monitorear, el brillo siempre es el normal del móvil (al abrir la app y al volver a ella)
 const brilloNormal = () => { if (!live.night) { clearTimeout(live.dimT); try { AND?.atenuar?.(false); } catch {} } };
