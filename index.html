@@ -283,7 +283,10 @@ body.tabs-on .wrap{padding-bottom:84px}
 #wakeUp .snz button{width:auto;flex:1;margin:0;padding:16px 0;font-size:19px}
 #wakeUp .snzT{color:#C7D2FE;font-size:15px}
 #wakeUp #wakeDes{background:none;color:#A5B4FC;opacity:.85;font-size:15px;font-weight:600;padding:10px;margin-top:14px} #wakeUp #wakeDes[hidden]{display:none} #wakeUp #wakeDes small{display:block;font-size:13px;font-weight:400;margin-top:2px} /* v39.3 */
-#wakeSnooze button{background:#312E81;color:#E0E7FF} #wakeSnooze button[hidden]{display:none} #wakeOff{background:#FDE68A;color:#1E1B4B}
+#wakeSnooze button{background:#312E81;color:#E0E7FF} #wakeSnooze button[hidden]{display:none}
+/* v41.1: al posponer, 5 s con el aviso debajo de los botones y luego vuelve al monitoreo */
+#wakeSnzMsg{display:none;margin:18px auto 0;font-size:24px;font-weight:700;color:#FDE68A;line-height:1.3} #wakeSnzMsg small{display:block;font-size:17px;font-weight:400;color:#C7D2FE;margin-top:4px}
+#wakeUp.pos #wakeSnzMsg{display:block} #wakeUp.pos #wakeOff,#wakeUp.pos #wakeDes{display:none} #wakeUp.pos #wakeSnooze button{opacity:.35;pointer-events:none} #wakeOff{background:#FDE68A;color:#1E1B4B}
 .alfalta{color:#FCD34D;font-size:15px;font-weight:600;margin:6px 0 0 62px} .alfalta:empty{display:none}
 /* v40.3: los tres puntitos debajo del interruptor de la alarma encendida */
 .alfila{display:flex;align-items:center;margin-top:6px} .alcard.off .alfila{display:none}
@@ -1524,7 +1527,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <div class="wclock" id="wakeClock"></div>
   <div class="wtxt">☀️ ¡Buenos días!</div>
   <div class="snzT" id="wakeSnzT">😴 Posponer</div>
-  <div class="snz" id="wakeSnooze"><button data-m="1">1 min</button><button data-m="3">3 min</button><button data-m="5">5 min</button><button data-m="9">9 min</button></div>
+  <div class="snz" id="wakeSnooze"><button data-m="5">5 min</button><button data-m="10">10 min</button><button data-m="15">15 min</button><button data-m="30">30 min</button></div>
+  <div id="wakeSnzMsg"></div>
   <button id="wakeOff">☀️ Apagar</button>
   <button id="wakeDes" hidden><span>🔕 Apagar y desactivar</span><small>Ya no sonará mañana</small></button>
 </div>
@@ -1822,7 +1826,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v41.0'; // v41.0: sello «by Práctica Integral» con el logotipo nuevo (muñequito con la D azul)
+const VERSION = 'v41.1'; // v41.1: Posponer la alarma: aviso de 5 s «Alarma pospuesta X minutos / hasta las HH:MM» y vuelve al monitoreo, que sigue; la noche se termina al apagarla
+// v41.0: sello «by Práctica Integral» con el logotipo nuevo (muñequito con la D azul)
 // v40.9: Grow Panel: registro en su nueva dirección (grow-panel-api); el resto igual
 // v40.8: Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla
 // v40.7: unión con Grow Panel: window.growPanelSesion() ('sleep.'+sesión) y evento «growpanel-sesion» al arrancar y al entrar/registrarse/salir; el envío con la clave sigue igual
@@ -3162,7 +3167,9 @@ async function startListening() {
     // (con el micrófono abierto de día, Android puede silenciar el timbre de las llamadas)
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
     // Suena una alarma (con la app Android): ya es de día, la noche se termina sola
-    else if (AND?.alarmaSonando?.()) stopListening(true);
+    // v41.1: con la APK 5.5, si la pospones, la noche sigue (sin grabar mientras suena); si la apagas, se termina
+    else if (AND?.alarmaSonando?.()) { if (!AND.alarmaPospuesta) stopListening(true); else if (!live.alSn) { live.alSn = true; if (live.det) live.det.muteUntil = Infinity; if (!noise.au.paused) stopNoise(); } }
+    else if (live.alSn) { live.alSn = false; if (AND.alarmaPospuesta?.()) { if (live.det) live.det.muteUntil = live.det.samples / SR + 2; } else stopListening(true); }
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
 }
@@ -6391,14 +6398,15 @@ setInterval(alCheck, 10000);
 // Subida que el oído nota pareja: en decibelios, de −50 dB (casi en silencio) a 0 dB
 const ganancia = k => k >= 1 ? 1 : Math.pow(10, (-50 + 50 * Math.max(0, k)) / 20);
 function alRing(son, sub, onSnooze, nSn = 0, al = null) { // al: la alarma que suena (null: la siesta)
-  const tope = nSn === 0 ? 9 : nSn === 1 ? 3 : 0; // cada vez que pospones, menos minutos; tras posponer 2 veces, ya no se puede: a levantarse (v26.4)
+  // v41.1: 1.ª vez 5, 10, 15 o 30 min; 2.ª vez 5, 10 o 15 min; después ya no se puede posponer: a levantarse
+  const tope = nSn === 0 ? 30 : nSn === 1 ? 15 : 0;
   document.querySelectorAll('#wakeSnooze button').forEach(b => b.hidden = +b.dataset.m > tope);
   $('wakeSnzT').textContent = tope ? '😴 Posponer' : '☀️ Ya has pospuesto 2 veces: ¡a levantarse!';
   const au = new Audio(srcDe(son)); au.loop = true; au.volume = sub ? .9 * ganancia(0) : .9; au.play().catch(() => {});
   alWake = {au, t0: Date.now(), sub, onSnooze, al};
   $('wakeDes').hidden = !al; // v39.3
   if (live.det) live.det.muteUntil = Infinity; // la alarma no se graba
-  if (live.night) stopListening(true); // ya es de día: la noche se termina (y se cierra el micrófono)
+  // v41.1: la noche ya no se termina al sonar: si pospones, sigue el monitoreo; se termina al apagarla
   if (!noise.au.paused) stopNoise();
   $('wakeUp').hidden = false;
   if (live.night) wake(); // ilumina la pantalla negra
@@ -6411,11 +6419,18 @@ function alRing(son, sub, onSnooze, nSn = 0, al = null) { // al: la alarma que s
 function alStop() {
   if (!alWake) return;
   clearInterval(alWake.timer); alWake.au.pause(); alWake.au.src = ''; alWake = null;
-  $('wakeUp').hidden = true;
+  $('wakeUp').hidden = true; $('wakeUp').classList.remove('pos');
   if (live.det) live.det.muteUntil = live.det.samples / SR + 2;
 }
-document.querySelectorAll('#wakeSnooze button').forEach(b => b.onclick = () => { const f = alWake?.onSnooze; alStop(); f?.(+b.dataset.m); });
-$('wakeOff').onclick = () => { alStop(); for (const al of ALS.list) al.snooze = null; napSnoozeT && clearTimeout(napSnoozeT); alSave(); };
+document.querySelectorAll('#wakeSnooze button').forEach(b => b.onclick = () => {
+  const w = alWake; if (!w || w.pos) return; w.pos = true;
+  const m = +b.dataset.m, h = hhmm(Date.now() + m * 60e3).replace(/^0/, '');
+  w.au.pause(); w.onSnooze?.(m);
+  $('wakeSnzMsg').innerHTML = `⏰ ${L('Alarma pospuesta', 'Alarm snoozed', 'Alarme adiado')} ${m} ${L(m === 1 ? 'minuto' : 'minutos', m === 1 ? 'minute' : 'minutes', m === 1 ? 'minuto' : 'minutos')}<small>${L(h.startsWith('1:') ? 'hasta la' : 'hasta las', 'until', 'até as')} ${h}</small>`;
+  $('wakeUp').classList.add('pos');
+  setTimeout(() => { if (alWake === w) alStop(); }, 5000); // v41.1: 5 s y vuelve a la pantalla de monitoreo, que sigue escuchando
+});
+$('wakeOff').onclick = () => { alStop(); for (const al of ALS.list) al.snooze = null; napSnoozeT && clearTimeout(napSnoozeT); alSave(); if (live.night) stopListening(true); }; // v41.1: al apagar, la noche se termina
 // v39.3: «Apagar y desactivar»: se apaga y esa alarma queda desactivada (ya no suena mañana)
 // v39.3: botón «Instalar»: en el ordenador (no en el móvil ni dentro de la app, ni si ya está instalada)
 let instEv = null;
@@ -7384,7 +7399,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v41.0', '3-18 nov 2026', ['🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '💻 Instálala en el ordenador con un botón: icono en el escritorio y su propia ventana', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana', '⏩ Reproductor: «Saltar silencios», oyes solo los sonidos, seguidos, y ves cuántos segundos se salta']],
+  ['v41.1', '3-23 nov 2026', ['⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
