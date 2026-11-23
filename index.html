@@ -1826,7 +1826,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v41.6'; // v41.6: al programar la alarma (ventanas abiertas, desplegables) la pantalla no pierde el brillo
+const VERSION = 'v41.7'; // v41.7: APK 5.5: posponer 5/10/15/30 y luego 5/10/15, aviso de 5 s y vuelve el monitoreo; la noche sigue si se pospone
+// v41.6: al programar la alarma (ventanas abiertas, desplegables) la pantalla no pierde el brillo
 // v41.5: «Audios y música para dormir» se encoge hasta su contenido (ya no llega hasta abajo)
 // v41.4: bordes azules de «Elige para esta noche» más gruesos (4 px), también la alarma para despertarte
 // v41.3: ventanas de «Elige para esta noche» con borde azul; «Quiero dormir» al abrir la app suma sus horas a la hora actual
@@ -3173,7 +3174,7 @@ async function startListening() {
     if (Date.now() - night.inicio > 13 * 3600e3) stopListening(true);
     // Suena una alarma (con la app Android): ya es de día, la noche se termina sola
     // v41.1: con la APK 5.5, si la pospones, la noche sigue (sin grabar mientras suena); si la apagas, se termina
-    else if (AND?.alarmaSonando?.()) { if (!AND.alarmaPospuesta) stopListening(true); else if (!live.alSn) { live.alSn = true; if (live.det) live.det.muteUntil = Infinity; if (!noise.au.paused) stopNoise(); } }
+    else if (AND?.alarmaSonando?.()) { if (!live.alSn) { live.alSn = true; if (live.det) live.det.muteUntil = Infinity; if (!noise.au.paused) stopNoise(); } }
     else if (live.alSn) { live.alSn = false; if (AND.alarmaPospuesta?.()) { if (live.det) live.det.muteUntil = live.det.samples / SR + 2; } else stopListening(true); }
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
@@ -7428,7 +7429,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '5.4';
+const APK_ULTIMA = '5.5';
 // Versión de prueba: solo la ve el móvil de Gustavo, el único con la 4.9 o más (el resto sigue en APK_ULTIMA). Se baja de SleepAmable-prueba.apk
 const APK_PRUEBA = '5.1';
 const apkPrueba = !!AND && parseFloat(AND.version()) >= 4.9 && parseFloat(AND.version()) < parseFloat(APK_PRUEBA);
