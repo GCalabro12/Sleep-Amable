@@ -1826,7 +1826,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v41.5'; // v41.5: «Audios y música para dormir» se encoge hasta su contenido (ya no llega hasta abajo)
+const VERSION = 'v41.6'; // v41.6: al programar la alarma (ventanas abiertas, desplegables) la pantalla no pierde el brillo
+// v41.5: «Audios y música para dormir» se encoge hasta su contenido (ya no llega hasta abajo)
 // v41.4: bordes azules de «Elige para esta noche» más gruesos (4 px), también la alarma para despertarte
 // v41.3: ventanas de «Elige para esta noche» con borde azul; «Quiero dormir» al abrir la app suma sus horas a la hora actual
 // v41.2: ventanas de «Elige para esta noche» (modos, sonar y música) con borde morado grueso, como el «Panel de monitoreo»
@@ -3478,7 +3479,7 @@ function showWarn(t) { $('lwarn').textContent = '⚠️ ' + t; $('lwarn').hidden
 function wake() { // se oscurece a los 15 s; tocar la pantalla la ilumina
   $('listen').classList.remove('dim'); clearTimeout(live.dimT); AND?.atenuar(false);
   if (!live.night || live.parando) return; // solo mientras monitorea (si no, al acabar la noche podía quedarse el brillo al mínimo)
-  live.dimT = setTimeout(() => { if (!live.night || live.parando) return; if (prueba || !$('ask').hidden || !$('profAviso').hidden) { wake(); return; } $('listen').classList.add('dim'); AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
+  live.dimT = setTimeout(() => { if (!live.night || live.parando) return; if (prueba || !$('ask').hidden || !$('profAviso').hidden || $('listen').querySelector('.lpanel:not([hidden])')) { wake(); return; } $('listen').classList.add('dim'); // v41.6: con una ventana abierta (alarma, modos…) no se oscurece AND?.atenuar(true); }, 15000); // probando o con un mensaje abierto: no se oscurece
 }
 // Sin monitorear, el brillo siempre es el normal del móvil (al abrir la app y al volver a ella)
 const brilloNormal = () => { if (!live.night) { clearTimeout(live.dimT); try { AND?.atenuar?.(false); } catch {} } };
@@ -3490,6 +3491,8 @@ $('listen').addEventListener('pointerdown', e => {
 }, true);
 // Un toque en un mensaje o una ventana encima del monitoreo también devuelve el brillo
 document.addEventListener('pointerdown', e => { if (live.night && !e.target.closest?.('#listen')) wake(); }, true);
+// v41.6: cambiar una hora, un minuto o una opción (desplegables del móvil) también mantiene el brillo
+['change', 'input', 'focusin'].forEach(ev => document.addEventListener(ev, () => { if (live.night) wake(); }, true));
 $('stopBtn').onclick = () => stopListening();
 $('startBtn').onclick = async () => {
   musPara(false); // si sonaba la música sola, se para: en la noche se elige arriba, en 🎵
@@ -7405,7 +7408,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v41.5', '3-23 nov 2026', ['📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
+  ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
   ['v25.3', '25-27 oct 2026', ['🎧 Primer audio para dormir: «Dinero en calma»', '🌙 Fases del sueño en bloques, con los ciclos de unos 90 minutos', '🛌 Aviso de ronquidos por auricular o altavoz, y otro aviso a la hora que elijas', '🫁 La IA reconoce la tos y aprende de lo que revisas', '📅 Calendario de noches y estadísticas de 7, 30 o 90 días', 'Otras mejoras funcionales']],
