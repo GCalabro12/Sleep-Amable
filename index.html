@@ -719,8 +719,9 @@ details.hist[open] summary{margin-bottom:10px}
 .lico small{font-size:11px;margin-left:2px;vertical-align:middle}
 .lico.on{background:#1E293B;border-color:#475569;color:#E0E7FF}
 .lico:not(.on){filter:grayscale(1);opacity:.55} /* apagado: en gris */
-.lpanel{position:absolute;top:108px;left:14px;right:14px;z-index:3;background:#111827;border:4px solid #3B82F6;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
+.lpanel{position:absolute;top:108px;left:14px;right:14px;z-index:5;background:#111827;border:4px solid #3B82F6;border-radius:16px;padding:14px;text-align:left;font-size:14px;color:#CBD5E1;max-height:62vh;overflow:auto;box-shadow:0 10px 30px #000a}
 .lpanel .nat{margin-top:10px}
+#listen:has(.lpanel:not([hidden]))::before{content:'';position:fixed;inset:0;z-index:4;background:#0007;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);pointer-events:none} /* v41.8: con una ventana abierta, lo de detrás se ve borroso */
 #pCuna{top:72px;left:0;right:auto;bottom:auto;width:calc(100% - 0px);max-height:calc(100% - 80px);overflow:auto;border-radius:20px;border:4px solid #3B82F6;background:#0B1020;padding:16px 16px 28px;font-size:15px} /* v41.5: se encoge hasta su contenido; solo se alarga al desplegar una opción */
 .pchead{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:8px}
 .pchead button{width:40px;height:40px;border-radius:12px;border:1px solid #334155;background:#111827;color:#CBD5E1;font-size:18px}
@@ -1826,7 +1827,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v41.7'; // v41.7: APK 5.5: posponer 5/10/15/30 y luego 5/10/15, aviso de 5 s y vuelve el monitoreo; la noche sigue si se pospone
+const VERSION = 'v41.8'; // v41.8: con una ventana del monitoreo abierta, lo de detrás se ve borroso
+// v41.7: APK 5.5: posponer 5/10/15/30 y luego 5/10/15, aviso de 5 s y vuelve el monitoreo; la noche sigue si se pospone
 // v41.6: al programar la alarma (ventanas abiertas, desplegables) la pantalla no pierde el brillo
 // v41.5: «Audios y música para dormir» se encoge hasta su contenido (ya no llega hasta abajo)
 // v41.4: bordes azules de «Elige para esta noche» más gruesos (4 px), también la alarma para despertarte
@@ -7409,6 +7411,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v41.8', '24 nov 2026', ['🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
