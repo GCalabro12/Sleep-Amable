@@ -1827,7 +1827,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.0'; // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
+const VERSION = 'v42.1'; // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
+// v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
 // v41.9: «Alarma pospuesta» en un renglón y «5 minutos» entero en el siguiente
 // v41.8: con una ventana del monitoreo abierta, lo de detrás se ve borroso
 // v41.7: APK 5.5: posponer 5/10/15/30 y luego 5/10/15, aviso de 5 s y vuelve el monitoreo; la noche sigue si se pospone
@@ -3180,6 +3181,8 @@ async function startListening() {
     // v41.1: con la APK 5.5, si la pospones, la noche sigue (sin grabar mientras suena); si la apagas, se termina
     else if (AND?.alarmaSonando?.()) { if (!live.alSn) { live.alSn = true; if (live.det) live.det.muteUntil = Infinity; if (!noise.au.paused) stopNoise(); } }
     else if (live.alSn) { live.alSn = false; if (AND.alarmaPospuesta?.()) { if (live.det) live.det.muteUntil = live.det.samples / SR + 2; } else stopListening(true); }
+    // v42.1: si se pospuso y luego se apaga mientras la app estaba en segundo plano (sin ver el timbre), la noche también se termina
+    else if (AND?.alarmaPospuesta) { if (AND.alarmaPospuesta()) live.huboPosp = night.id; else if (live.huboPosp === night.id) { live.huboPosp = null; stopListening(true); } }
   }, 500);
   try { navigator.storage?.persist?.(); } catch {}
 }
@@ -7413,7 +7416,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v42.0', '24 nov 2026', ['🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
+  ['v42.1', '24 nov 2026', ['🌅 Si pospones la alarma, el monitoreo sigue; al apagarla, se terminan la alarma y el monitoreo a la vez', '🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
   ['v30.7', '28-30 oct 2026', ['😴 Nueva pantalla «Dormir siesta»: alarma y música de fondo, sin monitorear', '🔔 «Saber si ronco» ahora incluye los avisos, con un refuerzo que repite el aviso hasta que tocas la pantalla', '✍️ Audio personalizado: pega tu texto y te lo repito con música suave, a la velocidad que elijas', '🎧 Dos audios nuevos para dormir: «Sentirte querido» y «Seguro y sin miedo»', '😴 Minutos de ronquido más justos: solo cuentan cuando roncas de verdad', 'Otras mejoras funcionales']],
