@@ -292,6 +292,7 @@ body.tabs-on .wrap{padding-bottom:84px}
 .alfila{display:flex;align-items:center;margin-top:6px} .alcard.off .alfila{display:none}
 .alfila .alpts{width:46px;margin:0 16px 0 0;justify-content:center;gap:5px;flex:none} .alfila .alpts i{width:8px;height:8px}
 .alfila .alfalta{margin:0} /* v40.0: «Sonará en…» debajo de la hora, al minuto */
+.alfila{align-items:flex-start} .alfila .alpts{margin-top:4px} .alfalta div{white-space:nowrap} .alfalta .posp{color:#86EFAC} /* v42.3: puntitos más arriba; cada aviso en un solo renglón; la pospuesta primero */
 .alcard{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
 #alList .alcard+.alcard{margin-top:22px}
 #alList .alcard+.alcard::before{content:'';position:absolute;left:-18px;right:-18px;top:-17px;height:2px;background:#A78BFA;opacity:.55} /* entre alarma y alarma */
@@ -1827,7 +1828,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.2'; // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
+const VERSION = 'v42.3'; // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+// v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
 // v41.9: «Alarma pospuesta» en un renglón y «5 minutos» entero en el siguiente
@@ -6242,8 +6244,11 @@ function pintaFalta() {
   let posH = 0; try { posH = +(AND?.pospuestaHasta?.() || 0); } catch {}
   document.querySelectorAll('#alList .alcard').forEach(d => { const al = d._al, f = d.querySelector('.alfalta'); if (!al || !f) return;
     const hasta = Math.max(al.snooze > Date.now() ? al.snooze : 0, posH), hace = Date.now() - (proxima(al.hora) - 864e5);
-    if (al.on && hasta > Date.now() && hace >= 0 && hace < 2 * 3600e3) { f.textContent = `Pospuesta: sonará a las ${hhmm(hasta)} (en ${faltaTxt(hasta - Date.now())})`; return; }
-    f.textContent = al.on ? `Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}` : ''; }); // (en inglés y portugués lo traduce RX_EN)
+    // v42.3: en corto y en un renglón («23 h 53 min»); si está pospuesta, primero «Pospuesta: suena en 5 min» (va bajando)
+    const corto = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)), h = Math.floor(m / 60), r = m % 60; return h ? `${h} h${r ? ` ${r} min` : ''}` : `${m} min`; };
+    if (!al.on) { f.textContent = ''; return; }
+    const pos = hasta > Date.now() && hace >= 0 && hace < 2 * 3600e3 ? `<div class="posp">Pospuesta: suena en ${corto(hasta - Date.now())}</div>` : '';
+    f.innerHTML = pos + `<div>Sonará en ${corto(proxima(al.hora) - Date.now())}</div>`; }); // (en inglés y portugués lo traduce RX_EN)
 }
 setInterval(() => { if (!document.hidden) pintaFalta(); }, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) pintaFalta(); }); // v42.2: al volver de la pantalla de la alarma, al momento
@@ -7422,7 +7427,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v42.2', '25 nov 2026', ['⏰ Al posponer, la alarma dice «Pospuesta: sonará a las …» en vez de la hora de mañana', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
+  ['v42.3', '25 nov 2026', ['⏰ Al posponer, debajo de la alarma: «Pospuesta: suena en 5 min» (va bajando) y debajo «Sonará en 23 h 53 min», cada uno en un renglón', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
   ['v42.1', '24 nov 2026', ['🌅 Si pospones la alarma, el monitoreo sigue; al apagarla, se terminan la alarma y el monitoreo a la vez', '🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
