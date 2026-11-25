@@ -674,6 +674,12 @@ details.hist[open] summary{margin-bottom:10px}
 .cgrid .choice small{display:none}
 .cgrid .choice .ic{font-size:34px}
 .cgrid .choice .para{display:none}
+/* v42.4: campanita a la izquierda de la baldosa cuando hay una alarma o siesta activada, con la hora debajo */
+.cgrid .choice{position:relative}
+.tbell{position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tbell[hidden]{display:none}
+.tbell svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tbell small{display:block!important;font-size:11px;font-weight:600;opacity:.9;margin:0}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
 .choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
 .htit{display:flex;align-items:center;gap:10px}
@@ -1148,8 +1154,8 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   <button class="choice a" id="goSnore"><span class="ic"><svg class="icimg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="58" r="32" fill="#FB923C"/><path d="M34 60 q6 5 12 0 M54 60 q6 5 12 0" fill="none" stroke="#7C2D12" stroke-width="3.5" stroke-linecap="round"/><path d="M44 73 q6 4 12 0" fill="none" stroke="#7C2D12" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><circle cx="67" cy="69" r="4.5" fill="#F43F5E" opacity=".45"/><path d="M18 46 Q30 14 62 20 Q80 22 88 40 Q72 30 60 34 Z" fill="#2563EB"/><path d="M18 46 Q50 30 82 42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><circle cx="88" cy="42" r="7" fill="#fff"/><path d="M76 12 h10 l-10 10 h10" fill="none" stroke="#E0E7FF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b class="tt">Saber si ronco y avisos</b><small>Graba la noche, detecta tus ronquidos y te avisa si quieres</small></span></button>
   <div class="cgrid">
   <button class="choice b" id="goMask"><span class="ic">🎧</span><span><b class="tt">Dormir con quien ronca</b><small>Sonidos que tapan los ronquidos</small></span></button>
-  <button class="choice f" data-go="siesta"><span class="ic">😴</span><span><b class="tt">Dormir siesta</b><small>Alarma y música de fondo, sin monitorear</small></span></button>
-  <button class="choice sm c" data-go="alarma"><span class="ic">⏰</span><span><b class="tt">Alarma y música <span class="para">para </span>dormir</b><small>Audios y música para dormirte, siesta y alarmas</small></span></button>
+  <button class="choice f" data-go="siesta" id="tSie"><span class="tbell" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><small></small></span><span class="ic">😴</span><span><b class="tt">Dormir siesta</b><small>Alarma y música de fondo, sin monitorear</small></span></button>
+  <button class="choice sm c" data-go="alarma" id="tAla"><span class="tbell" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><small></small></span><span class="ic">⏰</span><span><b class="tt">Alarma y música <span class="para">para </span>dormir</b><small>Audios y música para dormirte, siesta y alarmas</small></span></button>
   <button class="choice sm g" data-go="aprende"><span class="ic">📚</span><span><b class="tt">Aprende sobre el sueño</b><small>Fichas cortas: ronquido, apnea, siesta, luz…</small></span></button>
   <button class="choice sm d" data-go="stats"><span class="ic">📊</span><span><b class="tt">Estadísticas</b><small>Tus noches y la media de tu país</small></span></button>
   <button class="choice sm e" data-go="ajustes"><span class="ic">⚙️</span><span><b class="tt">Ajustes</b><small>Tu cuenta, detector y novedades</small></span></button>
@@ -1828,7 +1834,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.3'; // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.4'; // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -6095,6 +6101,7 @@ ALS.temp.on = false; delete ALS.temp.fin;
 const tempSon = () => ALS.list[0]?.son || 'amanecer', tempSub = () => ALS.list[0]?.sub ?? 120;
 const alSave = () => {
   try { localStorage.setItem('ronquino-alarmas', JSON.stringify(ALS)); } catch {}
+  try { pintaCampanas(); } catch {} // v42.4
   if (NATIVA) AND.setAlarmas(JSON.stringify(ALS.list.map(a => ({id: a.id, on: a.on, hora: a.hora, tono: a.son, sub: a.sub, reto: retoDe(a), cod: ALS.cod || ''}))));
 };
 // v41.3: al abrir la app, «Quiero dormir» (o «Avísame en») vuelve a contar desde la hora actual: suma sus horas a ahora
@@ -6236,7 +6243,7 @@ function renderAlarmas() {
   }
   if (typeof pintaAlarmasRapidas === 'function') pintaAlarmasRapidas();
   if (typeof pintaTemp === 'function') pintaTemp(); // v39.6: el de Despertadores
-  pintaFalta();
+  pintaFalta(); if (typeof pintaCampanas === 'function') pintaCampanas();
 }
 // v40.0: debajo de la hora de cada alarma encendida, en amarillo: «Sonará en 6 horas y 30 min» (se pone al día cada minuto)
 function pintaFalta() {
@@ -6250,8 +6257,17 @@ function pintaFalta() {
     const pos = hasta > Date.now() && hace >= 0 && hace < 2 * 3600e3 ? `<div class="posp">Pospuesta: suena en ${corto(hasta - Date.now())}</div>` : '';
     f.innerHTML = pos + `<div>Sonará en ${corto(proxima(al.hora) - Date.now())}</div>`; }); // (en inglés y portugués lo traduce RX_EN)
 }
-setInterval(() => { if (!document.hidden) pintaFalta(); }, 15000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) pintaFalta(); }); // v42.2: al volver de la pantalla de la alarma, al momento
+// v42.4: campanita en las baldosas de Inicio «Dormir siesta» y «Alarma y música» si hay algo activado, con la hora en pequeño
+function pintaCampanas() {
+  const pon = (id, t) => { const b = $(id)?.querySelector('.tbell'); if (!b) return; b.hidden = !t; if (t) b.querySelector('small').textContent = hhmm(t); };
+  const sie = ALS.siesta?.fin > Date.now() ? ALS.siesta.fin : 0;
+  let posH = 0; try { posH = +(AND?.pospuestaHasta?.() || 0); } catch {}
+  const ts = ALS.list.filter(a => a.on).map(a => { const sn = Math.max(a.snooze > Date.now() ? a.snooze : 0, posH > Date.now() ? posH : 0); return sn || proxima(a.hora); });
+  pon('tSie', sie); pon('tAla', ts.length ? Math.min(...ts) : 0);
+}
+setInterval(() => { if (!document.hidden) { pintaFalta(); pintaCampanas(); } }, 15000);
+pintaCampanas();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { pintaFalta(); pintaCampanas(); } }); // v42.2: al volver de la pantalla de la alarma, al momento
 
 // Títulos de los desplegables: en un solo renglón si caben junto al sí/no y el triángulo; si no, el título se queda
 // el renglón entero y el sí/no y el triángulo bajan a la derecha (mejor renglones enteros que el título partido)
@@ -7427,6 +7443,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.4', '25 nov 2026', ['🔔 En Inicio, si hay una alarma o una siesta activada, su baldosa lleva una campanita a la izquierda con la hora a la que sonará']],
   ['v42.3', '25 nov 2026', ['⏰ Al posponer, debajo de la alarma: «Pospuesta: suena en 5 min» (va bajando) y debajo «Sonará en 23 h 53 min», cada uno en un renglón', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
   ['v42.1', '24 nov 2026', ['🌅 Si pospones la alarma, el monitoreo sigue; al apagarla, se terminan la alarma y el monitoreo a la vez', '🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
