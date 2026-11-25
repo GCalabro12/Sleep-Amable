@@ -676,10 +676,10 @@ details.hist[open] summary{margin-bottom:10px}
 .cgrid .choice .para{display:none}
 /* v42.4: campanita a la izquierda de la baldosa cuando hay una alarma o siesta activada, con la hora debajo */
 .cgrid .choice{position:relative}
-.tbell{position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tbell{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .tbell[hidden]{display:none}
-.tbell svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tbell small{display:block!important;font-size:11px;font-weight:600;opacity:.9;margin:0}
+.tbell svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tbell small{display:block!important;font-size:12px;font-weight:600;opacity:.9;margin:0}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
 .choice.d{background:linear-gradient(135deg,#1D4ED8,#1E3A8A);box-shadow:0 8px 24px #1d4ed844}
 .htit{display:flex;align-items:center;gap:10px}
@@ -1834,7 +1834,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.4'; // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.5'; // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -7443,7 +7443,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
-  ['v42.4', '25 nov 2026', ['🔔 En Inicio, si hay una alarma o una siesta activada, su baldosa lleva una campanita a la izquierda con la hora a la que sonará']],
+  ['v42.5', '25 nov 2026', ['🔔 En Inicio, si hay una alarma o una siesta activada, su baldosa lleva una campanita arriba a la izquierda con la hora a la que sonará']],
   ['v42.3', '25 nov 2026', ['⏰ Al posponer, debajo de la alarma: «Pospuesta: suena en 5 min» (va bajando) y debajo «Sonará en 23 h 53 min», cada uno en un renglón', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
   ['v42.1', '24 nov 2026', ['🌅 Si pospones la alarma, el monitoreo sigue; al apagarla, se terminan la alarma y el monitoreo a la vez', '🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
