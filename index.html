@@ -1827,7 +1827,8 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.1'; // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
+const VERSION = 'v42.2'; // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
+// v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
 // v41.9: «Alarma pospuesta» en un renglón y «5 minutos» entero en el siguiente
 // v41.8: con una ventana del monitoreo abierta, lo de detrás se ve borroso
@@ -6237,10 +6238,15 @@ function renderAlarmas() {
 }
 // v40.0: debajo de la hora de cada alarma encendida, en amarillo: «Sonará en 6 horas y 30 min» (se pone al día cada minuto)
 function pintaFalta() {
+  // v42.2: si la alarma acaba de sonar y se ha pospuesto, en vez de «mañana» dice a qué hora vuelve a sonar (APK 5.6: pospuestaHasta)
+  let posH = 0; try { posH = +(AND?.pospuestaHasta?.() || 0); } catch {}
   document.querySelectorAll('#alList .alcard').forEach(d => { const al = d._al, f = d.querySelector('.alfalta'); if (!al || !f) return;
+    const hasta = Math.max(al.snooze > Date.now() ? al.snooze : 0, posH), hace = Date.now() - (proxima(al.hora) - 864e5);
+    if (al.on && hasta > Date.now() && hace >= 0 && hace < 2 * 3600e3) { f.textContent = `Pospuesta: sonará a las ${hhmm(hasta)} (en ${faltaTxt(hasta - Date.now())})`; return; }
     f.textContent = al.on ? `Sonará en ${faltaTxt(proxima(al.hora) - Date.now())}` : ''; }); // (en inglés y portugués lo traduce RX_EN)
 }
 setInterval(() => { if (!document.hidden) pintaFalta(); }, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pintaFalta(); }); // v42.2: al volver de la pantalla de la alarma, al momento
 
 // Títulos de los desplegables: en un solo renglón si caben junto al sí/no y el triángulo; si no, el título se queda
 // el renglón entero y el sí/no y el triángulo bajan a la derecha (mejor renglones enteros que el título partido)
@@ -7416,6 +7422,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.2', '25 nov 2026', ['⏰ Al posponer, la alarma dice «Pospuesta: sonará a las …» en vez de la hora de mañana', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
   ['v42.1', '24 nov 2026', ['🌅 Si pospones la alarma, el monitoreo sigue; al apagarla, se terminan la alarma y el monitoreo a la vez', '🔉 Alarma pospuesta: vuelve a sonar de flojito a fuerte en 30 segundos, todas las veces', '⏰ Al posponer: «Alarma pospuesta» arriba y «5 minutos» entero en el renglón de abajo', '🌫️ Con una ventana abierta en el monitoreo (música, alarma, avisos…), lo de detrás se ve borroso']],
   ['v41.6', '3-23 nov 2026', ['☀️ Al programar la alarma la pantalla ya no pierde el brillo', '📦 «Audios y música para dormir» se encoge hasta sus opciones; solo crece al desplegar una', '🔵 Bordes azules más gruesos en «Elige para esta noche» y la alarma para despertarte', '⏰ «Quiero dormir 8 h»: al abrir la app, la alarma se calcula desde la hora actual (ahora + 8 h)', '🎨 Ventanas de «Elige para esta noche» con borde azul, para distinguirlas del fondo', '⏰ Posponer la alarma: 5, 10, 15 o 30 min la primera vez; 5, 10 o 15 la segunda; luego ya no. Te dice «Alarma pospuesta…» y sigue monitoreando tu noche', '🏷️ Sello «by Práctica Integral» con el logotipo nuevo', '🌸 Grow Panel: nueva dirección de registro (los datos siguen igual)', '🎧 Dormir siesta: al elegir una música de fondo suena 5 segundos para escucharla', '🌐 Amable Sleep en inglés y en portugués de Brasil: elige el idioma al empezar o en Ajustes', '🔕 Alarma: «Apagar y desactivar», para que ya no suene mañana']],
   ['v33.3', '31 oct - 2 nov 2026', ['📡 «Sonar on / off» de cada noche, según el rato que estuvo encendido de verdad', '🎧 Sonar y auricular a la vez: el pitido sale por el altavoz del móvil', '📊 Estadísticas: gráficas de tus horas por noche y de tus horarios', '🔔 Puntuación: cuántos avisos tuviste y a qué horas', '🔊 Monitoreo: cambia entre altavoz y auricular en una ventana, con las horas de los avisos', 'Otras mejoras funcionales']],
@@ -7437,7 +7444,7 @@ if (!window.isSecureContext || !navigator.mediaDevices) {
 }
 // En el navegador de un Android: ofrecer la app. El APK está en esta misma web (desde GitHub la descarga se quedaba trabada).
 // Con cada APK nueva: copiar SleepAmable.apk a la web y subir APK_ULTIMA.
-const APK_ULTIMA = '5.5';
+const APK_ULTIMA = '5.6';
 // Versión de prueba: solo la ve el móvil de Gustavo, el único con la 4.9 o más (el resto sigue en APK_ULTIMA). Se baja de SleepAmable-prueba.apk
 const APK_PRUEBA = '5.1';
 const apkPrueba = !!AND && parseFloat(AND.version()) >= 4.9 && parseFloat(AND.version()) < parseFloat(APK_PRUEBA);
