@@ -1858,7 +1858,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.9'; // v42.9: Despertadores y No molestar arriba en «Alarma y música», en azul. v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.10'; // v42.10: en la web se ocultan No molestar y modo avión (solo app Android). v42.9: Despertadores y No molestar arriba en «Alarma y música», en azul. v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -6283,6 +6283,11 @@ function pintaFalta() {
     f.innerHTML = pos + `<div>Sonará en ${corto(proxima(al.hora) - Date.now())}</div>`; }); // (en inglés y portugués lo traduce RX_EN)
 }
 // v42.6: «No molestar» con tiempo (sección Alarmas): la Luna (la misma función que en el monitoreo) o el avión, hasta la hora marcada
+// v42.10: en la web no hay «No molestar» ni modo avión (son de la app Android): se ocultan del monitoreo y de «Antes de dormir»
+if (!AND) {
+  $('lDnd').style.display = 'none';
+  ['liDnd', 'liAir'].forEach(id => { const d = $(id)?.closest('details'); if (d) d.style.display = 'none'; });
+}
 let nmTot = 0; // (antes de pintaNoMol para que no haya fallo al cargar)
 function pintaNoMol() {
   const d = $('nmDet'); if (!d) return;
@@ -7512,6 +7517,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.10', '28 nov 2026', ['🌙 En la web ya no salen «No molestar» ni «Modo avión»: son de la app Android']],
   ['v42.9', '28 nov 2026', ['⏰ Alarma y música: Despertadores y No molestar salen arriba, en azul']],
   ['v42.8', '28 nov 2026', ['🌙 No molestar: los botones suman (+30 min, +1 h, +2 h…) y abajo sale el total; «Borrar» lo pone a cero']],
   ['v42.7', '28 nov 2026', ['🌙 Alarmas: «No molestar» tiene su propio cartel (solo en la app Android 5.7); el botón dice «Activar modo No molestar» o «Activar modo avión» según elijas; en Inicio sale 🌙 o ✈️ mientras esté puesto']],
