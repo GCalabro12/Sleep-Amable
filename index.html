@@ -1328,7 +1328,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
   </div>
   </div></details>
   <details class="instr card banda azul" id="nmDet" hidden><summary><span>🌙 No molestar</span><b class="estado" id="nmSum"></b></summary><div id="nmBody">
-    <p class="note" style="margin:0 0 10px">Silencia llamadas y avisos durante el tiempo que marques y se quita solo. No afecta a las alarmas.</p>
+    <p class="note" style="margin:0 0 10px">🌙 <b>Luna (modo No molestar):</b> silencia llamadas y avisos. El internet sigue activo.<br>✈️ <b>Avión:</b> corta llamadas, wifi, datos y, en muchos móviles, Bluetooth.<br>Las alarmas suenan en los dos casos.</p>
     <div class="nmFila"><span>Tiempo</span><b id="nmTot"></b><button type="button" class="nmCambia" id="nmAbre">⏱️ Cambiar</button></div>
     <label class="nmModoL"><span>Modo</span><select id="nmModo"><option value="luna">🌙 Luna (No molestar)</option><option value="avion">✈️ Avión</option></select></label>
     <div class="natTxt" id="nmTxt"></div>
@@ -1870,7 +1870,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.11'; // v42.11: Despertadores y No molestar contraídos; tiempo y cambio en una ventana aparte. v42.10: en la web se ocultan No molestar y modo avión (solo app Android). v42.9: Despertadores y No molestar arriba en «Alarma y música», en azul. v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.12'; // v42.12: No molestar explica Luna y Avión. v42.11: Despertadores y No molestar contraídos; tiempo y cambio en una ventana aparte. v42.10: en la web se ocultan No molestar y modo avión (solo app Android). v42.9: Despertadores y No molestar arriba en «Alarma y música», en azul. v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -7533,6 +7533,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.12', '28 nov 2026', ['🌙 No molestar: el texto explica qué corta la Luna y qué corta el Avión']],
   ['v42.11', '28 nov 2026', ['⏰ Alarma y música: Despertadores y No molestar salen contraídos; el tiempo se cambia en una ventana aparte']],
   ['v42.10', '28 nov 2026', ['🌙 En la web ya no salen «No molestar» ni «Modo avión»: son de la app Android']],
   ['v42.9', '28 nov 2026', ['⏰ Alarma y música: Despertadores y No molestar salen arriba, en azul']],
