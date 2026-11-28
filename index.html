@@ -678,6 +678,8 @@ details.hist[open] summary{margin-bottom:10px}
 .cgrid .choice{position:relative}
 .tbell{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .tbell[hidden]{display:none}
+.tdnd{position:absolute;right:12px;top:10px;font-size:20px;line-height:1}
+.tdnd[hidden]{display:none}
 .tbell svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tbell small{display:block!important;font-size:12px;font-weight:600;opacity:.9;margin:0}
 .choice.c{background:linear-gradient(135deg,#B45309,#9A3412);box-shadow:0 8px 24px #b4530944}
@@ -1303,17 +1305,15 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <div id="alList"></div>
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
-  <div class="sepfino"></div>
-  <div class="card" id="nmCard">
-    <div style="font-weight:600;font-size:17px;margin-bottom:6px">🌙 No molestar</div>
-    <p class="note" style="margin:0 0 10px">Silencia llamadas y avisos durante el tiempo que marques y se quita solo (no afecta a las alarmas).</p>
+  </div></details>
+  <details class="instr card banda" id="nmDet" hidden><summary><span>🌙 No molestar</span><b class="estado" id="nmSum"></b></summary><div id="nmBody">
+    <p class="note" style="margin:0 0 10px">Silencia llamadas y avisos durante el tiempo que marques y se quita solo. No afecta a las alarmas.</p>
     <div class="napfila">
       <label><span>Durante</span><select id="nmMin"><option value="30">30 min</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="240">4 horas</option><option value="480">8 horas</option></select></label>
-      <label><span>Modo</span><select id="nmModo"><option value="luna">🌙 Luna</option><option value="avion">✈️ Avión</option></select></label>
+      <label><span>Modo</span><select id="nmModo"><option value="luna">🌙 Luna (No molestar)</option><option value="avion">✈️ Avión</option></select></label>
     </div>
     <div class="natTxt" id="nmTxt"></div>
-    <button class="nat" id="nmBtn" type="button">🌙 Activar No molestar</button>
-  </div>
+    <button class="nat" id="nmBtn" type="button"></button>
   </div></details>
   <div class="moontip" hidden><div class="bubble" id="alInfo"></div></div><!-- quitado (Gustavo): ya se sabe que suenan con la app cerrada -->
 </section>
@@ -1845,7 +1845,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.6'; // v42.6: «No molestar» con tiempo en Alarmas (Luna o avión; app 5.7) // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.7'; // v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -3731,7 +3731,7 @@ function renderPrep() {
 // Android llama a esto al volver de sus ajustes (permiso de «No molestar», panel del wifi…)
 window.nativeVuelta = () => {
   if (finRefresh) setTimeout(finRefresh, 800);
-  if (dndPedido && AND.hasDndAccess() && !live.night && $('nmCard')) { dndPedido = false; try { pintaNoMol(); $('nmBtn').onclick(); } catch {} } // v42.6: volvió del permiso: se pone ya
+  if (dndPedido && AND.hasDndAccess() && !live.night && $('nmDet') && !$('nmDet').hidden) { dndPedido = false; try { pintaNoMol(); $('nmBtn').onclick(); } catch {} } // v42.6: volvió del permiso: se pone ya
   if (typeof renderPantallaCompleta === 'function') renderPantallaCompleta();
   if (!AND || !live.night) return;
   if (dndPedido && AND.hasDndAccess() && !AND.dndActivo()) AND.setDnd(true);
@@ -6271,24 +6271,32 @@ function pintaFalta() {
 }
 // v42.6: «No molestar» con tiempo (sección Alarmas): la Luna (la misma función que en el monitoreo) o el avión, hasta la hora marcada
 function pintaNoMol() {
-  if (!$('nmCard')) return;
-  try { const m = localStorage.getItem('ronquino-nmmin'), o = localStorage.getItem('ronquino-nmmodo'); if (m && !$('nmMin').dataset.ok) $('nmMin').value = m; if (o && !$('nmMin').dataset.ok) $('nmModo').value = o; $('nmMin').dataset.ok = 1; } catch {}
-  const b = $('nmBtn'), t = $('nmTxt'), av = $('nmModo').value === 'avion';
-  if (!AND?.dndHasta) { b.disabled = true; b.textContent = '🌙 Activar No molestar'; t.textContent = 'Esta función está en la app Android de Amable Sleep (versión 5.7).'; return; }
+  const d = $('nmDet'); if (!d) return;
+  if (!AND?.dndHasta) { d.hidden = true; return; } // en la web no aparece
+  d.hidden = false;
+  try { const m = localStorage.getItem('ronquino-nmmin'), o = localStorage.getItem('ronquino-nmmodo'); if (m && !d.dataset.ok) $('nmMin').value = m; if (o && !d.dataset.ok) $('nmModo').value = o; d.dataset.ok = 1; } catch {}
+  const b = $('nmBtn'), t = $('nmTxt'), sum = $('nmSum');
   let fin = 0; try { fin = +AND.dndFin(); } catch {}
-  if (fin) { b.disabled = false; b.classList.add('on'); b.textContent = '✅ Activado hasta las ' + hhmm(fin) + ' · Quitarlo'; t.textContent = 'Se quita solo a esa hora.'; return; }
-  b.disabled = false; b.classList.remove('on');
-  b.textContent = av ? '✈️ Activar avión + No molestar' : '🌙 Activar No molestar';
-  t.textContent = av ? 'Android no deja a las apps poner el modo avión: se abre su pantalla para que lo pongas tú. Se pone también «No molestar» y, al acabar el tiempo, te aviso para quitar el avión.'
+  let act = ''; try { act = localStorage.getItem('ronquino-nmact') || ''; } catch {}
+  if (fin) {
+    b.classList.add('on'); sum.textContent = act === 'avion' ? '✈️' : '🌙';
+    b.textContent = `✅ Modo ${act === 'avion' ? 'avión' : 'No molestar'} activo hasta las ${hhmm(fin)} · Quitarlo ya`;
+    t.textContent = 'Se quita solo a esa hora.'; return;
+  }
+  sum.textContent = ''; b.classList.remove('on');
+  const av = $('nmModo').value === 'avion';
+  b.textContent = av ? '✈️ Activar modo avión' : '🌙 Activar modo No molestar';
+  t.textContent = av ? 'Android no deja a las apps poner el modo avión: se abre su pantalla para que lo actives tú. A la vez se pone «No molestar» y, al acabar el tiempo, te aviso para quitar el avión.'
     : (AND.hasDndAccess() ? 'Se quita solo al acabar el tiempo.' : 'La primera vez te pedirá permiso: busca Amable Sleep en la lista, actívalo y vuelve aquí.');
 }
 $('nmMin').onchange = $('nmModo').onchange = () => { try { localStorage.setItem('ronquino-nmmin', $('nmMin').value); localStorage.setItem('ronquino-nmmodo', $('nmModo').value); } catch {} pintaNoMol(); };
 $('nmBtn').onclick = () => {
   if (!AND?.dndHasta) return;
-  if (+AND.dndFin()) { AND.setDnd(false); pintaNoMol(); pintaCampanas(); return; }
+  if (+AND.dndFin()) { AND.setDnd(false); try { localStorage.removeItem('ronquino-nmact'); } catch {} pintaNoMol(); pintaCampanas(); return; }
   if (!AND.hasDndAccess()) { dndPedido = true; AND.pedirDnd(); return; }
   const r = AND.dndHasta(Date.now() + +$('nmMin').value * 60e3);
   if (r !== 'ok') { alert('Android no ha dejado poner «No molestar». Ponlo tú desde los ajustes rápidos (la luna).'); return; }
+  try { localStorage.setItem('ronquino-nmact', $('nmModo').value); } catch {}
   if ($('nmModo').value === 'avion') AND.abrirModoAvion();
   pintaNoMol(); pintaCampanas();
 };
@@ -6299,6 +6307,10 @@ function pintaCampanas() {
   let posH = 0; try { posH = +(AND?.pospuestaHasta?.() || 0); } catch {}
   const ts = ALS.list.filter(a => a.on).map(a => { const sn = Math.max(a.snooze > Date.now() ? a.snooze : 0, posH > Date.now() ? posH : 0); return sn || proxima(a.hora); });
   pon('tSie', sie); pon('tAla', ts.length ? Math.min(...ts) : 0);
+  // v42.7: luna o avión arriba a la derecha de la baldosa Alarma mientras el «No molestar» con tiempo esté puesto
+  const tb = $('tAla'), fin = AND?.dndFin ? +AND.dndFin() : 0; let db = tb?.querySelector('.tdnd');
+  if (tb && !db) { db = document.createElement('span'); db.className = 'tdnd'; tb.appendChild(db); }
+  if (db) { db.hidden = !fin; let act = ''; try { act = localStorage.getItem('ronquino-nmact') || ''; } catch {} db.textContent = act === 'avion' ? '✈️' : '🌙'; }
 }
 setInterval(() => { if (!document.hidden) { pintaFalta(); pintaCampanas(); pintaNoMol(); } }, 15000);
 pintaCampanas();
@@ -7478,6 +7490,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.7', '28 nov 2026', ['🌙 Alarmas: «No molestar» tiene su propio cartel (solo en la app Android 5.7); el botón dice «Activar modo No molestar» o «Activar modo avión» según elijas; en Inicio sale 🌙 o ✈️ mientras esté puesto']],
   ['v42.6', '27 nov 2026', ['🌙 Alarmas: nuevo «No molestar» con tiempo: eliges cuánto (30 min a 8 horas) y Luna o Avión; se quita solo y te avisa para quitar el avión (app Android 5.7)']],
   ['v42.5', '25 nov 2026', ['🔔 En Inicio, si hay una alarma o una siesta activada, su baldosa lleva una campanita arriba a la izquierda con la hora a la que sonará']],
   ['v42.3', '25 nov 2026', ['⏰ Al posponer, debajo de la alarma: «Pospuesta: suena en 5 min» (va bajando) y debajo «Sonará en 23 h 53 min», cada uno en un renglón', '📱 App Android 5.6: aviso «Alarma pospuesta / 5 minutos» en dos renglones y la pospuesta sube de flojito a fuerte en 30 segundos']],
