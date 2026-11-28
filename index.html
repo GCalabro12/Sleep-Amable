@@ -299,6 +299,11 @@ body.tabs-on .wrap{padding-bottom:84px}
 .sepgrueso{height:5px;background:#A78BFA;margin:6px -16px 18px} /* entre música, siesta y alarmas: de lado a lado del móvil */
 /* Banners de «Alarma y música»: la línea morada ensanchada, con el título dentro, de lado a lado del móvil */
 #alarma details.banda.card,#pCuna details.banda.card{padding:0;margin:0 -8px 12px;border:2px solid #A78BFA;border-radius:16px 16px 0 0;background:transparent} /* el cartel envuelve lo de abajo */
+#alarma details.banda.azul.card{border-color:#60A5FA}
+#alarma .banda.azul>summary{background:#60A5FA;color:#0B1B3A}
+#alarma .banda.azul>summary::after{border-top-color:#0B1B3A}
+#alarma .banda.azul[open]>summary::after{border-bottom-color:#0B1B3A}
+#alarma .banda.azul>summary .estado{background:#0B1B3A;color:#BFDBFE}
 #alarma .banda>summary,#pCuna .banda>summary{padding:12px 16px;background:#A78BFA;color:#1E1033;font-weight:800;font-size:17px;border-radius:13px 13px 0 0}
 #alarma .banda>summary::after,#pCuna .banda>summary::after{border-top-color:#1E1033}
 #alarma .banda[open]>summary::after,#pCuna .banda[open]>summary::after{border-bottom-color:#1E1033}
@@ -1278,10 +1283,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
 <section id="alarma" hidden>
   <button class="back" data-go="menu">← Inicio</button>
   <h1 style="font-size:21px;margin:0 0 12px">⏰ Alarma y música <span class="para">para </span>dormir</h1>
-  <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
-  <details class="instr card banda" id="guiaDet"><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
-  <details class="instr card banda" id="perDet"><summary><span>✍️ Audio personalizado</span></summary><div id="perBody"></div></details>
-  <details class="instr card banda siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
+  <details class="instr card banda azul siempreAbierto" id="despDet" open><summary><span>⏰ Despertadores</span></summary><div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:17px">😴 Siesta</span><span class="tres" id="napPts" hidden><i></i><i></i><i></i></span><label class="swt" style="margin-left:auto"><input type="checkbox" id="napOn"><i></i></label></div>
     <div class="napfila">
@@ -1311,7 +1313,7 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <button class="btn wide" id="alAdd" style="margin-top:2px">＋ Añadir alarma</button>
   </div>
   </div></details>
-  <details class="instr card banda" id="nmDet" hidden><summary><span>🌙 No molestar</span><b class="estado" id="nmSum"></b></summary><div id="nmBody">
+  <details class="instr card banda azul" id="nmDet" hidden><summary><span>🌙 No molestar</span><b class="estado" id="nmSum"></b></summary><div id="nmBody">
     <p class="note" style="margin:0 0 10px">Silencia llamadas y avisos durante el tiempo que marques y se quita solo. No afecta a las alarmas.</p>
     <div class="napfila">
       <div class="nmChips"><span>Toca para sumar</span>
@@ -1323,6 +1325,9 @@ body.pl-on .wrap{padding-bottom:calc(var(--plh, 190px) + 12px)}
     <div class="natTxt" id="nmTxt"></div>
     <button class="nat" id="nmBtn" type="button"></button>
   </div></details>
+  <details class="instr card banda" id="musDet"><summary><span>🎵 Música para dormir</span><b class="estado" id="musSum">no</b></summary><div id="musBody"></div></details>
+  <details class="instr card banda" id="guiaDet"><summary><span>🎧 Audios para dormir</span></summary><div id="guiaBody"></div></details>
+  <details class="instr card banda" id="perDet"><summary><span>✍️ Audio personalizado</span></summary><div id="perBody"></div></details>
   <div class="moontip" hidden><div class="bubble" id="alInfo"></div></div><!-- quitado (Gustavo): ya se sabe que suenan con la app cerrada -->
 </section>
 
@@ -1853,7 +1858,7 @@ if (TRAD) {
     if (op) { cierra(); if (window.__nocheEnCurso?.()) return; try { localStorage.setItem('ronquino-idioma', op.dataset.l); } catch {} location.reload(); return; }
     if (e.target.closest('.idActual')) { const ab = !s.classList.contains('abierto'); cierra(); if (ab) { s.classList.add('abierto'); s.querySelector('.idLista').hidden = false; s.querySelector('.idActual').setAttribute('aria-expanded', 'true'); } }
   }); }
-const VERSION = 'v42.8'; // v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
+const VERSION = 'v42.9'; // v42.9: Despertadores y No molestar arriba en «Alarma y música», en azul. v42.8: No molestar suma: cada botón añade tiempo y abajo sale el total (hasta 24 h). v42.7: «No molestar» con tiempo como cartel propio en Alarmas (solo app Android 5.7); el botón dice Luna o Avión; luna o avión en el Inicio mientras esté puesto // v42.5: la campanita, arriba a la izquierda (no tapa el nombre) // v42.4: campanita con la hora en las baldosas «Dormir siesta» y «Alarma y música» cuando hay algo activado // v42.3: debajo de la alarma, en un renglón cada uno: «Pospuesta: suena en 5 min» y «Sonará en 23 h 53 min»; puntitos más arriba
 // v42.2: alarma pospuesta: «Pospuesta: sonará a las 9:00» en vez de la hora de mañana; APK 5.6
 // v42.1: al apagar una alarma que se había pospuesto, el monitoreo también se termina (y se cierra el micrófono)
 // v42.0: la alarma pospuesta vuelve a sonar de flojito a fuerte en 30 segundos (antes, de golpe)
@@ -7507,6 +7512,7 @@ ponTema();
 // 🆕 Novedades (Ajustes): lo último arriba. Con cada versión nueva, añadir aquí una línea sencilla para la gente.
 // Agrupadas: como mucho una entrada cada 3 días y 6 puntos (el sexto, «Otras mejoras funcionales»); la entrada lleva el número de la última versión del grupo
 const NOVEDADES = [
+  ['v42.9', '28 nov 2026', ['⏰ Alarma y música: Despertadores y No molestar salen arriba, en azul']],
   ['v42.8', '28 nov 2026', ['🌙 No molestar: los botones suman (+30 min, +1 h, +2 h…) y abajo sale el total; «Borrar» lo pone a cero']],
   ['v42.7', '28 nov 2026', ['🌙 Alarmas: «No molestar» tiene su propio cartel (solo en la app Android 5.7); el botón dice «Activar modo No molestar» o «Activar modo avión» según elijas; en Inicio sale 🌙 o ✈️ mientras esté puesto']],
   ['v42.6', '27 nov 2026', ['🌙 Alarmas: nuevo «No molestar» con tiempo: eliges cuánto (30 min a 8 horas) y Luna o Avión; se quita solo y te avisa para quitar el avión (app Android 5.7)']],
